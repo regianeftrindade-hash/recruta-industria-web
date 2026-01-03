@@ -1,0 +1,47 @@
+﻿RuleAdded
+--- Test-NetConnection localhost:3000 ---
+
+
+ComputerName           : localhost
+RemoteAddress          : ::1
+RemotePort             : 3000
+InterfaceAlias         : Loopback Pseudo-Interface 1
+SourceAddress          : ::1
+PingSucceeded          : True
+PingReplyDetails (RTT) : 0 ms
+TcpTestSucceeded       : False
+
+
+
+
+--- Test-NetConnection 127.0.0.1:3000 ---
+
+
+ComputerName           : 127.0.0.1
+RemoteAddress          : 127.0.0.1
+RemotePort             : 3000
+InterfaceAlias         : Loopback Pseudo-Interface 1
+SourceAddress          : 127.0.0.1
+PingSucceeded          : True
+PingReplyDetails (RTT) : 0 ms
+TcpTestSucceeded       : False
+
+
+
+
+--- HTTP GET localhost:3000 ---
+Invoke-RestMethod : Impossível conectar-se ao servidor 
+remoto
+No linha:1 caractere:7
++ try { Invoke-RestMethod -Uri 'http://localhost:3000' 
+-TimeoutSec 5 |  ...
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (System.N 
+   et.HttpWebRequest:HttpWebRequest) [Invoke-RestMethod]  
+  , WebException
+    + FullyQualifiedErrorId : WebCmdletWebResponseExcepti 
+   on,Microsoft.PowerShell.Commands.InvokeRestMethodComm  
+  and
+ 
+

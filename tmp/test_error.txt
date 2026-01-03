@@ -1,0 +1,42 @@
+﻿Invoke-RestMethod : body{display:none}body{display:block}{
+"props":{"pageProps":{"statusCode":500,"hostname":"localho
+st"}},"page":"/_error","query":{},"buildId":"development",
+"isFallback":false,"err":{"name":"Error","source":"server"
+,"message":"./node_modules/sql.js/dist/sqljs-all.zip\nUnkn
+own module type\nThis module doesn't have an associated 
+type. Use a known file extension, or register a loader 
+for it.\n\nRead more: https://nextjs.org/docs/app/api-refe
+rence/next-config-js/turbo#webpack-loaders\n\n","stack":"E
+rror: ./node_modules/sql.js/dist/sqljs-all.zip\nUnknown 
+module type\nThis module doesn't have an associated type. 
+Use a known file extension, or register a loader for 
+it.\n\nRead more: https://nextjs.org/docs/app/api-referenc
+e/next-config-js/turbo#webpack-loaders\n\n\n    at 
+Object.getCompilationErrors (C:\\Projetos\\recruta-industr
+ia\\recruta-industria-web\\node_modules\\next\\dist\\serve
+r\\dev\\hot-reloader-turbopack.js:1008:59)\n    at 
+DevBundlerService.getCompilationError (C:\\Projetos\\recru
+ta-industria\\recruta-industria-web\\node_modules\\next\\d
+ist\\server\\lib\\dev-bundler-service.js:44:55)\n    at 
+DevServer.getCompilationError (C:\\Projetos\\recruta-indus
+tria\\recruta-industria-web\\node_modules\\next\\dist\\ser
+ver\\dev\\next-dev-server.js:706:42)\n    at 
+DevServer.findPageComponents (C:\\Projetos\\recruta-indust
+ria\\recruta-industria-web\\node_modules\\next\\dist\\serv
+er\\dev\\next-dev-server.js:676:43)\n    at async 
+DevServer.renderErrorToResponseImpl (C:\\Projetos\\recruta
+-industria\\recruta-industria-web\\node_modules\\next\\dis
+t\\server\\base-server.js:1713:26)"},"gip":true,"scriptLoa
+der":[]}
+No linha:1 caractere:298
++ ... ; $create = Invoke-RestMethod -Method Post -Uri 
+'http://localhost:300 ...
++                 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (System.N 
+   et.HttpWebRequest:HttpWebRequest) [Invoke-RestMethod]  
+  , WebException
+    + FullyQualifiedErrorId : WebCmdletWebResponseExcepti 
+   on,Microsoft.PowerShell.Commands.InvokeRestMethodComm  
+  and
+

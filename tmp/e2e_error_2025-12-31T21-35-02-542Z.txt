@@ -1,0 +1,3 @@
+Error: server_not_ready
+    at C:\Projetos\recruta-industria\recruta-industria-web\scripts\e2e_run_retry.js:104:23
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)

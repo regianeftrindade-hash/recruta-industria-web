@@ -1,0 +1,64 @@
+[
+  {
+    "id": "473af627-c688-45c1-91a6-2a366f59b327",
+    "amount": 1990,
+    "currency": "BRL",
+    "method": "pix",
+    "customer": {
+      "email": "a@b.com",
+      "name": "Teste"
+    },
+    "status": "PAID",
+    "meta": {},
+    "createdAt": "2025-12-31T16:03:58.481Z",
+    "updatedAt": "2025-12-31T16:09:40.618Z"
+  },
+  {
+    "id": "6bfc9d1d-7261-4ad1-bf71-ba179c939050",
+    "amount": 1990,
+    "currency": "BRL",
+    "method": "pix",
+    "customer": {
+      "email": "a@b.com",
+      "name": "Teste"
+    },
+    "status": "PAID",
+    "meta": {},
+    "createdAt": "2025-12-31T16:25:06.684Z",
+    "updatedAt": "2025-12-31T16:25:48.336Z"
+  },
+  {
+    "id": "09d1b1b8-b135-451a-bb64-9e271e9524c3",
+    "amount": 1990,
+    "currency": "BRL",
+    "method": "pix",
+    "customer": {
+      "name": "Erasmo da Silva Macedo",
+      "email": "erasmo.macedo09@gmail.com"
+    },
+    "status": "PENDING",
+    "meta": {
+      "transactionId": "TRX1767374518060CMT5KXFBA",
+      "userEmail": "erasmo.macedo09@gmail.com"
+    },
+    "createdAt": "2026-01-02T17:22:12.533Z",
+    "updatedAt": "2026-01-02T17:22:12.533Z"
+  },
+  {
+    "id": "4f014115-3e7f-4fe5-8cd7-c293c6c05754",
+    "amount": 1990,
+    "currency": "BRL",
+    "method": "boleto",
+    "customer": {
+      "name": "Erasmo da Silva Macedo",
+      "email": "erasmo.macedo09@gmail.com"
+    },
+    "status": "PENDING",
+    "meta": {
+      "transactionId": "TRX1767374986630HIHGMN3KP",
+      "userEmail": "erasmo.macedo09@gmail.com"
+    },
+    "createdAt": "2026-01-02T17:29:52.938Z",
+    "updatedAt": "2026-01-02T17:29:52.938Z"
+  }
+]

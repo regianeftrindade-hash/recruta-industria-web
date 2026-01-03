@@ -1,0 +1,13 @@
+﻿Invoke-RestMethod : Impossível conectar-se ao servidor 
+remoto
+No linha:1 caractere:154
++ ... ; $create = Invoke-RestMethod -Method Post -Uri 
+"$url/api/pagbank/cre ...
++                 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [Invoke-R 
+   estMethod], WebException
+    + FullyQualifiedErrorId : System.Net.WebException,Mic 
+   rosoft.PowerShell.Commands.InvokeRestMethodCommand
+ 
+

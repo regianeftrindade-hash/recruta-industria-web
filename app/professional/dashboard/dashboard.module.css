@@ -1,0 +1,224 @@
+/* Styles for professional dashboard page */
+.container {
+  background-color: #f0f2f5;
+  min-height: 100vh;
+  padding: 30px;
+  font-family: Arial, sans-serif;
+}
+
+.header {
+  background-color: #003366;
+  color: white;
+  padding: 20px 40px;
+  border-radius: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.headerTitle {
+  font-size: 22px;
+  margin: 0;
+  font-weight: 900;
+}
+
+.headerButtons {
+  display: flex;
+  gap: 15px;
+}
+
+.updateBtn {
+  background: white;
+  color: #003366;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.logoutBtn {
+  background: transparent;
+  color: white;
+  border: 1px solid white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.profileSection {
+  background-color: white;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profileTitle {
+  font-size: 18px;
+  color: #003366;
+  border-bottom: 3px solid #003366;
+  padding-bottom: 15px;
+  margin-bottom: 10px;
+  font-weight: 900;
+}
+
+.profileGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.tagRow {
+  display: flex;
+  gap: 15px;
+}
+
+.tag {
+  background-color: #f8fafc;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tagLabel {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.tagValue {
+  font-size: 15px;
+  font-weight: bold;
+  color: #003366;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.visitsCard {
+  background-color: #003366;
+  color: white;
+  padding: 40px 20px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0,51,102,0.2);
+}
+
+.visitsLabel {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.8;
+}
+
+.visitsNumber {
+  font-size: 65px;
+  font-weight: 900;
+  margin: 10px 0;
+}
+
+.visitsText {
+  margin: 0;
+  font-size: 14px;
+}
+
+.tipsCard {
+  background-color: #fff9c4;
+  padding: 25px;
+  border-radius: 20px;
+  border-left: 8px solid #fbc02d;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.tipsTitle {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #827717;
+  font-weight: bold;
+}
+
+.tipsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 13px;
+  color: #5d5410;
+  font-style: italic;
+}
+
+.tipsItem {
+  border-bottom: 1px solid #f0e68c;
+  padding-bottom: 8px;
+  margin: 0;
+}
+
+.hiringCard {
+  background-color: white;
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid #eee;
+}
+
+.hiringTitle {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #003366;
+  font-weight: bold;
+}
+
+.hiringList {
+  font-size: 13px;
+  font-weight: bold;
+  color: #444;
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+  }
+
+  .header {
+    padding: 15px 20px;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .headerTitle {
+    font-size: 18px;
+  }
+
+  .tagRow {
+    flex-direction: column;
+  }
+
+  .visitsNumber {
+    font-size: 50px;
+  }
+}
