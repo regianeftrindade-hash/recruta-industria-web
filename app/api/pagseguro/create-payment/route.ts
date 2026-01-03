@@ -78,7 +78,6 @@ export async function POST(req: NextRequest) {
       return new Response(JSON.stringify({ error: 'amount is required' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
     }
 
-    // Criar cobrança no PagBank
     const pagbankCharge = await createPagBankCharge(amount, method, customer)
 
     const now = new Date().toISOString()
@@ -102,7 +101,6 @@ export async function POST(req: NextRequest) {
 
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString()
 
-    // Se falhar PagBank, retornar erro
     if (!pagbankCharge) {
       return new Response(
         JSON.stringify({ error: 'Failed to create payment', chargeId: rec.chargeId, status: 'ERROR' }),
@@ -151,7 +149,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Fallback padrão
     return new Response(
       JSON.stringify({ 
         id: rec.id, 
@@ -159,12 +156,6 @@ export async function POST(req: NextRequest) {
         status: rec.status,
         pagbankData: pagbankCharge
       }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    )
-    }
-
-    return new Response(
-      JSON.stringify({ id: rec.id, chargeId: rec.id, checkoutUrl: `https://checkout.pagseguro.com/?id=${rec.id}`, status: rec.status }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     )
   } catch (err: any) {
