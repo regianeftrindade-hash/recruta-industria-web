@@ -1,7 +1,0 @@
-﻿---GET-PROCESS node---
-
----NETSTAT :3000---
-
----Get-NetTCPConnection---
-
----MAP-PIDS---

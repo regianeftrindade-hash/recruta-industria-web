@@ -1,8 +1,0 @@
-trying localhost:3000
-localhost:3000 tcp=false
-trying localhost:3001
-localhost:3001 tcp=false
-trying 127.0.0.1:3000
-127.0.0.1:3000 tcp=false
-trying 127.0.0.1:3001
-127.0.0.1:3001 tcp=false

@@ -18,7 +18,7 @@ export function middleware(request: NextRequest) {
     response.headers.set(key, value);
   });
 
-  // Em desenvolvimento, não faz redireciono nem bloqueio
+  // Em desenvolvimento, não faz bloqueio de rotas de cadastro
   if (process.env.NODE_ENV === 'development') {
     return response;
   }

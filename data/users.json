@@ -1,42 +1,15 @@
 [
   {
-    "id": "ca220e34-4d3e-4092-96fa-a868ab7ab213",
-    "email": "regianeftrindade@gmail.com",
-    "passwordHash": "",
-    "userType": "professional",
-    "googleId": "109540229611879971928",
-    "googleEmail": "regianeftrindade@gmail.com",
-    "createdAt": "2026-01-02T15:18:41.039Z",
-    "updatedAt": "2026-01-02T15:49:00.971Z",
-    "lastLogin": "2026-01-02T15:49:00.971Z"
-  },
-  {
-    "id": "f7002fcf-e132-4079-94bb-b7343d86d562",
-    "email": "recrutaindustria26@gmail.com",
-    "passwordHash": "",
-    "userType": "professional",
-    "googleId": "113765135666122161706",
-    "googleEmail": "recrutaindustria26@gmail.com",
-    "createdAt": "2026-01-02T15:21:25.472Z",
-    "updatedAt": "2026-01-02T15:21:25.472Z"
-  },
-  {
-    "id": "eac09349-bcfc-4f34-8103-dc3019ed0d62",
-    "email": "erasmo.macedo09@gmail.com",
-    "passwordHash": "",
-    "userType": "professional",
-    "googleId": "102017690019046706790",
-    "googleEmail": "erasmo.macedo09@gmail.com",
-    "createdAt": "2026-01-02T15:52:19.752Z",
-    "updatedAt": "2026-01-02T17:27:20.073Z",
-    "lastLogin": "2026-01-02T17:27:20.073Z",
-    "plan": "PREMIUM",
-    "upgradedAt": "2026-01-02T17:29:52.980Z",
-    "subscriptionRenewal": "2026-02-02T03:00:00.000Z",
-    "paymentMethod": {
-      "paymentMethod": "boleto",
-      "transactionId": "TRX1767374986630HIHGMN3KP",
-      "boletoCode": "1234517673678901749866012345678901234"
-    }
+    "id": "teste-empresa-001",
+    "email": "empresa@teste.com",
+    "passwordHash": "dGVzdGUxMjM0NTY3OA==",
+    "userType": "company",
+    "nome": "51.989.529 REGIANE FERNANDES TRINDADE MACEDO",
+    "cnpj": "51989529000110",
+    "createdAt": "2026-01-03T05:00:00.000Z",
+    "updatedAt": "2026-01-03T07:16:41.502Z",
+    "lastLogin": "2026-01-03T07:16:41.502Z",
+    "telefone": "(19) 99544-9657",
+    "setor": "metalurgica"
   }
 ]

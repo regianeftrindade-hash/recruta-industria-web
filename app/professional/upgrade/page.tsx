@@ -1,10 +1,21 @@
+/**
+ * ⚠️ PÁGINA BLOQUEADA - NÃO MODIFICAR
+ * 
+ * Esta página foi bloqueada para manter a estabilidade do sistema de upgrade
+ * e plano premium. Alterações podem impactar a lógica de cobrança e acesso
+ * aos recursos premium.
+ * 
+ * Se necessário alterar, consulte o desenvolvedor principal.
+ * Veja: PROFESSIONAL_UPGRADE_LOCK.md
+ */
+
 "use client";
 
 import React from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession, signOut, SessionProvider } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
-export default function UpgradePage() {
+function UpgradePageContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -190,5 +201,13 @@ export default function UpgradePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function UpgradePage() {
+  return (
+    <SessionProvider>
+      <UpgradePageContent />
+    </SessionProvider>
   );
 }

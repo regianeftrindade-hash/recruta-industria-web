@@ -1,3 +1,23 @@
+/**
+ * 🔒 PÁGINA DE LOGIN - BLOQUEADA PARA ALTERAÇÕES
+ * ================================================
+ * ⚠️ ATENÇÃO: Esta página foi finalizada e aprovada.
+ * 
+ * RESTRIÇÕES:
+ * ✗ NÃO alterar layout ou espaçamento
+ * ✗ NÃO remover componentes
+ * ✗ NÃO modificar estilos CSS
+ * ✗ NÃO alterar fluxo de autenticação
+ * 
+ * ALTERAÇÕES PERMITIDAS:
+ * ✓ Ajustar URLs de redirecionamento
+ * ✓ Atualizar mensagens de erro
+ * ✓ Modificar validações de segurança
+ * 
+ * Última atualização: 02/01/2026
+ * Status: ✅ FINALIZADO E APROVADO
+ */
+
 "use client";
 
 import React, { useState, Suspense } from 'react';
@@ -14,11 +34,14 @@ function LoginContent() {
   const [showCaptcha, setShowCaptcha] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   React.useEffect(() => {
     const tipo = searchParams.get('tipo');
     if (tipo === 'empresa') {
       setTipoLogin('company');
+    } else if (tipo === 'profissional') {
+      setTipoLogin('professional');
     }
     const error = searchParams.get('error');
     if (error) {
@@ -54,6 +77,7 @@ function LoginContent() {
     setLoading(true);
 
     try {
+      // Primeiro, valida as credenciais sem redirecionar
       const result = await signIn('credentials', {
         email: formData.email,
         password: formData.senha,
@@ -67,11 +91,36 @@ function LoginContent() {
       }
 
       if (result?.ok) {
-        // Redirecionar para dashboard apropriado
-        const redirectUrl = tipoLogin === 'professional' 
-          ? '/professional/dashboard' 
-          : '/company/dashboard-empresa';
-        router.push(redirectUrl);
+        // Aguarda um pouco e depois busca o tipo do usuário
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        try {
+          // Busca o userType via endpoint que busca no banco de dados
+          const typeRes = await fetch('/api/auth/get-user-type', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: formData.email })
+          });
+          
+          if (typeRes.ok) {
+            const typeData = await typeRes.json();
+            const userType = typeData.userType;
+            console.log('UserType from API:', userType);
+            
+            if (userType === 'company') {
+              router.push('/company/dashboard');
+            } else {
+              router.push('/professional/dashboard');
+            }
+          } else {
+            // Fallback
+            router.push(tipoLogin === 'company' ? '/company/dashboard' : '/professional/dashboard');
+          }
+        } catch (err) {
+          console.error('Erro ao buscar tipo:', err);
+          // Fallback
+          router.push(tipoLogin === 'company' ? '/company/dashboard' : '/professional/dashboard');
+        }
       }
     } catch (error) {
       setErrorMessage('Erro ao fazer login. Tente novamente.');
@@ -233,24 +282,48 @@ function LoginContent() {
             }}>
               Senha
             </label>
-            <input
-              type="password"
-              placeholder="Digite sua senha"
-              value={formData.senha}
-              onChange={(e) => setFormData({...formData, senha: e.target.value})}
-              style={{
-                width: '100%',
-                padding: '14px',
-                border: '2px solid #cbd5e0',
-                borderRadius: '10px',
-                fontSize: '16px',
-                boxSizing: 'border-box',
-                transition: 'border-color 0.3s',
-                backgroundColor: '#ffffff',
-                color: '#001f3f'
-              }}
-              disabled={loading}
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Digite sua senha"
+                value={formData.senha}
+                onChange={(e) => setFormData({...formData, senha: e.target.value})}
+                style={{
+                  width: '100%',
+                  padding: '14px 40px 14px 14px',
+                  border: '2px solid #cbd5e0',
+                  borderRadius: '10px',
+                  fontSize: '16px',
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.3s',
+                  backgroundColor: '#ffffff',
+                  color: '#001f3f'
+                }}
+                disabled={loading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '18px',
+                  color: '#001f3f',
+                  padding: '0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                title={showPassword ? 'Esconder senha' : 'Mostrar senha'}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
           </div>
 
           {showCaptcha && (

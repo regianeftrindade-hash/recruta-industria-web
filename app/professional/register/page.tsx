@@ -1,3 +1,24 @@
+/**
+ * 🔒 PÁGINA DE CADASTRO PROFISSIONAL - BLOQUEADA PARA ALTERAÇÕES
+ * ============================================================
+ * ⚠️ ATENÇÃO: Esta página foi finalizada e aprovada.
+ * 
+ * RESTRIÇÕES:
+ * ✗ NÃO alterar layout ou estrutura principal
+ * ✗ NÃO remover campos obrigatórios
+ * ✗ NÃO modificar validações críticas
+ * ✗ NÃO alterar fluxo de cadastro
+ * 
+ * ALTERAÇÕES PERMITIDAS:
+ * ✓ Adicionar novos campos opcionais
+ * ✓ Modificar mensagens de erro
+ * ✓ Atualizar validações de segurança
+ * ✓ Melhorar UX/UI mantendo layout
+ * 
+ * Última atualização: 02/01/2026
+ * Status: ✅ FINALIZADO E APROVADO
+ */
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -14,6 +35,7 @@ export default function CadastroProfissional() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [cpf, setCpf] = useState('');
+  const [senhaPreenchida, setSenhaPreenchida] = useState(false); // Rastreia se senha foi carregada do localStorage
   const [cpfError, setCpfError] = useState('');
   const [cpfValidating, setCpfValidating] = useState(false);
   const [telefone, setTelefone] = useState('');
@@ -38,6 +60,47 @@ export default function CadastroProfissional() {
   const [cidades, setCidades] = useState<string[]>([]);
   const listaEstados = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
 
+  // Carrega dados do cadastro simples quando a página abre
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const dadosSalvos = localStorage.getItem('dadosCadastroSimples');
+      if (dadosSalvos) {
+        try {
+          const dados = JSON.parse(dadosSalvos);
+          // Pré-preenche os campos com os dados do cadastro simples
+          setFormData(prev => ({
+            ...prev,
+            nome: dados.nome || prev.nome,
+            email: dados.email || prev.email,
+            telefone: dados.telefone || prev.telefone,
+          }));
+          setCpf(dados.cpf || '');
+          setTelefone(dados.telefone || '');
+          
+          // Preenche a senha se houver
+          if (dados.password) {
+            setPassword(dados.password);
+            setConfirmPassword(dados.password);
+            setSenhaPreenchida(true); // Marca que a senha foi carregada
+          } else {
+            // Se não há password nos dados, também marcar como preenchida
+            setSenhaPreenchida(true);
+          }
+          
+          console.log('✅ Dados do cadastro simples carregados automaticamente:', dados);
+        } catch (err) {
+          console.error('Erro ao carregar dados do cadastro simples:', err);
+          // Em caso de erro, marcar como preenchida para não pedir senha
+          setSenhaPreenchida(true);
+        }
+      } else {
+        // Se não há dados no localStorage, significa que é Google Auth
+        // Marcar senha como preenchida para não mostrar campos de senha
+        setSenhaPreenchida(true);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (formData.estado) {
       fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${formData.estado}/municipios`)
@@ -51,13 +114,47 @@ export default function CadastroProfissional() {
       <div className={styles.card} role="main" aria-labelledby="register-title">
         <h1 id="register-title" className={styles.title}>Cadastro do profissional</h1>
 
-        <form onSubmit={(e) => { e.preventDefault(); router.push('/professional/dashboard/painel'); }} className={styles.form}>
+        <form onSubmit={(e) => { 
+          e.preventDefault();
+          
+          console.log('=== SUBMIT PROFISSIONAL ===');
+          console.log('senhaPreenchida:', senhaPreenchida);
+          console.log('password length:', password.length);
+          
+          // SE A SENHA FOI PREENCHIDA NO CADASTRO SIMPLES, PULAR TODA VALIDAÇÃO
+          if (senhaPreenchida === true) {
+            console.log('Senha foi preenchida no cadastro simples - pulando validação');
+            router.push('/professional/dashboard/painel');
+            return;
+          }
+          
+          // APENAS SE senhaPreenchida FOR FALSE, validar a senha
+          console.log('Validando senha (senhaPreenchida é false)');
+          
+          if (!password || password.length < 8) {
+            alert('Senha deve ter mínimo 8 caracteres');
+            return;
+          }
+          if (!confirmPassword || password !== confirmPassword) {
+            alert('As senhas não conferem');
+            return;
+          }
+          
+          router.push('/professional/dashboard/painel'); 
+        }} className={styles.form}>
           
           <section>
             <h2 className={styles.sectionTitle}>Dados pessoais</h2>
             
             <label className={styles.label} htmlFor="nome">Nome completo *</label>
-            <input id="nome" type="text" required className={styles.input} />
+            <input 
+              id="nome" 
+              type="text" 
+              required 
+              className={styles.input}
+              value={formData.nome}
+              onChange={(e) => setFormData({...formData, nome: e.target.value})}
+            />
 
             <label className={styles.label} htmlFor="cpf">CPF *</label>
             <input 
@@ -324,73 +421,6 @@ export default function CadastroProfissional() {
               style={{ borderColor: emailError ? '#dc3545' : undefined }}
             />
             {emailError && <span style={{ color: '#dc3545', fontSize: '12px', marginTop: '5px', display: 'block' }}>❌ {emailError}</span>}
-
-            <label className={styles.label} htmlFor="password">Senha de acesso *</label>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <input 
-                id="password" 
-                type={showPassword ? 'text' : 'password'}
-                required 
-                className={styles.input}
-                placeholder="Mínimo 8 caracteres, máximo 16"
-                minLength={8}
-                maxLength={16}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ paddingRight: '40px' }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: 'absolute',
-                  right: '10px',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '20px',
-                  padding: '5px'
-                }}
-              >
-                {showPassword ? '👁️' : '👁️‍🗨️'}
-              </button>
-            </div>
-            {password && <PasswordStrengthMeter password={password} />}
-
-            <label className={styles.label} htmlFor="confirmPassword">Confirmar senha *</label>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <input 
-                id="confirmPassword" 
-                type={showConfirmPassword ? 'text' : 'password'}
-                required 
-                className={styles.input}
-                placeholder="Digite a senha novamente"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                style={{ 
-                  paddingRight: '40px',
-                  borderColor: confirmPassword && password !== confirmPassword ? '#dc3545' : undefined 
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                style={{
-                  position: 'absolute',
-                  right: '10px',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '20px',
-                  padding: '5px'
-                }}
-              >
-                {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
-              </button>
-            </div>
-            {confirmPassword && password !== confirmPassword && (
-              <span style={{ color: '#dc3545', fontSize: '12px', marginTop: '5px', display: 'block' }}>❌ As senhas não conferem</span>
-            )}
 
             <div className={styles.grid}>
               <div>
@@ -720,6 +750,8 @@ export default function CadastroProfissional() {
             >
               <option value="">Selecione</option>
               <option value="Não">Não</option>
+              <option value="Primeiro emprego">Primeiro emprego</option>
+              <option value="Jovem aprendiz">Jovem aprendiz</option>
               <option value="Sim">Sim</option>
             </select>
 
@@ -853,12 +885,6 @@ export default function CadastroProfissional() {
                 </div>
               </>
             )}
-
-            {formData.trabalhouIndustria === 'Não' && (
-              <p style={{ padding: '15px', backgroundColor: '#e3f2fd', borderRadius: '4px', color: '#0d47a1' }}>
-                ℹ️ Sem problema! Você pode começar sua experiência agora. Primeiro emprego ou Jovem Aprendiz.
-              </p>
-            )}
           </section>
 
           <section>
@@ -887,21 +913,49 @@ export default function CadastroProfissional() {
               value={pretensaoSalarial}
               onChange={(e) => {
                 const value = e.target.value;
-                const apenasNumeros = value.replace(/\D/g, '');
                 
-                // Formatar salário automaticamente: X.XXX,XX
-                let salarioFormatado = '';
-                if (apenasNumeros.length > 0) {
-                  // Adicionar zeros à esquerda se necessário
-                  const padding = apenasNumeros.padStart(3, '0');
-                  const inteiro = padding.slice(0, -2);
-                  const centavos = padding.slice(-2);
-                  
-                  // Formatar inteiro com pontos
-                  const inteiroFormatado = inteiro.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                  
-                  salarioFormatado = inteiroFormatado + ',' + centavos;
+                // Remove tudo que não é número
+                let apenasNumeros = value.replace(/\D/g, '');
+                
+                // Remove zeros à esquerda
+                apenasNumeros = apenasNumeros.replace(/^0+/, '') || '0';
+                
+                if (apenasNumeros === '0' || apenasNumeros === '') {
+                  setPretensaoSalarial('');
+                  setFormData({...formData, pretensaoSalarial: ''});
+                  return;
                 }
+                
+                // Se tem menos de 3 dígitos, é menor que 10 reais (exemplo: 5 -> 0,05)
+                let centavos = '';
+                let inteiro = '';
+                
+                if (apenasNumeros.length === 1) {
+                  inteiro = '0';
+                  centavos = '0' + apenasNumeros;
+                } else if (apenasNumeros.length === 2) {
+                  inteiro = '0';
+                  centavos = apenasNumeros;
+                } else {
+                  // Últimos 2 dígitos sempre são centavos
+                  centavos = apenasNumeros.slice(-2);
+                  inteiro = apenasNumeros.slice(0, -2);
+                }
+                
+                // Formata inteiro com pontos a cada 3 dígitos
+                const partes = inteiro.split('').reverse();
+                const inteiroFormatado = partes
+                  .reduce((acc, digit, index) => {
+                    if (index > 0 && index % 3 === 0) {
+                      acc.push('.');
+                    }
+                    acc.push(digit);
+                    return acc;
+                  }, [])
+                  .reverse()
+                  .join('');
+                
+                const salarioFormatado = inteiroFormatado + ',' + centavos;
                 
                 setPretensaoSalarial(salarioFormatado);
                 setFormData({...formData, pretensaoSalarial: salarioFormatado});

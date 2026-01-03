@@ -1,2 +1,0 @@
-Error: server_not_ready
-    at C:\Projetos\recruta-industria\recruta-industria-web\scripts\e2e_run_retry.js:62:23

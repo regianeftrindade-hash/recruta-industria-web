@@ -1,0 +1,47 @@
+// ❄️ SCHEMA CONGELADO — VERSÃO 1
+// ⚠️ NÃO ALTERAR SEM APROVAÇÃO
+// Apenas consultar dados através do Prisma Client
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  COMPANY
+  PROFESSIONAL
+}
+
+model User {
+  id        String    @id @default(cuid())
+  name      String?
+  email     String    @unique
+  image     String?
+  role      UserRole
+  createdAt DateTime  @default(now())
+
+  company      Company?
+  professional Professional?
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  name      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Professional {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  title     String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}

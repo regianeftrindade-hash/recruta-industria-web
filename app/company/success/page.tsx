@@ -77,7 +77,7 @@ export default function SucessoEmpresa() {
         {/* BOTÃO PRINCIPAL */}
         <div style={{ textAlign: 'center' }}>
           <button 
-            onClick={() => router.push('/company/dashboard empresa')}
+            onClick={() => router.push('/company/panel?from=/company/dashboard-empresa')}
             style={{ 
               backgroundColor: '#001f3f', 
               color: 'white', 

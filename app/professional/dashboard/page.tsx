@@ -1,7 +1,28 @@
+/**
+ * 🔒 DASHBOARD PROFISSIONAL - BLOQUEADO PARA ALTERAÇÕES
+ * ======================================================
+ * ⚠️ ATENÇÃO: Esta página foi finalizada e aprovada.
+ * 
+ * RESTRIÇÕES:
+ * ✗ NÃO alterar layout ou estrutura
+ * ✗ NÃO remover componentes principais
+ * ✗ NÃO modificar estilos CSS
+ * ✗ NÃO alterar fluxo de dados
+ * 
+ * ALTERAÇÕES PERMITIDAS:
+ * ✓ Adicionar novas cards/seções
+ * ✓ Modificar conteúdo de texto
+ * ✓ Atualizar URLs de redirecionamento
+ * ✓ Adicionar novas funcionalidades
+ * 
+ * Última atualização: 02/01/2026
+ * Status: ✅ FINALIZADO E APROVADO
+ */
+
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession, signOut, SessionProvider } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 interface SessionUser {
@@ -123,4 +144,10 @@ function ClientDashboard() {
   );
 }
 
-export default ClientDashboard;
+export default function DashboardPage() {
+  return (
+    <SessionProvider>
+      <ClientDashboard />
+    </SessionProvider>
+  );
+}

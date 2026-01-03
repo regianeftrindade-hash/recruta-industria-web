@@ -14,8 +14,9 @@ interface SessionUser {
 function ClientDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'vagas' | 'candidatos' | 'configuracoes'>('dashboard');
   const [mounted, setMounted] = useState(false);
+  const [isCheckingRegistration, setIsCheckingRegistration] = useState(true);
+  const [registrationComplete, setRegistrationComplete] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -27,9 +28,33 @@ function ClientDashboard() {
     }
   }, [status, router, mounted]);
 
+  useEffect(() => {
+    if (status === 'authenticated' && mounted) {
+      checkRegistrationStatus();
+    }
+  }, [status, mounted]);
+
+  const checkRegistrationStatus = async () => {
+    try {
+      const response = await fetch('/api/company/check-registration');
+      
+      if (!response.ok) {
+        setIsCheckingRegistration(false);
+        return;
+      }
+
+      const data = await response.json();
+      setRegistrationComplete(data.registrationComplete || false);
+    } catch (error) {
+      console.error('Erro ao verificar registro:', error);
+    } finally {
+      setIsCheckingRegistration(false);
+    }
+  };
+
   const user = session?.user as SessionUser | undefined;
 
-  if (status === 'loading') {
+  if (status === 'loading' || isCheckingRegistration) {
     return (
       <div style={{
         minHeight: '100vh',
@@ -47,13 +72,143 @@ function ClientDashboard() {
     return null;
   }
 
+  // Se cadastro não está completo, mostrar apenas a mensagem
+  if (!registrationComplete) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#f0f4f8',
+        fontFamily: 'Arial, sans-serif',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        {/* HEADER */}
+        <header style={{
+          backgroundColor: '#001f3f',
+          color: 'white',
+          padding: '20px 40px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        }}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 900 }}>RECRUTA INDÚSTRIA</h1>
+            <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#ccc' }}>Painel Empresarial</p>
+          </div>
+          <button
+            onClick={() => signOut({ callbackUrl: '/' })}
+            style={{
+              backgroundColor: '#ef4444',
+              color: 'white',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: '14px',
+              transition: 'all 0.3s'
+            }}
+          >
+            SAIR
+          </button>
+        </header>
+
+        {/* MAIN CONTENT - APENAS MENSAGEM */}
+        <main style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '40px 20px'
+        }}>
+          <div style={{
+            maxWidth: '600px',
+            backgroundColor: 'white',
+            padding: '50px 40px',
+            borderRadius: '20px',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+            textAlign: 'center'
+          }}>
+            <div style={{
+              fontSize: '80px',
+              marginBottom: '30px'
+            }}>
+              📋
+            </div>
+
+            <h2 style={{
+              color: '#001f3f',
+              fontSize: '28px',
+              fontWeight: 900,
+              margin: '0 0 20px 0'
+            }}>
+              Cadastro Incompleto
+            </h2>
+
+            <p style={{
+              color: '#666',
+              fontSize: '18px',
+              lineHeight: '1.6',
+              margin: '0 0 30px 0'
+            }}>
+              Para acessar as funcionalidades completas do painel e começar a recrutar talentos, você precisa completar seu cadastro com informações adicionais da sua empresa.
+            </p>
+
+            <div style={{
+              backgroundColor: '#f0f4f8',
+              padding: '20px',
+              borderRadius: '10px',
+              marginBottom: '30px',
+              borderLeft: '4px solid #001f3f'
+            }}>
+              <p style={{
+                color: '#001f3f',
+                fontSize: '14px',
+                margin: 0,
+                fontWeight: '600'
+              }}>
+                ℹ️ Você está logado como: <strong>{user.email}</strong>
+              </p>
+            </div>
+
+            <button
+              onClick={() => router.push('/company/register')}
+              style={{
+                backgroundColor: '#001f3f',
+                color: 'white',
+                padding: '16px 40px',
+                border: 'none',
+                borderRadius: '10px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'all 0.3s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#003366';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#001f3f';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              ✏️ Completar Cadastro
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Se cadastro está completo, mostrar o painel completo
   return (
     <div style={{
       minHeight: '100vh',
       backgroundColor: '#f0f4f8',
       fontFamily: 'Arial, sans-serif'
     }}>
-      {/* HEADER */}
       <header style={{
         backgroundColor: '#001f3f',
         color: 'white',
@@ -91,221 +246,21 @@ function ClientDashboard() {
         </div>
       </header>
 
-      <div style={{ display: 'flex', minHeight: 'calc(100vh - 100px)' }}>
-        {/* SIDEBAR */}
-        <aside style={{
-          backgroundColor: '#003366',
-          color: 'white',
-          width: '250px',
-          padding: '30px 0',
-          boxShadow: '2px 0 10px rgba(0,0,0,0.1)'
+      <main style={{ padding: '40px' }}>
+        <h2 style={{ color: '#001f3f', fontSize: '28px', fontWeight: 900, marginBottom: '20px' }}>
+          Dashboard
+        </h2>
+        <div style={{
+          backgroundColor: 'white',
+          padding: '30px',
+          borderRadius: '15px',
+          boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
         }}>
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '20px' }}>
-            {[
-              { key: 'dashboard', icon: '📊', label: 'Dashboard' },
-              { key: 'vagas', icon: '💼', label: 'Minhas Vagas' },
-              { key: 'candidatos', icon: '👥', label: 'Candidatos' },
-              { key: 'configuracoes', icon: '⚙️', label: 'Configurações' }
-            ].map(item => (
-              <button
-                key={item.key}
-                onClick={() => setActiveTab(item.key as any)}
-                style={{
-                  backgroundColor: activeTab === item.key ? '#1e5b96' : 'transparent',
-                  color: 'white',
-                  padding: '15px 20px',
-                  border: 'none',
-                  borderLeft: activeTab === item.key ? '4px solid #ffc107' : 'none',
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  transition: 'all 0.3s',
-                  textAlign: 'left',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px'
-                }}
-              >
-                <span>{item.icon}</span>
-                {item.label}
-              </button>
-            ))}
-          </nav>
-        </aside>
-
-        {/* MAIN CONTENT */}
-        <main style={{ flex: 1, padding: '40px' }}>
-          {/* DASHBOARD TAB */}
-          {activeTab === 'dashboard' && (
-            <div>
-              <h2 style={{ color: '#001f3f', marginBottom: '30px', fontSize: '28px', fontWeight: 900 }}>
-                Dashboard
-              </h2>
-
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '20px',
-                marginBottom: '40px'
-              }}>
-                {[
-                  { label: 'Vagas Ativas', value: '0' },
-                  { label: 'Candidatos', value: '0' },
-                  { label: 'Status', value: 'Ativo' }
-                ].map((card, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      backgroundColor: 'white',
-                      padding: '30px',
-                      borderRadius: '15px',
-                      boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
-                      textAlign: 'center'
-                    }}
-                  >
-                    <p style={{ color: '#666', fontSize: '14px', margin: 0, marginBottom: '10px' }}>
-                      {card.label}
-                    </p>
-                    <p style={{ color: '#001f3f', fontSize: '36px', fontWeight: 900, margin: 0 }}>
-                      {card.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{
-                backgroundColor: 'white',
-                padding: '30px',
-                borderRadius: '15px',
-                boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
-              }}>
-                <h3 style={{ color: '#001f3f', marginBottom: '20px', fontWeight: 'bold' }}>
-                  Dados da Empresa
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                  <div>
-                    <label style={{
-                      display: 'block',
-                      color: '#666',
-                      fontSize: '12px',
-                      fontWeight: 'bold',
-                      marginBottom: '5px',
-                      textTransform: 'uppercase'
-                    }}>
-                      Email
-                    </label>
-                    <p style={{ margin: 0, fontSize: '16px', color: '#001f3f', fontWeight: 'bold' }}>
-                      {user.email}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label style={{
-                      display: 'block',
-                      color: '#666',
-                      fontSize: '12px',
-                      fontWeight: 'bold',
-                      marginBottom: '5px',
-                      textTransform: 'uppercase'
-                    }}>
-                      Status
-                    </label>
-                    <p style={{ margin: 0, fontSize: '16px', color: '#10b981', fontWeight: 'bold' }}>
-                      Ativo
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* VAGAS TAB */}
-          {activeTab === 'vagas' && (
-            <div>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '30px'
-              }}>
-                <h2 style={{ color: '#001f3f', margin: 0, fontSize: '28px', fontWeight: 900 }}>
-                  Minhas Vagas
-                </h2>
-                <button
-                  style={{
-                    backgroundColor: '#003366',
-                    color: 'white',
-                    padding: '12px 30px',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                    fontSize: '16px',
-                    transition: 'all 0.3s'
-                  }}
-                >
-                  ➕ NOVA VAGA
-                </button>
-              </div>
-
-              <div style={{
-                backgroundColor: 'white',
-                padding: '40px',
-                borderRadius: '15px',
-                boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
-                textAlign: 'center'
-              }}>
-                <p style={{ color: '#999', fontSize: '18px' }}>Nenhuma vaga publicada</p>
-              </div>
-            </div>
-          )}
-
-          {/* CANDIDATOS TAB */}
-          {activeTab === 'candidatos' && (
-            <div>
-              <h2 style={{ color: '#001f3f', marginBottom: '30px', fontSize: '28px', fontWeight: 900 }}>
-                Candidatos
-              </h2>
-
-              <div style={{
-                backgroundColor: 'white',
-                padding: '40px',
-                borderRadius: '15px',
-                boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
-                textAlign: 'center'
-              }}>
-                <p style={{ color: '#999', fontSize: '18px' }}>Nenhum candidato</p>
-              </div>
-            </div>
-          )}
-
-          {/* CONFIGURAÇÕES TAB */}
-          {activeTab === 'configuracoes' && (
-            <div>
-              <h2 style={{ color: '#001f3f', marginBottom: '30px', fontSize: '28px', fontWeight: 900 }}>
-                Configurações
-              </h2>
-
-              <div style={{
-                backgroundColor: 'white',
-                padding: '30px',
-                borderRadius: '15px',
-                boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
-              }}>
-                <h3 style={{ color: '#001f3f', marginBottom: '20px', fontWeight: 'bold' }}>
-                  Notificações
-                </h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <input type="checkbox" defaultChecked />
-                  <label style={{ cursor: 'pointer', fontSize: '16px', color: '#666' }}>
-                    Receber notificações
-                  </label>
-                </div>
-              </div>
-            </div>
-          )}
-        </main>
-      </div>
+          <p style={{ color: '#666', fontSize: '16px' }}>
+            Bem-vindo ao painel da sua empresa! As funcionalidades estarão disponíveis em breve.
+          </p>
+        </div>
+      </main>
     </div>
   );
 }

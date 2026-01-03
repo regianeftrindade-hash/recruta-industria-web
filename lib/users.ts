@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import crypto from 'crypto'
+import { hashPassword as securityHashPassword, verifyPassword } from './security'
 
 const USERS_FILE = path.join(process.cwd(), 'data', 'users.json')
 
@@ -53,15 +54,14 @@ function writeUsers(users: User[]) {
   fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf-8')
 }
 
-// Hash de senha
+// Hash de senha - usar função importada de security.ts
 function hashPassword(password: string): string {
-  const salt = process.env.PASSWORD_SALT || 'recruta-industria-salt-super-secreto-2025-mudeme'
-  return crypto.createHash('sha256').update(password + salt).digest('hex')
+  return securityHashPassword(password)
 }
 
-// Comparar senha
+// Comparar senha - usar função importada de security.ts
 function comparePassword(password: string, hash: string): boolean {
-  return hashPassword(password) === hash
+  return verifyPassword(password, hash)
 }
 
 // Buscar usuário por email

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession, signOut, SessionProvider } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 interface SessionUser {
@@ -21,7 +21,7 @@ interface ProfileData {
   plano?: 'free' | 'premium';
 }
 
-export default function PainelProfissional() {
+function PainelProfissional() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [profileData, setProfileData] = useState<ProfileData>({
@@ -33,6 +33,37 @@ export default function PainelProfissional() {
     dataVisualizacoes: 12,
     plano: 'free'
   });
+  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Verificar se há parâmetro de sucesso de upgrade
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('upgrade') === 'success') {
+      setUpgradeSuccess(true);
+      setProfileData(prev => ({ ...prev, plano: 'premium' }));
+      // Limpar URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      // Remover mensagem após 5 segundos
+      setTimeout(() => setUpgradeSuccess(false), 5000);
+    }
+  }, []);
+
+  const handleFotoClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        // Aqui você pode salvar a foto no estado ou enviar para servidor
+        console.log('Foto selecionada:', file.name);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -102,6 +133,23 @@ export default function PainelProfissional() {
 
       {/* CONTEÚDO PRINCIPAL */}
       <div style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto' }}>
+        {/* MENSAGEM DE SUCESSO DE UPGRADE */}
+        {upgradeSuccess && (
+          <div style={{
+            backgroundColor: '#d4edda',
+            border: '2px solid #28a745',
+            color: '#155724',
+            padding: '20px',
+            borderRadius: '8px',
+            marginBottom: '30px',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            fontSize: '16px',
+            animation: 'slideIn 0.3s ease-in-out'
+          }}>
+            ✅ Parabéns! Seu upgrade para Premium foi realizado com sucesso!
+          </div>
+        )}
         <h2 style={{ color: '#001f3f', marginBottom: '30px', fontSize: '28px' }}>
           📊 Meu Painel
         </h2>
@@ -147,7 +195,7 @@ export default function PainelProfissional() {
                   👤
                 </div>
                 <button
-                  onClick={() => {}}
+                  onClick={handleFotoClick}
                   style={{
                     marginTop: '15px',
                     backgroundColor: '#0066cc',
@@ -162,6 +210,13 @@ export default function PainelProfissional() {
                 >
                   📷 Alterar Foto
                 </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFotoChange}
+                  style={{ display: 'none' }}
+                />
               </div>
 
               <div style={{
@@ -541,5 +596,13 @@ export default function PainelProfissional() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PainelPage() {
+  return (
+    <SessionProvider>
+      <PainelProfissional />
+    </SessionProvider>
   );
 }
