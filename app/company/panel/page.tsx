@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 interface CompanyInfo {
@@ -10,7 +10,7 @@ interface CompanyInfo {
   cnpj?: string;
 }
 
-export default function CompanyPanel() {
+function CompanyPanelContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
@@ -343,4 +343,12 @@ export default function CompanyPanel() {
 
   // Se chegou aqui, o registro está completo (não deveria)
   return null;
+}
+
+export default function CompanyPanel() {
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <CompanyPanelContent />
+    </Suspense>
+  );
 }

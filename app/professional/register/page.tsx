@@ -945,7 +945,7 @@ export default function CadastroProfissional() {
                 // Formata inteiro com pontos a cada 3 dígitos
                 const partes = inteiro.split('').reverse();
                 const inteiroFormatado = partes
-                  .reduce((acc, digit, index) => {
+                  .reduce((acc: string[], digit, index) => {
                     if (index > 0 && index % 3 === 0) {
                       acc.push('.');
                     }
