@@ -75,7 +75,10 @@ export async function POST(req: NextRequest) {
     const { amount, method = 'pix', customer, meta } = body
 
     if (!amount) {
-      return new Response(JSON.stringify({ error: 'amount is required' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
+      return new Response(
+        JSON.stringify({ error: 'amount is required' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      )
     }
 
     const pagbankCharge = await createPagBankCharge(amount, method, customer)
@@ -111,13 +114,13 @@ export async function POST(req: NextRequest) {
     if (method === 'pix' && pagbankCharge.qr_codes) {
       const pixData = pagbankCharge.qr_codes[0]
       return new Response(
-        JSON.stringify({ 
-          id: rec.id, 
-          chargeId: rec.chargeId, 
-          copyPasteKey: pixData.id, 
+        JSON.stringify({
+          id: rec.id,
+          chargeId: rec.chargeId,
+          copyPasteKey: pixData.id,
           qrCodeUrl: pixData.url,
-          expiresAt, 
-          status: rec.status 
+          expiresAt,
+          status: rec.status
         }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
       )
@@ -125,13 +128,13 @@ export async function POST(req: NextRequest) {
 
     if (method === 'boleto' && pagbankCharge.boleto) {
       return new Response(
-        JSON.stringify({ 
-          id: rec.id, 
-          chargeId: rec.chargeId, 
+        JSON.stringify({
+          id: rec.id,
+          chargeId: rec.chargeId,
           boletoUrl: pagbankCharge.boleto.url,
-          line: pagbankCharge.boleto.barcode, 
-          expiresAt, 
-          status: rec.status 
+          line: pagbankCharge.boleto.barcode,
+          expiresAt,
+          status: rec.status
         }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
       )
@@ -139,20 +142,20 @@ export async function POST(req: NextRequest) {
 
     if (method === 'card' && pagbankCharge.checkout) {
       return new Response(
-        JSON.stringify({ 
-          id: rec.id, 
-          chargeId: rec.chargeId, 
-          checkoutUrl: pagbankCharge.checkout.redirect_url || `https://checkout.pagbank.com.br/?id=${rec.chargeId}`, 
-          status: rec.status 
+        JSON.stringify({
+          id: rec.id,
+          chargeId: rec.chargeId,
+          checkoutUrl: pagbankCharge.checkout.redirect_url || `https://checkout.pagbank.com.br/?id=${rec.chargeId}`,
+          status: rec.status
         }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
       )
     }
 
     return new Response(
-      JSON.stringify({ 
-        id: rec.id, 
-        chargeId: rec.chargeId, 
+      JSON.stringify({
+        id: rec.id,
+        chargeId: rec.chargeId,
         status: rec.status,
         pagbankData: pagbankCharge
       }),
