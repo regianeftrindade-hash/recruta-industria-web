@@ -1,18 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs'
-import { join } from 'path'
-
-const DATA_FILE = join(process.cwd(), 'data', 'payments.json')
-
-async function readAll() {
-  try {
-    await fs.promises.access(DATA_FILE)
-  } catch (e) {
-    return []
-  }
-  const txt = await fs.promises.readFile(DATA_FILE, 'utf8')
-  return JSON.parse(txt || '[]')
-}
+import { prisma } from '@/lib/db'
 
 // GET /api/pagbank/status?chargeId=xxx
 export async function GET(req: NextRequest) {
@@ -23,11 +10,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing chargeId' }, { status: 400 })
   }
 
-  const all = await readAll()
-  const rec = all.find((p: any) => p.id === chargeId || p.externalId === chargeId) || null
+  const rec = await prisma.paymentRecord.findFirst({
+    where: {
+      reference: chargeId
+    }
+  })
 
   if (rec) {
-    return NextResponse.json({ id: rec.id, status: rec.status, meta: rec.meta })
+    return NextResponse.json({ id: rec.id, status: rec.status, data: rec.data })
   }
 
   // Fallback to external API if configured

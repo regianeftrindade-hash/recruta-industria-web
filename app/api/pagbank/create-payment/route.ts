@@ -1,34 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs'
-import { join } from 'path'
+import { prisma } from '@/lib/db'
 import { randomUUID } from 'crypto'
-
-const DATA_DIR = join(process.cwd(), 'data')
-const DATA_FILE = join(DATA_DIR, 'payments.json')
-
-async function ensureFile() {
-  try {
-    await fs.promises.access(DATA_DIR)
-  } catch (e) {
-    await fs.promises.mkdir(DATA_DIR, { recursive: true })
-  }
-  try {
-    await fs.promises.access(DATA_FILE)
-  } catch (e) {
-    await fs.promises.writeFile(DATA_FILE, '[]')
-  }
-}
-
-async function readAll() {
-  await ensureFile()
-  const txt = await fs.promises.readFile(DATA_FILE, 'utf8')
-  return JSON.parse(txt || '[]')
-}
-
-async function writeAll(items: any[]) {
-  await ensureFile()
-  await fs.promises.writeFile(DATA_FILE, JSON.stringify(items, null, 2))
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,8 +9,9 @@ export async function POST(req: NextRequest) {
     if (!amount) return NextResponse.json({ error: 'Missing amount' }, { status: 400 })
 
     const now = new Date().toISOString()
+    const id = randomUUID()
     const rec = {
-      id: randomUUID(),
+      id,
       amount,
       currency,
       method,
@@ -49,17 +22,26 @@ export async function POST(req: NextRequest) {
       updatedAt: now,
     }
 
-    const all = await readAll()
-    all.push(rec)
-    await writeAll(all)
+    try {
+      await prisma.paymentRecord.create({
+        data: {
+          reference: id,
+          status: 'PENDING',
+          data: rec
+        }
+      })
+    } catch (err) {
+      console.error('Error creating payment record:', err)
+      return NextResponse.json({ error: 'Failed to create payment record' }, { status: 500 })
+    }
 
     if (method === 'pix') {
-      return NextResponse.json({ id: rec.id, chargeId: rec.id, copyPasteKey: `PIX:${rec.id}`, expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(), status: rec.status })
+      return NextResponse.json({ id: id, chargeId: id, copyPasteKey: `PIX:${id}`, expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(), status: rec.status })
     }
     if (method === 'boleto') {
-      return NextResponse.json({ id: rec.id, chargeId: rec.id, boletoUrl: `/api/pagbank/boleto/${rec.id}`, line: `34191.79001 01043.510047 91000.000002 1  ${rec.id.slice(0,10)}`, expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), status: rec.status })
+      return NextResponse.json({ id: id, chargeId: id, boletoUrl: `/api/pagbank/boleto/${id}`, line: `34191.79001 01043.510047 91000.000002 1  ${id.slice(0,10)}`, expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), status: rec.status })
     }
-    return NextResponse.json({ id: rec.id, chargeId: rec.id, checkoutUrl: `/api/pagbank/checkout/${rec.id}`, status: rec.status })
+    return NextResponse.json({ id: id, chargeId: id, checkoutUrl: `/api/pagbank/checkout/${id}`, status: rec.status })
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || 'unexpected' }, { status: 500 })
   }
