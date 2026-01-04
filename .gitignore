@@ -37,7 +37,18 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+.env*.local
 !.env.example
+!.env.example.local
+
+# sensitive data files
+.env.production
+.env.*.local
+data/users.json
+data/payments.json
+data/contacts.json
+prisma/dev.db
+prisma/dev.db-journal
 
 # vercel
 .vercel
