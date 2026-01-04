@@ -1,18 +1,7 @@
-import fs from 'fs'
-import { join } from 'path'
+// Auditoria de segurança - Sem persistência em arquivo
+// Em produção, isso deveria ir para um serviço de logging (Datadog, CloudWatch, etc)
 
-const DATA_DIR = join(process.cwd(), 'data')
-const AUDIT_FILE = join(DATA_DIR, 'audit_logs.json')
-const ACCOUNT_LOCKS_FILE = join(DATA_DIR, 'account_locks.json')
-
-async function ensureFile(filePath: string) {
-  try {
-    await fs.promises.access(filePath)
-  } catch {
-    await fs.promises.mkdir(DATA_DIR, { recursive: true })
-    await fs.promises.writeFile(filePath, '[]')
-  }
-}
+const ACCOUNT_LOCKS = new Map<string, { expiresAt: Date; reason: string }>()
 
 export async function logAudit(
   event: string,
@@ -21,22 +10,15 @@ export async function logAudit(
   details: any = {}
 ) {
   try {
-    await ensureFile(AUDIT_FILE)
-    const logs = JSON.parse(
-      await fs.promises.readFile(AUDIT_FILE, 'utf8')
-    ) as any[]
-    
-    logs.push({
-      id: `audit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    // Log em console para desenvolvimento
+    console.log('[AUDIT]', {
       event,
       userId,
       action,
       details,
       timestamp: new Date().toISOString(),
-      ipAddress: process.env.IP_ADDRESS || 'unknown'
     })
-    
-    await fs.promises.writeFile(AUDIT_FILE, JSON.stringify(logs, null, 2))
+    // Em produção, enviar para serviço de logging externo (Datadog, CloudWatch, etc)
   } catch (err) {
     console.error('Error logging audit:', err)
   }
@@ -44,29 +26,9 @@ export async function logAudit(
 
 export async function lockAccount(email: string, reason: string) {
   try {
-    await ensureFile(ACCOUNT_LOCKS_FILE)
-    const locks = JSON.parse(
-      await fs.promises.readFile(ACCOUNT_LOCKS_FILE, 'utf8')
-    ) as any[]
-    
-    const existingLock = locks.find(l => l.email === email && !l.unlockedAt)
-    if (existingLock) {
-      existingLock.attemptCount += 1
-      existingLock.lastAttempt = new Date().toISOString()
-      existingLock.reason = reason
-    } else {
-      locks.push({
-        id: `lock-${Date.now()}`,
-        email,
-        reason,
-        attemptCount: 1,
-        lockedAt: new Date().toISOString(),
-        unlockedAt: null,
-        unlockedBy: null
-      })
-    }
-    
-    await fs.promises.writeFile(ACCOUNT_LOCKS_FILE, JSON.stringify(locks, null, 2))
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000) // 30 minutos
+    ACCOUNT_LOCKS.set(email, { expiresAt, reason })
+    console.log('[SECURITY] Account locked:', { email, reason })
   } catch (err) {
     console.error('Error locking account:', err)
   }
@@ -74,28 +36,17 @@ export async function lockAccount(email: string, reason: string) {
 
 export async function isAccountLocked(email: string): Promise<boolean> {
   try {
-    await ensureFile(ACCOUNT_LOCKS_FILE)
-    const locks = JSON.parse(
-      await fs.promises.readFile(ACCOUNT_LOCKS_FILE, 'utf8')
-    ) as any[]
-    
-    const lock = locks.find(l => l.email === email && !l.unlockedAt)
+    const lock = ACCOUNT_LOCKS.get(email)
     
     if (!lock) return false
     
-    // Se a conta foi bloqueada há mais de 30 minutos, desbloqueia automaticamente
-    const lockedTime = new Date(lock.lockedAt).getTime()
-    const now = Date.now()
-    const thirtyMinutes = 30 * 60 * 1000
-    
-    if (now - lockedTime > thirtyMinutes) {
-      lock.unlockedAt = new Date().toISOString()
-      lock.unlockedBy = 'auto-unlock'
-      await fs.promises.writeFile(ACCOUNT_LOCKS_FILE, JSON.stringify(locks, null, 2))
+    // Se expirou, desbloqueia automaticamente
+    if (lock.expiresAt < new Date()) {
+      ACCOUNT_LOCKS.delete(email)
       return false
     }
     
-    return lock.attemptCount >= 5
+    return true
   } catch (err) {
     console.error('Error checking account lock:', err)
     return false
@@ -104,17 +55,8 @@ export async function isAccountLocked(email: string): Promise<boolean> {
 
 export async function unlockAccount(email: string, unlockedBy: string) {
   try {
-    await ensureFile(ACCOUNT_LOCKS_FILE)
-    const locks = JSON.parse(
-      await fs.promises.readFile(ACCOUNT_LOCKS_FILE, 'utf8')
-    ) as any[]
-    
-    const lock = locks.find(l => l.email === email && !l.unlockedAt)
-    if (lock) {
-      lock.unlockedAt = new Date().toISOString()
-      lock.unlockedBy = unlockedBy
-      await fs.promises.writeFile(ACCOUNT_LOCKS_FILE, JSON.stringify(locks, null, 2))
-    }
+    ACCOUNT_LOCKS.delete(email)
+    console.log('[SECURITY] Account unlocked:', { email, unlockedBy })
   } catch (err) {
     console.error('Error unlocking account:', err)
   }
@@ -125,23 +67,6 @@ export async function getAuditLogs(
   event?: string,
   limit: number = 100
 ) {
-  try {
-    await ensureFile(AUDIT_FILE)
-    let logs = JSON.parse(
-      await fs.promises.readFile(AUDIT_FILE, 'utf8')
-    ) as any[]
-    
-    if (userId) {
-      logs = logs.filter(l => l.userId === userId)
-    }
-    
-    if (event) {
-      logs = logs.filter(l => l.event === event)
-    }
-    
-    return logs.slice(-limit).reverse()
-  } catch (err) {
-    console.error('Error getting audit logs:', err)
-    return []
-  }
+  // Retorna array vazio - implementar com banco de dados em produção
+  return []
 }
