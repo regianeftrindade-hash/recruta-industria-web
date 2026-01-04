@@ -133,6 +133,13 @@ export function isValidCPF(cpf: string): boolean {
   return true;
 }
 
+// Formatar CPF com pontos e hífen (XXX.XXX.XXX-XX)
+export function formatCPF(cpf: string): string {
+  const cleaned = cpf.replace(/\D/g, '');
+  if (cleaned.length !== 11) return cpf;
+  return cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
 // Rate limiting simples em memória
 const loginAttempts = new Map<string, { count: number; timestamp: number }>();
 
