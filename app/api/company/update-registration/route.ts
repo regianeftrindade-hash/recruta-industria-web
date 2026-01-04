@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../../auth/[...nextauth]/route'
-import { findUserByEmail, updateUser } from '@/lib/users'
+import { prisma } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,26 +14,34 @@ export async function POST(request: NextRequest) {
     const data = await request.json()
 
     // Encontra o usuário
-    const user = findUserByEmail(session.user.email)
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    })
+    
     if (!user) {
       return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
     }
 
     // Atualiza o usuário com os dados do cadastro completo
-    const updatedUser = updateUser(user.id, {
-      nome: data.nome,
-      email: data.email,
-      telefone: data.telefone,
-      cnpj: data.cnpj,
-      setor: data.setor,
-      estado: data.estado,
-      cidade: data.cidade,
-      updatedAt: new Date().toISOString()
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        name: data.nome,
+        updatedAt: new Date(),
+      }
     })
 
-    if (!updatedUser) {
-      return NextResponse.json({ error: 'Erro ao atualizar usuário' }, { status: 500 })
-    }
+    // Atualiza ou cria informações de empresa
+    const company = await prisma.company.upsert({
+      where: { userId: user.id },
+      update: {
+        name: data.nome,
+      },
+      create: {
+        userId: user.id,
+        name: data.nome,
+      }
+    })
 
     return NextResponse.json({
       success: true,
@@ -41,9 +49,11 @@ export async function POST(request: NextRequest) {
       user: {
         id: updatedUser.id,
         email: updatedUser.email,
-        nome: updatedUser.nome,
-        cnpj: updatedUser.cnpj,
-        setor: updatedUser.setor
+        name: updatedUser.name,
+      },
+      company: {
+        id: company.id,
+        name: company.name,
       }
     })
   } catch (error) {

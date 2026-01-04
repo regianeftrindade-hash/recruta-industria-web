@@ -118,10 +118,24 @@ export default function CadastroProfissional() {
           e.preventDefault();
           
           console.log('=== SUBMIT PROFISSIONAL ===');
+          console.log('CPF:', cpf);
+          console.log('CPF Error:', cpfError);
           console.log('senhaPreenchida:', senhaPreenchida);
           console.log('password length:', password.length);
           
-          // SE A SENHA FOI PREENCHIDA NO CADASTRO SIMPLES, PULAR TODA VALIDAÇÃO
+          // VALIDAÇÃO 1: CPF obrigatório
+          if (!cpf || cpf.length < 14) {
+            alert('CPF é obrigatório e deve estar completo (000.000.000-00)');
+            return;
+          }
+          
+          // VALIDAÇÃO 2: CPF não pode ter erro
+          if (cpfError) {
+            alert('CPF inválido: ' + cpfError);
+            return;
+          }
+          
+          // SE A SENHA FOI PREENCHIDA NO CADASTRO SIMPLES, PULAR VALIDAÇÃO DE SENHA
           if (senhaPreenchida === true) {
             console.log('Senha foi preenchida no cadastro simples - pulando validação');
             router.push('/professional/dashboard/painel');
@@ -163,10 +177,14 @@ export default function CadastroProfissional() {
               required 
               className={styles.input}
               placeholder="000.000.000-00"
+              maxLength={14}
               value={cpf}
               onChange={(e) => {
                 const value = e.target.value;
                 const cpfLimpo = value.replace(/\D/g, '');
+                
+                // Limitar a 11 dígitos (não permite digitar mais)
+                if (cpfLimpo.length > 11) return;
                 
                 // Formatar CPF automaticamente: XXX.XXX.XXX-XX
                 let cpfFormatado = '';

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isValidCPF } from '@/lib/security'
-import fs from 'fs'
-import path from 'path'
+import { prisma } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,47 +28,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verificar se CPF já existe no banco de dados
-    try {
-      const dataPath = path.join(process.cwd(), 'data', 'users.json')
-      if (fs.existsSync(dataPath)) {
-        const data = fs.readFileSync(dataPath, 'utf-8')
-        const users = JSON.parse(data)
-        
-        const cpfExists = users.some((user: any) => {
-          const userCpf = user.cpf ? user.cpf.replace(/\D/g, '') : ''
-          return userCpf === cpfLimpo
-        })
-
-        if (cpfExists) {
-          return NextResponse.json(
-            { 
-              valid: false,
-              message: 'Este CPF já está cadastrado',
-              exists: true
-            },
-            { status: 200 }
-          )
-        }
-      }
-    } catch (err) {
-      // Se houver erro ao ler arquivo, continua com validação simples
-      console.error('Erro ao validar CPF:', err)
-    }
-
-    // CPF é válido e não existe
+    // CPF é válido
     return NextResponse.json(
       { 
         valid: true,
-        message: 'CPF válido e disponível',
+        message: 'CPF válido',
         exists: false
       },
       { status: 200 }
     )
-  } catch (err) {
-    console.error('Erro ao validar CPF:', err)
+  } catch (error) {
+    console.error('Erro ao validar CPF:', error)
     return NextResponse.json(
-      { error: 'Erro ao validar CPF' },
+      { 
+        valid: false,
+        message: 'Erro ao validar CPF',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }

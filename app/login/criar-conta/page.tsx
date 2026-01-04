@@ -249,18 +249,19 @@ function CriarContaContent() {
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#f0f4f8',
-        padding: '20px'
+        padding: 'clamp(15px, 4vw, 20px)'
       }}>
         <div style={{
           backgroundColor: 'white',
-          padding: '50px',
+          padding: 'clamp(30px, 6vw, 50px)',
           borderRadius: '20px',
           textAlign: 'center',
           maxWidth: '500px',
-          boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
+          boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+          width: '100%'
         }}>
-          <h1 style={{ color: '#10b981', fontSize: '36px', marginBottom: '20px' }}>✅ Sucesso!</h1>
-          <p style={{ color: '#666', fontSize: '18px', marginBottom: '10px' }}>
+          <h1 style={{ color: '#10b981', fontSize: 'clamp(28px, 6vw, 36px)', marginBottom: '20px' }}>✅ Sucesso!</h1>
+          <p style={{ color: '#666', fontSize: 'clamp(16px, 3vw, 18px)', marginBottom: '10px' }}>
             Conta criada com sucesso!
           </p>
           <p style={{ color: '#999' }}>
@@ -275,20 +276,21 @@ function CriarContaContent() {
     <div style={{
       backgroundColor: '#f0f4f8',
       minHeight: '100vh',
-      padding: '50px 20px',
+      padding: 'clamp(20px, 4vw, 50px) clamp(15px, 3vw, 20px)',
       fontFamily: 'Arial, sans-serif'
     }}>
       <div style={{
         maxWidth: '600px',
         margin: '0 auto',
         backgroundColor: 'white',
-        padding: '50px',
+        padding: 'clamp(25px, 5vw, 50px)',
         borderRadius: '20px',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
+        boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+        width: '100%'
       }}>
         <h1 style={{
           color: '#001f3f',
-          fontSize: '28px',
+          fontSize: 'clamp(22px, 5vw, 28px)',
           fontWeight: 900,
           marginBottom: '10px',
           textAlign: 'center'
@@ -298,7 +300,8 @@ function CriarContaContent() {
         <p style={{
           textAlign: 'center',
           color: '#666',
-          marginBottom: '30px'
+          marginBottom: 'clamp(20px, 4vw, 30px)',
+          fontSize: 'clamp(14px, 3vw, 16px)'
         }}>
           {userType === 'professional' ? 'Cadastro de Profissional' : 'Cadastro de Empresa'}
         </p>
@@ -308,10 +311,10 @@ function CriarContaContent() {
             backgroundColor: '#fee2e2',
             border: '2px solid #ef4444',
             borderRadius: '10px',
-            padding: '12px',
+            padding: 'clamp(10px, 2vw, 12px)',
             color: '#991b1b',
             marginBottom: '20px',
-            fontSize: '14px',
+            fontSize: 'clamp(12px, 2vw, 14px)',
             fontWeight: 'bold'
           }}>
             ❌ {error}
@@ -319,18 +322,18 @@ function CriarContaContent() {
         )}
 
         {/* LEGENDA DE CAMPOS OBRIGATÓRIOS */}
-        <div style={{ backgroundColor: '#e7f3ff', border: '3px solid #0066cc', borderRadius: '12px', padding: '14px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#dc3545' }}>*</span>
+        <div style={{ backgroundColor: '#e7f3ff', border: '3px solid #0066cc', borderRadius: '12px', padding: 'clamp(10px, 2vw, 14px)', marginBottom: '20px', display: 'flex', alignItems: 'flex-start', gap: 'clamp(8px, 2vw, 10px)' }}>
+          <span style={{ fontSize: 'clamp(16px, 3vw, 20px)', fontWeight: 'bold', color: '#dc3545', flexShrink: 0 }}>*</span>
           <div>
-            <strong style={{ color: '#0066cc', fontSize: '13px' }}>CAMPOS OBRIGATÓRIOS</strong>
-            <p style={{ margin: '0', color: '#333', fontSize: '12px' }}>Todos os campos marcados com asterisco são obrigatórios</p>
+            <strong style={{ color: '#0066cc', fontSize: 'clamp(12px, 2vw, 13px)', display: 'block' }}>CAMPOS OBRIGATÓRIOS</strong>
+            <p style={{ margin: '4px 0 0 0', color: '#333', fontSize: 'clamp(11px, 1.5vw, 12px)' }}>Todos os campos marcados com asterisco são obrigatórios</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '20px'
+          gap: 'clamp(15px, 3vw, 20px)'
         }}>
           {/* Para EMPRESA: CNPJ vem primeiro */}
           {userType === 'company' && (
@@ -340,7 +343,7 @@ function CriarContaContent() {
                 fontWeight: 'bold',
                 marginBottom: '8px',
                 color: '#001f3f',
-                fontSize: '14px'
+                fontSize: 'clamp(12px, 2.5vw, 14px)'
               }}>
                 CNPJ *
               </label>

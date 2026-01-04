@@ -21,12 +21,60 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
 
 export default function Home() {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstall, setShowInstall] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+
+  useEffect(() => {
+    // Verificar se é iOS (não suporta beforeinstallprompt)
+    const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+    setIsIOS(isIos);
+
+    // Handler para PWA no Chrome, Edge, Android
+    const handler = (e: BeforeInstallPromptEvent) => {
+      e.preventDefault();
+      setDeferredPrompt(e as any);
+      setShowInstall(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handler as any);
+    
+    // Verificar se já está instalado
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setShowInstall(false);
+    }
+
+    return () => window.removeEventListener('beforeinstallprompt', handler as any);
+  }, []);
+
+  const handleInstall = async () => {
+    const prompt = deferredPrompt as any;
+    if (prompt) {
+      await prompt.prompt();
+      const { outcome } = await prompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+        setShowInstall(false);
+      }
+    }
+  };
+
+  // Para iOS, mostrar instrução manual
+  const handleIOSInstall = () => {
+    alert('🍎 Safari iOS:\n\n1. Toque o botão Compartilhar (↑)\n2. Selecione "Adicionar à Tela de Início"\n3. Confirme com "Adicionar"');
+  };
   return (
-    <main style={{ backgroundColor: '#f8f9fa', height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <main style={{ backgroundColor: '#f8f9fa', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div style={{ 
-        padding: '25px 40px', 
+        padding: 'clamp(12px, 3vw, 25px)', 
         backgroundImage: 'url("/empresa.jpg")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -38,40 +86,35 @@ export default function Home() {
         backgroundColor: '#4da6d6',
         backgroundBlendMode: 'multiply'
       }}>
-        <div style={{ background: 'rgba(30, 64, 175, 0.5)', padding: '12px 0', borderRadius: '8px' }}>
-          <h1 style={{ fontSize: '2.5rem', marginBottom: '0px', fontWeight: 'bold', letterSpacing: '3px' }}>
+        <div style={{ background: 'rgba(30, 64, 175, 0.5)', padding: '8px 0', borderRadius: '8px' }}>
+          <h1 style={{ fontSize: 'clamp(1.3rem, 5vw, 2rem)', marginBottom: '0px', fontWeight: 'bold', letterSpacing: '1px' }}>
             RECRUTA INDÚSTRIA
           </h1>
         </div>
       </div>
 
-      <div style={{ flex: '1 1 auto', overflow: 'hidden', padding: '60px 40px 15px 40px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '50px' }}>
+      <div style={{ flex: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(15px, 3vw, 30px) clamp(10px, 3vw, 20px)', overflow: 'hidden' }}>
+        <div style={{ maxWidth: '1200px', width: '100%', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'clamp(12px, 3vw, 20px)' }}>
           <div style={{
             background: '#fff',
             borderRadius: '15px',
             boxShadow: '0 10px 35px rgba(0,0,0,0.15)',
             overflow: 'hidden',
-            transition: 'transform 0.3s ease, box-shadow 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-8px)';
-            e.currentTarget.style.boxShadow = '0 15px 50px rgba(0,0,0,0.2)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 10px 35px rgba(0,0,0,0.15)';
+            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+            display: 'flex',
+            flexDirection: 'column',
+            cursor: 'pointer'
           }}>
             <div style={{
-              height: '280px',
+              height: 'clamp(120px, 30vw, 200px)',
               backgroundImage: 'url("/profissional.jpg")',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               borderRadius: '15px 15px 0 0'
             }}>
             </div>
-            <div style={{ padding: '25px 20px', textAlign: 'center' }}>
-              <h2 style={{ fontSize: '1.3rem', color: '#1e40af', marginBottom: '12px', fontWeight: 'bold' }}>
+            <div style={{ padding: 'clamp(15px, 3vw, 25px)', textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <h2 style={{ fontSize: 'clamp(1rem, 3vw, 1.3rem)', color: '#1e40af', marginBottom: '12px', fontWeight: 'bold' }}>
                 Sou Profissional
               </h2>
               <Link href="/login?tipo=profissional" style={{
@@ -82,18 +125,10 @@ export default function Home() {
                 textDecoration: 'none',
                 borderRadius: '6px',
                 fontWeight: 'bold',
-                fontSize: '0.85rem',
+                fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
                 border: 'none'
-              }} 
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#1e3a8a';
-                e.currentTarget.style.transform = 'scale(1.05)';
-              }} 
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#1e40af';
-                e.currentTarget.style.transform = 'scale(1)';
               }}>
                 ACESSAR CADASTRO
               </Link>
@@ -105,26 +140,21 @@ export default function Home() {
             borderRadius: '15px',
             boxShadow: '0 10px 35px rgba(0,0,0,0.15)',
             overflow: 'hidden',
-            transition: 'transform 0.3s ease, box-shadow 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-8px)';
-            e.currentTarget.style.boxShadow = '0 15px 50px rgba(0,0,0,0.2)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 10px 35px rgba(0,0,0,0.15)';
+            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+            display: 'flex',
+            flexDirection: 'column',
+            cursor: 'pointer'
           }}>
             <div style={{
-              height: '280px',
+              height: 'clamp(120px, 30vw, 200px)',
               backgroundImage: 'url("/empresa.jpg")',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               borderRadius: '15px 15px 0 0'
             }}>
             </div>
-            <div style={{ padding: '25px 20px', textAlign: 'center' }}>
-              <h2 style={{ fontSize: '1.3rem', color: '#1e40af', marginBottom: '12px', fontWeight: 'bold' }}>
+            <div style={{ padding: 'clamp(15px, 3vw, 25px)', textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <h2 style={{ fontSize: 'clamp(1rem, 3vw, 1.3rem)', color: '#1e40af', marginBottom: '12px', fontWeight: 'bold' }}>
                 Sou Empresa
               </h2>
               <Link href="/login?tipo=empresa" style={{
@@ -135,97 +165,14 @@ export default function Home() {
                 textDecoration: 'none',
                 borderRadius: '6px',
                 fontWeight: 'bold',
-                fontSize: '0.85rem',
+                fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
                 border: 'none'
-              }} 
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#1e3a8a';
-                e.currentTarget.style.transform = 'scale(1.05)';
-              }} 
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#1e40af';
-                e.currentTarget.style.transform = 'scale(1)';
               }}>
                 CONTRATAR TALENTOS
               </Link>
             </div>
-          </div>
-        </div>
-
-        <div style={{
-          backgroundImage: 'url("/profissional.jpg")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          color: '#fff',
-          padding: '14px',
-          textAlign: 'center',
-          borderRadius: '12px',
-          marginBottom: '15px',
-          fontSize: '0.85rem',
-          fontWeight: 'bold',
-          letterSpacing: '1px',
-          backgroundColor: '#4da6d6',
-          backgroundBlendMode: 'multiply'
-        }}>
-          <div style={{ background: 'rgba(30, 64, 175, 0.5)', padding: '10px', borderRadius: '8px' }}>
-            CONECTANDO TALENTOS. IMPULSIONANDO A INDÚSTRIA.
-          </div>
-        </div>
-
-        <div style={{ marginBottom: '10px' }}>
-          <h2 style={{ 
-            textAlign: 'center', 
-            fontSize: '1.1rem', 
-            color: '#1e40af', 
-            marginBottom: '10px',
-            fontWeight: 'bold'
-          }}>
-            🔒 Segurança
-          </h2>
-          
-          <div style={{ 
-            display: 'flex', 
-            gap: '8px',
-            justifyContent: 'center',
-            flexWrap: 'wrap'
-          }}>
-            {[
-              { icon: '🔐', title: 'Senhas Criptografadas' },
-              { icon: '🛡️', title: 'CSRF Protection' },
-              { icon: '🚫', title: 'Account Lockout' },
-              { icon: '🔍', title: 'Recaptcha' },
-              { icon: '⚠️', title: 'Detecção de Anomalias' },
-              { icon: '📊', title: 'Auditoria Completa' },
-              { icon: '🔑', title: 'Security Headers' },
-              { icon: '📱', title: 'Rate Limiting' },
-              { icon: '👁️', title: 'IP Blacklist' },
-              { icon: '📋', title: 'Checklist Segurança' }
-            ].map((item, index) => (
-              <div key={index} style={{
-                background: '#fff',
-                padding: '6px 10px',
-                borderRadius: '6px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                textAlign: 'center',
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                whiteSpace: 'nowrap'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 3px 12px rgba(0,0,0,0.12)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
-              }}>
-                <div style={{ fontSize: '1.2rem', marginBottom: '2px' }}>{item.icon}</div>
-                <h3 style={{ color: '#1e40af', fontSize: '0.55rem', fontWeight: 'bold', margin: 0, lineHeight: '1' }}>
-                  {item.title}
-                </h3>
-              </div>
-            ))}
           </div>
         </div>
       </div>
@@ -239,41 +186,26 @@ export default function Home() {
         fontSize: '0.75rem',
         flex: '0 0 auto'
       }}>
-        <div style={{ marginBottom: '8px' }}>
+        <div style={{ marginBottom: '8px' }} suppressHydrationWarning>
           <button 
-            onClick={() => {
-              const link = document.createElement('a');
-              link.href = '/recruta-industria.apk';
-              link.download = 'recruta-industria.apk';
-              link.style.display = 'none';
-              document.body.appendChild(link);
-              link.click();
-              setTimeout(() => {
-                document.body.removeChild(link);
-              }, 100);
-            }}
+            onClick={isIOS ? handleIOSInstall : handleInstall}
+            disabled={!showInstall && !isIOS}
+            suppressHydrationWarning
             style={{
-            display: 'inline-block',
-            padding: '8px 20px',
-            background: '#1e40af',
-            color: '#fff',
-            textDecoration: 'none',
-            borderRadius: '4px',
-            fontSize: '0.8rem',
-            fontWeight: 'bold',
-            transition: 'all 0.3s ease',
-            border: 'none',
-            cursor: 'pointer'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#1e3a8a';
-            e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#1e40af';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}>
-            📥 BAIXAR APLICATIVO
+              display: 'inline-block',
+              padding: '8px 20px',
+              background: (showInstall || isIOS) ? '#1e40af' : '#9ca3af',
+              color: '#fff',
+              textDecoration: 'none',
+              borderRadius: '4px',
+              fontSize: '0.8rem',
+              fontWeight: 'bold',
+              transition: 'all 0.3s ease',
+              border: 'none',
+              cursor: (showInstall || isIOS) ? 'pointer' : 'not-allowed',
+              opacity: (showInstall || isIOS) ? 1 : 0.6
+            }}>
+            📥 {showInstall ? 'INSTALAR APP' : isIOS ? 'ADICIONAR APP' : 'APP INSTALADO'}
           </button>
         </div>
         <p style={{ margin: 0 }}>

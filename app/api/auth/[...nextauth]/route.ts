@@ -15,6 +15,14 @@ import type { JWT } from "next-auth/jwt";
 
 const { NEXTAUTH_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = process.env;
 
+// Log de verificação de variáveis
+if (typeof window === 'undefined') { // Apenas no servidor
+  console.log('🔍 [NextAuth Debug]');
+  console.log('✅ NEXTAUTH_SECRET:', NEXTAUTH_SECRET ? 'Configurada' : '❌ NÃO configurada');
+  console.log('✅ GOOGLE_CLIENT_ID:', GOOGLE_CLIENT_ID ? 'Configurada' : '❌ NÃO configurada');
+  console.log('✅ GOOGLE_CLIENT_SECRET:', GOOGLE_CLIENT_SECRET ? 'Configurada' : '❌ NÃO configurada');
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -65,6 +73,10 @@ export const authOptions: NextAuthOptions = {
         clientId: GOOGLE_CLIENT_ID,
         clientSecret: GOOGLE_CLIENT_SECRET,
         allowDangerousEmailAccountLinking: true,
+        // Adicionar debugging
+        httpOptions: {
+          timeout: 10000,
+        },
       }),
     ] : []),
   ],

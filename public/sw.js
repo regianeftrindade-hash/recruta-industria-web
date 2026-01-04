@@ -1,9 +1,9 @@
 const CACHE_NAME = 'recruta-industria-v1';
 const urlsToCache = [
   '/',
-  '/professional/register',
-  '/professional/checkout',
-  '/login',
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png',
 ];
 
 // Instalar service worker
@@ -36,31 +36,47 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Interceptar requisições
+// Interceptar requisições - Network First
 self.addEventListener('fetch', (event) => {
   // Apenas GET
   if (event.request.method !== 'GET') {
     return;
   }
 
+  // Para URLs dinâmicas (APIs), tentar rede primeiro
+  if (event.request.url.includes('/api/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (!response || response.status !== 200) {
+            return caches.match(event.request);
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match(event.request).catch(() => 
+            new Response('Offline - sem cache disponível')
+          );
+        })
+    );
+    return;
+  }
+
+  // Para assets estáticos, cache first
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Se existe no cache, retornar
         if (response) {
           return response;
         }
 
         return fetch(event.request)
           .then((response) => {
-            // Não cachear requisições inválidas
             if (!response || response.status !== 200 || response.type === 'error') {
               return response;
             }
 
-            // Clonar response
             const responseToCache = response.clone();
-
             caches.open(CACHE_NAME)
               .then((cache) => {
                 cache.put(event.request, responseToCache);
@@ -69,8 +85,7 @@ self.addEventListener('fetch', (event) => {
             return response;
           })
           .catch(() => {
-            // Se falhar e não existir no cache, retornar página offline
-            return caches.match('/offline.html').catch(() => new Response('Offline'));
+            return new Response('Offline', { status: 503 });
           });
       })
   );

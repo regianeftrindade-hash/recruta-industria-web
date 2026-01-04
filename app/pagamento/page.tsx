@@ -187,12 +187,12 @@ export default function Pagamento() {
 
               {paymentData ? (
                 method === 'pix' ? (
-                  <div style={{ background: "#f7fbff", border: "1px solid #d9e2ec", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
+                  <div style={{ background: "#f7fbff", border: "1px solid #d9e2ec", borderRadius: "12px", padding: "16px", textAlign: "center", maxWidth: "300px", margin: "0 auto" }}>
                     <div style={{ fontWeight: 800, color: "#0a3c7d", marginBottom: "6px" }}>Pague com Pix</div>
                     <img
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(paymentData.copyPasteKey || '')}`}
                       alt="QR Code Pix"
-                      style={{ width: "180px", height: "180px", margin: "0 auto", display: "block" }}
+                      style={{ width: "100%", maxWidth: "180px", height: "auto", margin: "0 auto", display: "block", aspectRatio: "1", objectFit: "contain" }}
                     />
                     <div style={{ marginTop: "8px", fontSize: "13px", color: "#0a3c7d", wordBreak: "break-all" }}>{paymentData.copyPasteKey}</div>
                     {paymentData.expiresAt && (

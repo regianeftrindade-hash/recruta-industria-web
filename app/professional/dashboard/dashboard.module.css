@@ -2,72 +2,96 @@
 .container {
   background-color: #f0f2f5;
   min-height: 100vh;
-  padding: 30px;
+  padding: clamp(15px, 4vw, 30px);
   font-family: Arial, sans-serif;
 }
 
 .header {
   background-color: #003366;
   color: white;
-  padding: 20px 40px;
+  padding: clamp(15px, 4vw, 20px) clamp(20px, 5vw, 40px);
   border-radius: 15px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
+  align-items: flex-start;
+  gap: clamp(10px, 3vw, 20px);
+  margin-bottom: clamp(20px, 4vw, 30px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  flex-wrap: wrap;
 }
 
 .headerTitle {
-  font-size: 22px;
+  font-size: clamp(18px, 5vw, 22px);
   margin: 0;
   font-weight: 900;
+  flex: 1;
+  minWidth: '200px';
 }
 
 .headerButtons {
   display: flex;
-  gap: 15px;
+  gap: clamp(10px, 2vw, 15px);
+  flex-wrap: wrap;
 }
 
 .updateBtn {
   background: white;
   color: #003366;
   border: none;
-  padding: 10px 20px;
+  padding: clamp(8px, 2vw, 10px) clamp(15px, 3vw, 20px);
   border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
+  font-size: clamp(12px, 2vw, 14px);
+  whiteSpace: 'nowrap';
 }
 
 .logoutBtn {
   background: transparent;
   color: white;
   border: 1px solid white;
-  padding: 10px 20px;
+  padding: clamp(8px, 2vw, 10px) clamp(15px, 3vw, 20px);
   border-radius: 8px;
   cursor: pointer;
+  font-size: clamp(12px, 2vw, 14px);
+  whiteSpace: 'nowrap';
 }
 
 .grid {
   display: grid;
   grid-template-columns: 1fr 350px;
-  gap: 30px;
+  gap: clamp(20px, 4vw, 30px);
   max-width: 1400px;
   margin: 0 auto;
 }
 
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: clamp(15px, 3vw, 20px);
+    padding: 0 clamp(10px, 2vw, 20px);
+  }
+}
+
+@media (max-width: 768px) {
+  .grid {
+    padding: 0 clamp(10px, 2vw, 15px);
+    gap: clamp(12px, 3vw, 15px);
+  }
+}
+
 .profileSection {
   background-color: white;
-  padding: 40px;
+  padding: clamp(25px, 5vw, 40px);
   border-radius: 20px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: clamp(15px, 3vw, 20px);
 }
 
 .profileTitle {
-  font-size: 18px;
+  font-size: clamp(16px, 4vw, 18px);
   color: #003366;
   border-bottom: 3px solid #003366;
   padding-bottom: 15px;
@@ -78,34 +102,36 @@
 .profileGrid {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: clamp(12px, 2vw, 15px);
 }
 
 .tagRow {
   display: flex;
-  gap: 15px;
+  gap: clamp(10px, 2vw, 15px);
+  flex-wrap: wrap;
 }
 
 .tag {
   background-color: #f8fafc;
-  padding: 15px;
+  padding: clamp(12px, 2vw, 15px);
   border-radius: 10px;
   border: 1px solid #e2e8f0;
   flex: 1;
+  minWidth: '150px';
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
 
 .tagLabel {
-  font-size: 11px;
+  font-size: clamp(10px, 1.5vw, 11px);
   color: #64748b;
   font-weight: bold;
   text-transform: uppercase;
 }
 
 .tagValue {
-  font-size: 15px;
+  font-size: clamp(13px, 3vw, 15px);
   font-weight: bold;
   color: #003366;
 }
@@ -113,13 +139,13 @@
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: clamp(20px, 4vw, 25px);
 }
 
 .visitsCard {
   background-color: #003366;
   color: white;
-  padding: 40px 20px;
+  padding: clamp(30px, 5vw, 40px) clamp(15px, 3vw, 20px);
   border-radius: 20px;
   text-align: center;
   box-shadow: 0 8px 20px rgba(0,51,102,0.2);

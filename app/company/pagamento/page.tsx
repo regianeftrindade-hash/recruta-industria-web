@@ -296,7 +296,7 @@ export default function PagamentoEmpresa() {
                           <img 
                             src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(paymentData.copyPasteKey)}`}
                             alt="QR Code PIX"
-                            style={{ width: "220px", height: "220px", display: "block" }}
+                            style={{ width: "100%", maxWidth: "220px", height: "auto", display: "block", margin: "0 auto", aspectRatio: "1", objectFit: "contain" }}
                             onError={(e) => {
                               e.currentTarget.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='white'/%3E%3Crect x='10' y='10' width='30' height='30' fill='black'/%3E%3Crect x='20' y='20' width='10' height='10' fill='white'/%3E%3Crect x='60' y='10' width='30' height='30' fill='black'/%3E%3Crect x='70' y='20' width='10' height='10' fill='white'/%3E%3Crect x='10' y='60' width='30' height='30' fill='black'/%3E%3Crect x='20' y='70' width='10' height='10' fill='white'/%3E%3C/svg%3E`;
                             }}

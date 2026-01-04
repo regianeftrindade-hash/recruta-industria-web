@@ -1,8 +1,26 @@
-// Lightweight SQLite helper with optional dependency on better-sqlite3
-// Lightweight SQLite helper with optional dependency on better-sqlite3
+// Prisma Client singleton
+import { PrismaClient } from '@prisma/client'
 import { join } from 'path'
 import fs from 'fs'
 
+// Singleton Prisma instance
+const globalForPrisma = global as unknown as { prisma: PrismaClient }
+
+let prismaInstance: PrismaClient | undefined
+
+if (!prismaInstance) {
+  prismaInstance = new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+  })
+}
+
+export const prisma = globalForPrisma.prisma || prismaInstance
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma
+}
+
+// Legacy SQLite helper for backward compatibility
 type DB = {
   isAvailable: boolean
   prepare?: (sql: string) => any

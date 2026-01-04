@@ -35,8 +35,10 @@ function LoginContent() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   React.useEffect(() => {
+    setMounted(true);
     const tipo = searchParams.get('tipo');
     if (tipo === 'empresa') {
       setTipoLogin('company');
@@ -85,7 +87,13 @@ function LoginContent() {
       });
 
       if (result?.error) {
-        setErrorMessage('Email ou senha inválidos');
+        // Verificar se é erro de rate limit
+        if (result.error === 'CredentialsSignin' || result.status === 429) {
+          setErrorMessage('Muitas tentativas de login. Por favor, aguarde 15 minutos antes de tentar novamente.');
+          setShowCaptcha(true);
+        } else {
+          setErrorMessage('Email ou senha inválidos');
+        }
         setLoading(false);
         return;
       }
@@ -130,13 +138,29 @@ function LoginContent() {
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
+    setErrorMessage('');
     try {
-      await signIn('google', {
-        redirect: true,
+      console.log('🔵 Iniciando login com Google...');
+      console.log('📊 Client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
+      
+      const result = await signIn('google', {
+        redirect: false,
         callbackUrl: '/professional/dashboard'
       });
-    } catch (error) {
-      setErrorMessage('Erro ao fazer login com Google');
+      
+      console.log('✅ Resultado do Google signIn:', result);
+      
+      if (result?.error) {
+        console.error('❌ Erro no Google signIn:', result.error);
+        setErrorMessage(`Erro ao fazer login com Google: ${result.error}`);
+        setLoading(false);
+      } else if (result?.ok) {
+        console.log('✅ Google signIn bem-sucedido, redirecionando...');
+        window.location.href = result.url || '/professional/dashboard';
+      }
+    } catch (error: any) {
+      console.error('❌ Erro ao fazer login com Google:', error);
+      setErrorMessage(`Erro ao fazer login com Google: ${error?.message || 'Erro desconhecido'}`);
       setLoading(false);
     }
   };
@@ -152,28 +176,28 @@ function LoginContent() {
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center',
-      padding: '20px',
+      padding: 'clamp(15px, 4vw, 20px)',
       fontFamily: 'Arial, sans-serif'
     }}>
       <div style={{ 
         backgroundColor: 'white', 
-        padding: '50px 40px', 
+        padding: 'clamp(30px, 6vw, 50px) clamp(20px, 5vw, 40px)', 
         borderRadius: '20px', 
         boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
         maxWidth: '500px',
         width: '100%'
       }}>
         {/* LOGO/TÍTULO */}
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 'clamp(25px, 5vw, 40px)' }}>
           <h1 style={{ 
             color: '#001f3f', 
-            fontSize: '32px', 
+            fontSize: 'clamp(24px, 6vw, 32px)', 
             fontWeight: 900, 
             margin: '0 0 10px 0' 
           }}>
             RECRUTA INDÚSTRIA
           </h1>
-          <p style={{ color: '#666', fontSize: '16px', margin: 0 }}>
+          <p style={{ color: '#666', fontSize: 'clamp(14px, 3vw, 16px)', margin: 0 }}>
             Conectando talentos à indústria
           </p>
         </div>
@@ -227,18 +251,32 @@ function LoginContent() {
 
         {/* FORMULÁRIO */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* MENSAGEM DE ERRO */}
+        {/* MENSAGEM DE ERRO */}
           {errorMessage && (
             <div style={{
-              backgroundColor: '#fee2e2',
-              border: '2px solid #ef4444',
+              backgroundColor: errorMessage.includes('Muitas tentativas') ? '#fef2f2' : '#fee2e2',
+              border: errorMessage.includes('Muitas tentativas') ? '2px solid #dc2626' : '2px solid #ef4444',
               borderRadius: '10px',
-              padding: '12px',
-              color: '#991b1b',
-              fontSize: '14px',
+              padding: '16px',
+              color: errorMessage.includes('Muitas tentativas') ? '#7f1d1d' : '#991b1b',
+              fontSize: errorMessage.includes('Muitas tentativas') ? '15px' : '14px',
               fontWeight: 'bold'
             }}>
-              ❌ {errorMessage}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '24px' }}>❌</span>
+                <span>{errorMessage}</span>
+              </div>
+              {errorMessage.includes('Muitas tentativas') && (
+                <div style={{ 
+                  fontSize: '13px', 
+                  marginTop: '8px', 
+                  paddingTop: '8px', 
+                  borderTop: '1px solid rgba(0,0,0,0.1)',
+                  opacity: 0.8
+                }}>
+                  💡 Dica: Você pode tentar com outro IP/WiFi ou contatar um administrador para desbloquear.
+                </div>
+              )}
             </div>
           )}
 
@@ -379,7 +417,7 @@ function LoginContent() {
         </div>
 
         {/* GOOGLE SIGN IN */}
-        {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+        {mounted && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
           <button
             type="button"
             onClick={handleGoogleSignIn}

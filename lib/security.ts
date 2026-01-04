@@ -141,12 +141,12 @@ export function checkRateLimit(identifier: string, maxAttempts = 5, windowMs = 1
   const attempt = loginAttempts.get(identifier);
 
   if (!attempt) {
-    loginAttempts.set(identifier, { count: 1, timestamp: now });
+    loginAttempts.set(identifier, { count: 0, timestamp: now });
     return true;
   }
 
   if (now - attempt.timestamp > windowMs) {
-    loginAttempts.set(identifier, { count: 1, timestamp: now });
+    loginAttempts.set(identifier, { count: 0, timestamp: now });
     return true;
   }
 
@@ -154,8 +154,17 @@ export function checkRateLimit(identifier: string, maxAttempts = 5, windowMs = 1
     return false;
   }
 
-  attempt.count++;
+  // IMPORTANTE: O contador é incrementado apenas quando essa função retorna true
+  // Isso deve ser feito APÓS a validação bem-sucedida, não aqui
   return true;
+}
+
+// Nova função para incrementar o contador de tentativas (deve ser chamada APÓS validação)
+export function incrementRateLimitCounter(identifier: string): void {
+  const attempt = loginAttempts.get(identifier);
+  if (attempt) {
+    attempt.count++;
+  }
 }
 
 // Resetar tentativas de login

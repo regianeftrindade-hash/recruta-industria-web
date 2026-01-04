@@ -14,12 +14,12 @@
     "import:sqljs": "node scripts/import_sqljs.js"
   },
   "dependencies": {
-    "@prisma/client": "^7.2.0",
+    "@prisma/client": "^5.22.0",
     "install": "^0.13.0",
     "jsbarcode": "^3.11.5",
     "next": "16.1.1",
     "next-auth": "^4.24.13",
-    "prisma": "^7.2.0",
+    "prisma": "^5.22.0",
     "qrcode": "^1.5.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",

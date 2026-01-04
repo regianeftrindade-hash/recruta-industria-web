@@ -215,16 +215,18 @@ function ClientDashboard() {
       <div style={{
         backgroundColor: '#001f3f',
         color: 'white',
-        padding: '20px 40px',
+        padding: 'clamp(15px, 4vw, 20px) clamp(20px, 5vw, 40px)',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'flex-start',
+        gap: 'clamp(10px, 3vw, 20px)',
+        flexWrap: 'wrap'
       }}>
-        <div>
-          <h1 style={{ margin: '0 0 5px 0', fontSize: '28px' }}>
+        <div style={{ flex: 1, minWidth: '200px' }}>
+          <h1 style={{ margin: '0 0 5px 0', fontSize: 'clamp(20px, 5vw, 28px)' }}>
             Bem-vindo, {user.name || user.email.split('@')[0]}!
           </h1>
-          <p style={{ margin: 0, fontSize: '14px', opacity: 0.9 }}>
+          <p style={{ margin: 0, fontSize: 'clamp(12px, 2vw, 14px)', opacity: 0.9, wordBreak: 'break-word' }}>
             {user.email}
           </p>
         </div>
@@ -233,12 +235,13 @@ function ClientDashboard() {
           style={{
             backgroundColor: '#dc3545',
             color: 'white',
-            padding: '10px 20px',
+            padding: 'clamp(8px, 2vw, 10px) clamp(15px, 3vw, 20px)',
             border: 'none',
             borderRadius: '8px',
             cursor: 'pointer',
             fontWeight: 'bold',
-            fontSize: '14px'
+            fontSize: 'clamp(12px, 2vw, 14px)',
+            whiteSpace: 'nowrap'
           }}
         >
           🚪 Sair
@@ -246,7 +249,7 @@ function ClientDashboard() {
       </div>
 
       {/* CONTEÚDO PRINCIPAL */}
-      <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ padding: 'clamp(20px, 5vw, 40px)', maxWidth: '1200px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
         {/* PERFIL DA EMPRESA */}
         <div style={{
           backgroundColor: 'white',
@@ -554,7 +557,7 @@ function ClientDashboard() {
             </h3>
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(5, 1fr)',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
               gap: '15px'
             }}>
               {/* CARD DE PROFISSIONAL - EXEMPLO 1 */}
