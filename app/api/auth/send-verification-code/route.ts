@@ -1,28 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs'
-import { join } from 'path'
+import { prisma } from '@/lib/db'
 import crypto from 'crypto'
 
-const DATA_DIR = join(process.cwd(), 'data')
-const VERIFICATION_FILE = join(DATA_DIR, 'email_verifications.json')
-
-async function ensureFile() {
+async function getVerifications() {
   try {
-    await fs.promises.access(VERIFICATION_FILE)
+    const verifications = await prisma.emailVerification.findMany()
+    return verifications
   } catch {
-    await fs.promises.mkdir(DATA_DIR, { recursive: true })
-    await fs.promises.writeFile(VERIFICATION_FILE, '[]')
+    return []
   }
 }
 
-async function getVerifications() {
-  await ensureFile()
-  const txt = await fs.promises.readFile(VERIFICATION_FILE, 'utf8')
-  return JSON.parse(txt || '[]')
-}
-
-async function saveVerifications(data: any[]) {
-  await fs.promises.writeFile(VERIFICATION_FILE, JSON.stringify(data, null, 2))
+async function saveVerification(email: string, code: string) {
+  try {
+    // Remover código antigo se existir
+    await prisma.emailVerification.deleteMany({
+      where: { email }
+    })
+    
+    // Criar novo código com expiração de 10 minutos
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
+    await prisma.emailVerification.create({
+      data: {
+        email,
+        code,
+        expiresAt
+      }
+    })
+    return true
+  } catch (error) {
+    console.error('Erro ao salvar verificação:', error)
+    return false
+  }
 }
 
 // Em produção, usar um serviço de email real como SendGrid, Mailgun, etc
@@ -54,17 +63,12 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const verifications = await getVerifications()
-
     // Verificar se já existe um código ativo para este email
-    const activeCode = verifications.find(
-      (v: any) =>
-        v.email === email &&
-        !v.verified &&
-        new Date(v.createdAt).getTime() > Date.now() - 60000 // Menos de 1 minuto
-    )
+    const activeCode = await prisma.emailVerification.findUnique({
+      where: { email }
+    })
 
-    if (activeCode) {
+    if (activeCode && activeCode.expiresAt > new Date()) {
       return NextResponse.json(
         { error: 'Aguarde antes de solicitar um novo código' },
         { status: 429 }
@@ -75,16 +79,7 @@ export async function POST(req: NextRequest) {
     const code = String(Math.floor(Math.random() * 1000000)).padStart(6, '0')
 
     // Salvar verificação
-    verifications.push({
-      id: `verify-${Date.now()}`,
-      email,
-      code,
-      verified: false,
-      createdAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString()
-    })
-
-    await saveVerifications(verifications)
+    await saveVerification(email, code)
 
     // Enviar email
     await sendVerificationEmail(email, code)

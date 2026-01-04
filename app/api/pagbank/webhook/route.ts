@@ -1,41 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
-import fs from 'fs'
-import { join } from 'path'
-
-const DATA_FILE = join(process.cwd(), 'data', 'payments.json')
-
-async function readAll(): Promise<any[]> {
-  try {
-    await fs.promises.access(DATA_FILE)
-  } catch (e) {
-    return []
-  }
-  const txt = await fs.promises.readFile(DATA_FILE, 'utf8')
-  try {
-    return JSON.parse(txt || '[]')
-  } catch (e) {
-    return []
-  }
-}
-
-async function writeAll(items: any[]) {
-  await fs.promises.mkdir(join(process.cwd(), 'data'), { recursive: true })
-  await fs.promises.writeFile(DATA_FILE, JSON.stringify(items, null, 2), 'utf8')
-}
+import { prisma } from '@/lib/db'
 
 async function findPaymentByExternal(externalId: string) {
-  const all = await readAll()
-  return all.find((p) => p.id === externalId || p.externalId === externalId)
+  return await prisma.paymentRecord.findFirst({
+    where: {
+      reference: externalId
+    }
+  })
 }
 
 async function updatePayment(idOrExternal: string, patch: any) {
-  const all = await readAll()
-  const idx = all.findIndex((p: any) => p.id === idOrExternal || p.externalId === idOrExternal)
-  if (idx === -1) return null
-  all[idx] = { ...all[idx], ...patch, updatedAt: new Date().toISOString() }
-  await writeAll(all)
-  return all[idx]
+  return await prisma.paymentRecord.update({
+    where: { reference: idOrExternal },
+    data: patch
+  }).catch(() => null)
 }
 
 // POST /api/pagbank/webhook

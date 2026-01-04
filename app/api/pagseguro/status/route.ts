@@ -1,25 +1,8 @@
 import { NextRequest } from 'next/server'
-import fs from 'fs'
-import { join } from 'path'
+import { prisma } from '@/lib/db'
 
-const DATA_DIR = join(process.cwd(), 'data')
-const DATA_FILE = join(DATA_DIR, 'payments.json')
 const PAGBANK_TOKEN = process.env.PAGBANK_TOKEN
 const PAGBANK_API_URL = process.env.PAGBANK_API_URL || 'https://api.pagbank.com.br'
-
-async function readAll() {
-  try {
-    await fs.promises.access(DATA_FILE)
-  } catch (e) {
-    return []
-  }
-  const txt = await fs.promises.readFile(DATA_FILE, 'utf8')
-  return JSON.parse(txt || '[]')
-}
-
-async function writeAll(items: any[]) {
-  await fs.promises.writeFile(DATA_FILE, JSON.stringify(items, null, 2))
-}
 
 async function getPagBankStatus(chargeId: string) {
   try {
@@ -60,39 +43,39 @@ export async function GET(req: NextRequest) {
       return new Response(JSON.stringify({ error: 'chargeId is required' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
     }
 
-    const all = await readAll()
-    const rec = all.find((p: any) => p.id === chargeId || p.chargeId === chargeId || p.pagbankId === chargeId) || null
+    const rec = await prisma.paymentRecord.findFirst({
+      where: {
+        reference: {
+          in: [chargeId]
+        }
+      }
+    })
 
     if (!rec) {
       return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: { 'Content-Type': 'application/json' } })
     }
 
     // Buscar status real do PagBank
-    const pagbankStatus = await getPagBankStatus(rec.pagbankId || chargeId)
+    const pagbankStatus = await getPagBankStatus(rec.reference)
     
     let status = rec.status
     if (pagbankStatus) {
       status = pagbankStatus.status
       // Atualizar status local se mudou
       if (rec.status !== status) {
-        rec.status = status
-        rec.updatedAt = new Date().toISOString()
-        const idx = all.findIndex((p: any) => p.id === rec.id)
-        if (idx >= 0) {
-          all[idx] = rec
-          await writeAll(all)
-        }
+        await prisma.paymentRecord.update({
+          where: { id: rec.id },
+          data: { status }
+        })
       }
     }
 
     return new Response(
       JSON.stringify({ 
         id: rec.id, 
-        chargeId: rec.chargeId,
+        reference: rec.reference,
         status: status, 
-        amount: rec.amount, 
-        method: rec.method, 
-        meta: rec.meta,
+        data: rec.data,
         createdAt: rec.createdAt,
         updatedAt: rec.updatedAt
       }), 
