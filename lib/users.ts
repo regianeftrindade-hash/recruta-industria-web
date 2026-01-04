@@ -62,11 +62,8 @@ function readUsers(): User[] {
   }
 }
 
-// Salvar usuários
-function writeUsers(users: User[]) {
-  ensureDataDir()
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf-8')
-}
+// Função desnecessária (não usar com Prisma)
+// function writeUsers(users: User[]) {}
 // Hash de senha
 function hashPassword(password: string): string {
   return securityHashPassword(password)
