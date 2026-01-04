@@ -37,33 +37,6 @@ async function readUsers(): Promise<any[]> {
     return []
   }
 }
-
-// Salvar usuários (não usado com Prisma)
-async function writeUsers(users: any[]) {
-  // Não necessário com Prisma
-}
-
-// Garantir diretório de dados
-function ensureDataDir() {
-  // Não necessário com Prisma
-}
-
-// Ler todos os usuários
-function readUsers(): User[] {
-  ensureDataDir()
-  try {
-    if (!fs.existsSync(USERS_FILE)) {
-      return []
-    }
-    const data = fs.readFileSync(USERS_FILE, 'utf-8')
-    return JSON.parse(data)
-  } catch {
-    return []
-  }
-}
-
-// Função desnecessária (não usar com Prisma)
-// function writeUsers(users: User[]) {}
 // Hash de senha
 function hashPassword(password: string): string {
   return securityHashPassword(password)
@@ -204,3 +177,4 @@ export async function exportAllUsers(): Promise<any[]> {
   } catch {
     return []
   }
+}
