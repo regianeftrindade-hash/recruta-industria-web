@@ -39,3 +39,20 @@ model Professional {
 
   user User @relation(fields: [userId], references: [id])
 }
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model PaymentRecord {
+  id        String   @id @default(cuid())
+  reference String   @unique
+  status    String
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
