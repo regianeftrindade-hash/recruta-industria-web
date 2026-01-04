@@ -39,11 +39,11 @@ export const authOptions: NextAuthOptions = {
         const email = credentials.email;
         
         // Verificar se conta está bloqueada
-        if (isAccountLocked(email)) {
+        if (await isAccountLocked(email)) {
           throw new Error("Conta bloqueada. Tente novamente em 15 minutos.");
         }
 
-        const user = validateCredentials(email, credentials.password);
+        const user = await validateCredentials(email, credentials.password);
         
         if (!user) {
           // Registrar tentativa falhada
@@ -57,7 +57,7 @@ export const authOptions: NextAuthOptions = {
         // Registrar login
         recordLogin(email, 'unknown', navigator.userAgent || 'unknown');
 
-        updateLastLogin(user.id);
+        await updateLastLogin(user.id);
 
         return {
           id: user.id,
@@ -87,10 +87,10 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === "google") {
-        const existingUser = findUserByGoogleId(account.providerAccountId);
+        const existingUser = await findUserByGoogleId(account.providerAccountId);
         
         if (existingUser) {
-          updateLastLogin(existingUser.id);
+          await updateLastLogin(existingUser.id);
           return true;
         }
 

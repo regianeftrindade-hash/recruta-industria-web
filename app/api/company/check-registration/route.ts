@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ authenticated: false }, { status: 401 })
     }
 
-    const user = findUserByEmail(session.user.email)
+    const user = await findUserByEmail(session.user.email)
 
     if (!user) {
       return NextResponse.json({ authenticated: false, isCompany: false }, { status: 404 })

@@ -49,7 +49,23 @@ function RegistroContent() {
     if (type === 'checkbox') {
       setFormData(prev => ({ ...prev, [name]: checked }))
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }))
+      // Formatar CPF se for campo de CPF
+      if (name === 'cpf') {
+        const cleaned = value.replace(/\D/g, '').slice(0, 11)
+        let formatted = cleaned
+        if (cleaned.length >= 3) {
+          formatted = cleaned.slice(0, 3) + '.' + cleaned.slice(3)
+        }
+        if (cleaned.length >= 6) {
+          formatted = formatted.slice(0, 7) + '.' + formatted.slice(7)
+        }
+        if (cleaned.length >= 9) {
+          formatted = formatted.slice(0, 11) + '-' + formatted.slice(11)
+        }
+        setFormData(prev => ({ ...prev, [name]: formatted }))
+      } else {
+        setFormData(prev => ({ ...prev, [name]: value }))
+      }
     }
   }
 

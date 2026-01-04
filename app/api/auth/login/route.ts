@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Encontrar usuário
-    const user = findUserByEmail(email)
+    const user = await findUserByEmail(email)
     if (!user) {
       // Log de tentativa com email não encontrado
       incrementRateLimitCounter(ip) // Incrementar apenas ao falhar
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Atualizar último login
-    updateLastLogin(email)
+    await updateLastLogin(email)
 
     // Log de sucesso
     logAudit('login_success', email, ip, userAgent, 'success', 'User logged in')
