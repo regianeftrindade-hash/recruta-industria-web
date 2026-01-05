@@ -138,6 +138,8 @@ export default function CadastroProfissional() {
           // SE A SENHA FOI PREENCHIDA NO CADASTRO SIMPLES, PULAR VALIDAÇÃO DE SENHA
           if (senhaPreenchida === true) {
             console.log('Senha foi preenchida no cadastro simples - pulando validação');
+            // Se veio do cadastro simples, já tem email e senha salvos
+            // Só redireciona
             router.push('/professional/dashboard/painel');
             return;
           }
@@ -154,7 +156,32 @@ export default function CadastroProfissional() {
             return;
           }
           
-          router.push('/professional/dashboard/painel'); 
+          // Se chegou aqui, fazer POST para registrar
+          const cpfLimpo = cpf.replace(/\D/g, ''); // Remove pontuação
+          fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: formData.email,
+              password: password,
+              confirmPassword: confirmPassword,
+              userType: 'professional',
+              cpf: cpfLimpo
+            })
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                console.log('✅ Usuário registrado com sucesso');
+                router.push('/professional/dashboard/painel');
+              } else {
+                alert('Erro ao registrar: ' + (data.error || 'Desconhecido'));
+              }
+            })
+            .catch(err => {
+              console.error('Erro ao registrar:', err);
+              alert('Erro ao conectar ao servidor');
+            });
         }} className={styles.form}>
           
           <section>
@@ -209,7 +236,7 @@ export default function CadastroProfissional() {
                   fetch('/api/auth/validate-cpf', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cpf: cpfFormatado })
+                    body: JSON.stringify({ cpf: cpfLimpo })
                   })
                     .then(res => res.json())
                     .then(data => {

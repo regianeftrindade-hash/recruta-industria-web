@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Busca o usuário no banco de dados
-    const user = findUserByEmail(email);
+    const user = await findUserByEmail(email);
 
     if (!user) {
       return NextResponse.json(
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      userType: user.userType,
+      userType: user.role,
       success: true
     });
   } catch (error) {

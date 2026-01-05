@@ -72,10 +72,11 @@ export async function GET(req: NextRequest) {
 
     return new Response(
       JSON.stringify({ 
-        id: rec.id, 
+        id: rec.reference, 
         reference: rec.reference,
         status: status, 
-        data: rec.data,
+        amount: rec.amount,
+        currency: rec.currency,
         createdAt: rec.createdAt,
         updatedAt: rec.updatedAt
       }), 

@@ -38,6 +38,13 @@ export default function Home() {
     const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
     setIsIOS(isIos);
 
+    // Verificar se já está instalado
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    if (isStandalone) {
+      setShowInstall(false);
+      return;
+    }
+
     // Handler para PWA no Chrome, Edge, Android
     const handler = (e: BeforeInstallPromptEvent) => {
       e.preventDefault();
@@ -47,9 +54,24 @@ export default function Home() {
 
     window.addEventListener('beforeinstallprompt', handler as any);
     
-    // Verificar se já está instalado
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setShowInstall(false);
+    // Para navegadores que suportam PWA mas podem não disparar o evento imediatamente,
+    // verificar se é um navegador compatível e permitir tentativa de instalação
+    const isPWACompatible = 
+      /chrome|chromium|edge|samsung|opera/i.test(navigator.userAgent) ||
+      ('serviceWorker' in navigator && 'PushManager' in window);
+    
+    // Se for compatível com PWA mas não iOS, permitir tentativa de instalação
+    // mesmo sem o evento beforeinstallprompt (alguns navegadores não o disparam)
+    if (isPWACompatible && !isIos && !isStandalone) {
+      // Aguardar um pouco para ver se o evento é disparado
+      const timeout = setTimeout(() => {
+        setShowInstall(true);
+      }, 1000);
+      
+      return () => {
+        window.removeEventListener('beforeinstallprompt', handler as any);
+        clearTimeout(timeout);
+      };
     }
 
     return () => window.removeEventListener('beforeinstallprompt', handler as any);
@@ -58,11 +80,25 @@ export default function Home() {
   const handleInstall = async () => {
     const prompt = deferredPrompt as any;
     if (prompt) {
-      await prompt.prompt();
-      const { outcome } = await prompt.userChoice;
-      if (outcome === 'accepted') {
-        setDeferredPrompt(null);
-        setShowInstall(false);
+      try {
+        await prompt.prompt();
+        const { outcome } = await prompt.userChoice;
+        if (outcome === 'accepted') {
+          setDeferredPrompt(null);
+          setShowInstall(false);
+        }
+      } catch (error) {
+        console.error('Erro ao instalar:', error);
+        // Se falhar, tentar método alternativo
+        alert('Para instalar o app:\n\n1. Clique no menu do navegador (⋮ ou ⋯)\n2. Selecione "Instalar app" ou "Adicionar à tela inicial"\n3. Confirme a instalação');
+      }
+    } else {
+      // Se não houver prompt, mostrar instruções
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      if (isStandalone) {
+        alert('✅ O app já está instalado!');
+      } else {
+        alert('Para instalar o app:\n\n1. Clique no menu do navegador (⋮ ou ⋯)\n2. Selecione "Instalar app" ou "Adicionar à tela inicial"\n3. Confirme a instalação\n\nOu procure o ícone de instalação (⬇️) na barra de endereço.');
       }
     }
   };
@@ -189,12 +225,11 @@ export default function Home() {
         <div style={{ marginBottom: '8px' }} suppressHydrationWarning>
           <button 
             onClick={isIOS ? handleIOSInstall : handleInstall}
-            disabled={!showInstall && !isIOS}
             suppressHydrationWarning
             style={{
               display: 'inline-block',
               padding: '8px 20px',
-              background: (showInstall || isIOS) ? '#1e40af' : '#9ca3af',
+              background: '#1e40af',
               color: '#fff',
               textDecoration: 'none',
               borderRadius: '4px',
@@ -202,10 +237,10 @@ export default function Home() {
               fontWeight: 'bold',
               transition: 'all 0.3s ease',
               border: 'none',
-              cursor: (showInstall || isIOS) ? 'pointer' : 'not-allowed',
-              opacity: (showInstall || isIOS) ? 1 : 0.6
+              cursor: 'pointer',
+              opacity: 1
             }}>
-            📥 {showInstall ? 'INSTALAR APP' : isIOS ? 'ADICIONAR APP' : 'APP INSTALADO'}
+            📥 {isIOS ? 'ADICIONAR APP' : showInstall ? 'BAIXAR APLICATIVO' : 'BAIXAR APLICATIVO'}
           </button>
         </div>
         <p style={{ margin: 0 }}>

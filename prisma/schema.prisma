@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url = env("DATABASE_URL")
 }
 
 model User {
@@ -42,17 +42,27 @@ model Professional {
 
 model EmailVerification {
   id        String   @id @default(cuid())
-  email     String   @unique
+  email     String
   code      String
   expiresAt DateTime
   createdAt DateTime @default(now())
+
+  @@index([email])
 }
 
 model PaymentRecord {
-  id        String   @id @default(cuid())
-  reference String   @unique
-  status    String
-  data      Json
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  reference     String   @unique
+  amount        Float
+  currency      String   @default("BRL")
+  method        String
+  customer      String?  // JSON stringified
+  status        String   @default("PENDING")
+  meta          String?  // JSON stringified
+  externalId    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([reference])
+  @@index([status])
 }

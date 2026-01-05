@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Verificar se já existe um código ativo para este email
-    const activeCode = await prisma.emailVerification.findUnique({
+    const activeCode = await prisma.emailVerification.findFirst({
       where: { email }
     })
 

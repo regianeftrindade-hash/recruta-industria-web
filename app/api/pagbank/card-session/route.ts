@@ -25,8 +25,12 @@ export async function POST(req: NextRequest) {
     await prisma.paymentRecord.create({
       data: {
         reference: id,
+        amount,
+        currency,
+        method: 'card',
         status: 'PENDING',
-        data: rec
+        customer: JSON.stringify(customer || {}),
+        meta: '{}'
       }
     })
   } catch (err) {
@@ -35,7 +39,6 @@ export async function POST(req: NextRequest) {
   }
 
   const checkoutUrl = `https://checkout.pagbank.example/checkout/${id}`
-  if (idx !== -1) { all[idx].meta = { checkoutUrl }; all[idx].updatedAt = new Date().toISOString(); await writeAll(all) }
 
-  return NextResponse.json({ id: rec.id, checkoutUrl })
+  return NextResponse.json({ id: rec.reference, checkoutUrl })
 }

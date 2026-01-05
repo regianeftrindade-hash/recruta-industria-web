@@ -200,7 +200,7 @@ if ($packageJsonExists) {
 Write-Host "`n🔨 BUILD & CONFIG" -ForegroundColor Cyan
 Write-Host "================`n"
 
-$nextConfigExists = Test-Path "next.config.ts" -or (Test-Path "next.config.js")
+$nextConfigExists = (Test-Path "next.config.ts") -or (Test-Path "next.config.js")
 Check-Item "Next.js config encontrado" $nextConfigExists
 
 $prismaPrismaExists = Test-Path "prisma/schema.prisma"

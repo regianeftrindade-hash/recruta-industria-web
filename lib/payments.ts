@@ -51,9 +51,15 @@ async function readAll(): Promise<PaymentRecord[]> {
       meta: r.meta ? JSON.parse(r.meta) : {},
     }))
   }
-  await ensureFile()
-  const txt = await fs.promises.readFile(DATA_FILE, 'utf8')
-  return JSON.parse(txt || '[]')
+  // Fallback: return empty array if database not available and file system is read-only
+  try {
+    await ensureFile()
+    const txt = await fs.promises.readFile(DATA_FILE, 'utf8')
+    return JSON.parse(txt || '[]')
+  } catch (e) {
+    console.warn('Could not read payments from file system:', e)
+    return []
+  }
 }
 
 async function writeAll(items: PaymentRecord[]) {
@@ -77,8 +83,14 @@ async function writeAll(items: PaymentRecord[]) {
     }))
     return
   }
-  await ensureFile()
-  await fs.promises.writeFile(DATA_FILE, JSON.stringify(items, null, 2))
+  // Only try to write to file system if it's writable, otherwise just log warning
+  try {
+    await ensureFile()
+    await fs.promises.writeFile(DATA_FILE, JSON.stringify(items, null, 2))
+  } catch (e) {
+    console.warn('Could not write payments to file system:', e)
+    // Silently fail - in production, rely on database
+  }
 }
 
 export async function createPayment(payload: {

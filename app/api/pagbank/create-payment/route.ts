@@ -26,8 +26,12 @@ export async function POST(req: NextRequest) {
       await prisma.paymentRecord.create({
         data: {
           reference: id,
+          amount,
+          currency,
+          method,
           status: 'PENDING',
-          data: rec
+          customer: JSON.stringify(customer || {}),
+          meta: JSON.stringify(meta || {})
         }
       })
     } catch (err) {

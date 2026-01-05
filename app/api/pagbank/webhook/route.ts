@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
       } else if (json.data?.status) {
         newStatus = json.data.status
       }
-      await updatePayment(local.id, { status: newStatus, meta: { ...(local.meta || {}), webhook: json } })
+      await updatePayment(local.id, { status: newStatus, meta: JSON.stringify({ ...(local.meta ? JSON.parse(local.meta) : {}), webhook: json }) })
     }
   }
 

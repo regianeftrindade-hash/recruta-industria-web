@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   })
 
   if (rec) {
-    return NextResponse.json({ id: rec.id, status: rec.status, data: rec.data })
+    return NextResponse.json({ id: rec.reference, status: rec.status, amount: rec.amount, currency: rec.currency })
   }
 
   // Fallback to external API if configured

@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       }
     })
 
-    return new Response(JSON.stringify({ ok: true, id: all[idx].id, status: all[idx].status }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+    return new Response(JSON.stringify({ ok: true, id, status: status || 'PAID' }), { status: 200, headers: { 'Content-Type': 'application/json' } })
   } catch (err: any) {
     return new Response(JSON.stringify({ error: err?.message || 'unexpected' }), { status: 500, headers: { 'Content-Type': 'application/json' } })
   }

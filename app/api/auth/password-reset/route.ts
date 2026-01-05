@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const user = findUserByEmail(email)
+    const user = await findUserByEmail(email)
     
     if (user) {
       const token = generatePasswordResetToken(email)
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const email = verifyPasswordResetToken(token)
+    const email = await verifyPasswordResetToken(token)
     
     if (!email) {
       return NextResponse.json(
@@ -125,7 +125,7 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    const email = verifyPasswordResetToken(token)
+    const email = await verifyPasswordResetToken(token)
 
     if (!email) {
       logAudit('password_reset_failed', 'unknown', ip, userAgent, 'failure', 'Invalid token')
@@ -135,7 +135,7 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    const user = findUserByEmail(email)
+    const user = await findUserByEmail(email)
 
     if (!user) {
       return NextResponse.json(
