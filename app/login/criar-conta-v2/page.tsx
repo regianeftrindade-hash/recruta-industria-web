@@ -51,18 +51,26 @@ function RegistroContent() {
     } else {
       // Formatar CPF se for campo de CPF
       if (name === 'cpf') {
-        const cleaned = value.replace(/\D/g, '').slice(0, 11)
-        let formatted = cleaned
-        if (cleaned.length >= 3) {
-          formatted = cleaned.slice(0, 3) + '.' + cleaned.slice(3)
+        const cpfLimpo = value.replace(/\D/g, '')
+        
+        // Limita a 11 dígitos
+        if (cpfLimpo.length > 11) return
+        
+        // Formata CPF automaticamente: XXX.XXX.XXX-XX
+        let cpfFormatado = ''
+        if (cpfLimpo.length > 0) {
+          cpfFormatado = cpfLimpo.slice(0, 3)
+          if (cpfLimpo.length > 3) {
+            cpfFormatado += '.' + cpfLimpo.slice(3, 6)
+          }
+          if (cpfLimpo.length > 6) {
+            cpfFormatado += '.' + cpfLimpo.slice(6, 9)
+          }
+          if (cpfLimpo.length > 9) {
+            cpfFormatado += '-' + cpfLimpo.slice(9, 11)
+          }
         }
-        if (cleaned.length >= 6) {
-          formatted = formatted.slice(0, 7) + '.' + formatted.slice(7)
-        }
-        if (cleaned.length >= 9) {
-          formatted = formatted.slice(0, 11) + '-' + formatted.slice(11)
-        }
-        setFormData(prev => ({ ...prev, [name]: formatted }))
+        setFormData(prev => ({ ...prev, [name]: cpfFormatado }))
       } else {
         setFormData(prev => ({ ...prev, [name]: value }))
       }
@@ -280,6 +288,7 @@ function RegistroContent() {
                 value={formData.cpf}
                 onChange={handleInputChange}
                 placeholder="000.000.000-00"
+                maxLength={14}
                 style={{
                   width: '100%',
                   padding: '12px',

@@ -486,9 +486,32 @@ function CriarContaContent() {
                 placeholder="000.000.000-00"
                 value={formData.cpf}
                 onChange={(e) => {
-                  setFormData({ ...formData, cpf: e.target.value });
-                  validateCPF(e.target.value);
+                  const value = e.target.value;
+                  // Remove tudo que não é dígito
+                  const cpfLimpo = value.replace(/\D/g, '');
+                  
+                  // Limita a 11 dígitos
+                  if (cpfLimpo.length > 11) return;
+                  
+                  // Formata CPF automaticamente: XXX.XXX.XXX-XX
+                  let cpfFormatado = '';
+                  if (cpfLimpo.length > 0) {
+                    cpfFormatado = cpfLimpo.slice(0, 3);
+                    if (cpfLimpo.length > 3) {
+                      cpfFormatado += '.' + cpfLimpo.slice(3, 6);
+                    }
+                    if (cpfLimpo.length > 6) {
+                      cpfFormatado += '.' + cpfLimpo.slice(6, 9);
+                    }
+                    if (cpfLimpo.length > 9) {
+                      cpfFormatado += '-' + cpfLimpo.slice(9, 11);
+                    }
+                  }
+                  
+                  setFormData({ ...formData, cpf: cpfFormatado });
+                  validateCPF(cpfFormatado);
                 }}
+                maxLength={14}
                 style={{
                   width: '100%',
                   padding: '12px',

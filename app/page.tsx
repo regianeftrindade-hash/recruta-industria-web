@@ -30,8 +30,9 @@ interface BeforeInstallPromptEvent extends Event {
 
 export default function Home() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [showInstall, setShowInstall] = useState(false);
+  const [showInstall, setShowInstall] = useState(true);
   const [isIOS, setIsIOS] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
     // Verificar se é iOS (não suporta beforeinstallprompt)
@@ -39,68 +40,187 @@ export default function Home() {
     setIsIOS(isIos);
 
     // Verificar se já está instalado
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    if (isStandalone) {
-      setShowInstall(false);
-      return;
-    }
+    const checkInstalled = () => {
+      const isStandalone = 
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true ||
+        document.referrer.includes('android-app://');
+      
+      setIsInstalled(isStandalone);
+      if (isStandalone) {
+        setShowInstall(false);
+        console.log('✓ App já está instalado');
+      }
+    };
+
+    checkInstalled();
+
+    // Verificar se o manifest está acessível
+    fetch('/manifest.json')
+      .then(res => {
+        if (res.ok) {
+          console.log('✓ Manifest.json está acessível');
+          return res.json();
+        } else {
+          console.error('❌ Manifest.json não encontrado');
+        }
+      })
+      .then(manifest => {
+        if (manifest) {
+          console.log('✓ Manifest carregado:', manifest.name);
+        }
+      })
+      .catch(err => console.error('❌ Erro ao carregar manifest:', err));
 
     // Handler para PWA no Chrome, Edge, Android
     const handler = (e: BeforeInstallPromptEvent) => {
+      console.log('🎉 beforeinstallprompt event fired!');
       e.preventDefault();
       setDeferredPrompt(e as any);
       setShowInstall(true);
     };
 
+    // Adicionar listener para o evento
     window.addEventListener('beforeinstallprompt', handler as any);
     
-    // Para navegadores que suportam PWA mas podem não disparar o evento imediatamente,
-    // verificar se é um navegador compatível e permitir tentativa de instalação
-    const isPWACompatible = 
-      /chrome|chromium|edge|samsung|opera/i.test(navigator.userAgent) ||
-      ('serviceWorker' in navigator && 'PushManager' in window);
-    
-    // Se for compatível com PWA mas não iOS, permitir tentativa de instalação
-    // mesmo sem o evento beforeinstallprompt (alguns navegadores não o disparam)
-    if (isPWACompatible && !isIos && !isStandalone) {
-      // Aguardar um pouco para ver se o evento é disparado
-      const timeout = setTimeout(() => {
-        setShowInstall(true);
-      }, 1000);
-      
-      return () => {
-        window.removeEventListener('beforeinstallprompt', handler as any);
-        clearTimeout(timeout);
-      };
+    // Verificar periodicamente se foi instalado
+    const interval = setInterval(checkInstalled, 2000);
+
+    // Verificar se service worker está ativo
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(reg => {
+        console.log('✓ Service Worker está pronto');
+      }).catch(err => {
+        console.warn('⚠️ Service Worker não está pronto:', err);
+      });
     }
 
-    return () => window.removeEventListener('beforeinstallprompt', handler as any);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler as any);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleInstall = async () => {
-    const prompt = deferredPrompt as any;
-    if (prompt) {
+    console.log('🔵 handleInstall called', { 
+      deferredPrompt: !!deferredPrompt, 
+      isIOS, 
+      isInstalled,
+      userAgent: navigator.userAgent 
+    });
+    
+    // Verificar novamente se já está instalado
+    const isStandalone = 
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+    
+    if (isStandalone) {
+      alert('✅ O app já está instalado!');
+      setIsInstalled(true);
+      return;
+    }
+
+    // Se for iOS, mostrar instruções
+    if (isIOS) {
+      handleIOSInstall();
+      return;
+    }
+
+    // Verificar se está em HTTPS ou localhost (requisito para PWA)
+    const isSecure = window.location.protocol === 'https:' || 
+                     window.location.hostname === 'localhost' ||
+                     window.location.hostname === '127.0.0.1';
+    
+    if (!isSecure) {
+      alert('⚠️ Para instalar o app, é necessário acessar via HTTPS ou localhost.\n\nAtualmente você está em: ' + window.location.protocol + '//' + window.location.hostname);
+      return;
+    }
+
+    // Tentar usar o prompt se disponível
+    if (deferredPrompt) {
       try {
-        await prompt.prompt();
-        const { outcome } = await prompt.userChoice;
-        if (outcome === 'accepted') {
-          setDeferredPrompt(null);
-          setShowInstall(false);
+        console.log('📱 Tentando usar prompt automático...');
+        // Verificar se o prompt ainda é válido
+        if (typeof deferredPrompt.prompt === 'function') {
+          await deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log('👤 Escolha do usuário:', outcome);
+          
+          if (outcome === 'accepted') {
+            setDeferredPrompt(null);
+            setShowInstall(false);
+            setIsInstalled(true);
+            console.log('✅ Instalação aceita pelo usuário');
+            // Aguardar um pouco antes de mostrar mensagem
+            setTimeout(() => {
+              alert('✅ Instalação iniciada! O app será adicionado à sua tela inicial em breve.');
+            }, 500);
+          } else {
+            console.log('❌ Usuário cancelou a instalação');
+            showManualInstructions();
+          }
+        } else {
+          throw new Error('Prompt não disponível - função prompt() não existe');
         }
       } catch (error) {
-        console.error('Erro ao instalar:', error);
-        // Se falhar, tentar método alternativo
-        alert('Para instalar o app:\n\n1. Clique no menu do navegador (⋮ ou ⋯)\n2. Selecione "Instalar app" ou "Adicionar à tela inicial"\n3. Confirme a instalação');
+        console.error('❌ Erro ao chamar prompt:', error);
+        // Limpar o prompt inválido
+        setDeferredPrompt(null);
+        showManualInstructions();
       }
     } else {
-      // Se não houver prompt, mostrar instruções
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-      if (isStandalone) {
-        alert('✅ O app já está instalado!');
-      } else {
-        alert('Para instalar o app:\n\n1. Clique no menu do navegador (⋮ ou ⋯)\n2. Selecione "Instalar app" ou "Adicionar à tela inicial"\n3. Confirme a instalação\n\nOu procure o ícone de instalação (⬇️) na barra de endereço.');
+      // Se não houver prompt, mostrar instruções manuais
+      console.log('⚠️ No deferredPrompt available');
+      console.log('📋 Verificando condições PWA...');
+      
+      // Verificar se service worker está ativo
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(() => {
+          console.log('✓ Service Worker está pronto');
+        }).catch(() => {
+          console.warn('⚠️ Service Worker não está pronto');
+        });
       }
+      
+      // Verificar se manifest está acessível
+      fetch('/manifest.json')
+        .then(res => {
+          if (res.ok) {
+            console.log('✓ Manifest está acessível');
+          } else {
+            console.error('❌ Manifest não está acessível');
+          }
+        })
+        .catch(err => console.error('❌ Erro ao verificar manifest:', err));
+      
+      showManualInstructions();
     }
+  };
+
+  const showManualInstructions = () => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    let instructions = '';
+
+    if (/android/.test(userAgent)) {
+      instructions = 'Para instalar o app no Android:\n\n' +
+        '1. Toque no menu do navegador (⋮ ou ⋯)\n' +
+        '2. Selecione "Adicionar à tela inicial" ou "Instalar app"\n' +
+        '3. Confirme a instalação\n\n' +
+        'Ou procure o ícone de instalação (⬇️) na barra de endereço.';
+    } else if (/chrome|edge|opera/.test(userAgent)) {
+      instructions = 'Para instalar o app no Chrome/Edge:\n\n' +
+        '1. Clique no ícone de instalação (⬇️) na barra de endereço\n' +
+        'OU\n' +
+        '2. Clique no menu (⋮) → "Instalar Recruta Indústria..."\n' +
+        '3. Confirme a instalação';
+    } else {
+      instructions = 'Para instalar o app:\n\n' +
+        '1. Clique no menu do navegador\n' +
+        '2. Procure por "Instalar app" ou "Adicionar à tela inicial"\n' +
+        '3. Confirme a instalação';
+    }
+
+    alert(instructions);
   };
 
   // Para iOS, mostrar instrução manual
@@ -240,7 +360,7 @@ export default function Home() {
               cursor: 'pointer',
               opacity: 1
             }}>
-            📥 {isIOS ? 'ADICIONAR APP' : showInstall ? 'BAIXAR APLICATIVO' : 'BAIXAR APLICATIVO'}
+            📥 {isInstalled ? 'APP INSTALADO' : isIOS ? 'ADICIONAR APP' : 'BAIXAR APLICATIVO'}
           </button>
         </div>
         <p style={{ margin: 0 }}>
