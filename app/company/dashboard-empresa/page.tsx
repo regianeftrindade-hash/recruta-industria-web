@@ -93,25 +93,31 @@ function ClientDashboard() {
           boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
         }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 900 }}>RECRUTA INDÚSTRIA</h1>
-            <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#ccc' }}>Painel Empresarial</p>
-          </div>
-          {/* Botão de logout removido: NextAuth v5 não possui signOut client-side no App Router */}
-          <button
-            style={{
-              backgroundColor: '#ef4444',
-              color: 'white',
-              padding: '10px 20px',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              fontSize: '14px',
-              transition: 'all 0.3s'
-            }}
-          >
-            SAIR
-          </button>
+  <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 600 }}>
+    Dashboard
+  </h1>
+
+  <p style={{ margin: '5px 0 0 0', fontSize: '14px' }}>
+    Bem-vindo
+  </p>
+</div>
+
+{/* Botão de logout removido */}
+<button
+  style={{
+    backgroundColor: '#ef4444',
+    color: 'white',
+    padding: '10px 20px',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: '14px',
+    transition: 'all 0.3s'
+  }}
+>
+  Sair
+</button>
         </header>
 
         {/* MAIN CONTENT - APENAS MENSAGEM */}

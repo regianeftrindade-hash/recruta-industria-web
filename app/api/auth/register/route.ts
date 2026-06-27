@@ -222,7 +222,7 @@ export async function POST(request: NextRequest) {
           faixaEtariaFilhos: faixaEtariaFilhos ? JSON.stringify(faixaEtariaFilhos) : null,
           
           // Contato adicional
-          telefone2: telefone2 || null,
+         
           
           // Localização
           estado: estado || null,
