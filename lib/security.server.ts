@@ -1,16 +1,16 @@
 // Server-only security helpers (must not be imported by client components)
 
-// Hash de senha usando bcrypt (dinâmico)
+// Hash de senha usando bcryptjs (dinâmico)
 export async function hashPassword(password: string): Promise<string> {
   if (typeof window !== 'undefined') throw new Error('hashPassword só pode ser executada no servidor');
-  const bcrypt = await import('bcrypt');
-  return await bcrypt.hash(password, 10);
+  const bcryptjs = await import('bcryptjs');
+  return await bcryptjs.hash(password, 10);
 }
 
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
   if (typeof window !== 'undefined') throw new Error('verifyPassword só pode ser executada no servidor');
-  const bcrypt = await import('bcrypt');
-  return await bcrypt.compare(password, hash);
+  const bcryptjs = await import('bcryptjs');
+  return await bcryptjs.compare(password, hash);
 }
 
 // Password reset token storage (in-memory). Server-only.

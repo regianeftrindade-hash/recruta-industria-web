@@ -448,7 +448,7 @@ export function verify2FACode(identifier: string, code: string, expiryMinutes = 
 // ===== NOVAS FUNCIONALIDADES DE SEGURANÇA =====
 // NOTE: server-only helpers (hashing, CSRF tokens, password reset) were moved
 // to `lib/security.server.ts` to avoid bundling server-only native modules
-// (like bcrypt) into client-side code. Import server-only helpers from
+// (like bcryptjs) into client-side code. Import server-only helpers from
 // `@/lib/security.server` in API routes and middleware.
 
 // Bloqueio de conta após tentativas falhadas
