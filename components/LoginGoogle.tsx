@@ -5,11 +5,9 @@ import { signIn } from "next-auth/react";
 export function LoginGoogle() {
   return (
     <button
-      onClick={() =>
-        signIn("google", {
-          callbackUrl: "/painel"
-        })
-      }
+      onClick={() => {
+        signIn("google");
+      }}
     >
       Entrar com Google
     </button>
