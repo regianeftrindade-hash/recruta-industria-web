@@ -1,19 +1,18 @@
 // Server-only security helpers (must not be imported by client components)
 
-// Hash de senha usando bcryptjs (dinâmico)
+import bcrypt from 'bcryptjs';
+
+// Hash senha
 export async function hashPassword(password: string): Promise<string> {
-  if (typeof window !== 'undefined') throw new Error('hashPassword só pode ser executada no servidor');
-  const bcryptjs = await import('bcryptjs');
-  return await bcryptjs.hash(password, 10);
+  return await bcrypt.hash(password, 10);
 }
 
+// Verificar senha
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  if (typeof window !== 'undefined') throw new Error('verifyPassword só pode ser executada no servidor');
-  const bcryptjs = await import('bcryptjs');
-  return await bcryptjs.compare(password, hash);
+  return await bcrypt.compare(password, hash);
 }
 
-// Password reset token storage (in-memory). Server-only.
+// Password reset tokens (memória)
 const passwordResetTokens = new Map<string, { token: string; email: string; timestamp: number }>();
 
 export function generatePasswordResetToken(email: string): string {
@@ -36,11 +35,14 @@ export function consumePasswordResetToken(token: string): void {
   passwordResetTokens.delete(token);
 }
 
-// CSRF tokens (server-only)
+// CSRF tokens
 const csrfTokens = new Map<string, { token: string; timestamp: number }>();
 
 export function generateCSRFToken(sessionId: string): string {
-  const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const token =
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15);
+
   csrfTokens.set(sessionId, { token, timestamp: Date.now() });
   return token;
 }
@@ -48,9 +50,11 @@ export function generateCSRFToken(sessionId: string): string {
 export function verifyCSRFToken(sessionId: string, token: string): boolean {
   const stored = csrfTokens.get(sessionId);
   if (!stored) return false;
+
   if ((Date.now() - stored.timestamp) > 3600000) {
     csrfTokens.delete(sessionId);
     return false;
   }
+
   return stored.token === token;
 }
