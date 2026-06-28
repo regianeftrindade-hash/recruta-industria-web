@@ -410,7 +410,7 @@ function LoginContent() {
           </button>
         </form>
 
-        {/* DIVISOR */}
+        {/* DIV */}
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
