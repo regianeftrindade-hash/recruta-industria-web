@@ -1,51 +1,51 @@
 {
-    "name": "recruta-industria-web",
-    "version": "0.1.1",
-    "description": "Recruitment platform - v0.1.1",
-    "private": true,
-    "engines": {
-  "node": "20.x"
+  "name": "recruta-industria-web",
+  "version": "0.1.1",
+  "description": "Recruitment platform - v0.1.1",
+  "private": true,
+  "engines": {
+    "node": "20.x"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "postinstall": "prisma generate",
+    "lint": "eslint",
+    "migrate:payments": "node scripts/migrate_payments.js",
+    "migrate:json-to-sqljs": "node scripts/migrate_json_to_sqljs.js",
+    "test:e2e-local": "node scripts/e2e_local_test.js",
+    "import:sqljs": "node scripts/import_sqljs.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
+    "install": "^0.13.0",
+    "jsbarcode": "^3.11.5",
+    "next": "^16.2.9",
+    "next-auth": "^4.24.13",
+    "qrcode": "^1.5.4",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "sharp": "^0.34.5",
+    "sql.js": "^1.13.0"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^12.5.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^6.0.0",
+    "@types/node": "20.19.27",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9",
+    "eslint-config-next": "^16.2.9",
+    "prisma": "^5.22.0",
+    "tailwindcss": "^4",
+    "typescript": "5.9.3"
+  }
 }
-    },
-    "scripts": {
-        "dev": "next dev",
-        "build": "prisma generate && next build",
-        "start": "next start",
-        "postinstall": "prisma generate",
-        "lint": "eslint",
-        "migrate:payments": "node scripts/migrate_payments.js",
-        "migrate:json-to-sqljs": "node scripts/migrate_json_to_sqljs.js",
-        "test:e2e-local": "node scripts/e2e_local_test.js",
-        "import:sqljs": "node scripts/import_sqljs.js"
-    },
-    "dependencies": {
-        "@prisma/client": "^5.22.0",
-        "bcrypt": "^6.0.0",
-        "bcryptjs": "^3.0.3",
-        "install": "^0.13.0",
-        "jsbarcode": "^3.11.5",
-        "next": "^16.2.9",
-        "next-auth": "^4.24.13",
-        "qrcode": "^1.5.4",
-        "react": "^19.2.7",
-        "react-dom": "^19.2.7",
-        "sharp": "^0.34.5",
-        "sql.js": "^1.13.0"
-    },
-    "optionalDependencies": {
-        "better-sqlite3": "^12.5.0"
-    },
-    "devDependencies": {
-        "@tailwindcss/postcss": "^4",
-        "@types/bcrypt": "^6.0.0",
-        "@types/node": "20.19.27",
-        "@types/qrcode": "^1.5.6",
-        "@types/react": "19.2.7",
-        "@types/react-dom": "^19.2.3",
-        "eslint": "^9",
-        "eslint-config-next": "^16.2.9",
-        "prisma": "^5.22.0",
-        "tailwindcss": "^4",
-        "typescript": "5.9.3"
-    }
-}
+``
