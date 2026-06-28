@@ -1,51 +1,27 @@
-import bcrypt from 'bcryptjs'
-import crypto from 'crypto'
+import bcrypt from 'bcryptjs';
 
-const resetTokens = new Map<
-  string,
-  {
-    email: string
-    expires: number
-  }
->()
-
-export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 10)
+// senha
+export async function hashPassword(password: string) {
+  return bcrypt.hash(password, 10);
 }
 
-export async function verifyPassword(
-  password: string,
-  hash: string
-): Promise<boolean> {
-  return bcrypt.compare(password, hash)
+export async function verifyPassword(password: string, hash: string) {
+  return bcrypt.compare(password, hash);
 }
 
-export function generatePasswordResetToken(email: string): string {
-  const token = crypto.randomBytes(32).toString('hex')
+// reset de senha
+const resetTokens = new Map<string, string>();
 
-  resetTokens.set(token, {
-    email,
-    expires: Date.now() + 1000 * 60 * 30 // 30 minutos
-  })
-
-  return token
+export function generatePasswordResetToken(email: string) {
+  const token = Math.random().toString(36).substring(2);
+  resetTokens.set(token, email);
+  return token;
 }
 
-export async function verifyPasswordResetToken(
-  token: string
-): Promise<string | null> {
-  const data = resetTokens.get(token)
-
-  if (!data) return null
-
-  if (Date.now() > data.expires) {
-    resetTokens.delete(token)
-    return null
-  }
-
-  return data.email
+export function verifyPasswordResetToken(token: string) {
+  return resetTokens.get(token) || null;
 }
 
-export function consumePasswordResetToken(token: string): void {
-  resetTokens.delete(token)
+export function consumePasswordResetToken(token: string) {
+  resetTokens.delete(token);
 }
