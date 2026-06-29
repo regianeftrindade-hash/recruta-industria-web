@@ -49,11 +49,11 @@ export function middleware(request: NextRequest) {
   if (isProtectedRoute) {
     // Verifica se existe sessão/token (você pode implementar com cookies)
     // Por enquanto, deixamos o NextAuth gerenciar via cookies
-   const session =
-  request.cookies.get('next-auth.session-token') ||
-  request.cookies.get('__Secure-next-auth.session-token');
+   const hasSession = request.cookies
+  .getAll()
+  .some(c => c.name.includes('next-auth.session-token'));
 
-    if (!session) {
+   if (!hasSession) {
       // Redireciona para login se não autenticado
       const url = request.nextUrl.clone();
       url.pathname = '/login';
