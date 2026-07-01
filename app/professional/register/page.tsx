@@ -233,39 +233,73 @@ if (!senhaPreenchida) {
               if (data.success) {
                 console.log('✅ Usuário registrado com sucesso');
                 // Tentar autenticar automaticamente
-                const signResult: any = await signIn('credentials', { redirect: false, email: formData.email, password });
-                if (signResult?.ok) {
-                  console.log('✅ Login automático realizado');
-                  // Enviar dados completos do perfil
-                  fetch('/api/professional/profile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                  })
-                    .then(res => {
-                      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                      return res.json();
-                    })
-                    .then(data => {
-                      if (data.success) {
-                        console.log('✅ Perfil salvo com sucesso');
-                        localStorage.removeItem('dadosFormularioCompleto');
-                        localStorage.removeItem('dadosCadastroSimples');
-                        router.push('/professional/dashboard/painel');
-                      } else {
-                        console.error('Erro:', data);
-                        alert('Erro ao salvar perfil: ' + (data.error || 'Desconhecido'));
-                      }
-                    })
-                    .catch(err => {
-                      console.error('Erro ao salvar perfil:', err);
-                      alert('Erro ao conectar ao servidor: ' + err.message);
-                    });
-                  return;
-                }
-                // Se não autenticou automaticamente, direcionar para login
-                alert('Cadastro realizado. Faça login para completar o perfil.');
-                router.push('/login');
+                // Usuário veio pelo Google (sem senha)
+if (!password) {
+  fetch('/api/professional/profile', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(formData)
+  })
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      if (data.success) {
+        console.log('✅ Perfil salvo com sucesso');
+        localStorage.removeItem('dadosFormularioCompleto');
+        localStorage.removeItem('dadosCadastroSimples');
+        router.push('/professional/dashboard/painel');
+      } else {
+        alert('Erro ao salvar perfil: ' + (data.error || 'Desconhecido'));
+      }
+    })
+    .catch(err => {
+      alert('Erro ao conectar ao servidor: ' + err.message);
+    });
+
+  return;
+}
+
+const signResult: any = await signIn('credentials', {
+  redirect: false,
+  email: formData.email,
+  password
+});
+
+if (signResult?.ok) {
+  console.log('✅ Login automático realizado');
+
+  fetch('/api/professional/profile', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(formData)
+  })
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      if (data.success) {
+        console.log('✅ Perfil salvo com sucesso');
+        localStorage.removeItem('dadosFormularioCompleto');
+        localStorage.removeItem('dadosCadastroSimples');
+        router.push('/professional/dashboard/painel');
+      } else {
+        console.error('Erro:', data);
+        alert('Erro ao salvar perfil: ' + (data.error || 'Desconhecido'));
+      }
+    })
+    .catch(err => {
+      console.error('Erro ao salvar perfil:', err);
+      alert('Erro ao conectar ao servidor: ' + err.message);
+    });
+
+  return;
+}
+
+alert('Cadastro realizado. Faça login para completar o perfil.');
+router.push('/login');
               } else {
                 throw new Error(data.error || 'Erro ao registrar');
               }
