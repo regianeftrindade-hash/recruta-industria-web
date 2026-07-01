@@ -28,6 +28,8 @@ function getSupabase() {
 
 export async function POST(request: NextRequest) {
   try {
+
+    /*
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -36,6 +38,7 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
+    */
 
     const formData = await request.formData();
 
