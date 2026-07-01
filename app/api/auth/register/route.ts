@@ -108,13 +108,14 @@ export async function POST(request: NextRequest) {
     } = body
 
     // Validações básicas
-    if (!email || !password || !userType) {
-      incrementRegisterAttempts(ip)
-      return NextResponse.json(
-        { error: 'Email, senha e tipo de usuário são obrigatórios' },
-        { status: 400 }
-      )
-    }
+    if (!email || !userType) {
+  incrementRegisterAttempts(ip)
+
+  return NextResponse.json(
+    { error: 'Email e tipo de usuário são obrigatórios' },
+    { status: 400 }
+  )
+}
 
     if (!isValidEmail(email)) {
       incrementRegisterAttempts(ip)
@@ -125,17 +126,22 @@ export async function POST(request: NextRequest) {
     }
 
     const passwordStrength = validatePasswordStrength(password)
-    if (!passwordStrength.isStrong) {
-      incrementRegisterAttempts(ip)
-      return NextResponse.json(
-        { 
-          error: 'Senha não atende aos requisitos de segurança',
-          feedback: passwordStrength.feedback,
-          score: passwordStrength.score
-        },
-        { status: 400 }
-      )
-    }
+    if (password) {
+  const passwordStrength = validatePasswordStrength(password)
+
+  if (!passwordStrength.isStrong) {
+    incrementRegisterAttempts(ip)
+
+    return NextResponse.json(
+      {
+        error: 'Senha não atende aos requisitos de segurança',
+        feedback: passwordStrength.feedback,
+        score: passwordStrength.score
+      },
+      { status: 400 }
+    )
+  }
+}
 
     if (password !== confirmPassword) {
       incrementRegisterAttempts(ip)
@@ -182,16 +188,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Criar usuário no banco de dados
-    const hashedPassword = await hashPassword(password)
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name: name || email.split('@')[0],
-        role: userType.toUpperCase() as 'COMPANY' | 'PROFESSIONAL',
-        passwordHash: hashedPassword,
-      },
-    })
+  // Criar usuário no banco de dados
+const hashedPassword = password
+  ? await hashPassword(password)
+  : null
 
+const user = await prisma.user.create({
+  data: {
+    email,
+    name: name || email.split('@')[0],
+    role: userType.toUpperCase() as 'COMPANY' | 'PROFESSIONAL',
+    passwordHash: hashedPassword,
+  },
+})
     // Se é profissional, criar Profile com todos os dados do formulário
     if (userType === 'professional') {
       try {
