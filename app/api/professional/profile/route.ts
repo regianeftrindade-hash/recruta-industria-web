@@ -12,15 +12,15 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth.config';
+import { getToken } from 'next-auth/jwt';
 
 export async function GET(request: NextRequest) {
   try {
-    // Buscar sessão do usuário com configuração do NextAuth
-    const session = await getServerSession(authOptions);
+    // Buscar token JWT diretamente da requisição
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    console.log('TOKEN PROFILE:', token);
     
-    if (!session || !session.user?.email) {
+    if (!token || !token.email) {
       return NextResponse.json(
         { error: 'Não autenticado' },
         { status: 401 }
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     // Buscar dados do usuário no banco
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: token.email },
       include: {
         profile: true
       }
@@ -109,16 +109,17 @@ function getStringValue(value: any): string | null {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    console.log('TOKEN PROFILE:', token);
     
-    if (!session || !session.user?.email) {
+    if (!token || !token.email) {
       return NextResponse.json(
         { error: 'Não autenticado' },
         { status: 401 }
       );
     }
 
-    console.log('>> /api/professional/profile POST - session user:', session.user?.email);
+    console.log('>> /api/professional/profile POST - token email:', token.email);
 
     const body = await request.json();
 
@@ -131,7 +132,7 @@ export async function POST(request: NextRequest) {
 
     // Buscar usuário
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: token.email }
     });
 
     if (!user) {

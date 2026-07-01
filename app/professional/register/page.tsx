@@ -56,6 +56,7 @@ export default function CadastroProfissional() {
     trabalhouIndustria: 'Não', tempoExperiencia: '', experiencias: '',
     recolocacao: '', pretensaoSalarial: '',
     fotoPerfil: null as string | null, curriculo: null as string | null, atestado: null as string | null,
+    mensagemEmpresas: '',
     autorizoDados: false, declaroVerdadeiro: false
   });
 
@@ -190,41 +191,6 @@ export default function CadastroProfissional() {
             return;
           }
           
-          // SE A SENHA FOI PREENCHIDA NO CADASTRO SIMPLES, SALVAR APENAS OS DADOS COMPLETOS
-          if (senhaPreenchida === true) {
-            console.log('Senha foi preenchida no cadastro simples - salvando dados completos apenas');
-            // Se veio do cadastro simples, já tem email e senha salvos
-            // Agora salvar os dados completos do formulário (SEM tentar registrar novamente)
-            fetch('/api/professional/profile', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                ...formData,
-                email: formData.email
-              })
-            })
-              .then(res => {
-                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                return res.json();
-              })
-              .then(data => {
-                if (data.success) {
-                  console.log('✅ Perfil atualizado com sucesso');
-                  localStorage.removeItem('dadosFormularioCompleto');
-                  localStorage.removeItem('dadosCadastroSimples');
-                  router.push('/professional/dashboard/painel');
-                } else {
-                  console.error('Erro:', data);
-                  alert('Erro ao atualizar perfil: ' + (data.error || 'Desconhecido'));
-                }
-              })
-              .catch(err => {
-                console.error('Erro ao atualizar perfil:', err);
-                alert('Erro ao conectar ao servidor: ' + err.message);
-              });
-            return;
-          }
-          
           // APENAS SE senhaPreenchida FOR FALSE, validar a senha
           console.log('Validando senha (senhaPreenchida é false)');
           
@@ -255,28 +221,39 @@ export default function CadastroProfissional() {
               fotoPerfil: formData.fotoPerfil || null,
             })
           })
-            .then(res => res.json())
+          .then(res => res.json())
             .then(async (data) => {
               if (data.success) {
                 console.log('✅ Usuário registrado com sucesso');
-                // Tentar autenticar automaticamente para poder salvar o profile
+                // Tentar autenticar automaticamente
                 const signResult: any = await signIn('credentials', { redirect: false, email: formData.email, password });
                 if (signResult?.ok) {
-                  // Agora salvar os dados completos do formulário (usuário está autenticado)
-                  const resProfile = await fetch('/api/professional/profile', {
+                  console.log('✅ Login automático realizado');
+                  // Enviar dados completos do perfil
+                  fetch('/api/professional/profile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
-                  });
-                  const profileData = await resProfile.json();
-                  if (resProfile.ok && profileData.success) {
-                    console.log('✅ Perfil salvo com sucesso');
-                    localStorage.removeItem('dadosFormularioCompleto');
-                    localStorage.removeItem('dadosCadastroSimples');
-                    router.push('/professional/dashboard/painel');
-                    return;
-                  }
-                  alert('Registro bem-sucedido, mas falha ao salvar perfil: ' + (profileData.error || 'Desconhecido'));
+                  })
+                    .then(res => {
+                      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                      return res.json();
+                    })
+                    .then(data => {
+                      if (data.success) {
+                        console.log('✅ Perfil salvo com sucesso');
+                        localStorage.removeItem('dadosFormularioCompleto');
+                        localStorage.removeItem('dadosCadastroSimples');
+                        router.push('/professional/dashboard/painel');
+                      } else {
+                        console.error('Erro:', data);
+                        alert('Erro ao salvar perfil: ' + (data.error || 'Desconhecido'));
+                      }
+                    })
+                    .catch(err => {
+                      console.error('Erro ao salvar perfil:', err);
+                      alert('Erro ao conectar ao servidor: ' + err.message);
+                    });
                   return;
                 }
                 // Se não autenticou automaticamente, direcionar para login
@@ -485,7 +462,13 @@ export default function CadastroProfissional() {
             <div className={styles.grid}>
               <div>
                 <label className={styles.label} htmlFor="sexoBiologico">Sexo biológico *</label>
-                <select id="sexoBiologico" className={styles.select} required>
+                <select
+                  id="sexoBiologico"
+                  className={styles.select}
+                  required
+                  value={formData.sexoBiologico}
+                  onChange={e => setFormData({...formData, sexoBiologico: e.target.value})}
+                >
                   <option value="">Selecione</option>
                   <option>Masculino</option>
                   <option>Feminino</option>
@@ -494,7 +477,13 @@ export default function CadastroProfissional() {
               </div>
               <div>
                 <label className={styles.label} htmlFor="identidadeGenero">Identidade de gênero *</label>
-                <select id="identidadeGenero" className={styles.select} required>
+                <select
+                  id="identidadeGenero"
+                  className={styles.select}
+                  required
+                  value={formData.identidadeGenero}
+                  onChange={e => setFormData({...formData, identidadeGenero: e.target.value})}
+                >
                   <option value="">Selecione</option>
                   <option>Cisgênero</option>
                   <option>Transgênero</option>
@@ -508,7 +497,13 @@ export default function CadastroProfissional() {
             <div className={styles.grid}>
               <div>
                 <label className={styles.label} htmlFor="orientacaoSexual">Orientação sexual *</label>
-                <select id="orientacaoSexual" className={styles.select} required>
+                <select
+                  id="orientacaoSexual"
+                  className={styles.select}
+                  required
+                  value={formData.orientacaoSexual}
+                  onChange={e => setFormData({...formData, orientacaoSexual: e.target.value})}
+                >
                   <option value="">Selecione</option>
                   <option>Heterossexual</option>
                   <option>Homossexual</option>
@@ -519,7 +514,13 @@ export default function CadastroProfissional() {
               </div>
               <div>
                 <label className={styles.label} htmlFor="estadoCivil">Estado civil *</label>
-                <select id="estadoCivil" className={styles.select} required>
+                <select
+                  id="estadoCivil"
+                  className={styles.select}
+                  required
+                  value={formData.estadoCivil}
+                  onChange={e => setFormData({...formData, estadoCivil: e.target.value})}
+                >
                   <option value="">Selecione</option>
                   <option>Solteiro</option>
                   <option>Casado</option>
@@ -532,7 +533,13 @@ export default function CadastroProfissional() {
             <div className={styles.grid}>
               <div>
                 <label className={styles.label} htmlFor="religiao">Religião *</label>
-                <select id="religiao" className={styles.select} required>
+                <select
+                  id="religiao"
+                  className={styles.select}
+                  required
+                  value={formData.religiao}
+                  onChange={e => setFormData({...formData, religiao: e.target.value})}
+                >
                   <option value="">Selecione</option>
                   <option>Católico</option>
                   <option>Protestante</option>
@@ -544,10 +551,16 @@ export default function CadastroProfissional() {
               </div>
               <div>
                 <label className={styles.label} htmlFor="antecedentes">Possui antecedentes criminais? *</label>
-                <select id="antecedentes" className={styles.select} required>
+                <select
+                  id="antecedentes"
+                  className={styles.select}
+                  required
+                  value={formData.antecedentes}
+                  onChange={e => setFormData({...formData, antecedentes: e.target.value})}
+                >
                   <option value="">Selecione</option>
-                  <option>Não</option>
-                  <option>Sim</option>
+                  <option value="Não">Não</option>
+                  <option value="Sim">Sim</option>
                 </select>
               </div>
             </div>
@@ -657,9 +670,15 @@ export default function CadastroProfissional() {
               </div>
               <div>
                 <label className={styles.label} htmlFor="whatsapp">Este número é WhatsApp? *</label>
-                <select id="whatsapp" className={styles.select} required>
-                  <option>Não</option>
-                  <option>Sim</option>
+                <select
+                  id="whatsapp"
+                  className={styles.select}
+                  required
+                  value={formData.whatsapp}
+                  onChange={e => setFormData({...formData, whatsapp: e.target.value})}
+                >
+                  <option value="Não">Não</option>
+                  <option value="Sim">Sim</option>
                 </select>
               </div>
             </div>
@@ -703,14 +722,20 @@ export default function CadastroProfissional() {
             <div className={styles.grid}>
               <div>
                 <label className={styles.label} htmlFor="estado">Estado (UF) *</label>
-                <select id="estado" className={styles.select} required onChange={e => setFormData({...formData, estado: e.target.value})}>
+                <select id="estado" className={styles.select} required value={formData.estado} onChange={e => setFormData({...formData, estado: e.target.value})}>
                   <option value="">Selecione</option>
                   {listaEstados.map(uf => <option key={uf} value={uf}>{uf}</option>)}
                 </select>
               </div>
               <div>
                 <label className={styles.label} htmlFor="cidade">Cidade *</label>
-                <select id="cidade" className={styles.select} required>
+                <select
+                  id="cidade"
+                  className={styles.select}
+                  required
+                  value={formData.cidade}
+                  onChange={e => setFormData({...formData, cidade: e.target.value})}
+                >
                   <option value="">Escolha a cidade</option>
                   {cidades.map((c, i) => <option key={i} value={c}>{c}</option>)}
                 </select>
@@ -718,30 +743,42 @@ export default function CadastroProfissional() {
             </div>
 
             <label className={styles.label} htmlFor="disponibilidadeMudanca">Disponibilidade para mudança? *</label>
-            <select id="disponibilidadeMudanca" className={styles.select} required>
-              <option value="">Selecione</option>
-              <option>Sim</option>
-              <option>Não</option>
-              <option>Dependendo da oportunidade</option>
-            </select>
+                <select
+                  id="disponibilidadeMudanca"
+                  className={styles.select}
+                  required
+                  value={formData.disponibilidadeMudanca}
+                  onChange={e => setFormData({...formData, disponibilidadeMudanca: e.target.value})}
+                >
+                  <option value="">Selecione</option>
+                  <option value="Sim">Sim</option>
+                  <option value="Não">Não</option>
+                  <option value="Dependendo da oportunidade">Dependendo da oportunidade</option>
+                </select>
           </section>
 
           <section>
             <h2 className={styles.sectionTitle}>Formação</h2>
             
             <label className={styles.label} htmlFor="escolaridade">Escolaridade *</label>
-            <select id="escolaridade" className={styles.select} required>
-              <option value="">Selecione</option>
-              <option>Fundamental incompleto</option>
-              <option>Fundamental completo</option>
-              <option>Médio incompleto</option>
-              <option>Médio completo</option>
-              <option>Técnico</option>
-              <option>Superior incompleto</option>
-              <option>Superior completo</option>
-              <option>Pós-graduação</option>
-              <option>MBA</option>
-            </select>
+                <select
+                  id="escolaridade"
+                  className={styles.select}
+                  required
+                  value={formData.escolaridade}
+                  onChange={e => setFormData({...formData, escolaridade: e.target.value})}
+                >
+                  <option value="">Selecione</option>
+                  <option>Fundamental incompleto</option>
+                  <option>Fundamental completo</option>
+                  <option>Médio incompleto</option>
+                  <option>Médio completo</option>
+                  <option>Técnico</option>
+                  <option>Superior incompleto</option>
+                  <option>Superior completo</option>
+                  <option>Pós-graduação</option>
+                  <option>MBA</option>
+                </select>
 
             <label className={styles.label}>Cursos / Certificações (Ex: Eletricista, Soldador) *</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -1169,7 +1206,14 @@ export default function CadastroProfissional() {
             <h2 className={styles.sectionTitle}>Mensagem para empresas</h2>
             
             <label className={styles.label} htmlFor="mensagemEmpresas">Deixe uma mensagem para as empresas que visualizarão seu perfil</label>
-            <textarea id="mensagemEmpresas" className={`${styles.input} ${styles.textarea}`} rows={4} placeholder="Conte um pouco sobre você, seus objetivos profissionais ou qualquer informação que gostaria que as empresas soubessem..."></textarea>
+            <textarea
+              id="mensagemEmpresas"
+              className={`${styles.input} ${styles.textarea}`}
+              rows={4}
+              placeholder="Conte um pouco sobre você, seus objetivos profissionais ou qualquer informação que gostaria que as empresas soubessem..."
+              value={formData.mensagemEmpresas}
+              onChange={e => setFormData({...formData, mensagemEmpresas: e.target.value})}
+            ></textarea>
           </section>
 
           <section>

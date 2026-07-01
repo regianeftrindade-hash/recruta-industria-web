@@ -118,18 +118,18 @@ function LoginContent() {
             if (userType === 'company') {
               router.push('/company/dashboard-empresa');
             } else {
-              router.push('/professional/dashboard');
+              router.push('/professional/dashboard/painel');
             }
           } else {
             // Tenta ler como texto para logar o erro
             const errorText = await typeRes.text();
             console.error('Resposta não-JSON:', errorText);
-            router.push(tipoLogin === 'company' ? '/company/dashboard-empresa' : '/professional/dashboard');
+            router.push(tipoLogin === 'company' ? '/company/dashboard-empresa' : '/professional/dashboard/painel');
           }
         } catch (err) {
           console.error('Erro ao buscar tipo:', err);
           // Fallback
-          router.push(tipoLogin === 'company' ? '/company/dashboard-empresa' : '/professional/dashboard');
+          router.push(tipoLogin === 'company' ? '/company/dashboard-empresa' : '/professional/dashboard/painel');
         }
       }
     } catch (error) {
