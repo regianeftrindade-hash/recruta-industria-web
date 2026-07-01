@@ -221,6 +221,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Erro ao salvar perfil:', error);
+    console.error('PROFILE POST ERROR:', error);
     return NextResponse.json(
       { error: 'Erro ao salvar perfil', details: String(error) },
       { status: 500 }
