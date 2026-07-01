@@ -195,7 +195,10 @@ export default function CadastroProfissional() {
           console.log('Validando senha (senhaPreenchida é false)');
           
           // Só valida senha se ela foi preenchida
-if (password) {
+console.log('senhaPreenchida =', senhaPreenchida);
+console.log('password =', password);
+
+if (!senhaPreenchida) {
   if (password.length < 8) {
     alert('Senha deve ter mínimo 8 caracteres');
     return;
@@ -1236,8 +1239,16 @@ if (password) {
                   const fd = new FormData();
                   fd.append('file', file);
                   fd.append('type', 'avatars');
+                  console.log('INICIANDO UPLOAD FOTO');
+console.log('INICIANDO UPLOAD FOTO');
+
                   const res = await fetch('/api/upload', { method: 'POST', body: fd, credentials: 'include' });
-                  const data = await res.json();
+
+console.log('STATUS FOTO:', res.status);
+
+const data = await res.json();
+
+console.log('RESPOSTA FOTO:', data);
                   if (res.ok && data.success && data.file?.url) {
                     setFormData({...formData, fotoPerfil: data.file.url});
                   } else if (res.status === 401) {
@@ -1249,12 +1260,12 @@ if (password) {
                     reader.readAsDataURL(file);
                   } else {
                     console.error('Upload foto falhou', data);
-                    alert('Erro ao enviar foto de perfil');
+                    alert(JSON.stringify(data));
                   }
-                } catch (err) {
-                  console.error('Erro no upload da foto:', err);
-                  alert('Erro ao enviar foto de perfil');
-                }
+               } catch (err) {
+  console.error('Erro no upload da foto:', err);
+  alert('Erro no upload da foto: ' + String(err));
+}
               }}
             />
             {formData.fotoPerfil && (
@@ -1297,10 +1308,10 @@ if (password) {
                     console.error('Upload curriculo falhou', data);
                     alert('Erro ao enviar currículo');
                   }
-                } catch (err) {
-                  console.error('Erro no upload do currículo:', err);
-                  alert('Erro ao enviar currículo');
-                }
+               } catch (err) {
+  console.error('Erro no upload do currículo:', err);
+  alert('Erro no upload do currículo: ' + String(err));
+}
               }}
             />
             {formData.curriculo && (
@@ -1340,10 +1351,10 @@ if (password) {
                     console.error('Upload atestado falhou', data);
                     alert('Erro ao enviar atestado');
                   }
-                } catch (err) {
-                  console.error('Erro no upload do atestado:', err);
-                  alert('Erro ao enviar atestado');
-                }
+               } catch (err) {
+  console.error('Erro no upload do atestado:', err);
+  alert('Erro no upload do atestado: ' + String(err));
+}
               }}
             />
             {formData.atestado && (
