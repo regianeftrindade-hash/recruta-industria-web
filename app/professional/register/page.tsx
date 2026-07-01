@@ -194,14 +194,18 @@ export default function CadastroProfissional() {
           // APENAS SE senhaPreenchida FOR FALSE, validar a senha
           console.log('Validando senha (senhaPreenchida é false)');
           
-          if (!password || password.length < 8) {
-            alert('Senha deve ter mínimo 8 caracteres');
-            return;
-          }
-          if (!confirmPassword || password !== confirmPassword) {
-            alert('As senhas não conferem');
-            return;
-          }
+          // Só valida senha se ela foi preenchida
+if (password) {
+  if (password.length < 8) {
+    alert('Senha deve ter mínimo 8 caracteres');
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    alert('As senhas não conferem');
+    return;
+  }
+}
           
           // Se chegou aqui, fazer POST para registrar
           const cpfLimpo = cpf.replace(/\D/g, ''); // Remove pontuação
