@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth.config';
 import { createClient } from '@supabase/supabase-js';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -28,18 +26,7 @@ function getSupabase() {
 
 export async function POST(request: NextRequest) {
   try {
-
-    /*
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Não autenticado' },
-        { status: 401 }
-      );
-    }
-    */
-
+    // ✅ Upload anônimo permitido durante cadastro
     const formData = await request.formData();
 
     const file = formData.get('file') as File;
