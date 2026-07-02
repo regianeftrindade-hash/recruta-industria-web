@@ -2,20 +2,17 @@
  * 🔒 PÁGINA DE CADASTRO PROFISSIONAL - BLOQUEADA PARA ALTERAÇÕES
  * ============================================================
  * ⚠️ ATENÇÃO: Esta página foi finalizada e aprovada.
- * 
- * RESTRIÇÕES:
+ * * RESTRIÇÕES:
  * ✗ NÃO alterar layout ou estrutura principal
  * ✗ NÃO remover campos obrigatórios
  * ✗ NÃO modificar validações críticas
  * ✗ NÃO alterar fluxo de cadastro
- * 
- * ALTERAÇÕES PERMITIDAS:
+ * * ALTERAÇÕES PERMITIDAS:
  * ✓ Adicionar novos campos opcionais
  * ✓ Modificar mensagens de erro
  * ✓ Atualizar validações de segurança
  * ✓ Melhorar UX/UI mantendo layout
- * 
- * Última atualização: 02/01/2026
+ * * Última atualização: 02/01/2026
  * Status: ✅ FINALIZADO E APROVADO
  */
 
@@ -44,8 +41,10 @@ export default function CadastroProfissional() {
   const [pretensaoSalarial, setPretensaoSalarial] = useState('');
   const [cursos, setCursos] = useState<string[]>(['']);
   const [dataNascimentoValue, setDataNascimentoValue] = useState('');
-  const [empresas, setEmpresas] = useState<{nome: string, cargo: string, dataInicio: string, dataFim: string}[]>([{nome: '', cargo: '', dataInicio: '', dataFim: ''}]);
-  
+  const [empresas, setEmpresas] = useState<{ nome: string; cargo: string; dataInicio: string; dataFim: string }[]>([
+    { nome: '', cargo: '', dataInicio: '', dataFim: '' }
+  ]);
+
   const [formData, setFormData] = useState({
     nome: '', dataNascimento: '', idade: '', sexoBiologico: '', identidadeGenero: '', orientacaoSexual: '', estadoCivil: '', religiao: '', antecedentes: '',
     possuiFilhos: 'Não', quantidadeFilhos: '', faixaEtariaFilhos: [] as string[],
@@ -79,57 +78,50 @@ export default function CadastroProfissional() {
           }));
           setCpf(dados.cpf || '');
           setTelefone(dados.telefone || '');
-          
+
           // Preenche a senha se houver
           if (dados.password) {
             setPassword(dados.password);
             setConfirmPassword(dados.password);
-            setSenhaPreenchida(true); // Marca que a senha foi carregada
+            setSenhaPreenchida(true);
           } else {
-            // Se não há password nos dados, também marcar como preenchida
             setSenhaPreenchida(true);
           }
-          
+
           console.log('✅ Dados do cadastro simples carregados automaticamente:', dados);
         } catch (err) {
           console.error('Erro ao carregar dados do cadastro simples:', err);
-          // Em caso de erro, marcar como preenchida para não pedir senha
           setSenhaPreenchida(true);
         }
       } else {
-        // Se não há dados no localStorage, significa que é Google Auth
-        // Marcar senha como preenchida para não mostrar campos de senha
         setSenhaPreenchida(true);
       }
-      
+
       // Carregar dados do formulário completo se houver
       const dadosFormulario = localStorage.getItem('dadosFormularioCompleto');
       if (dadosFormulario) {
         try {
           const dados = JSON.parse(dadosFormulario);
-          console.log('📥 Restaurando do localStorage:', {dataNascimentoDisplay: dados.dataNascimentoDisplay, dataNascimento: dados.dataNascimento});
-          
-          // Restaurar APENAS dataNascimentoDisplay (o que o usuário vê e digita)
+          console.log('📥 Restaurando do localStorage:', { dataNascimentoDisplay: dados.dataNascimentoDisplay, dataNascimento: dados.dataNascimento });
+
           if (dados.dataNascimentoDisplay) {
             console.log('✅ Restaurando dataNascimentoDisplay:', dados.dataNascimentoDisplay);
             setDataNascimentoValue(dados.dataNascimentoDisplay);
           }
-          
-          // Restaurar apenas os campos do formData EXCETO dataNascimento (vamos usar o display)
+
           const formDataRestored: Partial<typeof formData> = {};
           (Object.keys(formData) as Array<keyof typeof formData>).forEach(key => {
             if (key !== 'dataNascimento' && key in dados && dados[key] !== undefined) {
               formDataRestored[key] = dados[key] as any;
             }
           });
-          
-          setFormData(prev => ({...prev, ...formDataRestored}));
-          
-          // Restaurar cpf
+
+          setFormData(prev => ({ ...prev, ...formDataRestored }));
+
           if (dados.cpf) {
             setCpf(dados.cpf);
           }
-          
+
           console.log('✅ Dados do formulário completo restaurados');
         } catch (err) {
           console.error('Erro ao carregar dados do formulário:', err);
@@ -141,7 +133,6 @@ export default function CadastroProfissional() {
   // Salvar dados do formulário no localStorage sempre que mudar
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Só salvar se houver algum dado preenchido
       if (Object.values(formData).some(v => v !== '' && v !== false && v !== null) || dataNascimentoValue || cpf) {
         const dadosParaSalvar = {
           ...formData,
@@ -157,170 +148,167 @@ export default function CadastroProfissional() {
     }
   }, [formData, cpf, dataNascimentoValue]);
 
+  // Carrega cidades a partir do estado selecionado
   useEffect(() => {
     if (formData.estado) {
       fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${formData.estado}/municipios`)
         .then(res => res.json())
-        .then(data => setCidades(data.map((c: any) => c.nome).sort()));
+        .then(data => setCidades(data.map((c: any) => c.nome).sort()))
+        .catch(err => console.error('Erro ao buscar cidades do IBGE:', err));
     }
   }, [formData.estado]);
+
+  // Manipulador do envio do formulário principal
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    console.log('=== SUBMIT PROFISSIONAL ===');
+    console.log('CPF:', cpf);
+    console.log('CPF Error:', cpfError);
+    console.log('senhaPreenchida:', senhaPreenchida);
+    console.log('password length:', password.length);
+
+    // VALIDAÇÃO 1: CPF obrigatório
+    if (!cpf || cpf.length < 14) {
+      alert('CPF é obrigatório e deve estar completo (000.000.000-00)');
+      return;
+    }
+
+    // VALIDAÇÃO 2: CPF não pode ter erro
+    if (cpfError) {
+      alert('CPF inválido: ' + cpfError);
+      return;
+    }
+
+    // VALIDAÇÃO 3: Email obrigatório e válido
+    if (!formData.email || !isValidEmail(formData.email)) {
+      setEmailError('Email é obrigatório e deve ser válido');
+      alert('Por favor, preencha um email válido');
+      return;
+    }
+
+    // Validação condicional de senha
+    if (!senhaPreenchida) {
+      if (!password || password.length < 8) {
+        alert('Senha deve ter mínimo 8 caracteres');
+        return;
+      }
+
+      if (!confirmPassword) {
+        alert('Confirmação de senha é obrigatória');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        alert('As senhas não conferem');
+        return;
+      }
+    }
+
+    const cpfLimpo = cpf.replace(/\D/g, '');
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: password,
+          confirmPassword: confirmPassword,
+          userType: 'professional',
+          cpf: cpfLimpo,
+          name: formData.nome,
+          curriculoURL: formData.curriculo || null,
+          atestadoURL: formData.atestado || null,
+          fotoPerfil: formData.fotoPerfil || null,
+        })
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Erro ao registrar');
+      }
+
+      console.log('✅ Usuário registrado com sucesso');
+
+      // Se o usuário veio pelo fluxo sem senha (OAuth / Google)
+      if (!password) {
+        try {
+          const profileRes = await fetch('/api/professional/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+          });
+
+          if (!profileRes.ok) throw new Error(`HTTP error! status: ${profileRes.status}`);
+          const profileData = await profileRes.json();
+
+          if (profileData.success) {
+            console.log('✅ Perfil salvo com sucesso');
+            localStorage.removeItem('dadosFormularioCompleto');
+            localStorage.removeItem('dadosCadastroSimples');
+            router.push('/professional/dashboard/painel');
+          } else {
+            alert('Erro ao salvar perfil: ' + (profileData.error || 'Desconhecido'));
+          }
+        } catch (err: any) {
+          alert('Erro ao conectar ao servidor: ' + err.message);
+        }
+        return;
+      }
+
+      // Fluxo comum com credenciais (Login automático)
+      const signResult: any = await signIn('credentials', {
+        redirect: false,
+        email: formData.email,
+        password
+      });
+
+      if (signResult?.ok) {
+        console.log('✅ Login automático realizado');
+
+        try {
+          const profileRes = await fetch('/api/professional/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+          });
+
+          if (!profileRes.ok) throw new Error(`HTTP error! status: ${profileRes.status}`);
+          const profileData = await profileRes.json();
+
+          if (profileData.success) {
+            console.log('✅ Perfil salvo com sucesso');
+            localStorage.removeItem('dadosFormularioCompleto');
+            localStorage.removeItem('dadosCadastroSimples');
+            router.push('/professional/dashboard/painel');
+          } else {
+            console.error('Erro:', profileData);
+            alert('Erro ao salvar perfil: ' + (profileData.error || 'Desconhecido'));
+          }
+        } catch (err: any) {
+          console.error('Erro ao salvar perfil:', err);
+          alert('Erro ao conectar ao servidor: ' + err.message);
+        }
+        return;
+      }
+
+      alert('Cadastro realizado. Faça login para completar o perfil.');
+      router.push('/login');
+
+    } catch (err: any) {
+      console.error('Erro no registro:', err);
+      alert(err.message || 'Erro ao conectar ao servidor');
+    }
+  };
 
   return (
     <div className={styles.container}>
       <div className={styles.card} role="main" aria-labelledby="register-title">
         <h1 id="register-title" className={styles.title}>Cadastro do profissional</h1>
 
-        <form onSubmit={(e) => { 
-          e.preventDefault();
-          
-          console.log('=== SUBMIT PROFISSIONAL ===');
-          console.log('CPF:', cpf);
-          console.log('CPF Error:', cpfError);
-          console.log('senhaPreenchida:', senhaPreenchida);
-          console.log('password length:', password.length);
-          
-          // VALIDAÇÃO 1: CPF obrigatório
-          if (!cpf || cpf.length < 14) {
-            alert('CPF é obrigatório e deve estar completo (000.000.000-00)');
-            return;
-          }
-          
-          // VALIDAÇÃO 2: CPF não pode ter erro
-          if (cpfError) {
-            alert('CPF inválido: ' + cpfError);
-            return;
-          }
-
-          // VALIDAÇÃO 3: Email obrigatório e válido
-          if (!formData.email || !isValidEmail(formData.email)) {
-            setEmailError('Email é obrigatório e deve ser válido');
-            alert('Por favor, preencha um email válido');
-            return;
-          }
-          
-          // APENAS SE senhaPreenchida FOR FALSE, validar a senha
-          console.log('Validando senha (senhaPreenchida é false)');
-          
-          // Só valida senha se ela foi preenchida
-console.log('senhaPreenchida =', senhaPreenchida);
-console.log('password =', password);
-
-if (!senhaPreenchida) {
-  if (!password || password.length < 8) {
-    alert('Senha deve ter mínimo 8 caracteres');
-    return;
-  }
-
-  if (!confirmPassword) {
-    alert('Confirmação de senha é obrigatória');
-    return;
-  }
-
-  if (password !== confirmPassword) {
-    alert('As senhas não conferem');
-    return;
-  }
-}
-          
-          // Se chegou aqui, fazer POST para registrar
-          const cpfLimpo = cpf.replace(/\D/g, ''); // Remove pontuação
-          fetch('/api/auth/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: formData.email,
-              password: password,
-              confirmPassword: confirmPassword,
-              userType: 'professional',
-              cpf: cpfLimpo,
-              name: formData.nome
-              ,
-              curricoURL: formData.curriculo || null,
-              atestadoURL: formData.atestado || null,
-              fotoPerfil: formData.fotoPerfil || null,
-            })
-          })
-          .then(res => res.json())
-            .then(async (data) => {
-              if (data.success) {
-                console.log('✅ Usuário registrado com sucesso');
-                // Tentar autenticar automaticamente
-                // Usuário veio pelo Google (sem senha)
-if (!password) {
-  fetch('/api/professional/profile', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(formData)
-  })
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return res.json();
-    })
-    .then(data => {
-      if (data.success) {
-        console.log('✅ Perfil salvo com sucesso');
-        localStorage.removeItem('dadosFormularioCompleto');
-        localStorage.removeItem('dadosCadastroSimples');
-        router.push('/professional/dashboard/painel');
-      } else {
-        alert('Erro ao salvar perfil: ' + (data.error || 'Desconhecido'));
-      }
-    })
-    .catch(err => {
-      alert('Erro ao conectar ao servidor: ' + err.message);
-    });
-
-  return;
-}
-
-const signResult: any = await signIn('credentials', {
-  redirect: false,
-  email: formData.email,
-  password
-});
-
-if (signResult?.ok) {
-  console.log('✅ Login automático realizado');
-
-  fetch('/api/professional/profile', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(formData)
-  })
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return res.json();
-    })
-    .then(data => {
-      if (data.success) {
-        console.log('✅ Perfil salvo com sucesso');
-        localStorage.removeItem('dadosFormularioCompleto');
-        localStorage.removeItem('dadosCadastroSimples');
-        router.push('/professional/dashboard/painel');
-      } else {
-        console.error('Erro:', data);
-        alert('Erro ao salvar perfil: ' + (data.error || 'Desconhecido'));
-      }
-    })
-    .catch(err => {
-      console.error('Erro ao salvar perfil:', err);
-      alert('Erro ao conectar ao servidor: ' + err.message);
-    });
-
-  return;
-}
-
-alert('Cadastro realizado. Faça login para completar o perfil.');
-router.push('/login');
-              } else {
-                throw new Error(data.error || 'Erro ao registrar');
-              }
-            })
-            .catch(err => {
-              console.error('Erro:', err);
-              alert('Erro ao conectar ao servidor');
-            });
-        }} className={styles.form}>
+        <form onSubmit={handleSubmit} className={styles.form}>
           
           <section>
             <h2 className={styles.sectionTitle}>Dados pessoais</h2>
@@ -332,7 +320,7 @@ router.push('/login');
               required 
               className={styles.input}
               value={formData.nome}
-              onChange={(e) => setFormData({...formData, nome: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
             />
 
             <label className={styles.label} htmlFor="cpf">CPF *</label>
@@ -348,10 +336,8 @@ router.push('/login');
                 const value = e.target.value;
                 const cpfLimpo = value.replace(/\D/g, '');
                 
-                // Limitar a 11 dígitos (não permite digitar mais)
                 if (cpfLimpo.length > 11) return;
                 
-                // Formatar CPF automaticamente: XXX.XXX.XXX-XX
                 let cpfFormatado = '';
                 if (cpfLimpo.length > 0) {
                   cpfFormatado = cpfLimpo.slice(0, 3);
@@ -368,7 +354,6 @@ router.push('/login');
                 
                 setCpf(cpfFormatado);
                 
-                // Validar CPF contra banco de dados apenas quando completo
                 if (cpfLimpo.length === 11) {
                   setCpfValidating(true);
                   fetch('/api/auth/validate-cpf', {
@@ -395,6 +380,7 @@ router.push('/login');
               }}
               style={{ borderColor: cpfError ? '#dc3545' : undefined }}
             />
+            
             {cpfValidating && (
               <div style={{
                 color: '#0c5460',
@@ -412,6 +398,7 @@ router.push('/login');
                 <span><strong>Validando CPF...</strong></span>
               </div>
             )}
+            
             {!cpfValidating && cpfError && (
               <div style={{
                 color: '#dc3545',
@@ -429,6 +416,7 @@ router.push('/login');
                 <span><strong>Erro:</strong> {cpfError}</span>
               </div>
             )}
+            
             {!cpfValidating && cpf.length === 14 && !cpfError && (
               <div style={{
                 color: '#155724',
@@ -459,9 +447,8 @@ router.push('/login');
                   className={styles.input}
                   value={dataNascimentoValue}
                   onChange={e => {
-                    let value = e.target.value.replace(/\D/g, ''); // Remove não-números
+                    let value = e.target.value.replace(/\D/g, '');
                     
-                    // Formata como DD/MM/AAAA enquanto digita
                     if (value.length >= 2) {
                       value = value.slice(0, 2) + '/' + value.slice(2);
                     }
@@ -471,35 +458,25 @@ router.push('/login');
                     
                     setDataNascimentoValue(value);
                     
-                    // Se completou a data (DD/MM/AAAA)
                     if (value.length === 10) {
                       const [day, month, year] = value.split('/');
                       const dayNum = parseInt(day);
                       const monthNum = parseInt(month);
                       const yearNum = parseInt(year);
                       
-                      console.log('🎯 Data digitada:', {digitado: value, day, month, year, dayNum, monthNum, yearNum});
-                      
-                      // Validar data
                       if (dayNum >= 1 && dayNum <= 31 && monthNum >= 1 && monthNum <= 12 && yearNum > 1900) {
                         const birth = new Date(yearNum, monthNum - 1, dayNum);
                         const today = new Date();
                         
-                        // Verificar se a data é válida (ex: 31/02 não existe)
                         if (birth.getDate() === dayNum) {
                           const age = today.getFullYear() - birth.getFullYear();
                           const monthDiff = today.getMonth() - birth.getMonth();
                           const dayDiff = today.getDate() - birth.getDate();
                           
-                          // Ajustar idade se o aniversário ainda não ocorreu este ano
                           const finalAge = (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) ? age - 1 : age;
-                          
-                          // Converter para YYYY-MM-DD para armazenar
                           const isoDate = `${String(yearNum).padStart(4, '0')}-${String(monthNum).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
-                          console.log('💾 Salvando:', {display: value, iso: isoDate, age: finalAge});
-                          setFormData({...formData, dataNascimento: isoDate, idade: finalAge.toString()});
-                        } else {
-                          console.warn('⚠️ Data inválida detectada:', {digitado: value, birthDate: birth.toLocaleDateString(), dayNum});
+                          
+                          setFormData({ ...formData, dataNascimento: isoDate, idade: finalAge.toString() });
                         }
                       }
                     }
@@ -508,7 +485,7 @@ router.push('/login');
               </div>
               <div>
                 <label className={styles.label} htmlFor="idade">Idade *</label>
-                <input id="idade" type="text" required className={styles.input} value={formData.idade} onChange={e => setFormData({...formData, idade: e.target.value})} />
+                <input id="idade" type="text" required className={styles.input} value={formData.idade} onChange={e => setFormData({ ...formData, idade: e.target.value })} />
               </div>
             </div>
 
@@ -520,7 +497,7 @@ router.push('/login');
                   className={styles.select}
                   required
                   value={formData.sexoBiologico}
-                  onChange={e => setFormData({...formData, sexoBiologico: e.target.value})}
+                  onChange={e => setFormData({ ...formData, sexoBiologico: e.target.value })}
                 >
                   <option value="">Selecione</option>
                   <option>Masculino</option>
@@ -535,7 +512,7 @@ router.push('/login');
                   className={styles.select}
                   required
                   value={formData.identidadeGenero}
-                  onChange={e => setFormData({...formData, identidadeGenero: e.target.value})}
+                  onChange={e => setFormData({ ...formData, identidadeGenero: e.target.value })}
                 >
                   <option value="">Selecione</option>
                   <option>Cisgênero</option>
@@ -555,7 +532,7 @@ router.push('/login');
                   className={styles.select}
                   required
                   value={formData.orientacaoSexual}
-                  onChange={e => setFormData({...formData, orientacaoSexual: e.target.value})}
+                  onChange={e => setFormData({ ...formData, orientacaoSexual: e.target.value })}
                 >
                   <option value="">Selecione</option>
                   <option>Heterossexual</option>
@@ -572,7 +549,7 @@ router.push('/login');
                   className={styles.select}
                   required
                   value={formData.estadoCivil}
-                  onChange={e => setFormData({...formData, estadoCivil: e.target.value})}
+                  onChange={e => setFormData({ ...formData, estadoCivil: e.target.value })}
                 >
                   <option value="">Selecione</option>
                   <option>Solteiro</option>
@@ -591,7 +568,7 @@ router.push('/login');
                   className={styles.select}
                   required
                   value={formData.religiao}
-                  onChange={e => setFormData({...formData, religiao: e.target.value})}
+                  onChange={e => setFormData({ ...formData, religiao: e.target.value })}
                 >
                   <option value="">Selecione</option>
                   <option>Católico</option>
@@ -609,7 +586,7 @@ router.push('/login');
                   className={styles.select}
                   required
                   value={formData.antecedentes}
-                  onChange={e => setFormData({...formData, antecedentes: e.target.value})}
+                  onChange={e => setFormData({ ...formData, antecedentes: e.target.value })}
                 >
                   <option value="">Selecione</option>
                   <option value="Não">Não</option>
@@ -623,7 +600,7 @@ router.push('/login');
             <h2 className={styles.sectionTitle}>Filhos</h2>
             
             <label className={styles.label} htmlFor="possuiFilhos">Possui filhos? *</label>
-            <select id="possuiFilhos" className={styles.select} required value={formData.possuiFilhos} onChange={e => setFormData({...formData, possuiFilhos: e.target.value})}>
+            <select id="possuiFilhos" className={styles.select} required value={formData.possuiFilhos} onChange={e => setFormData({ ...formData, possuiFilhos: e.target.value })}>
               <option>Não</option>
               <option>Sim</option>
             </select>
@@ -636,7 +613,7 @@ router.push('/login');
                   className={styles.select} 
                   required
                   value={formData.quantidadeFilhos}
-                  onChange={e => setFormData({...formData, quantidadeFilhos: e.target.value})}
+                  onChange={e => setFormData({ ...formData, quantidadeFilhos: e.target.value })}
                 >
                   <option value="">Selecione</option>
                   <option>1</option>
@@ -654,9 +631,9 @@ router.push('/login');
                         checked={formData.faixaEtariaFilhos.includes(faixa)}
                         onChange={e => {
                           if (e.target.checked) {
-                            setFormData({...formData, faixaEtariaFilhos: [...formData.faixaEtariaFilhos, faixa]});
+                            setFormData({ ...formData, faixaEtariaFilhos: [...formData.faixaEtariaFilhos, faixa] });
                           } else {
-                            setFormData({...formData, faixaEtariaFilhos: formData.faixaEtariaFilhos.filter(f => f !== faixa)});
+                            setFormData({ ...formData, faixaEtariaFilhos: formData.faixaEtariaFilhos.filter(f => f !== faixa) });
                           }
                         }}
                       /> {faixa}
@@ -679,7 +656,7 @@ router.push('/login');
               value={formData.email}
               onChange={(e) => {
                 const email = e.target.value;
-                setFormData({...formData, email});
+                setFormData({ ...formData, email });
                 if (email && !isValidEmail(email)) {
                   setEmailError('Email inválido');
                 } else {
@@ -704,7 +681,6 @@ router.push('/login');
                     const value = e.target.value;
                     const telefoneLimpo = value.replace(/\D/g, '');
                     
-                    // Formatar telefone automaticamente: (XX) XXXXX-XXXX
                     let telefoneFormatado = '';
                     if (telefoneLimpo.length > 0) {
                       if (telefoneLimpo.length <= 2) {
@@ -717,7 +693,7 @@ router.push('/login');
                     }
                     
                     setTelefone(telefoneFormatado);
-                    setFormData({...formData, telefone: telefoneFormatado});
+                    setFormData({ ...formData, telefone: telefoneFormatado });
                   }}
                 />
               </div>
@@ -728,7 +704,7 @@ router.push('/login');
                   className={styles.select}
                   required
                   value={formData.whatsapp}
-                  onChange={e => setFormData({...formData, whatsapp: e.target.value})}
+                  onChange={e => setFormData({ ...formData, whatsapp: e.target.value })}
                 >
                   <option value="Não">Não</option>
                   <option value="Sim">Sim</option>
@@ -749,7 +725,6 @@ router.push('/login');
                     const value = e.target.value;
                     const telefoneLimpo = value.replace(/\D/g, '');
                     
-                    // Formatar telefone automaticamente: (XX) XXXXX-XXXX
                     let telefoneFormatado = '';
                     if (telefoneLimpo.length > 0) {
                       if (telefoneLimpo.length <= 2) {
@@ -762,7 +737,7 @@ router.push('/login');
                     }
                     
                     setTelefone2(telefoneFormatado);
-                    setFormData({...formData, telefone2: telefoneFormatado});
+                    setFormData({ ...formData, telefone2: telefoneFormatado });
                   }}
                 />
               </div>
@@ -775,7 +750,7 @@ router.push('/login');
             <div className={styles.grid}>
               <div>
                 <label className={styles.label} htmlFor="estado">Estado (UF) *</label>
-                <select id="estado" className={styles.select} required value={formData.estado} onChange={e => setFormData({...formData, estado: e.target.value})}>
+                <select id="estado" className={styles.select} required value={formData.estado} onChange={e => setFormData({ ...formData, estado: e.target.value })}>
                   <option value="">Selecione</option>
                   {listaEstados.map(uf => <option key={uf} value={uf}>{uf}</option>)}
                 </select>
@@ -787,7 +762,7 @@ router.push('/login');
                   className={styles.select}
                   required
                   value={formData.cidade}
-                  onChange={e => setFormData({...formData, cidade: e.target.value})}
+                  onChange={e => setFormData({ ...formData, cidade: e.target.value })}
                 >
                   <option value="">Escolha a cidade</option>
                   {cidades.map((c, i) => <option key={i} value={c}>{c}</option>)}
@@ -796,42 +771,42 @@ router.push('/login');
             </div>
 
             <label className={styles.label} htmlFor="disponibilidadeMudanca">Disponibilidade para mudança? *</label>
-                <select
-                  id="disponibilidadeMudanca"
-                  className={styles.select}
-                  required
-                  value={formData.disponibilidadeMudanca}
-                  onChange={e => setFormData({...formData, disponibilidadeMudanca: e.target.value})}
-                >
-                  <option value="">Selecione</option>
-                  <option value="Sim">Sim</option>
-                  <option value="Não">Não</option>
-                  <option value="Dependendo da oportunidade">Dependendo da oportunidade</option>
-                </select>
+            <select
+              id="disponibilidadeMudanca"
+              className={styles.select}
+              required
+              value={formData.disponibilidadeMudanca}
+              onChange={e => setFormData({ ...formData, disponibilidadeMudanca: e.target.value })}
+            >
+              <option value="">Selecione</option>
+              <option value="Sim">Sim</option>
+              <option value="Não">Não</option>
+              <option value="Dependendo da oportunidade">Dependendo da oportunidade</option>
+            </select>
           </section>
 
           <section>
             <h2 className={styles.sectionTitle}>Formação</h2>
             
             <label className={styles.label} htmlFor="escolaridade">Escolaridade *</label>
-                <select
-                  id="escolaridade"
-                  className={styles.select}
-                  required
-                  value={formData.escolaridade}
-                  onChange={e => setFormData({...formData, escolaridade: e.target.value})}
-                >
-                  <option value="">Selecione</option>
-                  <option>Fundamental incompleto</option>
-                  <option>Fundamental completo</option>
-                  <option>Médio incompleto</option>
-                  <option>Médio completo</option>
-                  <option>Técnico</option>
-                  <option>Superior incompleto</option>
-                  <option>Superior completo</option>
-                  <option>Pós-graduação</option>
-                  <option>MBA</option>
-                </select>
+            <select
+              id="escolaridade"
+              className={styles.select}
+              required
+              value={formData.escolaridade}
+              onChange={e => setFormData({ ...formData, escolaridade: e.target.value })}
+            >
+              <option value="">Selecione</option>
+              <option>Fundamental incompleto</option>
+              <option>Fundamental completo</option>
+              <option>Médio incompleto</option>
+              <option>Médio completo</option>
+              <option>Técnico</option>
+              <option>Superior incompleto</option>
+              <option>Superior completo</option>
+              <option>Pós-graduação</option>
+              <option>MBA</option>
+            </select>
 
             <label className={styles.label}>Cursos / Certificações (Ex: Eletricista, Soldador) *</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -847,7 +822,7 @@ router.push('/login');
                       const novosCursos = [...cursos];
                       novosCursos[index] = e.target.value;
                       setCursos(novosCursos);
-                      setFormData({...formData, cursosCertificacoes: novosCursos.filter(c => c.trim()).join(', ')});
+                      setFormData({ ...formData, cursosCertificacoes: novosCursos.filter(c => c.trim()).join(', ') });
                     }}
                     style={{ flex: 1 }}
                   />
@@ -857,7 +832,7 @@ router.push('/login');
                       onClick={() => {
                         const novosCursos = cursos.filter((_, i) => i !== index);
                         setCursos(novosCursos);
-                        setFormData({...formData, cursosCertificacoes: novosCursos.filter(c => c.trim()).join(', ')});
+                        setFormData({ ...formData, cursosCertificacoes: novosCursos.filter(c => c.trim()).join(', ') });
                       }}
                       style={{
                         padding: '8px 12px',
@@ -877,9 +852,7 @@ router.push('/login');
               ))}
               <button
                 type="button"
-                onClick={() => {
-                  setCursos([...cursos, '']);
-                }}
+                onClick={() => setCursos([...cursos, ''])}
                 style={{
                   padding: '10px',
                   backgroundColor: '#007bff',
@@ -906,7 +879,7 @@ router.push('/login');
               className={styles.select} 
               required
               value={formData.situacaoProfissional}
-              onChange={e => setFormData({...formData, situacaoProfissional: e.target.value})}
+              onChange={e => setFormData({ ...formData, situacaoProfissional: e.target.value })}
             >
               <option value="">Selecione</option>
               <option value="Empregado">Empregado</option>
@@ -923,7 +896,7 @@ router.push('/login');
                   className={styles.select} 
                   required
                   value={formData.areaInteresse}
-                  onChange={e => setFormData({...formData, areaInteresse: e.target.value})}
+                  onChange={e => setFormData({ ...formData, areaInteresse: e.target.value })}
                 >
                   <option value="">Selecione</option>
                   <option>Automotivo</option>
@@ -988,7 +961,7 @@ router.push('/login');
                   required 
                   className={styles.input}
                   value={formData.cargoDesejado}
-                  onChange={e => setFormData({...formData, cargoDesejado: e.target.value})}
+                  onChange={e => setFormData({ ...formData, cargoDesejado: e.target.value })}
                 />
               </div>
             </div>
@@ -1001,7 +974,7 @@ router.push('/login');
                   className={styles.select} 
                   required
                   value={formData.turnoDisponivel}
-                  onChange={e => setFormData({...formData, turnoDisponivel: e.target.value})}
+                  onChange={e => setFormData({ ...formData, turnoDisponivel: e.target.value })}
                 >
                   <option value="">Selecione</option>
                   <option value="Manhã">Manhã</option>
@@ -1017,7 +990,7 @@ router.push('/login');
                   className={styles.select} 
                   required
                   value={formData.disponibilidadeInicio}
-                  onChange={e => setFormData({...formData, disponibilidadeInicio: e.target.value})}
+                  onChange={e => setFormData({ ...formData, disponibilidadeInicio: e.target.value })}
                 >
                   <option value="">Selecione</option>
                   <option value="Imediata">Imediata</option>
@@ -1038,7 +1011,7 @@ router.push('/login');
               className={styles.select} 
               required 
               value={formData.trabalhouIndustria} 
-              onChange={e => setFormData({...formData, trabalhouIndustria: e.target.value})}
+              onChange={e => setFormData({ ...formData, trabalhouIndustria: e.target.value })}
             >
               <option value="">Selecione</option>
               <option value="Não">Não</option>
@@ -1055,7 +1028,7 @@ router.push('/login');
                   className={styles.select} 
                   required
                   value={formData.tempoExperiencia}
-                  onChange={e => setFormData({...formData, tempoExperiencia: e.target.value})}
+                  onChange={e => setFormData({ ...formData, tempoExperiencia: e.target.value })}
                 >
                   <option value="">Selecione</option>
                   <option value="Menos de 1 ano">Menos de 1 ano</option>
@@ -1158,9 +1131,7 @@ router.push('/login');
                   ))}
                   <button
                     type="button"
-                    onClick={() => {
-                      setEmpresas([...empresas, {nome: '', cargo: '', dataInicio: '', dataFim: ''}]);
-                    }}
+                    onClick={() => setEmpresas([...empresas, { nome: '', cargo: '', dataInicio: '', dataFim: '' }])}
                     style={{
                       padding: '10px',
                       backgroundColor: '#007bff',
@@ -1188,7 +1159,7 @@ router.push('/login');
               className={styles.select} 
               required
               value={formData.recolocacao}
-              onChange={e => setFormData({...formData, recolocacao: e.target.value})}
+              onChange={e => setFormData({ ...formData, recolocacao: e.target.value })}
             >
               <option value="">Selecione</option>
               <option value="Sim">Sim</option>
@@ -1205,20 +1176,16 @@ router.push('/login');
               value={pretensaoSalarial}
               onChange={(e) => {
                 const value = e.target.value;
-                
-                // Remove tudo que não é número
                 let apenasNumeros = value.replace(/\D/g, '');
                 
-                // Remove zeros à esquerda
                 apenasNumeros = apenasNumeros.replace(/^0+/, '') || '0';
                 
                 if (apenasNumeros === '0' || apenasNumeros === '') {
                   setPretensaoSalarial('');
-                  setFormData({...formData, pretensaoSalarial: ''});
+                  setFormData({ ...formData, pretensaoSalarial: '' });
                   return;
                 }
                 
-                // Se tem menos de 3 dígitos, é menor que 10 reais (exemplo: 5 -> 0,05)
                 let centavos = '';
                 let inteiro = '';
                 
@@ -1229,12 +1196,10 @@ router.push('/login');
                   inteiro = '0';
                   centavos = apenasNumeros;
                 } else {
-                  // Últimos 2 dígitos sempre são centavos
                   centavos = apenasNumeros.slice(-2);
                   inteiro = apenasNumeros.slice(0, -2);
                 }
                 
-                // Formata inteiro com pontos a cada 3 dígitos
                 const partes = inteiro.split('').reverse();
                 const inteiroFormatado = partes
                   .reduce((acc: string[], digit, index) => {
@@ -1250,7 +1215,7 @@ router.push('/login');
                 const salarioFormatado = inteiroFormatado + ',' + centavos;
                 
                 setPretensaoSalarial(salarioFormatado);
-                setFormData({...formData, pretensaoSalarial: salarioFormatado});
+                setFormData({ ...formData, pretensaoSalarial: salarioFormatado });
               }}
             />
           </section>
@@ -1265,7 +1230,7 @@ router.push('/login');
               rows={4}
               placeholder="Conte um pouco sobre você, seus objetivos profissionais ou qualquer informação que gostaria que as empresas soubessem..."
               value={formData.mensagemEmpresas}
-              onChange={e => setFormData({...formData, mensagemEmpresas: e.target.value})}
+              onChange={e => setFormData({ ...formData, mensagemEmpresas: e.target.value })}
             ></textarea>
           </section>
 
@@ -1286,32 +1251,28 @@ router.push('/login');
                   fd.append('file', file);
                   fd.append('type', 'avatars');
                   console.log('INICIANDO UPLOAD FOTO');
-console.log('INICIANDO UPLOAD FOTO');
 
                   const res = await fetch('/api/upload', { method: 'POST', body: fd, credentials: 'include' });
+                  console.log('STATUS FOTO:', res.status);
+                  const data = await res.json();
+                  console.log('RESPOSTA FOTO:', data);
 
-console.log('STATUS FOTO:', res.status);
-
-const data = await res.json();
-
-console.log('RESPOSTA FOTO:', data);
                   if (res.ok && data.success && data.file?.url) {
-                    setFormData({...formData, fotoPerfil: data.file.url});
+                    setFormData({ ...formData, fotoPerfil: data.file.url });
                   } else if (res.status === 401) {
-                    // Não autenticado - salvar localmente como dataURL para enviar depois
                     const reader = new FileReader();
                     reader.onloadend = () => {
-                      setFormData({...formData, fotoPerfil: reader.result as string});
+                      setFormData({ ...formData, fotoPerfil: reader.result as string });
                     };
                     reader.readAsDataURL(file);
                   } else {
                     console.error('Upload foto falhou', data);
                     alert(JSON.stringify(data));
                   }
-               } catch (err) {
-  console.error('Erro no upload da foto:', err);
-  alert('Erro no upload da foto: ' + String(err));
-}
+                } catch (err) {
+                  console.error('Erro no upload da foto:', err);
+                  alert('Erro no upload da foto: ' + String(err));
+                }
               }}
             />
             {formData.fotoPerfil && (
@@ -1341,23 +1302,21 @@ console.log('RESPOSTA FOTO:', data);
                   const res = await fetch('/api/upload', { method: 'POST', body: fd, credentials: 'include' });
                   const data = await res.json();
                   if (res.ok && data.success && data.file?.url) {
-                    // armazenar a URL do currículo no formData (string)
-                    setFormData({...formData, curriculo: data.file.url});
+                    setFormData({ ...formData, curriculo: data.file.url });
                   } else if (res.status === 401) {
-                    // Não autenticado - salvar localmente como dataURL para enviar depois
                     const reader = new FileReader();
                     reader.onloadend = () => {
-                      setFormData({...formData, curriculo: reader.result as string});
+                      setFormData({ ...formData, curriculo: reader.result as string });
                     };
                     reader.readAsDataURL(file);
                   } else {
                     console.error('Upload curriculo falhou', data);
                     alert('Erro ao enviar currículo');
                   }
-               } catch (err) {
-  console.error('Erro no upload do currículo:', err);
-  alert('Erro no upload do currículo: ' + String(err));
-}
+                } catch (err) {
+                  console.error('Erro no upload do currículo:', err);
+                  alert('Erro no upload do currículo: ' + String(err));
+                }
               }}
             />
             {formData.curriculo && (
@@ -1386,21 +1345,21 @@ console.log('RESPOSTA FOTO:', data);
                   const res = await fetch('/api/upload', { method: 'POST', body: fd, credentials: 'include' });
                   const data = await res.json();
                   if (res.ok && data.success && data.file?.url) {
-                    setFormData({...formData, atestado: data.file.url});
+                    setFormData({ ...formData, atestado: data.file.url });
                   } else if (res.status === 401) {
                     const reader = new FileReader();
                     reader.onloadend = () => {
-                      setFormData({...formData, atestado: reader.result as string});
+                      setFormData({ ...formData, atestado: reader.result as string });
                     };
                     reader.readAsDataURL(file);
                   } else {
                     console.error('Upload atestado falhou', data);
                     alert('Erro ao enviar atestado');
                   }
-               } catch (err) {
-  console.error('Erro no upload do atestado:', err);
-  alert('Erro no upload do atestado: ' + String(err));
-}
+                } catch (err) {
+                  console.error('Erro no upload do atestado:', err);
+                  alert('Erro no upload do atestado: ' + String(err));
+                }
               }}
             />
             {formData.atestado && (
