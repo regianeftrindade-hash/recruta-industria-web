@@ -55,67 +55,25 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const { 
-      email, 
-      password, 
-      confirmPassword, 
-      userType, 
-      cpf, 
-      cnpj, 
-      name,
-      // Dados pessoais
-      dataNascimento,
-      idade,
-      sexoBiologico,
-      identidadeGenero,
-      orientacaoSexual,
-      estadoCivil,
-      religiao,
-      antecedentes,
-      // Filhos
-      possuiFilhos,
-      quantidadeFilhos,
-      faixaEtariaFilhos,
-      // Contato
-      telefone,
-      telefone2,
-      whatsapp,
-      // Localização
-      estado,
-      cidade,
-      disponibilidadeMudanca,
-      // Formação
-      escolaridade,
-      cursosCertificacoes,
-      // Profissional
-      situacaoProfissional,
-      areaInteresse,
-      cargoDesejado,
-      trabalhouIndustria,
-      tempoExperiencia,
-      experiencias,
-      turnoDisponivel,
-      // Recolocação e Salário
-      disponibilidadeInicio,
-      recolocacao,
-      pretensaoSalarial,
-      // Documentos (URLs após upload)
-      curricoURL,
-      atestadoURL,
-      // Foto de perfil (URL ou dataURL)
-      fotoPerfil,
-      // Mensagem
-      mensagemEmpresas,
+      email, password, confirmPassword, userType, cpf, cnpj, name,
+      dataNascimento, idade, sexoBiologico, identidadeGenero, orientacaoSexual, estadoCivil, religiao, antecedentes,
+      possuiFilhos, quantidadeFilhos, faixaEtariaFilhos,
+      telefone, telefone2, whatsapp,
+      estado, cidade, disponibilidadeMudanca,
+      escolaridade, cursosCertificacoes,
+      situacaoProfissional, areaInteresse, cargoDesejado, trabalhouIndustria, tempoExperiencia, experiencias, turnoDisponivel,
+      disponibilidadeInicio, recolocacao, pretensaoSalarial,
+      curricoURL, atestadoURL, fotoPerfil, mensagemEmpresas,
     } = body
 
     // Validações básicas
     if (!email || !userType) {
-  incrementRegisterAttempts(ip)
-
-  return NextResponse.json(
-    { error: 'Email e tipo de usuário são obrigatórios' },
-    { status: 400 }
-  )
-}
+      incrementRegisterAttempts(ip)
+      return NextResponse.json(
+        { error: 'Email e tipo de usuário são obrigatórios' },
+        { status: 400 }
+      )
+    }
 
     if (!isValidEmail(email)) {
       incrementRegisterAttempts(ip)
@@ -125,29 +83,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Normalizar email (lowercase) para evitar duplicações com diferentes casos
+    // Normalizar email (lowercase)
     const normalizedEmail = email.toLowerCase().trim()
 
-    // Validar senha APENAS se for fornecida (opcional para provedores como Google)
     if (password || confirmPassword) {
-      // Se uma das duas foi fornecida, ambas são obrigatórias
       if (!password) {
         incrementRegisterAttempts(ip)
-        return NextResponse.json(
-          { error: 'Senha é obrigatória' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'Senha é obrigatória' }, { status: 400 })
       }
-
       if (!confirmPassword) {
         incrementRegisterAttempts(ip)
-        return NextResponse.json(
-          { error: 'Confirmação de senha é obrigatória' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'Confirmação de senha é obrigatória' }, { status: 400 })
       }
 
-      // Validar força da senha
       const passwordStrength = validatePasswordStrength(password)
       if (!passwordStrength.isStrong) {
         incrementRegisterAttempts(ip)
@@ -161,20 +109,22 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Validar se as senhas conferem
       if (password !== confirmPassword) {
         incrementRegisterAttempts(ip)
-        return NextResponse.json(
-          { error: 'Senhas não conferem' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'Senhas não conferem' }, { status: 400 })
       }
     }
 
-    // Verificar se email já existe (usar email normalizado)
+    // --- LOGS ESTRATÉGICOS PARA DEBUG ---
+    console.log(`\n🔍 [API Register] Buscando usuário com o e-mail: ${normalizedEmail}`);
+    
+    // Verificar se email já existe
     const existingUser = await prisma.user.findUnique({
       where: { email: normalizedEmail }
     })
+
+    console.log(`📝 [API Register] Resultado do Prisma:`, existingUser ? 'Usuário ENCONTRADO!' : 'Nenhum usuário encontrado.');
+    // ------------------------------------
 
     if (existingUser) {
       incrementRegisterAttempts(ip)
@@ -189,10 +139,7 @@ export async function POST(request: NextRequest) {
       const cpfLimpo = cpf.replace(/\D/g, '')
       if (!isValidCPF(cpfLimpo)) {
         incrementRegisterAttempts(ip)
-        return NextResponse.json(
-          { error: 'CPF inválido' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'CPF inválido' }, { status: 400 })
       }
     }
 
@@ -200,32 +147,25 @@ export async function POST(request: NextRequest) {
       const cnpjLimpo = cnpj.replace(/\D/g, '')
       if (!isValidCNPJ(cnpjLimpo)) {
         incrementRegisterAttempts(ip)
-        return NextResponse.json(
-          { error: 'CNPJ inválido' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'CNPJ inválido' }, { status: 400 })
       }
     }
 
-    // Criar usuário no banco de dados
-  // Criar usuário no banco de dados
-const hashedPassword = password
-  ? await hashPassword(password)
-  : null
+    const hashedPassword = password ? await hashPassword(password) : null
 
-const user = await prisma.user.create({
-  data: {
-    email: normalizedEmail,
-    name: name || normalizedEmail.split('@')[0],
-    role: userType.toUpperCase() as 'COMPANY' | 'PROFESSIONAL',
-    passwordHash: hashedPassword,
-  },
-})
-    // Se é profissional, criar Profile com todos os dados do formulário
+    // Criar usuário no banco de dados
+    const user = await prisma.user.create({
+      data: {
+        email: normalizedEmail,
+        name: name || normalizedEmail.split('@')[0],
+        role: userType.toUpperCase() as 'COMPANY' | 'PROFESSIONAL',
+        passwordHash: hashedPassword,
+      },
+    })
+
+    // Se é profissional, criar Profile
     if (userType === 'professional') {
       try {
-        // Preparar dados do profile
-        // Para arrays, converter para JSON string
         const profileData = {
           userId: user.id,
           title: cargoDesejado || name || '',
@@ -234,7 +174,6 @@ const user = await prisma.user.create({
           whatsapp: whatsapp || null,
           location: cidade && estado ? `${cidade}, ${estado}` : estado || '',
           
-          // Dados pessoais
           cpf: cpf || null,
           dataNascimento: dataNascimento ? new Date(dataNascimento) : null,
           idade: idade ? parseInt(idade) : null,
@@ -245,24 +184,17 @@ const user = await prisma.user.create({
           religiao: religiao || null,
           antecedentes: antecedentes === true || antecedentes === 'true',
           
-          // Filhos
           possuiFilhos: possuiFilhos === true || possuiFilhos === 'true',
           quantidadeFilhos: quantidadeFilhos ? parseInt(quantidadeFilhos) : null,
           faixaEtariaFilhos: faixaEtariaFilhos ? JSON.stringify(faixaEtariaFilhos) : null,
           
-          // Contato adicional
-         
-          
-          // Localização
           estado: estado || null,
           cidade: cidade || null,
           disponibilidadeMudanca: disponibilidadeMudanca || null,
           
-          // Formação
           escolaridade: escolaridade || null,
           cursosCertificacoes: cursosCertificacoes ? JSON.stringify(cursosCertificacoes) : null,
           
-          // Profissional
           situacaoProfissional: situacaoProfissional || null,
           areaInteresse: areaInteresse || null,
           cargoDesejado: cargoDesejado || null,
@@ -271,22 +203,15 @@ const user = await prisma.user.create({
           experienciasJSON: experiencias ? JSON.stringify(experiencias) : null,
           turnoDisponivel: turnoDisponivel || null,
           
-          // Recolocação e Salário
           disponibilidadeInicio: disponibilidadeInicio || null,
           recolocacao: recolocacao || null,
           pretensaoSalarial: pretensaoSalarial || null,
           
-          // Documentos
           curricoURL: curricoURL || null,
           atestadoURL: atestadoURL || null,
-
-          // Foto de perfil
           avatar: fotoPerfil || null,
           
-          // Mensagem
           mensagemEmpresas: mensagemEmpresas || null,
-          
-          // Bio e descrição
           bio: mensagemEmpresas || null,
           fullDescription: mensagemEmpresas || null,
         }
@@ -296,25 +221,18 @@ const user = await prisma.user.create({
         })
       } catch (profileError: any) {
         console.error('Erro ao criar Profile para profissional:', profileError)
-        // Log do erro mas continua - o User foi criado e é o importante
         logAudit('profile_creation_failed', normalizedEmail, ip, userAgent, 'failure', `Profile creation failed: ${profileError?.message}`)
       }
     }
 
-    // Log de auditoria
     logAudit('register_success', normalizedEmail, ip, userAgent, 'success', `User registered as ${userType}`)
     await logSecurityAudit('registration_success', normalizedEmail, 'account_created', { userType, ip })
-    // Resetar contador de tentativas para o IP após registro bem-sucedido
+    
     try {
       resetRegisterAttempts(ip)
-    } catch (err) {
-      console.warn('Não foi possível resetar register attempts para IP:', ip, err)
-    }
-    // Resetar tentativas falhadas para o email do usuário recém-criado
-    try {
       resetFailedAttempts(normalizedEmail)
     } catch (err) {
-      console.warn('Não foi possível resetar tentativas falhadas para o email:', normalizedEmail, err)
+      console.warn('Não foi possível resetar tentativas falhadas:', err)
     }
     
     return NextResponse.json(
