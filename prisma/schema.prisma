@@ -2,8 +2,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Nota: Em produção (Vercel), DATABASE_URL deve apontar para PostgreSQL
+// Para desenvolvimento local com SQLite, alterar para: provider = "sqlite"
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url = env("DATABASE_URL")
 }
 
