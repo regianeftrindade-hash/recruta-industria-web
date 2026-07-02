@@ -125,24 +125,41 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Normalizar email (lowercase) para evitar duplicações com diferentes casos
+    const normalizedEmail = email.toLowerCase().trim()
+
+    // Validar se password e confirmPassword são obrigatórios e preenchidos
+    if (!password) {
+      incrementRegisterAttempts(ip)
+      return NextResponse.json(
+        { error: 'Senha é obrigatória' },
+        { status: 400 }
+      )
+    }
+
+    if (!confirmPassword) {
+      incrementRegisterAttempts(ip)
+      return NextResponse.json(
+        { error: 'Confirmação de senha é obrigatória' },
+        { status: 400 }
+      )
+    }
+
+    // Validar força da senha
     const passwordStrength = validatePasswordStrength(password)
-    if (password) {
-  const passwordStrength = validatePasswordStrength(password)
+    if (!passwordStrength.isStrong) {
+      incrementRegisterAttempts(ip)
+      return NextResponse.json(
+        {
+          error: 'Senha não atende aos requisitos de segurança',
+          feedback: passwordStrength.feedback,
+          score: passwordStrength.score
+        },
+        { status: 400 }
+      )
+    }
 
-  if (!passwordStrength.isStrong) {
-    incrementRegisterAttempts(ip)
-
-    return NextResponse.json(
-      {
-        error: 'Senha não atende aos requisitos de segurança',
-        feedback: passwordStrength.feedback,
-        score: passwordStrength.score
-      },
-      { status: 400 }
-    )
-  }
-}
-
+    // Validar se as senhas conferem
     if (password !== confirmPassword) {
       incrementRegisterAttempts(ip)
       return NextResponse.json(
@@ -151,9 +168,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verificar se email já existe
+    // Verificar se email já existe (usar email normalizado)
     const existingUser = await prisma.user.findUnique({
-      where: { email }
+      where: { email: normalizedEmail }
     })
 
     if (existingUser) {
@@ -195,8 +212,8 @@ const hashedPassword = password
 
 const user = await prisma.user.create({
   data: {
-    email,
-    name: name || email.split('@')[0],
+    email: normalizedEmail,
+    name: name || normalizedEmail.split('@')[0],
     role: userType.toUpperCase() as 'COMPANY' | 'PROFESSIONAL',
     passwordHash: hashedPassword,
   },
@@ -209,7 +226,7 @@ const user = await prisma.user.create({
         const profileData = {
           userId: user.id,
           title: cargoDesejado || name || '',
-          email: email,
+          email: normalizedEmail,
           phone: telefone || null,
           whatsapp: whatsapp || null,
           location: cidade && estado ? `${cidade}, ${estado}` : estado || '',
@@ -277,13 +294,13 @@ const user = await prisma.user.create({
       } catch (profileError: any) {
         console.error('Erro ao criar Profile para profissional:', profileError)
         // Log do erro mas continua - o User foi criado e é o importante
-        logAudit('profile_creation_failed', email, ip, userAgent, 'failure', `Profile creation failed: ${profileError?.message}`)
+        logAudit('profile_creation_failed', normalizedEmail, ip, userAgent, 'failure', `Profile creation failed: ${profileError?.message}`)
       }
     }
 
     // Log de auditoria
-    logAudit('register_success', email, ip, userAgent, 'success', `User registered as ${userType}`)
-    await logSecurityAudit('registration_success', email, 'account_created', { userType, ip })
+    logAudit('register_success', normalizedEmail, ip, userAgent, 'success', `User registered as ${userType}`)
+    await logSecurityAudit('registration_success', normalizedEmail, 'account_created', { userType, ip })
     // Resetar contador de tentativas para o IP após registro bem-sucedido
     try {
       resetRegisterAttempts(ip)
@@ -292,9 +309,9 @@ const user = await prisma.user.create({
     }
     // Resetar tentativas falhadas para o email do usuário recém-criado
     try {
-      resetFailedAttempts(email)
+      resetFailedAttempts(normalizedEmail)
     } catch (err) {
-      console.warn('Não foi possível resetar tentativas falhadas para o email:', email, err)
+      console.warn('Não foi possível resetar tentativas falhadas para o email:', normalizedEmail, err)
     }
     
     return NextResponse.json(
@@ -311,8 +328,9 @@ const user = await prisma.user.create({
     )
   } catch (error: any) {
     console.error('Erro no registro:', error)
+    const errorMessage = error?.message || 'Erro ao registrar usuário. Tente novamente ou contate o suporte se o problema persistir.';
     return NextResponse.json(
-      { error: error?.message || 'Erro ao registrar usuário' },
+      { error: errorMessage },
       { status: 500 }
     )
   }

@@ -190,6 +190,13 @@ export default function CadastroProfissional() {
             alert('CPF inválido: ' + cpfError);
             return;
           }
+
+          // VALIDAÇÃO 3: Email obrigatório e válido
+          if (!formData.email || !isValidEmail(formData.email)) {
+            setEmailError('Email é obrigatório e deve ser válido');
+            alert('Por favor, preencha um email válido');
+            return;
+          }
           
           // APENAS SE senhaPreenchida FOR FALSE, validar a senha
           console.log('Validando senha (senhaPreenchida é false)');
@@ -199,8 +206,13 @@ console.log('senhaPreenchida =', senhaPreenchida);
 console.log('password =', password);
 
 if (!senhaPreenchida) {
-  if (password.length < 8) {
+  if (!password || password.length < 8) {
     alert('Senha deve ter mínimo 8 caracteres');
+    return;
+  }
+
+  if (!confirmPassword) {
+    alert('Confirmação de senha é obrigatória');
     return;
   }
 

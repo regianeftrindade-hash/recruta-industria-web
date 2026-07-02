@@ -19,9 +19,12 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Senha", type: "password" },
       },
       authorize: async (credentials) => {
-        const email = credentials?.email;
+        let email = credentials?.email;
         const password = credentials?.password;
         if (!email || !password) return null;
+
+        // Normalizar email
+        email = email.toLowerCase().trim();
 
         const user = await prisma.user.findUnique({
           where: { email },
@@ -45,14 +48,16 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }: any) {
       if (account?.provider === "google") {
+        // Normalizar email do Google
+        const normalizedEmail = user.email!.toLowerCase().trim();
         const existing = await prisma.user.findUnique({
-          where: { email: user.email! },
+          where: { email: normalizedEmail },
         });
 
         if (!existing) {
           await prisma.user.create({
             data: {
-              email: user.email!,
+              email: normalizedEmail,
               name: user.name,
               image: user.image,
               role: "PROFESSIONAL",
@@ -69,8 +74,10 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.sub;
       }
       if (session.user && session.user.email) {
+        // Normalizar email para busca no banco
+        const normalizedEmail = session.user.email.toLowerCase().trim();
         const dbUser = await prisma.user.findUnique({
-          where: { email: session.user.email },
+          where: { email: normalizedEmail },
         });
         if (dbUser) {
           session.user.userType = dbUser.role;

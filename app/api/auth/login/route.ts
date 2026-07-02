@@ -122,8 +122,9 @@ export async function POST(request: NextRequest) {
     })
   } catch (error: any) {
     console.error('Erro no login:', error)
+    const errorMessage = error?.message || 'Erro ao fazer login. Verifique sua conexão e tente novamente.';
     return NextResponse.json(
-      { error: 'Erro ao fazer login' },
+      { error: errorMessage },
       { status: 500 }
     )
   }

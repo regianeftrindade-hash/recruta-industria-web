@@ -133,7 +133,8 @@ function LoginContent() {
         }
       }
     } catch (error) {
-      setErrorMessage('Erro ao fazer login. Tente novamente.');
+      console.error('Erro na função handleSubmit:', error);
+      setErrorMessage('Erro ao fazer login. Verifique sua conexão e tente novamente. Se o problema persistir, contate o suporte.');
       setLoading(false);
     }
   };

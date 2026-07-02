@@ -227,9 +227,15 @@ export default function CadastroEmpresa() {
       alert('CNPJ não validado');
       return;
     }
+
+    if (!formData.email || !isValidEmail(formData.email)) {
+      setEmailError('Email corporativo é obrigatório e deve ser válido');
+      alert('Por favor, preencha um email corporativo válido');
+      return;
+    }
     
-    if (!isValidEmail(formData.email)) {
-      setEmailError('Email inválido');
+    if (!formData.telefone) {
+      alert('Telefone é obrigatório');
       return;
     }
     
@@ -291,7 +297,12 @@ export default function CadastroEmpresa() {
       return;
     }
     
-    if (!confirmPassword || password !== confirmPassword) {
+    if (!confirmPassword) {
+      alert('Confirmação de senha é obrigatória');
+      return;
+    }
+
+    if (password !== confirmPassword) {
       alert('As senhas não conferem');
       return;
     }
