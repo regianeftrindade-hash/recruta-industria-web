@@ -128,44 +128,47 @@ export async function POST(request: NextRequest) {
     // Normalizar email (lowercase) para evitar duplicações com diferentes casos
     const normalizedEmail = email.toLowerCase().trim()
 
-    // Validar se password e confirmPassword são obrigatórios e preenchidos
-    if (!password) {
-      incrementRegisterAttempts(ip)
-      return NextResponse.json(
-        { error: 'Senha é obrigatória' },
-        { status: 400 }
-      )
-    }
+    // Validar senha APENAS se for fornecida (opcional para provedores como Google)
+    if (password || confirmPassword) {
+      // Se uma das duas foi fornecida, ambas são obrigatórias
+      if (!password) {
+        incrementRegisterAttempts(ip)
+        return NextResponse.json(
+          { error: 'Senha é obrigatória' },
+          { status: 400 }
+        )
+      }
 
-    if (!confirmPassword) {
-      incrementRegisterAttempts(ip)
-      return NextResponse.json(
-        { error: 'Confirmação de senha é obrigatória' },
-        { status: 400 }
-      )
-    }
+      if (!confirmPassword) {
+        incrementRegisterAttempts(ip)
+        return NextResponse.json(
+          { error: 'Confirmação de senha é obrigatória' },
+          { status: 400 }
+        )
+      }
 
-    // Validar força da senha
-    const passwordStrength = validatePasswordStrength(password)
-    if (!passwordStrength.isStrong) {
-      incrementRegisterAttempts(ip)
-      return NextResponse.json(
-        {
-          error: 'Senha não atende aos requisitos de segurança',
-          feedback: passwordStrength.feedback,
-          score: passwordStrength.score
-        },
-        { status: 400 }
-      )
-    }
+      // Validar força da senha
+      const passwordStrength = validatePasswordStrength(password)
+      if (!passwordStrength.isStrong) {
+        incrementRegisterAttempts(ip)
+        return NextResponse.json(
+          {
+            error: 'Senha não atende aos requisitos de segurança',
+            feedback: passwordStrength.feedback,
+            score: passwordStrength.score
+          },
+          { status: 400 }
+        )
+      }
 
-    // Validar se as senhas conferem
-    if (password !== confirmPassword) {
-      incrementRegisterAttempts(ip)
-      return NextResponse.json(
-        { error: 'Senhas não conferem' },
-        { status: 400 }
-      )
+      // Validar se as senhas conferem
+      if (password !== confirmPassword) {
+        incrementRegisterAttempts(ip)
+        return NextResponse.json(
+          { error: 'Senhas não conferem' },
+          { status: 400 }
+        )
+      }
     }
 
     // Verificar se email já existe (usar email normalizado)
