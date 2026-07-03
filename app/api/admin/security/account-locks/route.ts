@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as fs from 'fs/promises'
 import * as path from 'path'
+import { requireAdmin } from '@/lib/admin-auth'
 
 const LOCKS_FILE = path.join(process.cwd(), 'data', 'account_locks.json')
 
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Add authentication check for admin
-    // if (!isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authError = await requireAdmin(request)
+    if (authError) return authError
 
     const content = await fs.readFile(LOCKS_FILE, 'utf-8')
     const locks = JSON.parse(content || '[]')

@@ -115,16 +115,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // --- LOGS ESTRATÉGICOS PARA DEBUG ---
-    console.log(`\n🔍 [API Register] Buscando usuário com o e-mail: ${normalizedEmail}`);
-    
     // Verificar se email já existe
     const existingUser = await prisma.user.findUnique({
       where: { email: normalizedEmail }
     })
-
-    console.log(`📝 [API Register] Resultado do Prisma:`, existingUser ? 'Usuário ENCONTRADO!' : 'Nenhum usuário encontrado.');
-    // ------------------------------------
 
     if (existingUser) {
       incrementRegisterAttempts(ip)

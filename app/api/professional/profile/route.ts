@@ -1,28 +1,14 @@
 
-
-
-
-
-
-
-
-
-
-
-
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getToken } from 'next-auth/jwt';
 
 export async function GET(request: NextRequest) {
   try {
-    // Buscar token JWT diretamente da requisição
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET
     });
-
-    console.log('TOKEN PROFILE:', token);
 
     if (!token || !token.email) {
       return NextResponse.json(
@@ -135,13 +121,11 @@ function getStringValue(value: any): string | null {
 }
 
 export async function POST(request: NextRequest) {
-   try {
+  try {
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET
     });
-
-    console.log('TOKEN PROFILE:', token);
 
     if (!token || !token.email) {
       return NextResponse.json(
@@ -150,45 +134,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(
-      '>> /api/professional/profile POST - token email:',
-      token.email
-    );
-
     const body = await request.json();
-
-    // Logs para debug
-    console.log(
-      '>> /api/professional/profile POST - body keys:',
-      Object.keys(body)
-    );
-
-    console.log(
-      '>> fotoPerfil (preview):',
-      typeof body.fotoPerfil === 'string'
-        ? String(body.fotoPerfil).slice(0, 200)
-        : body.fotoPerfil
-    );
-
-    console.log(
-      '>> curriculo / curricoURL (preview):',
-      typeof body.curriculo === 'string'
-        ? String(body.curriculo).slice(0, 200)
-        : body.curriculo,
-      typeof body.curricoURL === 'string'
-        ? String(body.curricoURL).slice(0, 200)
-        : body.curricoURL
-    );
-
-    console.log(
-      '>> atestado / atestadoURL (preview):',
-      typeof body.atestado === 'string'
-        ? String(body.atestado).slice(0, 200)
-        : body.atestado,
-      typeof body.atestadoURL === 'string'
-        ? String(body.atestadoURL).slice(0, 200)
-        : body.atestadoURL
-    );
 
     // Buscar usuário
     let user = await prisma.user.findUnique({
@@ -348,7 +294,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Erro ao salvar perfil:', error);
-    console.error('PROFILE POST ERROR:', error);
 
     return NextResponse.json(
       {

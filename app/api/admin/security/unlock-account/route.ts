@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { unlockAccount } from '@/lib/security-audit'
+import { requireAdmin } from '@/lib/admin-auth'
 
 export async function POST(request: NextRequest) {
   try {
-    // TODO: Add authentication check for admin
-    // if (!isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authError = await requireAdmin(request)
+    if (authError) return authError
 
     const body = await request.json()
     const { email, unlockedBy } = body

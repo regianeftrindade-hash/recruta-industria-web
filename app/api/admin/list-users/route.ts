@@ -1,29 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-
-/**
- * 🔒 ENDPOINT ADMINISTRATIVO - LIST USERS
- * ========================================
- * Lista todos os usuários para debug/limpeza
- * 
- * POST /api/admin/list-users
- * Body: { apiKey: "seu-api-key-secreto" }
- */
+import { requireAdmin } from '@/lib/admin-auth'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { apiKey } = body
 
-    // Validar API Key
-    const ADMIN_API_KEY = process.env.ADMIN_API_KEY || 'dev-key-12345'
-    
-    if (apiKey !== ADMIN_API_KEY) {
-      return NextResponse.json(
-        { error: 'API Key inválida' },
-        { status: 401 }
-      )
-    }
+    const authError = await requireAdmin(request, { apiKey })
+    if (authError) return authError
 
     // Buscar todos os usuários
     const users = await prisma.user.findMany({

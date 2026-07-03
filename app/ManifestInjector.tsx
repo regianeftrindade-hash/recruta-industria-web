@@ -11,7 +11,6 @@ export default function ManifestInjector() {
       link.rel = 'manifest';
       link.href = '/manifest.json';
       document.head.appendChild(link);
-      console.log('✓ Manifest link adicionado ao head');
     }
 
     // Adicionar meta tags para PWA

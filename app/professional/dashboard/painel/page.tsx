@@ -155,7 +155,6 @@ export default function PainelProfissional() {
       // Por enquanto, apenas atualizamos o state local
       setProfileData(prev => prev ? { ...prev, avatar: fileUrl } : prev);
       alert('Foto salva com sucesso!');
-      console.log('Foto enviada:', fileUrl);
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
       alert('Erro ao fazer upload da foto. Tente novamente.');

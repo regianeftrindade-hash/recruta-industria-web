@@ -88,7 +88,6 @@ export default function CadastroProfissional() {
             setSenhaPreenchida(true);
           }
 
-          console.log('✅ Dados do cadastro simples carregados automaticamente:', dados);
         } catch (err) {
           console.error('Erro ao carregar dados do cadastro simples:', err);
           setSenhaPreenchida(true);
@@ -102,10 +101,8 @@ export default function CadastroProfissional() {
       if (dadosFormulario) {
         try {
           const dados = JSON.parse(dadosFormulario);
-          console.log('📥 Restaurando do localStorage:', { dataNascimentoDisplay: dados.dataNascimentoDisplay, dataNascimento: dados.dataNascimento });
 
           if (dados.dataNascimentoDisplay) {
-            console.log('✅ Restaurando dataNascimentoDisplay:', dados.dataNascimentoDisplay);
             setDataNascimentoValue(dados.dataNascimentoDisplay);
           }
 
@@ -122,7 +119,6 @@ export default function CadastroProfissional() {
             setCpf(dados.cpf);
           }
 
-          console.log('✅ Dados do formulário completo restaurados');
         } catch (err) {
           console.error('Erro ao carregar dados do formulário:', err);
         }
@@ -139,10 +135,6 @@ export default function CadastroProfissional() {
           cpf: cpf,
           dataNascimentoDisplay: dataNascimentoValue
         };
-        console.log('💾 SALVANDO no localStorage:', {
-          dataNascimentoDisplay: dataNascimentoValue,
-          dataNascimento: formData.dataNascimento
-        });
         localStorage.setItem('dadosFormularioCompleto', JSON.stringify(dadosParaSalvar));
       }
     }
@@ -161,12 +153,6 @@ export default function CadastroProfissional() {
   // Manipulador do envio do formulário principal
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    console.log('=== SUBMIT PROFISSIONAL ===');
-    console.log('CPF:', cpf);
-    console.log('CPF Error:', cpfError);
-    console.log('senhaPreenchida:', senhaPreenchida);
-    console.log('password length:', password.length);
 
     // VALIDAÇÃO 1: CPF obrigatório
     if (!cpf || cpf.length < 14) {
@@ -230,8 +216,6 @@ export default function CadastroProfissional() {
         throw new Error(data.error || 'Erro ao registrar');
       }
 
-      console.log('✅ Usuário registrado com sucesso');
-
       // Se o usuário veio pelo fluxo sem senha (OAuth / Google)
       if (!password) {
         try {
@@ -245,7 +229,6 @@ export default function CadastroProfissional() {
           const profileData = await profileRes.json();
 
           if (profileData.success) {
-            console.log('✅ Perfil salvo com sucesso');
             localStorage.removeItem('dadosFormularioCompleto');
             localStorage.removeItem('dadosCadastroSimples');
             router.push('/professional/dashboard/painel');
@@ -266,8 +249,6 @@ export default function CadastroProfissional() {
       });
 
       if (signResult?.ok) {
-        console.log('✅ Login automático realizado');
-
         try {
           const profileRes = await fetch('/api/professional/profile', {
             method: 'POST',
@@ -279,7 +260,6 @@ export default function CadastroProfissional() {
           const profileData = await profileRes.json();
 
           if (profileData.success) {
-            console.log('✅ Perfil salvo com sucesso');
             localStorage.removeItem('dadosFormularioCompleto');
             localStorage.removeItem('dadosCadastroSimples');
             router.push('/professional/dashboard/painel');
@@ -1250,12 +1230,9 @@ export default function CadastroProfissional() {
                   const fd = new FormData();
                   fd.append('file', file);
                   fd.append('type', 'avatars');
-                  console.log('INICIANDO UPLOAD FOTO');
 
                   const res = await fetch('/api/upload', { method: 'POST', body: fd, credentials: 'include' });
-                  console.log('STATUS FOTO:', res.status);
                   const data = await res.json();
-                  console.log('RESPOSTA FOTO:', data);
 
                   if (res.ok && data.success && data.file?.url) {
                     setFormData({ ...formData, fotoPerfil: data.file.url });

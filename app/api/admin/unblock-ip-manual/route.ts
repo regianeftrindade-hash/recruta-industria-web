@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { unblockIP } from '@/lib/security'
+import { requireAdmin } from '@/lib/admin-auth'
 
-/**
- * Rota para desbloquear um IP manualmente (apenas para testes/admin)
- * POST /api/admin/unblock-ip-manual
- * Body: { ip: string }
- */
 export async function POST(request: NextRequest) {
   try {
+    const authError = await requireAdmin(request)
+    if (authError) return authError
+
     const body = await request.json()
     const { ip } = body
 

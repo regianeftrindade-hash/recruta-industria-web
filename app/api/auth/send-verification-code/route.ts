@@ -36,7 +36,9 @@ async function saveVerification(email: string, code: string) {
 
 // Em produção, usar um serviço de email real como SendGrid, Mailgun, etc
 async function sendVerificationEmail(email: string, code: string) {
-  console.log(`📧 [DEV] Código de verificação para ${email}: ${code}`)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[DEV] Código de verificação para ${email}: ${code}`)
+  }
   
   // TODO: Implementar envio real de email
   // Aqui você integraria com SendGrid, Mailgun, ou AWS SES

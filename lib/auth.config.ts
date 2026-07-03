@@ -3,6 +3,7 @@ import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/db";
 import { verifyPassword } from "@/lib/security.server";
+import { isAdminUser } from "@/lib/admin-auth";
 import type { NextAuthOptions } from "next-auth";
 
 export const authOptions: NextAuthOptions = {
@@ -69,19 +70,33 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
 
+    async jwt({ token, user }: any) {
+      if (user?.userType) {
+        token.userType = user.userType;
+      }
+
+      if (token.email) {
+        const normalizedEmail = token.email.toLowerCase().trim();
+        const dbUser = await prisma.user.findUnique({
+          where: { email: normalizedEmail },
+        });
+
+        if (dbUser) {
+          token.userType = dbUser.role;
+          token.isAdmin = isAdminUser(normalizedEmail, dbUser.role);
+        }
+      }
+
+      return token;
+    },
+
     async session({ session, token }: any) {
       if (session.user && token.sub) {
         session.user.id = token.sub;
       }
-      if (session.user && session.user.email) {
-        // Normalizar email para busca no banco
-        const normalizedEmail = session.user.email.toLowerCase().trim();
-        const dbUser = await prisma.user.findUnique({
-          where: { email: normalizedEmail },
-        });
-        if (dbUser) {
-          session.user.userType = dbUser.role;
-        }
+      if (session.user) {
+        session.user.userType = token.userType;
+        session.user.isAdmin = token.isAdmin === true;
       }
       return session;
     },

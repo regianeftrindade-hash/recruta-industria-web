@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { securityHeaders, isIPBlocked } from '@/lib/security';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-  
-  // Verificar se IP está bloqueado
+
   if (isIPBlocked(ip)) {
     return NextResponse.json(
       { error: 'Acesso bloqueado' },
@@ -12,20 +12,33 @@ export function middleware(request: NextRequest) {
     );
   }
 
-  // Adicionar Security Headers
   const response = NextResponse.next();
   Object.entries(securityHeaders).forEach(([key, value]) => {
     response.headers.set(key, value);
   });
 
-  // Em desenvolvimento, não faz bloqueio de rotas de cadastro
+  const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith('/admin')) {
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    if (!token?.isAdmin) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      url.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(url);
+    }
+
+    return response;
+  }
+
   if (process.env.NODE_ENV === 'development') {
     return response;
   }
 
-  const { pathname } = request.nextUrl;
-
-  // Redireciona HTTP para HTTPS em produção (usa cabeçalho do proxy)
   const forwardedProto = request.headers.get('x-forwarded-proto');
   const host = request.headers.get('host') || '';
   const isLocalhost = host.startsWith('localhost') || host.startsWith('127.0.0.1');
@@ -36,25 +49,20 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url, { status: 308 });
   }
 
-  // Rotas protegidas que precisam de autenticação
   const protectedRoutes = [
     '/professional/dashboard',
     '/company/dashboard-empresa',
     '/company/company/profile',
   ];
 
-  // Verifica se é uma rota protegida
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
 
   if (isProtectedRoute) {
-    // Verifica se existe sessão/token (você pode implementar com cookies)
-    // Por enquanto, deixamos o NextAuth gerenciar via cookies
-   const hasSession = request.cookies
-  .getAll()
-  .some(c => c.name.includes('next-auth.session-token'));
+    const hasSession = request.cookies
+      .getAll()
+      .some((c) => c.name.includes('next-auth.session-token'));
 
-   if (!hasSession) {
-      // Redireciona para login se não autenticado
+    if (!hasSession) {
       const url = request.nextUrl.clone();
       url.pathname = '/login';
       url.searchParams.set('redirect', pathname);
@@ -65,9 +73,9 @@ export function middleware(request: NextRequest) {
   return response;
 }
 
-// Configurar quais rotas usar o middleware
 export const config = {
   matcher: [
+    '/admin/:path*',
     '/professional/dashboard/:path*',
     '/company/dashboard-empresa/:path*',
     '/company/company/profile/:path*',

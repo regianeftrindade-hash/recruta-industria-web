@@ -24,10 +24,11 @@ export default function SecurityDashboard() {
   const [locks, setLocks] = useState<AccountLock[]>([])
   const [activeTab, setActiveTab] = useState<'logs' | 'locks'>('logs')
   const [loading, setLoading] = useState(true)
+  const [unauthorized, setUnauthorized] = useState(false)
 
   useEffect(() => {
     fetchData()
-    const interval = setInterval(fetchData, 30000) // Atualizar a cada 30 segundos
+    const interval = setInterval(fetchData, 30000)
     return () => clearInterval(interval)
   }, [])
 
@@ -37,6 +38,11 @@ export default function SecurityDashboard() {
         fetch('/api/admin/security/audit-logs'),
         fetch('/api/admin/security/account-locks')
       ])
+
+      if (logsRes.status === 401 || locksRes.status === 401) {
+        setUnauthorized(true)
+        return
+      }
 
       if (logsRes.ok) {
         setLogs(await logsRes.json())
@@ -60,12 +66,28 @@ export default function SecurityDashboard() {
         body: JSON.stringify({ email, unlockedBy: 'admin' })
       })
 
+      if (res.status === 401) {
+        setUnauthorized(true)
+        return
+      }
+
       if (res.ok) {
         fetchData()
       }
     } catch (err) {
       console.error('Error unlocking account:', err)
     }
+  }
+
+  if (unauthorized) {
+    return (
+      <div style={{ padding: '30px', maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+        <h1 style={{ color: '#001f3f' }}>Acesso negado</h1>
+        <p style={{ color: '#666' }}>
+          Você não tem permissão para acessar o painel de segurança.
+        </p>
+      </div>
+    )
   }
 
   return (

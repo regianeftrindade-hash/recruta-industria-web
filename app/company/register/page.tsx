@@ -32,7 +32,6 @@ export default function CadastroEmpresa() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Enviando dados da empresa...");
     // A sua lógica de envio aqui
   };
 

@@ -1,31 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-
-/**
- * 🔒 ENDPOINT ADMINISTRATIVO - DELETE USER
- * ============================================
- * ⚠️ APENAS PARA DESENVOLVIMENTO/TESTES
- * 
- * Para usar em produção, deve ter proteção por API_KEY
- * 
- * POST /api/admin/delete-user
- * Body: { email: "email@exemplo.com", apiKey: "seu-api-key-secreto" }
- */
+import { requireAdmin } from '@/lib/admin-auth'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { email, apiKey } = body
 
-    // Validar API Key (em produção, use variável de ambiente)
-    const ADMIN_API_KEY = process.env.ADMIN_API_KEY || 'dev-key-12345'
-    
-    if (apiKey !== ADMIN_API_KEY) {
-      return NextResponse.json(
-        { error: 'API Key inválida' },
-        { status: 401 }
-      )
-    }
+    const authError = await requireAdmin(request, { apiKey })
+    if (authError) return authError
 
     if (!email) {
       return NextResponse.json(

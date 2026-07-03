@@ -113,7 +113,6 @@ function LoginContent() {
           if (typeRes.ok) {
             const typeData = await typeRes.json();
             const userType = typeData.userType;
-            console.log('UserType from API:', userType);
             
             if (userType === 'company') {
               router.push('/company/dashboard-empresa');
@@ -143,26 +142,20 @@ function LoginContent() {
     setLoading(true);
     setErrorMessage('');
     try {
-      console.log('🔵 Iniciando login com Google...');
-      console.log('📊 Client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
-      
       const result = await signIn('google', {
         redirect: false,
         callbackUrl: '/professional/dashboard'
       });
       
-      console.log('✅ Resultado do Google signIn:', result);
-      
       if (result?.error) {
-        console.error('❌ Erro no Google signIn:', result.error);
+        console.error('Erro no Google signIn:', result.error);
         setErrorMessage(`Erro ao fazer login com Google: ${result.error}`);
         setLoading(false);
       } else if (result?.ok) {
-        console.log('✅ Google signIn bem-sucedido, redirecionando...');
         window.location.href = result.url || '/professional/dashboard';
       }
     } catch (error: any) {
-      console.error('❌ Erro ao fazer login com Google:', error);
+      console.error('Erro ao fazer login com Google:', error);
       setErrorMessage(`Erro ao fazer login com Google: ${error?.message || 'Erro desconhecido'}`);
       setLoading(false);
     }
