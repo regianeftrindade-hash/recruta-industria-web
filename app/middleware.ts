@@ -50,7 +50,6 @@ export async function middleware(request: NextRequest) {
   }
 
   const protectedRoutes = [
-    '/professional/dashboard',
     '/company/dashboard-empresa',
     '/company/company/profile',
   ];
@@ -76,7 +75,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/admin/:path*',
-    '/professional/dashboard/:path*',
     '/company/dashboard-empresa/:path*',
     '/company/company/profile/:path*',
   ],
