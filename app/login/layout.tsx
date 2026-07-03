@@ -1,7 +1,5 @@
-"use client";
+export const dynamic = 'force-dynamic';
 
-
-import { ReactNode } from "react";
-export default function LoginLayout({ children }: { children: ReactNode }) {
-return <>{children}</>;
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return children;
 }
