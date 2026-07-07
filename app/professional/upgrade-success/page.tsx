@@ -9,17 +9,18 @@ export default function UpgradeSuccessPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#f0f4f8',
-      fontFamily: 'Arial, sans-serif',
+      backgroundColor: '#000000',
+      color: '#F2F2F2',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center'
     }}>
       <div style={{
-        backgroundColor: 'white',
+        backgroundColor: '#111111',
         padding: '60px',
         borderRadius: '20px',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+        border: '1px solid #8D6B1F',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
         textAlign: 'center',
         maxWidth: '600px'
       }}>
@@ -31,7 +32,7 @@ export default function UpgradeSuccessPage() {
         </div>
 
         <h1 style={{
-          color: '#28a745',
+          color: '#C89B3C',
           fontSize: '36px',
           marginBottom: '15px'
         }}>
@@ -39,26 +40,27 @@ export default function UpgradeSuccessPage() {
         </h1>
 
         <p style={{
-          color: '#666',
+          color: '#F2F2F2',
           fontSize: '18px',
           marginBottom: '30px',
           lineHeight: '1.6'
         }}>
-          Parabéns! Você agora é um membro <strong>Premium</strong>. Todos os recursos estão disponíveis para você.
+          Parabéns! Você agora é um membro <strong style={{ color: '#F2F2F2' }}>Premium</strong>. Todos os recursos estão disponíveis para você.
         </p>
 
         <div style={{
-          backgroundColor: '#e8f5e9',
+          backgroundColor: '#000000',
           padding: '20px',
           borderRadius: '12px',
+          border: '1px solid #8D6B1F',
           marginBottom: '30px',
           textAlign: 'left'
         }}>
-          <h3 style={{ color: '#2e7d32', marginTop: 0 }}>
+          <h3 style={{ color: '#C89B3C', marginTop: 0 }}>
             ✓ Agora você tem acesso a:
           </h3>
           <ul style={{
-            color: '#333',
+            color: '#F2F2F2',
             lineHeight: '2',
             margin: 0,
             paddingLeft: '20px'
@@ -72,16 +74,17 @@ export default function UpgradeSuccessPage() {
         </div>
 
         <div style={{
-          backgroundColor: '#fff3cd',
+          backgroundColor: '#000000',
           padding: '15px',
           borderRadius: '8px',
+          border: '1px solid #8D6B1F',
           marginBottom: '30px',
           fontSize: '14px',
-          color: '#856404'
+          color: '#F2F2F2'
         }}>
-          <strong>📋 Recibos:</strong> Você receberá um recibo por email para cada renovação mensal.
+          <strong style={{ color: '#F2F2F2' }}>📋 Recibos:</strong> Você receberá um recibo por email para cada renovação mensal.
           <br/>
-          <strong>❌ Cancelamento:</strong> Você pode cancelar a qualquer momento sem penalidades.
+          <strong style={{ color: '#F2F2F2' }}>❌ Cancelamento:</strong> Você pode cancelar a qualquer momento sem penalidades.
         </div>
 
         <div style={{
@@ -90,10 +93,10 @@ export default function UpgradeSuccessPage() {
           justifyContent: 'center'
         }}>
           <button
-            onClick={() => router.push('/professional/dashboard/painel')}
+            onClick={() => router.push('/professional/dashboard')}
             style={{
-              backgroundColor: '#28a745',
-              color: 'white',
+              background: 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)',
+              color: '#000',
               padding: '14px 40px',
               border: 'none',
               borderRadius: '8px',

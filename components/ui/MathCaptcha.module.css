@@ -1,0 +1,126 @@
+.wrap {
+  background-color: #000000;
+  border: 1px solid #8d6b1f;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 4px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #c89b3c;
+  letter-spacing: normal;
+}
+
+.questionBox {
+  background-color: #111111;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #8d6b1f;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.question {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: #f2f2f2;
+  letter-spacing: normal;
+  line-height: 1.4;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.input {
+  flex: 1;
+  padding: 11px 12px;
+  border: 1px solid #8d6b1f;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  background: #000000;
+  color: #f2f2f2;
+  font-family: inherit;
+  letter-spacing: normal;
+}
+
+.input:focus {
+  border-color: #c89b3c;
+}
+
+.inputError {
+  border-color: #e57373;
+}
+
+.inputOk {
+  border-color: #c89b3c;
+}
+
+.btnOk,
+.btnRefresh {
+  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
+  color: #000000;
+  border: 1px solid #6b5218;
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: normal;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btnOk:active,
+.btnRefresh:active {
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
+}
+
+.btnOk:disabled {
+  background: linear-gradient(180deg, #4a3810 0%, #5a4512 45%, #6b5218 100%);
+  color: #f2f2f2;
+  cursor: not-allowed;
+  opacity: 0.8;
+  transform: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 1px 0 #3a2a08;
+}
+
+.verified {
+  background-color: #111111;
+  padding: 11px 14px;
+  border-radius: 8px;
+  border: 1px solid #c89b3c;
+  font-size: 14px;
+  font-weight: 600;
+  color: #f2f2f2;
+  white-space: nowrap;
+}
+
+.error {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: #e57373;
+  font-weight: 500;
+  line-height: 1.4;
+}

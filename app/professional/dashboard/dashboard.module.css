@@ -1,22 +1,28 @@
-/* Styles for professional dashboard page */
+/* 🔒 BLOQUEADO (06/07/2026) — não editar sem pedido explícito. Ver .cursor/rules/dashboard-page-lock.mdc */
+/* Tema industrial — alinhado à Home */
 .container {
-  background-color: #f0f2f5;
+  background-color: #000000;
   min-height: 100vh;
   padding: clamp(15px, 4vw, 30px);
-  font-family: Arial, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #F2F2F2;
+  letter-spacing: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .header {
-  background-color: #003366;
-  color: white;
+  background-color: #111111;
+  color: #F2F2F2;
   padding: clamp(15px, 4vw, 20px) clamp(20px, 5vw, 40px);
   border-radius: 15px;
+  border: 1px solid #8D6B1F;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: clamp(10px, 3vw, 20px);
   margin-bottom: clamp(20px, 4vw, 30px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   flex-wrap: wrap;
 }
 
@@ -25,7 +31,7 @@
   margin: 0;
   font-weight: 900;
   flex: 1;
-  minWidth: '200px';
+  color: #C89B3C;
 }
 
 .headerButtons {
@@ -35,26 +41,24 @@
 }
 
 .updateBtn {
-  background: white;
-  color: #003366;
+  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  color: #000000;
   border: none;
   padding: clamp(8px, 2vw, 10px) clamp(15px, 3vw, 20px);
   border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
   font-size: clamp(12px, 2vw, 14px);
-  whiteSpace: 'nowrap';
 }
 
 .logoutBtn {
-  background: transparent;
-  color: white;
-  border: 1px solid white;
+  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  color: #000000;
+  border: none;
   padding: clamp(8px, 2vw, 10px) clamp(15px, 3vw, 20px);
   border-radius: 8px;
   cursor: pointer;
   font-size: clamp(12px, 2vw, 14px);
-  whiteSpace: 'nowrap';
 }
 
 .grid {
@@ -81,10 +85,11 @@
 }
 
 .profileSection {
-  background-color: white;
+  background-color: #111111;
   padding: clamp(25px, 5vw, 40px);
   border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  border: 1px solid #8D6B1F;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   gap: clamp(15px, 3vw, 20px);
@@ -92,8 +97,8 @@
 
 .profileTitle {
   font-size: clamp(16px, 4vw, 18px);
-  color: #003366;
-  border-bottom: 3px solid #003366;
+  color: #C89B3C;
+  border-bottom: 2px solid #8D6B1F;
   padding-bottom: 15px;
   margin-bottom: 10px;
   font-weight: 900;
@@ -112,12 +117,12 @@
 }
 
 .tag {
-  background-color: #f8fafc;
+  background-color: #1A1A1A;
   padding: clamp(12px, 2vw, 15px);
   border-radius: 10px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #8D6B1F;
   flex: 1;
-  minWidth: '150px';
+  min-width: 150px;
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -125,7 +130,7 @@
 
 .tagLabel {
   font-size: clamp(10px, 1.5vw, 11px);
-  color: #64748b;
+  color: #C89B3C;
   font-weight: bold;
   text-transform: uppercase;
 }
@@ -133,7 +138,7 @@
 .tagValue {
   font-size: clamp(13px, 3vw, 15px);
   font-weight: bold;
-  color: #003366;
+  color: #F2F2F2;
 }
 
 .sidebar {
@@ -143,44 +148,46 @@
 }
 
 .visitsCard {
-  background-color: #003366;
-  color: white;
+  background-color: #111111;
+  color: #F2F2F2;
   padding: clamp(30px, 5vw, 40px) clamp(15px, 3vw, 20px);
   border-radius: 20px;
+  border: 2px solid #C89B3C;
   text-align: center;
-  box-shadow: 0 8px 20px rgba(0,51,102,0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 .visitsLabel {
   font-size: 14px;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  opacity: 0.8;
+  color: #C89B3C;
 }
 
 .visitsNumber {
   font-size: 65px;
   font-weight: 900;
   margin: 10px 0;
+  color: #F2F2F2;
 }
 
 .visitsText {
   margin: 0;
   font-size: 14px;
+  color: #F2F2F2;
 }
 
 .tipsCard {
-  background-color: #fff9c4;
+  background-color: #1A1A1A;
   padding: 25px;
   border-radius: 20px;
-  border-left: 8px solid #fbc02d;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border-left: 8px solid #C89B3C;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .tipsTitle {
   margin: 0 0 15px 0;
   font-size: 16px;
-  color: #827717;
+  color: #C89B3C;
   font-weight: bold;
 }
 
@@ -189,40 +196,34 @@
   flex-direction: column;
   gap: 12px;
   font-size: 13px;
-  color: #5d5410;
+  color: #F2F2F2;
   font-style: italic;
 }
 
 .tipsItem {
-  border-bottom: 1px solid #f0e68c;
+  border-bottom: 1px solid #8D6B1F;
   padding-bottom: 8px;
   margin: 0;
 }
 
 .hiringCard {
-  background-color: white;
+  background-color: #111111;
   padding: 20px;
   border-radius: 20px;
-  border: 1px solid #eee;
+  border: 1px solid #8D6B1F;
 }
 
 .hiringTitle {
   margin: 0 0 10px 0;
   font-size: 14px;
-  color: #003366;
+  color: #C89B3C;
   font-weight: bold;
 }
 
 .hiringList {
   font-size: 13px;
   font-weight: bold;
-  color: #444;
-}
-
-@media (max-width: 1024px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
+  color: #F2F2F2;
 }
 
 @media (max-width: 768px) {

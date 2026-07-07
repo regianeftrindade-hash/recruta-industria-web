@@ -1,3 +1,2 @@
-// Re-exporta a configuração completa de auth.config.ts
-// para evitar que futuras importações usem o arquivo errado
-export { authOptions } from './auth.config';
+/** Re-export de compatibilidade — prefira @/lib/auth/auth.config */
+export { authOptions } from './auth/auth.config';

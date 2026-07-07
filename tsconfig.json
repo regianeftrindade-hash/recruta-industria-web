@@ -23,6 +23,12 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@/components/*": [
+        "./components/*"
+      ],
+      "@/styles/*": [
+        "./styles/*"
       ]
     },
     /* Suppress TypeScript 7 deprecation warning for baseUrl */   

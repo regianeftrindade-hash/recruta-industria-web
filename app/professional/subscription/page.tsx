@@ -13,13 +13,14 @@ export default function SubscriptionPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#f0f4f8',
-      fontFamily: 'Arial, sans-serif'
+      backgroundColor: '#000000',
+      color: '#F2F2F2',
     }}>
       {/* CABEÇALHO */}
       <div style={{
-        backgroundColor: '#001f3f',
-        color: 'white',
+        backgroundColor: '#111111',
+        color: '#F2F2F2',
+        borderBottom: '1px solid #8D6B1F',
         padding: '20px 40px',
         display: 'flex',
         justifyContent: 'space-between',
@@ -29,15 +30,15 @@ export default function SubscriptionPage() {
           <h1 style={{ margin: '0 0 5px 0', fontSize: '28px' }}>
             Gerenciar Assinatura
           </h1>
-          <p style={{ margin: 0, fontSize: '14px', opacity: 0.9 }}>
+          <p style={{ margin: 0, fontSize: '14px', color: '#F2F2F2' }}>
             Sua assinatura Premium
           </p>
         </div>
         {/* Botão de logout removido: NextAuth v5 não possui signOut client-side no App Router */}
         <button
           style={{
-            backgroundColor: '#dc3545',
-            color: 'white',
+            background: 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)',
+            color: '#000',
             padding: '10px 20px',
             border: 'none',
             borderRadius: '8px',
@@ -53,31 +54,33 @@ export default function SubscriptionPage() {
       {/* CONTEÚDO */}
       <div style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto' }}>
         <div style={{
-          backgroundColor: 'white',
+          backgroundColor: '#111111',
           padding: '40px',
           borderRadius: '15px',
-          boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
+          border: '1px solid #8D6B1F',
+          boxShadow: '0 5px 15px rgba(0,0,0,0.3)'
         }}>
-          <h2 style={{ color: '#001f3f', marginBottom: '30px', fontSize: '28px', marginTop: 0 }}>
+          <h2 style={{ color: '#C89B3C', marginBottom: '30px', fontSize: '28px', marginTop: 0 }}>
             👑 Seu Plano Premium
           </h2>
 
           {/* STATUS DA ASSINATURA */}
           <div style={{
-            backgroundColor: '#e8f5e9',
+            backgroundColor: '#000000',
             padding: '25px',
             borderRadius: '12px',
-            borderLeft: '6px solid #4caf50',
+            border: '1px solid #8D6B1F',
+            borderLeft: '6px solid #C89B3C',
             marginBottom: '30px'
           }}>
-            <p style={{ color: '#2e7d32', fontSize: '16px', fontWeight: 'bold', margin: '0 0 15px 0' }}>
+            <p style={{ color: '#F2F2F2', fontSize: '16px', fontWeight: 'bold', margin: '0 0 15px 0' }}>
               ✓ Assinatura Ativa
             </p>
-            <p style={{ color: '#333', margin: '0 0 8px 0' }}>
-              <strong>Próxima renovação:</strong> 02 de Fevereiro, 2026
+            <p style={{ color: '#F2F2F2', margin: '0 0 8px 0' }}>
+              <strong style={{ color: '#C89B3C' }}>Próxima renovação:</strong> 02 de Fevereiro, 2026
             </p>
-            <p style={{ color: '#333', margin: 0 }}>
-              <strong>Valor mensal:</strong> R$ 19,90
+            <p style={{ color: '#F2F2F2', margin: 0 }}>
+              <strong style={{ color: '#C89B3C' }}>Valor mensal:</strong> R$ 19,90
             </p>
           </div>
 
@@ -91,8 +94,8 @@ export default function SubscriptionPage() {
             <button
               onClick={() => alert('Funcionalidade em desenvolvimento')}
               style={{
-                backgroundColor: '#0066cc',
-                color: 'white',
+                background: 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)',
+                color: '#000',
                 padding: '14px',
                 border: 'none',
                 borderRadius: '8px',
@@ -106,8 +109,8 @@ export default function SubscriptionPage() {
             <button
               onClick={() => alert('Funcionalidade em desenvolvimento')}
               style={{
-                backgroundColor: '#ff9800',
-                color: 'white',
+                background: 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)',
+                color: '#000',
                 padding: '14px',
                 border: 'none',
                 borderRadius: '8px',
@@ -122,20 +125,21 @@ export default function SubscriptionPage() {
 
           {/* CANCELAR ASSINATURA */}
           <div style={{
-            backgroundColor: '#fee2e2',
+            backgroundColor: '#000000',
             padding: '25px',
             borderRadius: '12px',
-            borderLeft: '6px solid #dc3545',
+            border: '1px solid #8D6B1F',
+            borderLeft: '6px solid #C89B3C',
             marginBottom: '30px'
           }}>
-            <p style={{ color: '#991b1b', fontSize: '14px', marginBottom: '15px', margin: 0 }}>
+            <p style={{ color: '#F2F2F2', fontSize: '14px', marginBottom: '15px', margin: 0 }}>
               Quer cancelar sua assinatura? Você pode fazer isso a qualquer momento sem penalidades.
             </p>
             <button
               onClick={() => alert('Funcionalidade em desenvolvimento')}
               style={{
-                backgroundColor: '#dc3545',
-                color: 'white',
+                background: 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)',
+                color: '#000',
                 padding: '10px 25px',
                 border: 'none',
                 borderRadius: '8px',
@@ -151,10 +155,10 @@ export default function SubscriptionPage() {
 
           {/* BOTÃO VOLTAR */}
           <button
-            onClick={() => router.push('/professional/dashboard/painel')}
+            onClick={() => router.push('/professional/dashboard')}
             style={{
-              backgroundColor: '#003366',
-              color: 'white',
+              background: 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)',
+              color: '#000',
               padding: '14px 40px',
               border: 'none',
               borderRadius: '8px',

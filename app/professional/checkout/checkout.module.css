@@ -1,0 +1,368 @@
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #000000;
+  min-height: 100vh;
+  color: #F2F2F2;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.checkoutCard {
+  background: #111111;
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid #8D6B1F;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  margin-bottom: 2rem;
+}
+
+.checkoutCard h1 {
+  color: #C89B3C;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-size: 1.8em;
+}
+
+.methodSelector {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+
+.methodBtn {
+  flex: 1;
+  max-width: 150px;
+  padding: 1rem;
+  border: 1px solid #8D6B1F;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8D6B1F 100%);
+  cursor: pointer;
+  font-size: 0.95em;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  color: #F2F2F2;
+}
+
+.methodBtn:hover {
+  border-color: #C89B3C;
+  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  color: #000000;
+}
+
+.methodBtn.active {
+  border-color: #C89B3C;
+  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  color: #000000;
+}
+
+.paymentSection {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: #1A1A1A;
+  border-radius: 8px;
+  border: 1px solid #8D6B1F;
+}
+
+.paymentSection h2 {
+  color: #C89B3C;
+  margin-bottom: 1.5rem;
+  font-size: 1.4em;
+}
+
+.qrContainer {
+  text-align: center;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: #111111;
+  border-radius: 8px;
+  border: 2px dashed #8D6B1F;
+}
+
+.label {
+  color: #C89B3C;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.qrCode {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.keySection {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: #111111;
+  border-radius: 8px;
+  border: 1px solid #8D6B1F;
+}
+
+.keyDisplay {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.keyInput {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #8D6B1F;
+  border-radius: 4px;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 0.95em;
+  letter-spacing: normal;
+  background: #000000;
+  color: #F2F2F2;
+}
+
+.copyBtn {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  color: #000000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: filter 0.3s ease;
+  white-space: nowrap;
+}
+
+.copyBtn:hover {
+  filter: brightness(1.08);
+}
+
+.barcodeSection {
+  text-align: center;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: #111111;
+  border-radius: 8px;
+  border: 1px solid #8D6B1F;
+}
+
+.barcodeContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #000000;
+  border-radius: 4px;
+}
+
+.barcodeContainer svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.boletoInfo {
+  background: #111111;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  border: 1px solid #8D6B1F;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #8D6B1F;
+}
+
+.infoRow:last-child {
+  border-bottom: none;
+}
+
+.infoRow span {
+  color: #C89B3C;
+  font-weight: 600;
+}
+
+.infoRow strong {
+  color: #F2F2F2;
+  font-weight: 600;
+}
+
+.cardForm {
+  background: #111111;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #8D6B1F;
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  display: block;
+  color: #C89B3C;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.formGroup input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #8D6B1F;
+  border-radius: 4px;
+  font-size: 1em;
+  background: #000000;
+  color: #F2F2F2;
+  transition: border-color 0.3s ease;
+}
+
+.formGroup input:focus {
+  outline: none;
+  border-color: #C89B3C;
+  box-shadow: 0 0 0 3px rgba(200, 155, 60, 0.2);
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.security {
+  background: #1A1A1A;
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 1.5rem 0;
+  color: #C89B3C;
+  text-align: center;
+  border: 1px solid #8D6B1F;
+}
+
+.instructions {
+  background: #1A1A1A;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  color: #F2F2F2;
+  border: 1px solid #8D6B1F;
+}
+
+.instructions h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #C89B3C;
+}
+
+.instructions ol {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.instructions li {
+  margin-bottom: 0.5rem;
+}
+
+.confirmBtn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  color: #000000;
+  border: none;
+  border-radius: 4px;
+  font-size: 1.1em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.2s ease, transform 0.2s ease;
+  margin-top: 1rem;
+}
+
+.confirmBtn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+
+.confirmBtn:active {
+  transform: translateY(0);
+}
+
+.orderSummary {
+  background: #1A1A1A;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid #C89B3C;
+  margin-top: 2rem;
+}
+
+.orderSummary h3 {
+  color: #C89B3C;
+  margin-top: 0;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  color: #F2F2F2;
+}
+
+.summaryRow:last-child {
+  border-top: 2px solid #8D6B1F;
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.customerInfo {
+  background: #111111;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid #8D6B1F;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.customerInfo h3 {
+  color: #C89B3C;
+  margin-bottom: 1rem;
+}
+
+.customerInfo p {
+  margin: 0.5rem 0;
+  color: #F2F2F2;
+}
+
+.customerInfo strong {
+  color: #C89B3C;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .checkoutCard {
+    padding: 1.5rem;
+  }
+
+  .methodSelector {
+    flex-direction: column;
+  }
+
+  .methodBtn {
+    max-width: 100%;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+
+  .keyDisplay {
+    flex-direction: column;
+  }
+
+  .copyBtn {
+    width: 100%;
+  }
+}

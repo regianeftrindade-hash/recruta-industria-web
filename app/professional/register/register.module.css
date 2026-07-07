@@ -1,20 +1,24 @@
-/* Styles for professional register page: responsive, accessible */
+/* Tema industrial — alinhado à Home */
 :root {
-  --primary-color: #003366;
-  --secondary-color: #005a87;
-  --background: #f5f5dc;
-  --card-bg: #ffffff;
-  --text-primary: #003366;
-  --text-secondary: #6c757d;
-  --border-color: #003366;
-  --focus-outline: rgba(0,51,102,0.3);
+  --primary-color: #C89B3C;
+  --secondary-color: #8D6B1F;
+  --background: #000000;
+  --card-bg: #111111;
+  --text-primary: #F2F2F2;
+  --text-secondary: #F2F2F2;
+  --border-color: #8D6B1F;
+  --focus-outline: rgba(200, 155, 60, 0.35);
 }
 
 .container {
   background-color: var(--background);
   min-height: 100vh;
   padding: clamp(20px, 4vw, 40px);
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--text-primary);
+  letter-spacing: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .card {
@@ -23,16 +27,17 @@
   background-color: var(--card-bg);
   padding: clamp(20px, 5vw, 30px);
   border-radius: 15px;
-  border: 4px solid var(--border-color);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--border-color);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
 }
 
 .title {
-  color: var(--text-primary);
-  font-weight: 900;
+  color: var(--primary-color);
+  font-weight: 700;
   text-align: center;
-  font-size: clamp(20px, 5vw, 24px);
+  font-size: clamp(22px, 5vw, 28px);
   margin-bottom: 20px;
+  letter-spacing: normal;
 }
 
 .form {
@@ -42,66 +47,354 @@
 }
 
 .label {
-  font-weight: 900;
-  color: var(--text-primary);
-  font-size: clamp(12px, 2.5vw, 14px);
-  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: clamp(13px, 2.5vw, 15px);
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
+  letter-spacing: normal;
 }
 
 .note {
-  font-size: clamp(12px, 2vw, 14px);
+  font-size: clamp(13px, 2vw, 15px);
   color: var(--text-secondary);
   margin-top: 10px;
   font-style: italic;
+  line-height: 1.5;
 }
 
 .seriousNote {
   font-size: clamp(12px, 2vw, 14px);
-  color: #dc3545;
+  color: #e74c3c;
   margin-top: 10px;
   font-weight: bold;
 }
 
 .sectionTitle {
-  color: var(--text-primary);
-  font-size: clamp(16px, 4vw, 18px);
+  color: var(--primary-color);
+  font-size: clamp(17px, 4vw, 20px);
   font-weight: 700;
   margin-bottom: 15px;
   margin-top: 30px;
+  letter-spacing: normal;
 }
 
 .checkboxLabel {
   display: block;
   margin-bottom: 8px;
-  font-size: clamp(12px, 2vw, 14px);
+  font-size: clamp(13px, 2vw, 15px);
   color: var(--text-secondary);
+  line-height: 1.45;
 }
 
-.input, .select {
+.sectionHeader {
+  margin-bottom: 12px;
+}
+
+.sectionBadge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+  text-transform: uppercase;
+}
+
+.badge_obrigatorio {
+  background: #C89B3C;
+  color: #000;
+}
+
+.badge_opcional {
+  background: #333;
+  color: #F2F2F2;
+  border: 1px solid #8D6B1F;
+}
+
+.badge_recomendado {
+  background: #5a4512;
+  color: #F2F2F2;
+  border: 1px solid #C89B3C;
+}
+
+.sectionHint {
+  font-size: 12px;
+  color: #aaa;
+  margin: 6px 0 0;
+  font-style: italic;
+}
+
+.fieldOptional {
+  font-size: 10px;
+  color: #888;
+  font-weight: normal;
+  text-transform: none;
+}
+
+.checkboxFieldset {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 10px 0;
+}
+
+.checkboxGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 6px;
+}
+
+.addBtn {
+  padding: 10px 14px;
+  background: #C89B3C;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.completionWrap {
+  background: #000;
+  border: 1px solid #C89B3C;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 20px;
+}
+
+.completionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.completionTitle {
+  color: #C89B3C;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.completionPercent {
+  color: #F2F2F2;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.completionTrack {
+  height: 10px;
+  background: #222;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid #8D6B1F;
+}
+
+.completionFill {
+  height: 100%;
+  background: linear-gradient(90deg, #8D6B1F, #C89B3C);
+  transition: width 0.3s ease;
+}
+
+.completionMilestones {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 11px;
+}
+
+.milestone {
+  color: #666;
+}
+
+.milestoneActive {
+  color: #C89B3C;
+  font-weight: bold;
+}
+
+.completionNote {
+  font-size: 12px;
+  color: #aaa;
+  margin: 10px 0 0;
+  line-height: 1.5;
+}
+
+.completionHighlight {
+  font-size: 12px;
+  color: #C89B3C;
+  margin: 10px 0 0;
+  font-weight: 600;
+}
+
+.avatarPreview {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-color);
+  image-rendering: auto;
+  flex-shrink: 0;
+  display: block;
+}
+
+.anexoBox {
+  margin-bottom: 8px;
+  padding: 12px 14px;
+  background-color: #111111;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.anexoTexto {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #f2f2f2;
+  line-height: 1.5;
+}
+
+.anexoBtn {
+  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
+  color: #000;
+  padding: 8px 14px;
+  border: 1px solid #6b5218;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-block;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.anexoBtn:active {
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
+}
+
+.anexoRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.anexoActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fotoCampo {
+  margin-bottom: 16px;
+}
+
+.input,
+.select,
+.textarea {
   width: 100%;
   padding: clamp(10px, 2vw, 12px);
   border-radius: 8px;
-  border: 2px solid var(--border-color);
-  font-weight: bold;
-  font-size: clamp(14px, 3vw, 16px);
-  color: var(--text-primary);
-  font-family: 'Courier New', monospace;
-  letter-spacing: 0.5px;
+  border: 1px solid var(--border-color);
+  font-weight: 500;
+  font-size: clamp(15px, 3vw, 16px);
+  color: var(--text-primary) !important;
+  background-color: var(--background) !important;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: normal;
+  line-height: 1.45;
   box-sizing: border-box;
+  color-scheme: dark;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.input:-webkit-autofill,
+.input:-webkit-autofill:hover,
+.input:-webkit-autofill:focus,
+.input:-webkit-autofill:active,
+.select:-webkit-autofill,
+.select:-webkit-autofill:hover,
+.select:-webkit-autofill:focus,
+.select:-webkit-autofill:active,
+.textarea:-webkit-autofill,
+.textarea:-webkit-autofill:hover,
+.textarea:-webkit-autofill:focus,
+.textarea:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #000000 inset !important;
+  box-shadow: 0 0 0 1000px #000000 inset !important;
+  -webkit-text-fill-color: #f2f2f2 !important;
+  caret-color: #f2f2f2;
+}
+
+.input[type="month"],
+.input[type="date"],
+.input[type="text"],
+.input[type="tel"],
+.input[type="email"],
+.input[type="password"],
+.input[type="number"] {
+  background-color: #000000 !important;
+  color: #f2f2f2 !important;
+}
+
+.input[type="month"]::-webkit-datetime-edit,
+.input[type="month"]::-webkit-datetime-edit-fields-wrapper,
+.input[type="month"]::-webkit-datetime-edit-text,
+.input[type="month"]::-webkit-datetime-edit-month-field,
+.input[type="month"]::-webkit-datetime-edit-year-field,
+.input[type="date"]::-webkit-datetime-edit,
+.input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+.input[type="date"]::-webkit-datetime-edit-text,
+.input[type="date"]::-webkit-datetime-edit-day-field,
+.input[type="date"]::-webkit-datetime-edit-month-field,
+.input[type="date"]::-webkit-datetime-edit-year-field {
+  color: #f2f2f2;
+}
+
+.input[type="month"]::-webkit-calendar-picker-indicator,
+.input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.85);
 }
 
 .input[type="file"] {
   padding: 8px;
+  background-color: #111111 !important;
+  color: #F2F2F2 !important;
+  border: 1px solid var(--border-color);
+}
+
+.input[type="file"]::file-selector-button {
+  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
+  color: #000000;
+  border: 1px solid #6b5218;
+  border-radius: 6px;
+  padding: 8px 14px;
+  margin-right: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+}
+
+.select option {
+  background-color: #111111;
+  color: #f2f2f2;
+}
+
+.select option[value=""] {
+  color: #888888;
 }
 
 .textarea {
   resize: vertical;
   min-height: 80px;
+  color: #f2f2f2 !important;
+  background-color: #000000 !important;
 }
 
-.input:focus, .select:focus {
+.input:focus,
+.select:focus {
   outline: 3px solid var(--focus-outline);
   outline-offset: 2px;
 }
@@ -113,19 +406,26 @@
 }
 
 .submitBtn {
-  background-color: var(--primary-color);
-  color: white;
-  padding: 20px;
-  border: none;
+  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
+  color: #000000;
+  padding: 18px;
+  border: 1px solid #6b5218;
   border-radius: 10px;
-  font-weight: 900;
-  font-size: 18px;
+  font-weight: 700;
+  font-size: 17px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  letter-spacing: normal;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: background-color 0.2s ease, transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.submitBtn:active {
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
 }
 
 .submitBtn:hover {
-  background-color: var(--secondary-color);
+  background: linear-gradient(180deg, #9a7620 0%, #e0bc42 45%, #d4af37 100%);
 }
 
 .submitBtn:focus {
@@ -152,7 +452,8 @@
     padding: 20px 15px;
   }
 
-  .input, .select {
+  .input,
+  .select {
     font-size: 14px;
   }
 

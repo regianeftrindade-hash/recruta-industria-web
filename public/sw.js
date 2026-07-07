@@ -1,83 +1,120 @@
-const CACHE_NAME = "recruta-industria-v1";
-const urlsToCache = [
-  "/",
-  "/manifest.json",
-  "/icon-192.png",
-  "/icon-512.png",
+// Service Worker do Recruta Indústria.
+// Estratégia:
+//  - HTML / navegações -> NETWORK-FIRST (sempre pega a versão atual do servidor;
+//    cache serve apenas como fallback offline).
+//  - Assets estáticos (imagens, manifest, favicon) -> cache-first.
+//  - Dev/HMR do Next.js (/_next/, /api/) -> passa direto, não intercepta.
+// Bump o CACHE_VERSION sempre que quiser invalidar o cache antigo de clientes já instalados.
+
+const CACHE_VERSION = "v5-2026-07-05-ui";
+const CACHE_NAME = `recruta-industria-${CACHE_VERSION}`;
+
+const STATIC_ASSETS = [
+    "/manifest.json",
+    "/favicon.ico",
+    "/profissional.jpg",
+    "/empresa.jpg",
+    "/welding-left.jpg",
+    "/welding-right.jpg",
+    "/logo-r-transparent.png",
 ];
 
-// Instalar Service Worker e cachear recursos
 self.addEventListener("install", (event) => {
-  console.log("🔧 Service Worker: Installing...");
-  
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log("📦 Service Worker: Caching app shell");
-      return cache.addAll(urlsToCache).catch((error) => {
-        console.log("⚠️ Cache add failed:", error);
-        // Continuar mesmo se falhar adicionar URLs
-      });
-    })
-  );
-  
-  self.skipWaiting();
+    // Ativa imediatamente sem esperar as abas antigas fecharem
+    self.skipWaiting();
+    event.waitUntil(
+        caches
+            .open(CACHE_NAME)
+            .then((cache) => cache.addAll(STATIC_ASSETS).catch(() => {}))
+    );
 });
 
-// Ativar Service Worker e limpar caches antigos
 self.addEventListener("activate", (event) => {
-  console.log("✅ Service Worker: Activating...");
-  
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log("🗑️ Service Worker: Deleting old cache", cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
-  
-  self.clients.claim();
+    event.waitUntil(
+        caches
+            .keys()
+            .then((names) =>
+                Promise.all(
+                    names
+                        .filter((name) => name !== CACHE_NAME)
+                        .map((name) => caches.delete(name))
+                )
+            )
+            // Assume o controle de todas as abas abertas imediatamente
+            .then(() => self.clients.claim())
+    );
 });
 
-// Interceptar requisições
 self.addEventListener("fetch", (event) => {
-  // Estratégia: Cache first, network fallback
-  if (event.request.method !== "GET") {
-    return;
-  }
+    const request = event.request;
 
-  event.respondWith(
-    caches
-      .match(event.request)
-      .then((response) => {
-        // Se encontrou no cache, retorna
-        if (response) {
-          return response;
-        }
+    if (request.method !== "GET") return;
 
-        return fetch(event.request).then((response) => {
-          // Se não é uma resposta válida, retorna
-          if (!response || response.status !== 200 || response.type === "error") {
-            return response;
-          }
+    let url;
+    try {
+        url = new URL(request.url);
+    } catch (e) {
+        return;
+    }
 
-          // Cachear a resposta
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+    if (!url.protocol.startsWith("http")) return;
 
-          return response;
-        });
-      })
-      .catch(() => {
-        // Network request falhou, retornar página em cache ou erro
-        console.log("📡 Network request falhou para:", event.request.url);
-        // Poderia retornar uma página offline aqui
-      })
-  );
+    // Não interceptar dev/HMR do Next.js nem APIs
+    if (
+        url.pathname.startsWith("/_next/") ||
+        url.pathname.startsWith("/api/") ||
+        url.pathname.includes("__nextjs") ||
+        url.pathname.includes("hot-update")
+    ) {
+        return;
+    }
+
+    const acceptHeader = request.headers.get("accept") || "";
+    const isNavigation =
+        request.mode === "navigate" || acceptHeader.includes("text/html");
+
+    if (isNavigation) {
+        // NETWORK-FIRST para HTML: sempre buscar da rede primeiro,
+        // cachear a resposta para fallback offline e servir do cache
+        // apenas se a rede falhar.
+        event.respondWith(
+            fetch(request)
+                .then((response) => {
+                    const cloned = response.clone();
+                    caches
+                        .open(CACHE_NAME)
+                        .then((cache) => cache.put(request, cloned).catch(() => {}));
+                    return response;
+                })
+                .catch(() =>
+                    caches
+                        .match(request)
+                        .then(
+                            (cached) =>
+                                cached ||
+                                caches.match("/") ||
+                                new Response("Offline", { status: 503 })
+                        )
+                )
+        );
+        return;
+    }
+
+    // CACHE-FIRST para assets estáticos (imagens, css, fontes, etc.)
+    event.respondWith(
+        caches.match(request).then((cached) => {
+            if (cached) return cached;
+            return fetch(request)
+                .then((response) => {
+                    if (response.ok && url.origin === self.location.origin) {
+                        const cloned = response.clone();
+                        caches
+                            .open(CACHE_NAME)
+                            .then((cache) => cache.put(request, cloned).catch(() => {}));
+                    }
+                    return response;
+                })
+                .catch(() => cached || new Response("", { status: 504 }));
+        })
+    );
 });

@@ -10,6 +10,7 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
+    "typecheck": "tsc --noEmit",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -18,11 +19,15 @@
     "bcryptjs": "3.0.3",
     "next": "^16.2.9",
     "next-auth": "^4.24.13",
+    "nodemailer": "^7.0.13",
+    "qrcode": "^1.5.4",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
     "@types/node": "26.0.1",
+    "@types/nodemailer": "^8.0.1",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "19.2.17",
     "cypress": "^15.18.0",
     "prisma": "^5.22.0",

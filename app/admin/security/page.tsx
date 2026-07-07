@@ -2,6 +2,20 @@
 
 import { useState, useEffect } from 'react'
 
+const COLORS = {
+  preto: '#000000',
+  cardBg: '#111111',
+  dourado: '#C89B3C',
+  douradoEscuro: '#8D6B1F',
+  branco: '#F2F2F2',
+  textoSuave: '#F2F2F2',
+}
+
+const BTN_GOLD: React.CSSProperties = {
+  background: 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)',
+  color: COLORS.preto,
+}
+
 interface AuditLog {
   id: string
   event: string
@@ -81,9 +95,9 @@ export default function SecurityDashboard() {
 
   if (unauthorized) {
     return (
-      <div style={{ padding: '30px', maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
-        <h1 style={{ color: '#001f3f' }}>Acesso negado</h1>
-        <p style={{ color: '#666' }}>
+      <div style={{ padding: '30px', maxWidth: '600px', margin: '0 auto', textAlign: 'center', minHeight: '100vh', background: COLORS.preto, color: COLORS.branco }}>
+        <h1 style={{ color: COLORS.dourado }}>Acesso negado</h1>
+        <p style={{ color: COLORS.textoSuave }}>
           Você não tem permissão para acessar o painel de segurança.
         </p>
       </div>
@@ -95,10 +109,13 @@ export default function SecurityDashboard() {
       style={{
         padding: '30px',
         maxWidth: '1200px',
-        margin: '0 auto'
+        margin: '0 auto',
+        minHeight: '100vh',
+        background: COLORS.preto,
+        color: COLORS.branco,
       }}
     >
-      <h1 style={{ color: '#001f3f', marginBottom: '30px' }}>
+      <h1 style={{ color: COLORS.dourado, marginBottom: '30px' }}>
         🔐 Painel de Segurança
       </h1>
 
@@ -107,18 +124,19 @@ export default function SecurityDashboard() {
           display: 'flex',
           gap: '10px',
           marginBottom: '30px',
-          borderBottom: '2px solid #ddd'
+          borderBottom: `2px solid ${COLORS.douradoEscuro}`,
         }}
       >
         <button
           onClick={() => setActiveTab('logs')}
           style={{
             padding: '12px 20px',
-            backgroundColor: activeTab === 'logs' ? '#001f3f' : 'transparent',
-            color: activeTab === 'logs' ? 'white' : '#333',
+            background: activeTab === 'logs' ? 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)' : 'linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8D6B1F 100%)',
+            color: activeTab === 'logs' ? COLORS.preto : COLORS.branco,
             border: 'none',
             cursor: 'pointer',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
+            borderRadius: '6px 6px 0 0',
           }}
         >
           📊 Logs de Auditoria ({logs.length})
@@ -127,11 +145,12 @@ export default function SecurityDashboard() {
           onClick={() => setActiveTab('locks')}
           style={{
             padding: '12px 20px',
-            backgroundColor: activeTab === 'locks' ? '#001f3f' : 'transparent',
-            color: activeTab === 'locks' ? 'white' : '#333',
+            background: activeTab === 'locks' ? 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)' : 'linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8D6B1F 100%)',
+            color: activeTab === 'locks' ? COLORS.preto : COLORS.branco,
             border: 'none',
             cursor: 'pointer',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
+            borderRadius: '6px 6px 0 0',
           }}
         >
           🚫 Contas Bloqueadas ({locks.filter(l => !l.unlockedAt).length})
@@ -139,26 +158,27 @@ export default function SecurityDashboard() {
       </div>
 
       {loading ? (
-        <p>Carregando...</p>
+        <p style={{ color: COLORS.textoSuave }}>Carregando...</p>
       ) : activeTab === 'logs' ? (
         <div>
-          <h2 style={{ color: '#333', marginBottom: '20px' }}>
+          <h2 style={{ color: COLORS.dourado, marginBottom: '20px' }}>
             Logs de Auditoria
           </h2>
           <div
             style={{
-              overflowX: 'auto'
+              overflowX: 'auto',
             }}
           >
             <table
               style={{
                 width: '100%',
                 borderCollapse: 'collapse',
-                backgroundColor: '#f8f9fa'
+                backgroundColor: COLORS.cardBg,
+                border: `1px solid ${COLORS.douradoEscuro}`,
               }}
             >
               <thead>
-                <tr style={{ backgroundColor: '#001f3f', color: 'white' }}>
+                <tr style={{ background: 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)', color: COLORS.preto }}>
                   <th style={{ padding: '12px', textAlign: 'left' }}>Data</th>
                   <th style={{ padding: '12px', textAlign: 'left' }}>Evento</th>
                   <th style={{ padding: '12px', textAlign: 'left' }}>Usuário</th>
@@ -168,7 +188,7 @@ export default function SecurityDashboard() {
               </thead>
               <tbody>
                 {logs.map(log => (
-                  <tr key={log.id} style={{ borderBottom: '1px solid #ddd' }}>
+                  <tr key={log.id} style={{ borderBottom: `1px solid ${COLORS.douradoEscuro}`, color: COLORS.textoSuave }}>
                     <td style={{ padding: '12px' }}>
                       {new Date(log.timestamp).toLocaleString('pt-BR')}
                     </td>
@@ -186,13 +206,13 @@ export default function SecurityDashboard() {
         </div>
       ) : (
         <div>
-          <h2 style={{ color: '#333', marginBottom: '20px' }}>
+          <h2 style={{ color: COLORS.dourado, marginBottom: '20px' }}>
             Contas Bloqueadas
           </h2>
           <div
             style={{
               display: 'grid',
-              gap: '15px'
+              gap: '15px',
             }}
           >
             {locks
@@ -201,28 +221,28 @@ export default function SecurityDashboard() {
                 <div
                   key={idx}
                   style={{
-                    backgroundColor: '#ffebee',
-                    border: '1px solid #ff5252',
+                    backgroundColor: COLORS.cardBg,
+                    border: `1px solid ${COLORS.dourado}`,
                     padding: '15px',
-                    borderRadius: '8px'
+                    borderRadius: '8px',
                   }}
                 >
                   <div
                     style={{
                       display: 'flex',
                       justifyContent: 'space-between',
-                      alignItems: 'center'
+                      alignItems: 'center',
                     }}
                   >
                     <div>
-                      <p style={{ margin: 0, fontWeight: 'bold', color: '#333' }}>
+                      <p style={{ margin: 0, fontWeight: 'bold', color: COLORS.branco }}>
                         📧 {lock.email}
                       </p>
                       <p
                         style={{
                           margin: '5px 0 0 0',
                           fontSize: '14px',
-                          color: '#666'
+                          color: COLORS.textoSuave,
                         }}
                       >
                         Razão: {lock.reason}
@@ -231,7 +251,8 @@ export default function SecurityDashboard() {
                         style={{
                           margin: '5px 0 0 0',
                           fontSize: '13px',
-                          color: '#999'
+                          color: COLORS.textoSuave,
+                          opacity: 0.8,
                         }}
                       >
                         Tentativas falhadas: {lock.attemptCount} | Bloqueado em:{' '}
@@ -241,13 +262,12 @@ export default function SecurityDashboard() {
                     <button
                       onClick={() => handleUnlockAccount(lock.email)}
                       style={{
+                        ...BTN_GOLD,
                         padding: '10px 20px',
-                        backgroundColor: '#4caf50',
-                        color: 'white',
                         border: 'none',
                         borderRadius: '6px',
                         cursor: 'pointer',
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
                       }}
                     >
                       🔓 Desbloquear
@@ -256,7 +276,7 @@ export default function SecurityDashboard() {
                 </div>
               ))}
             {locks.filter(l => !l.unlockedAt).length === 0 && (
-              <p style={{ color: '#666' }}>Nenhuma conta bloqueada no momento ✅</p>
+              <p style={{ color: COLORS.textoSuave }}>Nenhuma conta bloqueada no momento ✅</p>
             )}
           </div>
         </div>

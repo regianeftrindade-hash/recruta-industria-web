@@ -23,13 +23,14 @@ function UpgradePageContent() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#f0f4f8',
-      fontFamily: 'Arial, sans-serif'
+      backgroundColor: '#000000',
+      color: '#F2F2F2',
     }}>
       {/* CABEÇALHO */}
       <div style={{
-        backgroundColor: '#001f3f',
-        color: 'white',
+        backgroundColor: '#111111',
+        color: '#F2F2F2',
+        borderBottom: '1px solid #8D6B1F',
         padding: '20px 40px',
         display: 'flex',
         justifyContent: 'space-between',
@@ -39,7 +40,7 @@ function UpgradePageContent() {
           <h1 style={{ margin: '0 0 5px 0', fontSize: '28px' }}>
             Upgrade para Premium
           </h1>
-          <p style={{ margin: 0, fontSize: '14px', opacity: 0.9 }}>
+          <p style={{ margin: 0, fontSize: '14px', color: '#F2F2F2' }}>
             Desbloqueia todos os recursos
           </p>
         </div>
@@ -48,36 +49,38 @@ function UpgradePageContent() {
       {/* CONTEÚDO */}
       <div style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto' }}>
         <div style={{
-          backgroundColor: 'white',
+          backgroundColor: '#111111',
           padding: '40px',
           borderRadius: '15px',
-          boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
+          border: '1px solid #8D6B1F',
+          boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
           textAlign: 'center'
         }}>
-          <h2 style={{ color: '#001f3f', marginBottom: '30px', fontSize: '32px' }}>
+          <h2 style={{ color: '#C89B3C', marginBottom: '30px', fontSize: '32px' }}>
             👑 Plano Premium
           </h2>
 
           {/* CARD DE PREÇO */}
           <div style={{
-            backgroundColor: '#fff3cd',
+            backgroundColor: '#000000',
             padding: '40px',
             borderRadius: '15px',
-            borderLeft: '6px solid #ff9800',
+            border: '1px solid #8D6B1F',
+            borderLeft: '6px solid #C89B3C',
             marginBottom: '40px'
           }}>
-            <p style={{ color: '#666', fontSize: '16px', margin: '0 0 10px 0' }}>
+            <p style={{ color: '#F2F2F2', fontSize: '16px', margin: '0 0 10px 0' }}>
               Invista no seu futuro
             </p>
             <p style={{
-              color: '#ff9800',
+              color: '#F2F2F2',
               fontSize: '48px',
               fontWeight: 'bold',
               margin: '0 0 10px 0'
             }}>
               R$ 19,90
             </p>
-            <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>
+            <p style={{ color: '#F2F2F2', fontSize: '14px', margin: 0 }}>
               por mês (renovação automática)
             </p>
           </div>
@@ -90,12 +93,12 @@ function UpgradePageContent() {
             marginBottom: '40px'
           }}>
             <div>
-              <h3 style={{ color: '#001f3f', marginBottom: '20px' }}>
+              <h3 style={{ color: '#C89B3C', marginBottom: '20px' }}>
                 ✓ Recursos Inclusos
               </h3>
               <ul style={{
                 textAlign: 'left',
-                color: '#333',
+                color: '#F2F2F2',
                 lineHeight: '2',
                 fontSize: '14px',
                 listStyle: 'none',
@@ -110,12 +113,12 @@ function UpgradePageContent() {
               </ul>
             </div>
             <div>
-              <h3 style={{ color: '#001f3f', marginBottom: '20px' }}>
+              <h3 style={{ color: '#C89B3C', marginBottom: '20px' }}>
                 🎯 Vantagens
               </h3>
               <ul style={{
                 textAlign: 'left',
-                color: '#333',
+                color: '#F2F2F2',
                 lineHeight: '2',
                 fontSize: '14px',
                 listStyle: 'none',
@@ -139,10 +142,10 @@ function UpgradePageContent() {
             marginBottom: '30px'
           }}>
             <button
-              onClick={() => router.push('/professional/dashboard/painel')}
+              onClick={() => router.push('/professional/dashboard')}
               style={{
-                backgroundColor: '#e0e0e0',
-                color: '#333',
+                background: 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)',
+                color: '#000',
                 padding: '14px 40px',
                 border: 'none',
                 borderRadius: '8px',
@@ -156,8 +159,8 @@ function UpgradePageContent() {
             <button
               onClick={() => router.push('/professional/checkout')}
               style={{
-                backgroundColor: '#ff9800',
-                color: 'white',
+                background: 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)',
+                color: '#000',
                 padding: '14px 40px',
                 border: 'none',
                 borderRadius: '8px',
@@ -172,7 +175,7 @@ function UpgradePageContent() {
 
           {/* GARANTIA */}
           <p style={{
-            color: '#666',
+            color: '#F2F2F2',
             fontSize: '13px',
             fontStyle: 'italic'
           }}>

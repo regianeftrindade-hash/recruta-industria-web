@@ -5,8 +5,9 @@ generator client {
 // Nota: Em produção (Vercel), DATABASE_URL deve apontar para PostgreSQL
 // Para desenvolvimento local com SQLite, alterar para: provider = "sqlite"
 datasource db {
-  provider = "postgresql"
-  url = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -26,13 +27,60 @@ model User {
 }
 
 model Company {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  name            String
+  cnpj            String?
+  responsavelNome String?
+  responsavelCpf  String?
+  planTier        String   @default("FREE")
+  subscriptionExpiresAt DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
+  favorites CompanyFavorite[]
+  searchHistory CompanySearchHistory[]
+  talentLists CompanyTalentList[]
+  alerts CompanyAlert[]
+  profileTracking CompanyProfileTracking[]
+}
+
+model CompanyTalentList {
+  id            String   @id @default(cuid())
+  companyUserId String
+  name          String
+  createdAt     DateTime @default(now())
+
+  company Company @relation(fields: [companyUserId], references: [userId], onDelete: Cascade)
+  items   CompanyTalentListItem[]
+
+  @@index([companyUserId])
+}
+
+model CompanyTalentListItem {
+  id        String   @id @default(cuid())
+  listId    String
+  profileId String
+  createdAt DateTime @default(now())
+
+  list CompanyTalentList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, profileId])
+  @@index([listId])
+}
+
+model CompanyAlert {
+  id            String   @id @default(cuid())
+  companyUserId String
+  name          String
+  filtersJSON   String
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  company Company @relation(fields: [companyUserId], references: [userId], onDelete: Cascade)
+
+  @@index([companyUserId])
 }
 
 model Professional {
@@ -139,6 +187,26 @@ model Profile {
   
   // Novos campos: Mensagem
   mensagemEmpresas String? // Apresentação pessoal para empresas
+
+  // Snapshot completo do formulário de cadastro (JSON)
+  formDataJSON    String?
+
+  // Sobre mim — preenchido apenas no dashboard (JSON)
+  sobreMimJSON    String?
+
+  // Teste comportamental — preenchido uma única vez (JSON)
+  testeComportamentalJSON String?
+
+  // Vídeo de apresentação (caminho privado no storage — não URL pública)
+  videoApresentacaoPath String?
+  
+  // Completude do perfil (0-100) para priorização em buscas
+  profileCompletion Int @default(0)
+  disponivelContratacao String?
+
+  // Plano profissional (FREE | PREMIUM)
+  planTier              String    @default("FREE")
+  subscriptionExpiresAt DateTime?
   
   // Timestamps
   createdAt       DateTime @default(now())
@@ -148,6 +216,7 @@ model Profile {
   profileViews    ProfileView[]
   accessRecords   AccessRecord[]
   tips            Tip[]
+  profileMessages ProfileMessage[]
 
   @@index([userId])
   @@index([location])
@@ -206,4 +275,62 @@ model Tip {
   @@index([profileId])
   @@index([companyUserId])
   @@index([createdAt])
+}
+
+// Mensagens de empresas para profissionais (caixa de entrada do candidato)
+model ProfileMessage {
+  id              String   @id @default(cuid())
+  profileId       String
+  companyUserId   String
+  companyName     String
+  body            String
+  createdAt       DateTime @default(now())
+
+  profile         Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([companyUserId])
+  @@index([createdAt])
+}
+
+model CompanyFavorite {
+  id            String   @id @default(cuid())
+  companyUserId String
+  profileId     String
+  createdAt     DateTime @default(now())
+
+  company Company @relation(fields: [companyUserId], references: [userId], onDelete: Cascade)
+
+  @@unique([companyUserId, profileId])
+  @@index([companyUserId])
+}
+
+model CompanySearchHistory {
+  id            String   @id @default(cuid())
+  companyUserId String
+  filtersJSON   String
+  createdAt     DateTime @default(now())
+
+  company Company @relation(fields: [companyUserId], references: [userId], onDelete: Cascade)
+
+  @@index([companyUserId])
+  @@index([createdAt])
+}
+
+model CompanyProfileTracking {
+  id            String   @id @default(cuid())
+  companyUserId String
+  profileId     String
+  contatado     Boolean  @default(false)
+  entrevistado  Boolean  @default(false)
+  contratado    Boolean  @default(false)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyUserId], references: [userId], onDelete: Cascade)
+
+  @@unique([companyUserId, profileId])
+  @@index([companyUserId])
+  @@index([profileId])
 }

@@ -1,40 +1,82 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { getServerSession } from 'next-auth';
 import { getToken } from 'next-auth/jwt';
+import { authOptions } from '@/lib/auth.config';
+import { prisma } from '@/lib/db';
+import {
+  buildProfileUpsertPayload,
+  mapProfileToDashboard,
+  mapProfileToFormEdit,
+  rebuildFormSnapshotFromProfile,
+} from '@/lib/professional-profile-map';
+import {
+  getProfileFormSnapshot,
+  saveProfileFormSnapshot,
+} from '@/lib/profile-snapshot';
+import { isProfessionalRegistrationComplete } from '@/lib/professional-registration';
+import { ensurePaymentSchema } from '@/lib/ensure-db-schema';
+import { getVideoApresentacaoPath } from '@/lib/professional/professional-video-db';
+
+async function resolveAuthEmail(request: NextRequest): Promise<{ email: string; name?: string } | null> {
+  const session = await getServerSession(authOptions);
+  if (session?.user?.email) {
+    return {
+      email: session.user.email.toLowerCase().trim(),
+      name: session.user.name ?? undefined,
+    };
+  }
+
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
+
+  if (token?.email) {
+    return {
+      email: String(token.email).toLowerCase().trim(),
+      name: token.name ? String(token.name) : undefined,
+    };
+  }
+
+  return null;
+}
 
 export async function GET(request: NextRequest) {
   try {
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET
-    });
+    await ensurePaymentSchema();
 
-    if (!token || !token.email) {
+    const auth = await resolveAuthEmail(request);
+
+    if (!auth) {
       return NextResponse.json(
         { error: 'Não autenticado' },
         { status: 401 }
       );
     }
 
-    // Buscar dados do usuário no banco
     let user = await prisma.user.findUnique({
       where: {
-        email: token.email
+        email: auth.email
       },
       include: {
         profile: true
       }
     });
 
-    // Criar usuário automaticamente caso não exista
+    if (user && auth.name && auth.name.trim() && user.name !== auth.name.trim()) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { name: auth.name.trim() },
+        include: { profile: true },
+      });
+    }
+
     if (!user) {
       user = await prisma.user.create({
         data: {
-          email: token.email,
-          name: token.name
-            ? String(token.name)
-            : token.email.split('@')[0],
+          email: auth.email,
+          name: auth.name?.trim() || auth.email.split('@')[0],
           role: 'PROFESSIONAL'
         },
         include: {
@@ -43,36 +85,32 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Se o usuário tem um perfil, retornar os dados reais
     if (user.profile) {
-      const skills = user.profile.skills
-        ? JSON.parse(user.profile.skills)
-        : [];
+      let profile = user.profile;
+
+      if (!profile.formDataJSON?.trim()) {
+        const rebuilt = rebuildFormSnapshotFromProfile(profile, user);
+        profile = await prisma.profile.update({
+          where: { userId: user.id },
+          data: { formDataJSON: rebuilt },
+        });
+      }
+
+      const formSnapshot = profile.formDataJSON ?? (await getProfileFormSnapshot(user.id));
+      const dashboard = mapProfileToDashboard(profile, user);
+      const formEdit = mapProfileToFormEdit(profile, user, formSnapshot);
+      const videoPath = await getVideoApresentacaoPath(user.id);
 
       return NextResponse.json({
-        nome: user.name || user.email?.split('@')[0] || 'Usuário',
-        email: user.profile.email || user.email,
-        profissao: user.profile.title || 'Não preenchido',
-        cargoDesejado: user.profile.title || 'Não preenchido',
-        localizacao: user.profile.location || 'Não preenchido',
-        experiencia: user.profile.experience || 'Não preenchido',
-        experiencias: user.profile.experience || 'Não preenchido',
-        formacao: user.profile.fullDescription || 'Não preenchido',
-        descricaoPessoal: user.profile.fullDescription || 'Não preenchido',
-        habilidades: skills,
-        telefone: user.profile.phone || '',
-        whatsapp: user.profile.whatsapp || '',
-        fotoPerfil: user.profile.avatar || null,
-        avatar: user.profile.avatar || null,
-        curriculo:
-          user.profile.curricoURL || user.profile.portfolio || null,
-        atestado: user.profile.atestadoURL || null,
-        dataVisualizacoes: user.profile.viewCount || 0,
-        plano: 'free'
+        ...dashboard,
+        formEdit,
+        hasProfile: true,
+        hasFormSnapshot: !!formSnapshot,
+        hasVideoApresentacao: Boolean(videoPath),
+        registrationComplete: isProfessionalRegistrationComplete(profile),
       });
     }
 
-    // Se não tem perfil, retornar dados padrão
     return NextResponse.json({
       nome: user.name || user.email?.split('@')[0] || 'Usuário',
       email: user.email,
@@ -91,7 +129,12 @@ export async function GET(request: NextRequest) {
       curriculo: null,
       atestado: null,
       dataVisualizacoes: 0,
-      plano: 'free'
+      plano: 'free',
+      formEdit: null,
+      hasProfile: false,
+      hasFormSnapshot: false,
+      hasVideoApresentacao: false,
+      registrationComplete: false,
     });
   } catch (error) {
     console.error('Erro ao buscar perfil:', error);
@@ -103,31 +146,13 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Helper function to clean data values
-function getStringValue(value: any): string | null {
-  if (typeof value === 'string' && value.trim()) {
-    return value.trim();
-  }
-
-  if (
-    value &&
-    typeof value === 'object' &&
-    Object.keys(value).length === 0
-  ) {
-    return null;
-  }
-
-  return null;
-}
-
 export async function POST(request: NextRequest) {
   try {
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET
-    });
+    await ensurePaymentSchema();
 
-    if (!token || !token.email) {
+    const auth = await resolveAuthEmail(request);
+
+    if (!auth) {
       return NextResponse.json(
         { error: 'Não autenticado' },
         { status: 401 }
@@ -136,160 +161,72 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    // Buscar usuário
     let user = await prisma.user.findUnique({
       where: {
-        email: token.email
+        email: auth.email
       }
     });
 
-    // Criar usuário automaticamente se não existir
     if (!user) {
       user = await prisma.user.create({
         data: {
-          email: token.email,
-          name: token.name
-            ? String(token.name)
-            : token.email.split('@')[0],
+          email: auth.email,
+          name: auth.name?.trim() || auth.email.split('@')[0],
           role: 'PROFESSIONAL'
         }
       });
     }
 
-    // Limpar dados
-    const cleanedAvatar =
-      getStringValue(body.fotoPerfil) ||
-      getStringValue(body.avatar) ||
-      null;
+    if (body.nome && typeof body.nome === 'string' && body.nome.trim()) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { name: body.nome.trim() },
+      });
+      user = { ...user, name: body.nome.trim() };
+    }
 
-    const cleanedPortfolio =
-      getStringValue(body.curriculo) ||
-      getStringValue(body.curricoURL) ||
-      getStringValue(body.portfolio) ||
-      null;
+    const { prismaData: profileData, formDataJSON } = buildProfileUpsertPayload(
+      body,
+      user.email
+    );
 
-    const cleanedAtestado =
-      getStringValue(body.atestado) ||
-      getStringValue(body.atestadoURL) ||
-      null;
-
-    // Criar ou atualizar perfil
     const profile = await prisma.profile.upsert({
       where: {
         userId: user.id
       },
       update: {
-        title: body.cargoDesejado || body.profissao || '',
-        bio: body.experiencias || body.descricaoPessoal || '',
-        fullDescription:
-          body.descricaoPessoal || body.experiencias || '',
-        location:
-          body.cidade && body.estado
-            ? `${body.cidade}, ${body.estado}`
-            : '',
-        phone: body.telefone || '',
-        whatsapp:
-          body.whatsapp === 'Sim'
-            ? body.telefone
-            : '',
-        email: body.email || user.email,
-        skills: body.habilidades
-          ? JSON.stringify(
-              body.habilidades
-                .split(',')
-                .map((h: string) => h.trim())
-            )
-          : null,
-        experience:
-          body.tempoExperiencia ||
-          body.experiencias ||
-          '',
-        avatar: cleanedAvatar,
-        portfolio: cleanedPortfolio,
-        curricoURL: cleanedPortfolio,
-        atestadoURL: cleanedAtestado,
+        ...profileData,
         updatedAt: new Date()
       },
       create: {
         userId: user.id,
-        title:
-          body.cargoDesejado ||
-          body.profissao ||
-          'Profissional',
-        bio: body.experiencias || body.descricaoPessoal || '',
-        fullDescription:
-          body.descricaoPessoal || body.experiencias || '',
-        location:
-          body.cidade && body.estado
-            ? `${body.cidade}, ${body.estado}`
-            : 'Não informado',
-        phone: body.telefone || '',
-        whatsapp:
-          body.whatsapp === 'Sim'
-            ? body.telefone
-            : '',
-        email: body.email || user.email,
-        skills: body.habilidades
-          ? JSON.stringify(
-              body.habilidades
-                .split(',')
-                .map((h: string) => h.trim())
-            )
-          : null,
-        experience:
-          body.tempoExperiencia ||
-          body.experiencias ||
-          '',
-        avatar: cleanedAvatar,
-        portfolio: cleanedPortfolio,
-        curricoURL: cleanedPortfolio,
-        atestadoURL: cleanedAtestado
+        ...profileData,
       }
     });
 
-    // Atualizar também a tabela Professional
+    await saveProfileFormSnapshot(user.id, formDataJSON);
+
     await prisma.professional.upsert({
       where: {
         userId: user.id
       },
       update: {
-        title: body.cargoDesejado || body.profissao || ''
+        title: profileData.cargoDesejado || profileData.title || ''
       },
       create: {
         userId: user.id,
-        title:
-          body.cargoDesejado ||
-          body.profissao ||
-          'Profissional'
+        title: profileData.cargoDesejado || profileData.title || 'Profissional'
       }
     });
+
+    const savedSnapshot = await getProfileFormSnapshot(user.id);
+    const dashboard = mapProfileToDashboard(profile, user);
 
     return NextResponse.json({
       success: true,
       message: 'Perfil salvo com sucesso',
-      profile: {
-        nome: user.name,
-        email: profile.email,
-        profissao: profile.title,
-        cargoDesejado: profile.title,
-        localizacao: profile.location,
-        experiencia: profile.experience,
-        experiencias: profile.experience,
-        formacao: profile.fullDescription,
-        descricaoPessoal: profile.fullDescription,
-        habilidades: profile.skills
-          ? JSON.parse(profile.skills)
-          : [],
-        telefone: profile.phone,
-        whatsapp: profile.whatsapp,
-        avatar: profile.avatar,
-        fotoPerfil: profile.avatar,
-        curriculo:
-          profile.curricoURL || profile.portfolio,
-        atestado: profile.atestadoURL,
-        dataVisualizacoes: profile.viewCount,
-        plano: 'free'
-      }
+      profile: dashboard,
+      formEdit: mapProfileToFormEdit(profile, user, savedSnapshot),
     });
 
   } catch (error) {

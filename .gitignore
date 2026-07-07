@@ -51,6 +51,9 @@ data/contacts.json
 prisma/dev.db
 prisma/dev.db-journal
 
+# user-uploaded assets (served from Supabase, not local disk)
+public/uploads/
+
 # vercel
 .vercel
 

@@ -1,0 +1,291 @@
+/* 🔒 PÁGINA INICIAL BLOQUEADA (06/07/2026) — não editar sem pedido explícito do usuário (ver .cursor/rules/home-page-lock.mdc) */
+
+.homePage {
+  letter-spacing: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: auto;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 1px solid rgba(200, 155, 60, 0.65);
+  border-radius: clamp(12px, 1.4vw, 18px);
+}
+
+.homeTop {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: clamp(18px, 3vh, 36px);
+}
+
+.homeBottom {
+  flex-shrink: 0;
+  margin-top: auto;
+  width: 100%;
+}
+
+.homePage h1,
+.homePage h2,
+.homePage p,
+.homePage span,
+.homePage a {
+  letter-spacing: normal;
+}
+
+.logoHero {
+  width: 100%;
+  margin: 0 auto;
+  line-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.logoHero > * {
+  margin-left: auto;
+  margin-right: auto;
+  transform: translateX(-0.5cm);
+}
+
+.cardContent {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-top: 3px;
+  padding-bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.cardContent p {
+  margin: 0 0 2mm;
+}
+
+.cardCta {
+  font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
+  padding: 7px 18px;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
+  color: #000000;
+  font-weight: 700;
+  font-size: clamp(0.66rem, 0.9vw, 0.8rem);
+  text-transform: uppercase;
+  border: 1px solid #6b5218;
+  margin-top: auto;
+  flex-shrink: 0;
+  letter-spacing: normal;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.cardCta:active {
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
+}
+
+.cardCtaText {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: auto;
+}
+
+.heroLineRow {
+  display: flex;
+  align-items: center;
+  width: min(920px, 94vw);
+  margin: clamp(22px, 3.2vw, 34px) auto clamp(14px, 2.2vw, 26px);
+  gap: clamp(10px, 1.8vw, 18px);
+}
+
+.heroLineSegment {
+  flex: 1;
+  height: 1px;
+  min-width: 24px;
+  background: #8d6b1f;
+}
+
+.heroTagline {
+  flex-shrink: 0;
+  margin: 0;
+  color: #f2f2f2;
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  font-weight: 600;
+  font-style: normal;
+  text-align: center;
+  opacity: 0.95;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.heroTaglineStar {
+  flex-shrink: 0;
+  color: #c89b3c;
+  font-size: clamp(1.25rem, 2vw, 1.65rem);
+  line-height: 1;
+}
+
+.cardImageWrap {
+  flex: 0 0 52%;
+  max-height: 175px;
+  min-height: 0;
+  overflow: hidden;
+  line-height: 0;
+  border-radius: 7px;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  image-rendering: auto;
+}
+
+.cardImageEmpresa {
+  object-position: center 42%;
+}
+
+.footerTag {
+  border: 1px solid #8d6b1f;
+  padding: 2px 6px;
+  font-size: 0.56rem;
+  color: #f2f2f2;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+.bannerSection {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  overflow: hidden;
+  background: #000000;
+  flex-shrink: 0;
+  min-height: clamp(100px, 11vw, 130px);
+}
+
+.bannerSideLeft,
+.bannerSideRight {
+  min-height: 100%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  filter: brightness(1.18) contrast(1.12);
+  opacity: 0.16;
+  pointer-events: none;
+}
+
+.bannerSideLeft {
+  background-image: url("/welding-left.png");
+  background-position: right center;
+}
+
+.bannerSideRight {
+  background-image: url("/welding-right.png");
+  background-position: left center;
+}
+
+.bannerTextColumn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: fit-content;
+  max-width: min(96vw, 920px);
+  padding: clamp(14px, 2vw, 24px) clamp(14px, 2vw, 22px);
+  text-align: center;
+  box-sizing: border-box;
+  background: #000000;
+  z-index: 1;
+}
+
+.bannerTextVLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #8d6b1f;
+  pointer-events: none;
+}
+
+.bannerTextVLineLeft {
+  left: 0;
+}
+
+.bannerTextVLineRight {
+  right: 0;
+}
+
+.bannerTextTitle {
+  color: #c89b3c;
+  font-size: clamp(0.78rem, 1.8vw, 1.45rem);
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.bannerTextSubtitle {
+  color: #c89b3c;
+  font-size: clamp(1rem, 1.8vw, 1.45rem);
+  font-weight: 600;
+  margin: 0;
+  opacity: 1;
+  line-height: 1.35;
+}
+
+.homeContactsWrap {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.homeContacts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 10px;
+  padding: 8px 16px 6px;
+  text-align: center;
+}
+
+.homeContactLine {
+  width: 100%;
+  height: 1px;
+  background: #8d6b1f;
+  box-shadow: 0 0 0 0.5px rgba(200, 155, 60, 0.35);
+}
+
+.homeContactLink {
+  color: #c89b3c;
+  font-size: clamp(0.68rem, 1.1vw, 0.82rem);
+  font-weight: 500;
+  text-decoration: none;
+  letter-spacing: normal;
+}
+
+.homeContactLink:hover {
+  text-decoration: underline;
+}
+
+.homeContactSep {
+  color: #8d6b1f;
+  font-size: clamp(0.68rem, 1.1vw, 0.82rem);
+  opacity: 0.9;
+}

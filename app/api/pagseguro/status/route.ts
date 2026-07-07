@@ -1,88 +1,69 @@
-import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/db'
-
-const PAGBANK_TOKEN = process.env.PAGBANK_TOKEN
-const PAGBANK_API_URL = process.env.PAGBANK_API_URL || 'https://api.pagbank.com.br'
-
-async function getPagBankStatus(chargeId: string) {
-  try {
-    const response = await fetch(`${PAGBANK_API_URL}/charges/${chargeId}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${PAGBANK_TOKEN}`,
-        'Content-Type': 'application/json'
-      }
-    })
-
-    if (!response.ok) {
-      console.error('PagBank Status Error:', response.status)
-      return null
-    }
-
-    const data = await response.json()
-    
-    // Mapear status do PagBank para nosso padrão
-    let status = 'PENDING'
-    if (data.status === 'PAID') status = 'PAID'
-    else if (data.status === 'DECLINED') status = 'DECLINED'
-    else if (data.status === 'CANCELED') status = 'CANCELED'
-    else if (data.status === 'EXPIRED') status = 'EXPIRED'
-
-    return { status, pagbankData: data }
-  } catch (error) {
-    console.error('PagBank integration error:', error)
-    return null
-  }
-}
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth.config';
+import { prisma } from '@/lib/db';
+import {
+  paymentBelongsToUser,
+  syncPaymentStatusFromGateway,
+} from '@/lib/payment-activation';
 
 export async function GET(req: NextRequest) {
   try {
-    const url = new URL(req.url)
-    const chargeId = url.searchParams.get('chargeId')
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+    }
+
+    const chargeId = new URL(req.url).searchParams.get('chargeId');
     if (!chargeId) {
-      return new Response(JSON.stringify({ error: 'chargeId is required' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
+      return NextResponse.json({ error: 'chargeId é obrigatório' }, { status: 400 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email.toLowerCase().trim() },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
     }
 
     const rec = await prisma.paymentRecord.findFirst({
-      where: {
-        reference: {
-          in: [chargeId]
-        }
-      }
-    })
+      where: { reference: chargeId },
+    });
 
     if (!rec) {
-      return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: { 'Content-Type': 'application/json' } })
+      return NextResponse.json({ error: 'not_found' }, { status: 404 });
     }
 
-    // Buscar status real do PagBank
-    const pagbankStatus = await getPagBankStatus(rec.reference)
-    
-    let status = rec.status
-    if (pagbankStatus) {
-      status = pagbankStatus.status
-      // Atualizar status local se mudou
-      if (rec.status !== status) {
-        await prisma.paymentRecord.update({
-          where: { id: rec.id },
-          data: { status }
-        })
-      }
+    if (!paymentBelongsToUser(rec.meta, user.id)) {
+      return NextResponse.json({ error: 'Cobrança não pertence a este usuário' }, { status: 403 });
     }
 
-    return new Response(
-      JSON.stringify({ 
-        id: rec.reference, 
-        reference: rec.reference,
-        status: status, 
-        amount: rec.amount,
-        currency: rec.currency,
-        createdAt: rec.createdAt,
-        updatedAt: rec.updatedAt
-      }), 
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    )
-  } catch (err: any) {
-    return new Response(JSON.stringify({ error: err?.message || 'unexpected' }), { status: 500, headers: { 'Content-Type': 'application/json' } })
+    const { status, activated } = await syncPaymentStatusFromGateway(chargeId);
+
+    const updated = await prisma.paymentRecord.findUnique({
+      where: { reference: chargeId },
+    });
+
+    if (!updated) {
+      return NextResponse.json({ error: 'not_found' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      id: updated.reference,
+      reference: updated.reference,
+      status,
+      activated,
+      amount: updated.amount,
+      currency: updated.currency,
+      createdAt: updated.createdAt,
+      updatedAt: updated.updatedAt,
+    });
+  } catch (error) {
+    console.error('Erro PagSeguro status:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'unexpected' },
+      { status: 500 },
+    );
   }
 }

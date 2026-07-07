@@ -1,13 +1,13 @@
-/* Styles for professional success page: responsive, accessible */
+/* Tema industrial — alinhado à Home */
 :root {
-  --primary-color: #004d40;
-  --secondary-color: #00796b;
-  --background: #f0f2f5;
-  --card-bg: #ffffff;
-  --text-primary: #004d40;
-  --text-secondary: #6c757d;
-  --border-color: rgba(0,77,64,0.1);
-  --focus-outline: rgba(0,77,64,0.3);
+  --primary-color: #C89B3C;
+  --secondary-color: #8D6B1F;
+  --background: #000000;
+  --card-bg: #111111;
+  --text-primary: #F2F2F2;
+  --text-secondary: #F2F2F2;
+  --border-color: #8D6B1F;
+  --focus-outline: rgba(200, 155, 60, 0.35);
 }
 
 .container {
@@ -17,7 +17,10 @@
   align-items: center;
   justify-content: center;
   padding: 2rem 1rem;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .card {
@@ -27,8 +30,8 @@
   text-align: center;
   max-width: 500px;
   width: 100%;
-  border: 5px solid var(--primary-color);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--border-color);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
 }
 
 .visual {
@@ -45,7 +48,7 @@
 }
 
 .title {
-  color: var(--text-primary);
+  color: var(--primary-color);
   font-size: 2rem;
   font-weight: 900;
   margin: 0.5rem 0 1rem;
@@ -53,7 +56,7 @@
 }
 
 .description {
-  color: var(--text-primary);
+  color: #F2F2F2;
   font-size: 1.1rem;
   margin: 0 0 1.5rem;
   text-align: center;
@@ -67,8 +70,8 @@
 }
 
 .primary {
-  background-color: var(--primary-color);
-  color: #fff;
+  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  color: #000000;
   padding: 0.75rem 1.25rem;
   border: none;
   border-radius: 8px;
@@ -78,10 +81,10 @@
 }
 
 .secondary {
-  background: transparent;
-  color: var(--primary-color);
+  background: linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8D6B1F 100%);
+  color: #F2F2F2;
   padding: 0.75rem 1.25rem;
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
@@ -96,19 +99,26 @@
   height: 1rem;
 }
 
-.primary:focus, .secondary:focus {
+.primary:focus,
+.secondary:focus {
   outline: 3px solid var(--focus-outline);
   outline-offset: 2px;
 }
 
-.primary:hover { filter: brightness(0.98); }
-.secondary:hover { 
-  background: var(--primary-color); 
-  color: white; 
-  border-color: var(--primary-color); 
+.primary:hover {
+  filter: brightness(1.08);
 }
 
-.live { position: absolute; left: -9999px; }
+.secondary:hover {
+  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  color: #000000;
+  border-color: var(--primary-color);
+}
+
+.live {
+  position: absolute;
+  left: -9999px;
+}
 
 .note {
   color: var(--text-secondary);
@@ -130,8 +140,21 @@
 }
 
 @media (max-width: 480px) {
-  .card { padding: 2rem; }
-  .title { font-size: 1.5rem; }
-  .svgIcon { width: 64px; height: 64px; }
-  .primary, .secondary { width: 100%; }
+  .card {
+    padding: 2rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .svgIcon {
+    width: 64px;
+    height: 64px;
+  }
+
+  .primary,
+  .secondary {
+    width: 100%;
+  }
 }

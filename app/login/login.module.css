@@ -1,0 +1,265 @@
+/* 🔒 LOGIN BLOQUEADO — Profissional e Empresa (06/07/2026) — não editar sem pedido explícito (ver .cursor/rules/login-page-lock.mdc) */
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background-color: #000000;
+  color: #f2f2f2;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.card {
+  background-color: #111111;
+  padding: 36px 32px;
+  border-radius: 12px;
+  border: 1px solid #c89b3c;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+  max-width: 440px;
+  width: 100%;
+}
+
+.loginHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(20px, 3.5vw, 32px);
+  margin-bottom: 18px;
+}
+
+.logoWrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0;
+}
+
+.logoWrap svg {
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
+}
+
+.subtitle {
+  text-align: center;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.accessTag {
+  display: inline-block;
+  padding: 7px 16px;
+  border: 1px solid #c89b3c;
+  border-radius: 999px;
+  background: #1a1508;
+  color: #c89b3c;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: var(--ri-btn-3d-outline-shadow);
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  flex: 1;
+  padding: 11px 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: normal;
+  border-radius: 8px;
+  border: 1px solid #8d6b1f;
+  background: transparent;
+  color: #f2f2f2;
+  box-shadow: var(--ri-btn-3d-outline-shadow);
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.tab:active {
+  transform: translateY(1px);
+}
+
+.tabActive {
+  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
+  color: #000000;
+  border-color: #6b5218;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.error {
+  color: #e57373;
+  font-weight: 600;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #8d6b1f;
+  border-radius: 8px;
+  background-color: #000000;
+  color: #f2f2f2;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.45;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  border-color: #c89b3c;
+  box-shadow: 0 0 0 2px rgba(200, 155, 60, 0.25);
+}
+
+.checkboxLabel {
+  font-size: 14px;
+  color: #f2f2f2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.4;
+}
+
+.btnPrimary {
+  width: 100%;
+  padding: 13px 16px;
+  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
+  color: #000000;
+  border: 1px solid #6b5218;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: normal;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: background-color 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btnPrimary:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #9a7620 0%, #e0bc42 45%, #d4af37 100%);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 1px 0 #3a2a08;
+}
+
+.btnGoogle {
+  width: 100%;
+  padding: 13px 16px;
+  margin-top: 10px;
+  cursor: pointer;
+  background: #1a1508;
+  color: #f2f2f2;
+  border: 1px solid #8d6b1f;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: var(--ri-btn-3d-dark-shadow);
+  transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btnGoogle:active:not(:disabled) {
+  transform: translateY(2px);
+}
+
+.btnGoogle:hover:not(:disabled) {
+  border-color: #c89b3c;
+  background: #111111;
+}
+
+.btnGoogle:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.googleIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.btnSecondary {
+  width: 100%;
+  padding: 13px 16px;
+  margin-top: 10px;
+  background: transparent;
+  color: #c89b3c;
+  border: 1px solid #c89b3c;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: normal;
+  box-shadow: var(--ri-btn-3d-outline-shadow);
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+
+.btnSecondary:active {
+  transform: translateY(1px);
+}
+
+.btnSecondary:hover {
+  background: #1a1508;
+  color: #f2f2f2;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 18px;
+}
+
+.footerLink {
+  font-size: 14px;
+  color: #f2f2f2;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.loadingFallback {
+  background-color: #000000;
+  color: #f2f2f2;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-size: 15px;
+  letter-spacing: normal;
+}

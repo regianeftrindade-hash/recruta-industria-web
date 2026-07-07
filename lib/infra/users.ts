@@ -1,0 +1,193 @@
+import crypto from 'crypto'
+import { hashPassword as securityHashPassword, verifyPassword } from '@/lib/security/security.server'
+import { prisma } from '@/lib/infra/db'
+
+export type UserType = 'professional' | 'company'
+
+export interface User {
+  id: string
+  email: string
+  passwordHash: string
+  userType: UserType
+  googleId?: string
+  googleEmail?: string
+  nome?: string
+  cpf?: string
+  cnpj?: string
+  telefone?: string
+  estado?: string
+  cidade?: string
+  setor?: string
+  createdAt: string
+  updatedAt: string
+  lastLogin?: string
+}
+
+// Garantir banco de dados (Prisma)
+async function ensureDb() {
+  // Prisma já gerencia a conexão automaticamente
+  return true
+}
+
+// Ler todos os usuários
+async function readUsers(): Promise<any[]> {
+  try {
+    return await prisma.user.findMany()
+  } catch {
+    return []
+  }
+}
+// Hash de senha
+async function hashPassword(password: string): Promise<string> {
+  return await securityHashPassword(password)
+}
+
+// Comparar senha
+async function comparePassword(password: string, hash: string): Promise<boolean> {
+  return await verifyPassword(password, hash)
+}
+
+// Buscar usuário por email
+export async function findUserByEmail(email: string): Promise<any | null> {
+  try {
+    return await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    })
+  } catch {
+    return null
+  }
+}
+
+// Buscar usuário por Google ID
+export async function findUserByGoogleId(googleId: string): Promise<any | null> {
+  try {
+    return await prisma.user.findFirst({
+      where: { id: googleId }, // Ajustado: Google ID é armazenado como userId
+    })
+  } catch {
+    return null
+  }
+}
+
+// Buscar usuário por ID
+export async function findUserById(id: string): Promise<any | null> {
+  try {
+    return await prisma.user.findUnique({
+      where: { id },
+    })
+  } catch {
+    return null
+  }
+}
+
+// Criar novo usuário
+export async function createUser(
+  email: string,
+  password: string | null,
+  userType: 'professional' | 'company',
+  googleId?: string,
+  googleEmail?: string
+): Promise<any> {
+  // Verificar se email já existe
+  const existing = await findUserByEmail(email)
+  if (existing) {
+    throw new Error('Email já cadastrado')
+  }
+
+  const passwordHash = password ? await hashPassword(password) : null
+
+  return await prisma.user.create({
+    data: {
+      email: email.toLowerCase(),
+      name: googleEmail || email,
+      passwordHash,
+      role: userType === 'company' ? 'COMPANY' : 'PROFESSIONAL',
+      image: null,
+    },
+  })
+}
+
+// Validar credenciais - verifica email e senha
+export async function validateCredentials(email: string, password: string): Promise<any | null> {
+  const user = await findUserByEmail(email)
+  
+  if (!user) {
+    return null
+  }
+
+  // Verifica se o usuário tem passwordHash (usuários com OAuth podem não ter)
+  if (!user.passwordHash) {
+    return null
+  }
+
+  // Verifica a senha
+  const match = await comparePassword(password, user.passwordHash)
+  if (!match) {
+    return null
+  }
+
+  return user
+}
+
+// Atualizar último login
+export async function updateLastLogin(userId: string): Promise<void> {
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { lastLogin: new Date(), updatedAt: new Date() },
+    })
+  } catch {
+    // Silenciosamente ignorar se não existir
+  }
+}
+
+// Atualizar dados do usuário
+export async function updateUser(userId: string, data: Partial<any>): Promise<any | null> {
+  try {
+    return await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...data,
+        updatedAt: new Date(),
+      },
+    })
+  } catch {
+    return null
+  }
+}
+
+// Deletar usuário (apenas para testes)
+export async function deleteUser(userId: string): Promise<boolean> {
+  try {
+    await prisma.user.delete({
+      where: { id: userId },
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
+// Atualizar senha do usuário
+export async function updateUserPassword(userId: string, newPasswordHash: string): Promise<any | null> {
+  try {
+    return await prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash: newPasswordHash,
+        updatedAt: new Date(),
+      },
+    })
+  } catch {
+    return null
+  }
+}
+
+// Exportar dados para backup
+export async function exportAllUsers(): Promise<any[]> {
+  try {
+    return await prisma.user.findMany()
+  } catch {
+    return []
+  }
+}

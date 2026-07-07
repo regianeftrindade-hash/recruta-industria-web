@@ -1,9 +1,9 @@
 import React from "react";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Oswald } from "next/font/google";
 import "./globals.css";
-import ServiceWorkerRegister from "./ServiceWorkerRegister";
-import ManifestInjector from "./ManifestInjector";
+import ServiceWorkerRegister from "@/components/app-shell/ServiceWorkerRegister";
+import ManifestInjector from "@/components/app-shell/ManifestInjector";
 import Providers from "./providers";
 
 const geistSans = Geist({
@@ -16,6 +16,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const oswald = Oswald({
+  variable: "--font-oswald",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
 export const metadata: Metadata = {
   title: "RECRUTA INDÚSTRIA",
   description: "Plataforma de recrutamento para setor industrial",
@@ -24,10 +30,6 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "RECRUTA INDÚSTRIA",
-  },
-  icons: {
-    icon: "/icon-192.png",
-    apple: "/icon-192.png",
   },
   formatDetection: {
     telephone: false,
@@ -50,7 +52,7 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${oswald.variable}`}>
         <ManifestInjector />
         <ServiceWorkerRegister />
         <Providers>{children}</Providers>

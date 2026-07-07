@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth.config'
 import { prisma } from '@/lib/db'
-import { 
-  isValidEmail, 
-  isValidCPF, 
+import {
+  isValidEmail,
+  isValidCPF,
   isValidCNPJ,
   checkRegisterRateLimit,
   incrementRegisterAttempts,
@@ -15,75 +17,102 @@ import {
 } from '@/lib/security'
 import { hashPassword } from '@/lib/security.server'
 import { validatePasswordStrength } from '@/lib/password-strength'
-import { logAudit as logSecurityAudit, lockAccount, isAccountLocked } from '@/lib/security-audit'
+import { logAudit as logSecurityAudit } from '@/lib/security-audit'
+import { buildProfileUpsertPayload } from '@/lib/professional-profile-map'
+import { saveProfileFormSnapshot } from '@/lib/profile-snapshot'
+import { saveCompanyExtraData, findCompanyByResponsavelCpf } from '@/lib/company-storage'
+
+async function completarPerfilProfissionalExistente(
+  userId: string,
+  body: Record<string, unknown>,
+  normalizedEmail: string,
+) {
+  const { prismaData: profileFields, formDataJSON } = buildProfileUpsertPayload(
+    body,
+    normalizedEmail,
+  )
+
+  await prisma.profile.upsert({
+    where: { userId },
+    update: { ...profileFields, updatedAt: new Date() },
+    create: { userId, ...profileFields },
+  })
+
+  await saveProfileFormSnapshot(userId, formDataJSON)
+
+  await prisma.professional.upsert({
+    where: { userId },
+    update: { title: profileFields.cargoDesejado || profileFields.title || '' },
+    create: {
+      userId,
+      title: profileFields.cargoDesejado || profileFields.title || 'Profissional',
+    },
+  })
+}
 
 export async function POST(request: NextRequest) {
   try {
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
-    
-    // Verificar se IP está bloqueado
+
     if (isIPBlocked(ip)) {
       const timeRemaining = getBlockedIPTimeRemaining(ip)
       logAudit('register_attempt', 'unknown', ip, userAgent, 'failure', 'IP is blocked')
       return NextResponse.json(
-        { 
+        {
           error: `Acesso bloqueado temporariamente. Por favor, aguarde ${timeRemaining} segundos antes de tentar novamente.`,
           statusCode: 429,
-          retryAfter: timeRemaining
+          retryAfter: timeRemaining,
         },
-        { status: 429 }
+        { status: 429 },
       )
     }
-    
-    // Rate limiting: 10 requisições por IP a cada 15 minutos
+
     if (!checkRegisterRateLimit(ip, 10, 15 * 60 * 1000)) {
       blockIP(ip)
       logAudit('register_attempt', 'unknown', ip, userAgent, 'failure', 'Rate limit exceeded - IP blocked')
       return NextResponse.json(
-        { 
-          error: 'Acesso bloqueado temporariamente. Você fez muitas tentativas de cadastro. Por favor, aguarde 15 minutos antes de tentar novamente.',
+        {
+          error:
+            'Acesso bloqueado temporariamente. Você fez muitas tentativas de cadastro. Por favor, aguarde 15 minutos antes de tentar novamente.',
           statusCode: 429,
-          retryAfter: 900
+          retryAfter: 900,
         },
-        { 
+        {
           status: 429,
-          headers: { 'Retry-After': '900' }
-        }
+          headers: { 'Retry-After': '900' },
+        },
       )
     }
 
     const body = await request.json()
-    const { 
-      email, password, confirmPassword, userType, cpf, cnpj, name,
-      dataNascimento, idade, sexoBiologico, identidadeGenero, orientacaoSexual, estadoCivil, religiao, antecedentes,
-      possuiFilhos, quantidadeFilhos, faixaEtariaFilhos,
-      telefone, telefone2, whatsapp,
-      estado, cidade, disponibilidadeMudanca,
-      escolaridade, cursosCertificacoes,
-      situacaoProfissional, areaInteresse, cargoDesejado, trabalhouIndustria, tempoExperiencia, experiencias, turnoDisponivel,
-      disponibilidadeInicio, recolocacao, pretensaoSalarial,
-      curricoURL, atestadoURL, fotoPerfil, mensagemEmpresas,
+    const {
+      email,
+      password,
+      confirmPassword,
+      userType,
+      cpf,
+      cnpj,
+      name,
+      responsavelNome,
+      responsavelCpf,
     } = body
 
-    // Validações básicas
+    const nomeProfissional = String(name || (body as Record<string, unknown>).nome || '').trim()
+
     if (!email || !userType) {
       incrementRegisterAttempts(ip)
       return NextResponse.json(
         { error: 'Email e tipo de usuário são obrigatórios' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
     if (!isValidEmail(email)) {
       incrementRegisterAttempts(ip)
-      return NextResponse.json(
-        { error: 'Email inválido' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Email inválido' }, { status: 400 })
     }
 
-    // Normalizar email (lowercase)
     const normalizedEmail = email.toLowerCase().trim()
 
     if (password || confirmPassword) {
@@ -103,9 +132,9 @@ export async function POST(request: NextRequest) {
           {
             error: 'Senha não atende aos requisitos de segurança',
             feedback: passwordStrength.feedback,
-            score: passwordStrength.score
+            score: passwordStrength.score,
           },
-          { status: 400 }
+          { status: 400 },
         )
       }
 
@@ -115,20 +144,66 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Verificar se email já existe
     const existingUser = await prisma.user.findUnique({
-      where: { email: normalizedEmail }
+      where: { email: normalizedEmail },
     })
 
     if (existingUser) {
+      const session = await getServerSession(authOptions)
+      const sessionEmail = session?.user?.email?.toLowerCase().trim()
+      const isSameUser = sessionEmail === normalizedEmail
+      const isProfessional = String(userType).toLowerCase() === 'professional'
+      const contaOAuth = !existingUser.passwordHash
+
+      if (isProfessional && isSameUser) {
+        if (cpf) {
+          const cpfLimpo = String(cpf).replace(/\D/g, '')
+          if (!isValidCPF(cpfLimpo)) {
+            incrementRegisterAttempts(ip)
+            return NextResponse.json({ error: 'CPF inválido' }, { status: 400 })
+          }
+        }
+
+        if (nomeProfissional) {
+          await prisma.user.update({
+            where: { id: existingUser.id },
+            data: { name: nomeProfissional },
+          })
+        }
+
+        await completarPerfilProfissionalExistente(existingUser.id, body, normalizedEmail)
+
+        resetRegisterAttempts(ip)
+        return NextResponse.json(
+          {
+            success: true,
+            completedExisting: true,
+            user: {
+              id: existingUser.id,
+              email: existingUser.email,
+              role: existingUser.role,
+            },
+          },
+          { status: 200 },
+        )
+      }
+
+      if (isProfessional && contaOAuth) {
+        incrementRegisterAttempts(ip)
+        return NextResponse.json(
+          {
+            error:
+              'Este e-mail já foi usado no login com Google. Entre com Google novamente e finalize o cadastro.',
+            code: 'OAUTH_ACCOUNT_EXISTS',
+          },
+          { status: 409 },
+        )
+      }
+
       incrementRegisterAttempts(ip)
-      return NextResponse.json(
-        { error: 'Email já cadastrado' },
-        { status: 409 }
-      )
+      return NextResponse.json({ error: 'Email já cadastrado' }, { status: 409 })
     }
 
-    // Validações específicas por tipo de usuário
     if (userType === 'professional' && cpf) {
       const cpfLimpo = cpf.replace(/\D/g, '')
       if (!isValidCPF(cpfLimpo)) {
@@ -145,90 +220,95 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (userType === 'company') {
+      const cpfResp = String(responsavelCpf || '').replace(/\D/g, '')
+      if (!responsavelNome?.trim()) {
+        incrementRegisterAttempts(ip)
+        return NextResponse.json({ error: 'Nome do responsável é obrigatório' }, { status: 400 })
+      }
+      if (!cpfResp || !isValidCPF(cpfResp)) {
+        incrementRegisterAttempts(ip)
+        return NextResponse.json({ error: 'CPF do responsável inválido' }, { status: 400 })
+      }
+      const cpfEmUso = await findCompanyByResponsavelCpf(cpfResp)
+      if (cpfEmUso) {
+        incrementRegisterAttempts(ip)
+        return NextResponse.json({ error: 'CPF do responsável já cadastrado' }, { status: 409 })
+      }
+    }
+
     const hashedPassword = password ? await hashPassword(password) : null
 
-    // Criar usuário no banco de dados
     const user = await prisma.user.create({
       data: {
         email: normalizedEmail,
-        name: name || normalizedEmail.split('@')[0],
+        name:
+          userType === 'company'
+            ? String(responsavelNome).trim()
+            : nomeProfissional || normalizedEmail.split('@')[0],
         role: userType.toUpperCase() as 'COMPANY' | 'PROFESSIONAL',
         passwordHash: hashedPassword,
       },
     })
 
-    // Se é profissional, criar Profile
+    if (userType === 'company') {
+      const cnpjLimpo = cnpj ? String(cnpj).replace(/\D/g, '') : ''
+      const cpfResp = String(responsavelCpf || '').replace(/\D/g, '')
+      await prisma.company.create({
+        data: {
+          userId: user.id,
+          name: name || normalizedEmail.split('@')[0],
+        },
+      })
+      await saveCompanyExtraData(user.id, {
+        cnpj: cnpjLimpo || undefined,
+        responsavelNome: String(responsavelNome || '').trim(),
+        responsavelCpf: cpfResp || undefined,
+      })
+    }
+
     if (userType === 'professional') {
       try {
-        const profileData = {
-          userId: user.id,
-          title: cargoDesejado || name || '',
-          email: normalizedEmail,
-          phone: telefone || null,
-          whatsapp: whatsapp || null,
-          location: cidade && estado ? `${cidade}, ${estado}` : estado || '',
-          
-          cpf: cpf || null,
-          dataNascimento: dataNascimento ? new Date(dataNascimento) : null,
-          idade: idade ? parseInt(idade) : null,
-          sexoBiologico: sexoBiologico || null,
-          identidadeGenero: identidadeGenero || null,
-          orientacaoSexual: orientacaoSexual || null,
-          estadoCivil: estadoCivil || null,
-          religiao: religiao || null,
-          antecedentes: antecedentes === true || antecedentes === 'true',
-          
-          possuiFilhos: possuiFilhos === true || possuiFilhos === 'true',
-          quantidadeFilhos: quantidadeFilhos ? parseInt(quantidadeFilhos) : null,
-          faixaEtariaFilhos: faixaEtariaFilhos ? JSON.stringify(faixaEtariaFilhos) : null,
-          
-          estado: estado || null,
-          cidade: cidade || null,
-          disponibilidadeMudanca: disponibilidadeMudanca || null,
-          
-          escolaridade: escolaridade || null,
-          cursosCertificacoes: cursosCertificacoes ? JSON.stringify(cursosCertificacoes) : null,
-          
-          situacaoProfissional: situacaoProfissional || null,
-          areaInteresse: areaInteresse || null,
-          cargoDesejado: cargoDesejado || null,
-          trabalhouIndustria: trabalhouIndustria || null,
-          tempoExperiencia: tempoExperiencia || null,
-          experienciasJSON: experiencias ? JSON.stringify(experiencias) : null,
-          turnoDisponivel: turnoDisponivel || null,
-          
-          disponibilidadeInicio: disponibilidadeInicio || null,
-          recolocacao: recolocacao || null,
-          pretensaoSalarial: pretensaoSalarial || null,
-          
-          curricoURL: curricoURL || null,
-          atestadoURL: atestadoURL || null,
-          avatar: fotoPerfil || null,
-          
-          mensagemEmpresas: mensagemEmpresas || null,
-          bio: mensagemEmpresas || null,
-          fullDescription: mensagemEmpresas || null,
-        }
+        const { prismaData: profileFields, formDataJSON } = buildProfileUpsertPayload(
+          body,
+          normalizedEmail,
+        )
 
         await prisma.profile.create({
-          data: profileData,
+          data: {
+            userId: user.id,
+            ...profileFields,
+          },
         })
-      } catch (profileError: any) {
+
+        await saveProfileFormSnapshot(user.id, formDataJSON)
+      } catch (profileError: unknown) {
+        const message = profileError instanceof Error ? profileError.message : String(profileError)
         console.error('Erro ao criar Profile para profissional:', profileError)
-        logAudit('profile_creation_failed', normalizedEmail, ip, userAgent, 'failure', `Profile creation failed: ${profileError?.message}`)
+        logAudit(
+          'profile_creation_failed',
+          normalizedEmail,
+          ip,
+          userAgent,
+          'failure',
+          `Profile creation failed: ${message}`,
+        )
       }
     }
 
     logAudit('register_success', normalizedEmail, ip, userAgent, 'success', `User registered as ${userType}`)
-    await logSecurityAudit('registration_success', normalizedEmail, 'account_created', { userType, ip })
-    
+    await logSecurityAudit('registration_success', normalizedEmail, 'account_created', {
+      userType,
+      ip,
+    })
+
     try {
       resetRegisterAttempts(ip)
       resetFailedAttempts(normalizedEmail)
     } catch (err) {
       console.warn('Não foi possível resetar tentativas falhadas:', err)
     }
-    
+
     return NextResponse.json(
       {
         success: true,
@@ -239,14 +319,14 @@ export async function POST(request: NextRequest) {
           createdAt: user.createdAt,
         },
       },
-      { status: 201 }
+      { status: 201 },
     )
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Erro no registro:', error)
-    const errorMessage = error?.message || 'Erro ao registrar usuário. Tente novamente ou contate o suporte se o problema persistir.';
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    )
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : 'Erro ao registrar usuário. Tente novamente ou contate o suporte se o problema persistir.'
+    return NextResponse.json({ error: errorMessage }, { status: 500 })
   }
 }

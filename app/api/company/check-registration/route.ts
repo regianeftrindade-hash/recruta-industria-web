@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth.config'
-import { findUserByEmail } from '@/lib/users'
+import { prisma } from '@/lib/db'
+import { getCompanyExtraData } from '@/lib/company-storage'
+import { formatCPF } from '@/lib/security'
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,36 +13,37 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ authenticated: false }, { status: 401 })
     }
 
-    const user = await findUserByEmail(session.user.email)
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email.toLowerCase().trim() },
+      include: { company: true },
+    })
 
     if (!user) {
       return NextResponse.json({ authenticated: false, isCompany: false }, { status: 404 })
     }
 
-    // Se não for empresa, redireciona para login
-    if (user.role !== 'COMPANY') {
-      return NextResponse.json({ authenticated: false, isCompany: false }, { status: 403 })
-    }
-
-    // Verifica se o cadastro está completo (todos os campos obrigatórios preenchidos)
+    const extra = user.company ? await getCompanyExtraData(user.id) : null
+    const isCompany = user.role === 'COMPANY'
     const isRegistrationComplete = !!(
-      user.nome &&
-      user.telefone &&
-      user.cnpj &&
-      user.email &&
-      user.setor
+      user.company?.name?.trim() &&
+      extra?.cnpj?.trim() &&
+      extra?.responsavelNome?.trim() &&
+      extra?.responsavelCpf?.trim()
     )
 
     return NextResponse.json({
       authenticated: true,
-      isCompany: true,
+      isCompany,
       registrationComplete: isRegistrationComplete,
       user: {
         id: user.id,
         email: user.email,
-        nome: user.nome,
-        cnpj: user.cnpj,
-      }
+        nome: user.name,
+        cnpj: extra?.cnpj || null,
+        responsavelNome: extra?.responsavelNome || null,
+        responsavelCpf: extra?.responsavelCpf ? formatCPF(extra.responsavelCpf) : null,
+        razaoSocial: user.company?.name || null,
+      },
     })
   } catch (error) {
     console.error('Erro ao verificar registro:', error)

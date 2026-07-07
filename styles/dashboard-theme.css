@@ -1,0 +1,77 @@
+.ri-dashboard {
+  --dash-gold: #c89b3c;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
+}
+
+/* Modo escuro */
+.ri-dashboard[data-theme="dark"] {
+  --dash-bg: #151515;
+  --dash-sidebar: #1a1a1a;
+  --dash-card: #222222;
+  --dash-inner: #222222;
+  --dash-input-bg: #2a2a2a;
+  --dash-tag-bg: #2a2a2a;
+  --dash-text: #f5f5f5;
+  --dash-title: #f5f5f5;
+  --dash-text-muted: #bdbdbd;
+  --dash-border: #3a3a3a;
+  --dash-compat-low: #444444;
+  --dash-compat-low-text: #f5f5f5;
+  --dash-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* Modo claro */
+.ri-dashboard[data-theme="light"] {
+  --dash-bg: #f5f5f5;
+  --dash-sidebar: #ffffff;
+  --dash-card: #ffffff;
+  --dash-inner: #f9f9f9;
+  --dash-input-bg: #ffffff;
+  --dash-tag-bg: #f0f0f0;
+  --dash-text: #222222;
+  --dash-title: #222222;
+  --dash-text-muted: #666666;
+  --dash-border: #e5e5e5;
+  --dash-compat-low: #e0e0e0;
+  --dash-compat-low-text: #222222;
+  --dash-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.ri-dashboard .dash-theme-toggle {
+  background: transparent;
+  color: var(--dash-text);
+  border: 1px solid var(--dash-border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ri-dashboard .dash-theme-toggle:hover {
+  border-color: var(--dash-border);
+  background: var(--dash-inner);
+}
+
+.ri-dashboard,
+.ri-dashboard button,
+.ri-dashboard input,
+.ri-dashboard select,
+.ri-dashboard textarea,
+.ri-dashboard label {
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
+}
+
+.ri-dashboard h1,
+.ri-dashboard h2,
+.ri-dashboard h3,
+.ri-dashboard h4 {
+  color: var(--dash-title);
+  font-weight: 700;
+  text-decoration: none;
+}
