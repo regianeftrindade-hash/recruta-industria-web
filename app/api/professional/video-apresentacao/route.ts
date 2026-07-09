@@ -128,7 +128,17 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Erro ao salvar vídeo:', error);
-    return NextResponse.json({ error: 'Erro ao salvar vídeo' }, { status: 500 });
+    const detail = error instanceof Error ? error.message : 'Erro ao salvar vídeo';
+    const isSupabase = /supabase|storage|Variáveis do Supabase/i.test(detail);
+    return NextResponse.json(
+      {
+        error: isSupabase
+          ? 'Falha no storage de vídeo. Verifique NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.'
+          : 'Erro ao salvar vídeo',
+        ...(process.env.NODE_ENV === 'development' ? { detail } : {}),
+      },
+      { status: 500 },
+    );
   }
 }
 

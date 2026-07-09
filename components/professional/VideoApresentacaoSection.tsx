@@ -60,6 +60,7 @@ export default function VideoApresentacaoSection({
   const chunksRef = useRef<Blob[]>([]);
   const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recordingStartedAtRef = useRef<number>(0);
+  const previewUrlRef = useRef<string | null>(null);
 
   const streamUrl = hasVideo
     ? `/api/professional/video-apresentacao?v=${videoVersion}`
@@ -81,11 +82,19 @@ export default function VideoApresentacaoSection({
   }, []);
 
   const revokePreview = useCallback(() => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
+    }
     setPreviewUrl(null);
     setPreviewBlob(null);
     setPreviewMime(null);
-  }, [previewUrl]);
+  }, []);
+
+  const setPreview = useCallback((url: string) => {
+    previewUrlRef.current = url;
+    setPreviewUrl(url);
+  }, []);
 
   const resetRecorderState = useCallback(() => {
     clearCountdownTimer();
@@ -123,10 +132,15 @@ export default function VideoApresentacaoSection({
 
   useEffect(() => {
     return () => {
-      resetRecorderState();
-      revokePreview();
+      clearCountdownTimer();
+      mediaStreamRef.current?.getTracks().forEach((t) => t.stop());
+      mediaStreamRef.current = null;
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = null;
+      }
     };
-  }, [resetRecorderState, revokePreview]);
+  }, []);
 
   const openCamera = async () => {
     setPermissionError(null);
@@ -177,7 +191,7 @@ export default function VideoApresentacaoSection({
       const url = URL.createObjectURL(blob);
       setPreviewBlob(blob);
       setPreviewMime(blob.type || "video/webm");
-      setPreviewUrl(url);
+      setPreview(url);
       setMode("preview");
       stopMediaStream();
     };
@@ -229,6 +243,34 @@ export default function VideoApresentacaoSection({
     setSaving(true);
     setStatusMessage("Enviando vídeo...");
     try {
+      const formData = new FormData();
+      formData.append("file", new File([blob], fileName, { type: mime }));
+
+      const postRes = await fetch("/api/professional/video-apresentacao", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      const postData = (await postRes.json().catch(() => ({}))) as { error?: string };
+
+      if (postRes.ok) {
+        setHasVideo(true);
+        onVideoChange?.(true);
+        setVideoVersion(Date.now());
+        revokePreview();
+        resetRecorderState();
+        setMode("idle");
+        setStatusMessage("Vídeo salvo no seu perfil.");
+        await refreshVideoStatus();
+        return true;
+      }
+
+      if (postRes.status !== 413) {
+        setStatusMessage(postData.error || "Erro ao salvar vídeo.");
+        return false;
+      }
+
+      setStatusMessage("Tentando envio alternativo...");
       const prepareRes = await fetch("/api/professional/video-apresentacao/prepare", {
         method: "POST",
         credentials: "include",
@@ -251,7 +293,9 @@ export default function VideoApresentacaoSection({
       });
 
       if (!uploadRes.ok) {
-        setStatusMessage("Erro ao enviar o arquivo de vídeo. Tente novamente.");
+        setStatusMessage(
+          `Erro ao enviar o arquivo (${uploadRes.status}). Tente um vídeo MP4 menor.`,
+        );
         return false;
       }
 
@@ -267,11 +311,14 @@ export default function VideoApresentacaoSection({
         return false;
       }
 
-      await refreshVideoStatus();
+      setHasVideo(true);
+      onVideoChange?.(true);
+      setVideoVersion(Date.now());
       revokePreview();
       resetRecorderState();
       setMode("idle");
       setStatusMessage("Vídeo salvo no seu perfil.");
+      await refreshVideoStatus();
       return true;
     } catch {
       setStatusMessage("Erro de rede ao salvar vídeo.");
@@ -333,7 +380,7 @@ export default function VideoApresentacaoSection({
     const url = URL.createObjectURL(file);
     setPreviewBlob(file);
     setPreviewMime(mime);
-    setPreviewUrl(url);
+    setPreview(url);
     setMode("preview");
 
     if (duration == null) {
