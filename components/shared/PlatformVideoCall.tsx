@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { CALL_RTC_CONFIG } from "@/lib/video-call-peer";
 import { DASH, dashCard, dashSectionTitle } from "@/lib/dashboard-theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
@@ -62,11 +61,6 @@ export default function PlatformVideoCall({
 
   const [overlay, setOverlay] = useState(false);
   const [minimized, setMinimized] = useState(false);
-  const [portalReady, setPortalReady] = useState(false);
-
-  useEffect(() => {
-    setPortalReady(true);
-  }, []);
 
   const [callId, setCallId] = useState<string | null>(null);
   const [status, setStatus] = useState<CallStatus>("idle");
@@ -1266,7 +1260,7 @@ export default function PlatformVideoCall({
 
   return (
     <div ref={wrapRef}>
-      {overlay && portalReady ? createPortal(panel, document.body) : panel}
+      {panel}
     </div>
   );
 }
