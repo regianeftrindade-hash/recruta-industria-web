@@ -130,7 +130,7 @@ export default function PropostasEntrevistasEmpresa({
   if (!canSend && proposals.length === 0) return null;
 
   return (
-    <section className="dash-card" style={{ ...dashCard, padding: 18 }}>
+    <section className="dash-card" style={{ ...dashCard, padding: 18, minWidth: 0, maxWidth: "100%", boxSizing: "border-box" }}>
       <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 12px", fontSize: 16 }}>
         Propostas e entrevistas
       </h3>

@@ -89,6 +89,23 @@
   text-decoration: none;
 }
 
+.ri-candidate-profile-head > svg {
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+}
+
+.ri-candidate-profile-head > .ri-candidate-profile-main {
+  grid-column: 1;
+  min-width: 0;
+}
+
+.ri-candidate-profile-head > .ri-candidate-profile-side {
+  grid-column: 2;
+  min-width: 0;
+  max-width: 100%;
+  align-self: start;
+}
+
 /* Uma única moldura dourada por card externo (1px).
    Cards aninhados não repetem a borda — a do pai serve para os dois. */
 .ri-dashboard .dash-card,
@@ -144,6 +161,11 @@
 
   .ri-candidate-profile-head {
     grid-template-columns: 1fr !important;
+  }
+
+  .ri-candidate-profile-head > .ri-candidate-profile-main,
+  .ri-candidate-profile-head > .ri-candidate-profile-side {
+    grid-column: 1;
   }
 
   .ri-candidate-profile-head > div {

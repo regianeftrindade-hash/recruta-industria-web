@@ -1056,7 +1056,7 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
         style={{
           position: "relative",
           display: "grid",
-          gridTemplateColumns: "minmax(0, 1.4fr) minmax(280px, 0.9fr)",
+          gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 0.9fr)",
           gap: 20,
           alignItems: "start",
           marginBottom: 6,
@@ -1076,6 +1076,8 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
               pointerEvents: "none",
               overflow: "visible",
               zIndex: 0,
+              gridColumn: "1 / -1",
+              gridRow: "1 / -1",
             }}
           >
             <defs>
@@ -1097,6 +1099,7 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
         )}
 
         <div
+          className="ri-candidate-profile-main"
           style={{
             display: "flex",
             flexDirection: "column",
@@ -1573,11 +1576,14 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
 
         {/* Vídeo de apresentação + chamada + compartilhar */}
         <div
+          className="ri-candidate-profile-side"
           style={{
             width: "100%",
+            maxWidth: "100%",
+            minWidth: 0,
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
+            alignItems: "stretch",
             gap: 12,
             position: "relative",
             zIndex: 1,
@@ -1798,6 +1804,9 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
             gap: 16,
             marginTop: 0,
             alignItems: "stretch",
+            minWidth: 0,
+            maxWidth: "100%",
+            width: "100%",
           }}
         >
           {!resumo.bloqueado && (
