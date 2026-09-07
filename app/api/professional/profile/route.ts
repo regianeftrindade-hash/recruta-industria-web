@@ -8,7 +8,6 @@ import {
   buildProfileUpsertPayload,
   mapProfileToDashboard,
   mapProfileToFormEdit,
-  rebuildFormSnapshotFromProfile,
 } from '@/lib/professional-profile-map';
 import {
   getProfileFormSnapshot,
@@ -114,7 +113,8 @@ export async function GET(request: NextRequest) {
       select: userAuthSelect,
     });
 
-    if (user && auth.name && auth.name.trim() && user.name !== auth.name.trim()) {
+    // Não sobrescreve o nome do cadastro com o nome da conta Google.
+    if (user && !user.name?.trim() && auth.name?.trim()) {
       user = await prisma.user.update({
         where: { id: user.id },
         data: { name: auth.name.trim() },
@@ -143,17 +143,9 @@ export async function GET(request: NextRequest) {
     }
 
     if (profile) {
+      const mappedUser = toUser(user);
       try {
-        if (!profile.formDataJSON?.trim()) {
-          const rebuilt = rebuildFormSnapshotFromProfile(profile, toUser(user));
-          profile = await prisma.profile.update({
-            where: { userId: user.id },
-            data: { formDataJSON: rebuilt },
-          });
-        }
-
         const formSnapshot = profile.formDataJSON ?? (await getProfileFormSnapshot(user.id));
-        const mappedUser = toUser(user);
         const dashboard = mapProfileToDashboard(profile, mappedUser);
         const formEdit = mapProfileToFormEdit(profile, mappedUser, formSnapshot);
         let videoPath: string | null = null;
@@ -173,7 +165,15 @@ export async function GET(request: NextRequest) {
         });
       } catch (error) {
         console.error('[profile] Falha ao montar perfil:', error);
-        return incompleteProfileResponse(user);
+        const formEdit = mapProfileToFormEdit(profile, mappedUser, profile.formDataJSON);
+        return NextResponse.json({
+          ...mapProfileToDashboard(profile, mappedUser),
+          formEdit,
+          hasProfile: true,
+          hasFormSnapshot: Boolean(profile.formDataJSON),
+          hasVideoApresentacao: false,
+          registrationComplete: isProfessionalRegistrationComplete(profile),
+        });
       }
     }
 

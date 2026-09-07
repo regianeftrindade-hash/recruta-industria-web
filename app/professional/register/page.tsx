@@ -83,6 +83,23 @@ function emailsConferem(a?: string | null, b?: string | null): boolean {
   return !!ea && !!eb && ea === eb;
 }
 
+function contarCamposPreenchidos(dados: Record<string, unknown>): number {
+  return Object.values(dados).filter((v) => {
+    if (v == null || v === false) return false;
+    if (typeof v === 'string') return v.trim().length > 0;
+    if (Array.isArray(v)) {
+      return v.some((item) => {
+        if (typeof item === 'string') return item.trim().length > 0;
+        if (item && typeof item === 'object') {
+          return Object.values(item as Record<string, unknown>).some((x) => String(x || '').trim());
+        }
+        return false;
+      });
+    }
+    return true;
+  }).length;
+}
+
 function limparBackupsGlobaisAntigos(): void {
   try {
     localStorage.removeItem(FORM_STORAGE_KEY);
@@ -627,6 +644,18 @@ export default function CadastroProfissional() {
     const keyForm = chavePorEmail(FORM_STORAGE_KEY, email);
     const keyBackup = chavePorEmail(BACKUP_STORAGE_KEY, email);
 
+    try {
+      const existenteRaw = localStorage.getItem(keyForm);
+      if (existenteRaw) {
+        const existente = JSON.parse(existenteRaw) as Record<string, unknown>;
+        if (contarCamposPreenchidos(existente) > contarCamposPreenchidos(payload) + 2) {
+          return;
+        }
+      }
+    } catch {
+      /* segue com o save */
+    }
+
     const ok =
       tentarSalvarLocal(keyForm, payload)
       || tentarSalvarLocal(keyForm, {
@@ -698,8 +727,6 @@ export default function CadastroProfissional() {
 
     const emailSessao = session?.user?.email?.toLowerCase().trim() || '';
     if (!emailSessao) {
-      limparBackupsGlobaisAntigos();
-      setProfileLoaded(true);
       return;
     }
 
@@ -806,10 +833,14 @@ export default function CadastroProfissional() {
           return;
         }
 
+        if (data?.formEdit) {
+          aplicarDadosDoPerfil(data.formEdit);
+        }
+
         setFormData((prev) => ({
           ...prev,
           email: session.user?.email || prev.email,
-          nome: session.user?.name || prev.nome,
+          nome: String(prev.nome || '').trim() ? prev.nome : (session.user?.name || prev.nome),
         }));
         setSenhaPreenchida(true);
       })
