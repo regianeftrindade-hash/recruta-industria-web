@@ -7,6 +7,7 @@ import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
 import { formatInterviewComprovante } from "@/lib/company/job-proposals-shared";
 import { AVISO_RETENCAO_PROPOSTAS } from "@/lib/profile/inbox-retention";
 import { formatReaisDisplay, turnoPropostaLabel } from "@/lib/format-reais";
+import css from "./ProfessionalOpportunityBoard.module.css";
 
 type Props = {
   proposals: JobProposalDTO[];
@@ -14,15 +15,6 @@ type Props = {
 };
 
 const rowStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "row",
-  flexWrap: "nowrap",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 10,
-  width: "100%",
-  boxSizing: "border-box",
-  padding: "8px 10px",
   border: `1px solid ${DASH.border}`,
   borderRadius: 14,
   background: DASH.inner,
@@ -77,6 +69,7 @@ export function isPropostaAtiva(p: JobProposalDTO): boolean {
 
 export default function ProfessionalOpportunityBoard({ proposals, onChanged }: Props) {
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [abertaId, setAbertaId] = useState<string | null>(null);
 
   const listas = useMemo(() => {
     const propostas = proposals.filter(isPropostaAtiva);
@@ -230,38 +223,34 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
       .filter(Boolean)
       .join(" · ");
 
+    const aberto = abertaId === p.id;
+
     return (
-      <article key={p.id} style={rowStyle}>
-        <div style={{ flex: 1, minWidth: 0 }}>
+      <article
+        key={p.id}
+        className={css.row}
+        style={rowStyle}
+        onClick={() => setAbertaId(aberto ? null : p.id)}
+      >
+        <div className={css.texto}>
           <p
+            className={css.titulo}
             style={{
-              margin: 0,
               fontSize: 11,
               fontWeight: 800,
               color: DASH.gold,
               textTransform: "uppercase",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
             }}
           >
             {p.companyName} · {p.cargo}
           </p>
-          <p
-            style={{
-              margin: "2px 0 0",
-              fontSize: 10,
-              color: DASH.muted,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
+          <p className={css.sub} style={{ marginTop: 2, fontSize: 10, color: DASH.muted }}>
             {detalhe}
             {p.status === "INTERESTED" ? " · Aguardando agenda" : ""}
+            {aberto ? "" : " · Toque para ver a proposta"}
           </p>
         </div>
-        <div style={{ display: "flex", flexWrap: "nowrap", gap: 4, flexShrink: 0, marginLeft: "auto" }}>
+        <div className={css.acoes} onClick={(e) => e.stopPropagation()}>
           {(p.status === "SENT" || p.status === "MORE_INFO") && (
             <>
               <button
@@ -301,6 +290,18 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
             Excluir
           </button>
         </div>
+        {aberto && (
+          <div className={css.detalhe} style={{ color: DASH.text }}>
+            {p.beneficios?.trim() ? (
+              <p style={{ margin: "0 0 8px" }}>
+                <strong style={{ color: DASH.gold }}>Benefícios:</strong> {p.beneficios}
+              </p>
+            ) : null}
+            <p style={{ margin: 0 }}>
+              <strong style={{ color: DASH.gold }}>Mensagem:</strong> {p.mensagem || "Sem mensagem."}
+            </p>
+          </div>
+        )}
       </article>
     );
   };
@@ -319,42 +320,26 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
     });
 
     return (
-      <article key={p.id} style={rowStyle}>
-        <div style={{ flex: 1, minWidth: 0 }}>
+      <article key={p.id} className={css.row} style={rowStyle}>
+        <div className={css.texto}>
           <p
+            className={css.titulo}
             style={{
-              margin: 0,
               fontSize: 11,
               fontWeight: 800,
               color: DASH.gold,
               textTransform: "uppercase",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
             }}
           >
             {p.companyName} · {p.cargo}
           </p>
-          <p
-            style={{
-              margin: "2px 0 0",
-              fontSize: 10,
-              color: DASH.muted,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
+          <p className={css.sub} style={{ marginTop: 2, fontSize: 10, color: DASH.muted }}>
             {comprovante.dataLabel} · {comprovante.horaLabel} · {comprovante.localLabel}
           </p>
         </div>
         <div
+          className={css.acoes}
           style={{
-            display: "flex",
-            flexWrap: "nowrap",
-            gap: 4,
-            flexShrink: 0,
-            marginLeft: "auto",
             alignItems: "center",
           }}
         >
@@ -526,7 +511,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
   };
 
   return (
-    <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
+    <section className={`dash-card ${css.board}`} style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
       <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 6px", fontSize: 14 }}>
         🔔 Oportunidades
       </h3>
@@ -568,17 +553,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
           {listas.arquivadas.length === 0 ? (
             <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Nada arquivado ainda.</p>
           ) : (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                flexWrap: "nowrap",
-                gap: 8,
-                overflowX: "auto",
-                paddingBottom: 4,
-                WebkitOverflowScrolling: "touch",
-              }}
-            >
+            <div className={css.listaArquivadas}>
               {listas.arquivadas.map(renderArquivada)}
             </div>
           )}
