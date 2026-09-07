@@ -53,6 +53,33 @@ type Tracking = {
   notes: string;
 };
 
+type NotaInterna = {
+  id: string;
+  text: string;
+  createdAt: string;
+};
+
+function parseNotasInternas(raw: string): NotaInterna[] {
+  const trimmed = String(raw || "").trim();
+  if (!trimmed) return [];
+  try {
+    const parsed = JSON.parse(trimmed) as unknown;
+    if (Array.isArray(parsed)) {
+      return parsed
+        .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object")
+        .map((item) => ({
+          id: String(item.id || `${Date.now()}`),
+          text: String(item.text || "").trim(),
+          createdAt: String(item.createdAt || new Date().toISOString()),
+        }))
+        .filter((item) => item.text);
+    }
+  } catch {
+    /* texto antigo em um único bloco */
+  }
+  return [{ id: "legado", text: trimmed, createdAt: new Date().toISOString() }];
+}
+
 type Tip = {
   id: string;
   message: string;
@@ -492,6 +519,7 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
   const [sharing, setSharing] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
+  const [notaTexto, setNotaTexto] = useState("");
   const [feedbacks, setFeedbacks] = useState<
     Array<{ id: string; authorName: string; body: string; createdAt: string }>
   >([]);
@@ -687,14 +715,38 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
       const data = await res.json();
       if (!res.ok) {
         alert(data.error || "Erro ao salvar");
-        return;
+        return false;
       }
       setTracking(data.tracking);
+      return true;
     } catch {
       alert("Erro ao salvar anotações");
+      return false;
     } finally {
       setSavingNotes(false);
     }
+  };
+
+  const salvarNotaInterna = async () => {
+    const text = notaTexto.trim();
+    if (!text) {
+      alert("Escreva a anotação antes de salvar.");
+      return;
+    }
+    const atuais = parseNotasInternas(tracking.notes);
+    const nova: NotaInterna = {
+      id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `n-${Date.now()}`,
+      text,
+      createdAt: new Date().toISOString(),
+    };
+    const ok = await salvarTracking({ notes: JSON.stringify([nova, ...atuais]) });
+    if (ok) setNotaTexto("");
+  };
+
+  const apagarNotaInterna = async (id: string) => {
+    if (!confirm("Apagar esta anotação?")) return;
+    const atuais = parseNotasInternas(tracking.notes).filter((n) => n.id !== id);
+    await salvarTracking({ notes: atuais.length ? JSON.stringify(atuais) : "" });
   };
 
   const handleUnlock = async () => {
@@ -2284,17 +2336,16 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
             )}
           </section>
 
-          <section style={{ ...dashCard, padding: 18 }}>
+          <section style={{ ...dashCard, padding: 18, minWidth: 0, maxWidth: "100%", boxSizing: "border-box" }}>
             <h3 style={{ ...goldTitle, margin: "0 0 8px", fontSize: 16 }}>📝 Anotações internas</h3>
             <p style={{ margin: "0 0 10px", fontSize: 11, color: DASH.muted, lineHeight: 1.4 }}>
-              O acompanhamento (entrevistado, em teste, contratado, não contratado) fica na aba Entrevistas do painel.
+              Visível só para a sua empresa. Salve para virar um card. Use Apagar para remover.
             </p>
             <textarea
-              value={tracking.notes}
-              onChange={(e) => setTracking((t) => ({ ...t, notes: e.target.value }))}
-              onBlur={(e) => void salvarTracking({ notes: e.target.value })}
-              rows={6}
-              placeholder="Observações sobre este candidato (visível apenas para sua empresa)..."
+              value={notaTexto}
+              onChange={(e) => setNotaTexto(e.target.value)}
+              rows={4}
+              placeholder="Escreva uma observação sobre este candidato..."
               style={{
                 width: "100%",
                 boxSizing: "border-box",
@@ -2308,7 +2359,66 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
                 resize: "vertical",
               }}
             />
-            {savingNotes && <p style={{ fontSize: 11, color: DASH.muted, margin: "6px 0 0" }}>Salvando...</p>}
+            <button
+              type="button"
+              disabled={savingNotes || !notaTexto.trim()}
+              onClick={() => void salvarNotaInterna()}
+              style={{
+                ...btnGold,
+                width: "100%",
+                marginTop: 8,
+                padding: 10,
+                fontSize: 13,
+                opacity: savingNotes || !notaTexto.trim() ? 0.7 : 1,
+              }}
+            >
+              {savingNotes ? "Salvando..." : "Salvar"}
+            </button>
+            <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+              {parseNotasInternas(tracking.notes).map((nota) => (
+                <div
+                  key={nota.id}
+                  style={{
+                    ...dashInnerBox,
+                    padding: 12,
+                    border: `1px solid ${DASH.gold}`,
+                    borderRadius: 10,
+                    minWidth: 0,
+                  }}
+                >
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 13,
+                      color: DASH.text,
+                      lineHeight: 1.5,
+                      whiteSpace: "pre-wrap",
+                      overflowWrap: "anywhere",
+                    }}
+                  >
+                    {nota.text}
+                  </p>
+                  <p style={{ margin: "8px 0 0", fontSize: 10, color: DASH.muted }}>
+                    {new Date(nota.createdAt).toLocaleString("pt-BR")}
+                  </p>
+                  <button
+                    type="button"
+                    disabled={savingNotes}
+                    onClick={() => void apagarNotaInterna(nota.id)}
+                    style={{
+                      ...dashGhostBtn,
+                      marginTop: 8,
+                      padding: "5px 8px",
+                      fontSize: 10,
+                      color: "#e57373",
+                      borderColor: "rgba(229,115,115,0.55)",
+                    }}
+                  >
+                    Apagar
+                  </button>
+                </div>
+              ))}
+            </div>
           </section>
         </aside>
         </div>
