@@ -31,9 +31,11 @@ export type AsaasPaymentResult = {
 
 export function getAsaasConfig() {
   const apiKey = (process.env.ASAAS_API_KEY || '').trim();
-  const apiUrl = (
-    process.env.ASAAS_API_URL || 'https://api-sandbox.asaas.com'
-  )
+  const defaultApiUrl =
+    process.env.NODE_ENV === 'production'
+      ? 'https://api.asaas.com'
+      : 'https://api-sandbox.asaas.com';
+  const apiUrl = (process.env.ASAAS_API_URL || defaultApiUrl)
     .trim()
     .replace(/\/$/, '');
   const baseAppUrl = (process.env.NEXTAUTH_URL || 'http://localhost:3000').trim();
