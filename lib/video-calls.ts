@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/db";
 import { resolveCompanyActor } from "@/lib/company/company-team";
+import { applyCollaborationSchema } from "@/lib/infra/ensure-db-schema";
 
 export type VideoCallStatus = "RINGING" | "ACCEPTED" | "DECLINED" | "ENDED" | "MISSED";
 export type TeamCallResponseStatus = "PENDING" | "ACCEPTED" | "DECLINED";
@@ -38,81 +39,7 @@ let videoCallTableReady = false;
 
 export async function ensureVideoCallTable(): Promise<void> {
   if (videoCallTableReady) return;
-  await prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS "VideoCallInvite" (
-      "id" TEXT NOT NULL,
-      "profileId" TEXT NOT NULL,
-      "companyUserId" TEXT NOT NULL,
-      "companyName" TEXT NOT NULL,
-      "status" TEXT NOT NULL DEFAULT 'RINGING',
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT "VideoCallInvite_pkey" PRIMARY KEY ("id")
-    )
-  `);
-  await prisma.$executeRawUnsafe(
-    `CREATE INDEX IF NOT EXISTS "VideoCallInvite_profileId_status_idx" ON "VideoCallInvite"("profileId", "status")`,
-  );
-  await prisma.$executeRawUnsafe(
-    `CREATE INDEX IF NOT EXISTS "VideoCallInvite_companyUserId_idx" ON "VideoCallInvite"("companyUserId")`,
-  );
-  await prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS "VideoCallParticipant" (
-      "id" TEXT NOT NULL,
-      "callId" TEXT NOT NULL,
-      "name" TEXT NOT NULL,
-      "joinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT "VideoCallParticipant_pkey" PRIMARY KEY ("id")
-    )
-  `);
-  await prisma.$executeRawUnsafe(
-    `CREATE INDEX IF NOT EXISTS "VideoCallParticipant_callId_idx" ON "VideoCallParticipant"("callId")`,
-  );
-  await prisma.$executeRawUnsafe(`
-    ALTER TABLE "VideoCallInvite"
-    ADD COLUMN IF NOT EXISTS "companyOwnerUserId" TEXT
-  `);
-  await prisma.$executeRawUnsafe(`
-    UPDATE "VideoCallInvite"
-    SET "companyOwnerUserId" = "companyUserId"
-    WHERE "companyOwnerUserId" IS NULL
-  `);
-  await prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS "VideoCallTeamResponse" (
-      "id" TEXT NOT NULL,
-      "callId" TEXT NOT NULL,
-      "userId" TEXT NOT NULL,
-      "status" TEXT NOT NULL DEFAULT 'PENDING',
-      "displayName" TEXT NOT NULL,
-      "respondedAt" TIMESTAMP(3),
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT "VideoCallTeamResponse_pkey" PRIMARY KEY ("id")
-    )
-  `);
-  await prisma.$executeRawUnsafe(
-    `CREATE UNIQUE INDEX IF NOT EXISTS "VideoCallTeamResponse_callId_userId_key" ON "VideoCallTeamResponse"("callId", "userId")`,
-  );
-  await prisma.$executeRawUnsafe(`
-    ALTER TABLE "VideoCallParticipant"
-    ADD COLUMN IF NOT EXISTS "userId" TEXT
-  `);
-  await prisma.$executeRawUnsafe(
-    `CREATE INDEX IF NOT EXISTS "VideoCallInvite_owner_profile_status_idx" ON "VideoCallInvite"("companyOwnerUserId", "profileId", "status")`,
-  );
-  await prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS "VideoCallSignal" (
-      "id" TEXT NOT NULL,
-      "callId" TEXT NOT NULL,
-      "fromUserId" TEXT NOT NULL,
-      "type" TEXT NOT NULL,
-      "payload" TEXT NOT NULL,
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT "VideoCallSignal_pkey" PRIMARY KEY ("id")
-    )
-  `);
-  await prisma.$executeRawUnsafe(
-    `CREATE INDEX IF NOT EXISTS "VideoCallSignal_callId_createdAt_idx" ON "VideoCallSignal"("callId", "createdAt")`,
-  );
+  await applyCollaborationSchema();
   videoCallTableReady = true;
 }
 

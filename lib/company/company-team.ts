@@ -2,6 +2,7 @@ import { randomBytes, randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { getEffectiveMaxUsers } from "@/lib/company/company-extra-seats";
+import { applyCollaborationSchema } from "@/lib/infra/ensure-db-schema";
 
 export type TeamMemberRole = "OWNER" | "ADMIN" | "RH" | "RECRUITER";
 export type TeamMemberStatus = "PENDING" | "ACTIVE" | "REVOKED";
@@ -38,35 +39,7 @@ let teamTableFailed = false;
 export async function ensureCompanyTeamTable(): Promise<void> {
   if (teamTableReady || teamTableFailed) return;
   try {
-  await prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS "CompanyTeamMember" (
-      "id" TEXT NOT NULL,
-      "companyOwnerUserId" TEXT NOT NULL,
-      "memberUserId" TEXT,
-      "invitedEmail" TEXT NOT NULL,
-      "role" TEXT NOT NULL DEFAULT 'RH',
-      "status" TEXT NOT NULL DEFAULT 'PENDING',
-      "inviteToken" TEXT,
-      "invitedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      "acceptedAt" TIMESTAMP(3),
-      "revokedAt" TIMESTAMP(3),
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT "CompanyTeamMember_pkey" PRIMARY KEY ("id")
-    )
-  `);
-  await prisma.$executeRawUnsafe(
-    `CREATE UNIQUE INDEX IF NOT EXISTS "CompanyTeamMember_owner_email_uidx" ON "CompanyTeamMember"("companyOwnerUserId", "invitedEmail")`,
-  );
-  await prisma.$executeRawUnsafe(
-    `CREATE UNIQUE INDEX IF NOT EXISTS "CompanyTeamMember_inviteToken_uidx" ON "CompanyTeamMember"("inviteToken")`,
-  );
-  await prisma.$executeRawUnsafe(
-    `CREATE INDEX IF NOT EXISTS "CompanyTeamMember_memberUserId_idx" ON "CompanyTeamMember"("memberUserId")`,
-  );
-  await prisma.$executeRawUnsafe(
-    `CREATE INDEX IF NOT EXISTS "CompanyTeamMember_owner_status_idx" ON "CompanyTeamMember"("companyOwnerUserId", "status")`,
-  );
+    await applyCollaborationSchema();
     teamTableReady = true;
   } catch (error) {
     console.warn("[team] Não foi possível garantir a tabela CompanyTeamMember:", error);

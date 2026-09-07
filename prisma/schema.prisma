@@ -44,6 +44,39 @@ model VideoCallInvite {
   @@index([companyOwnerUserId, profileId, status])
 }
 
+model VideoCallParticipant {
+  id        String   @id @default(cuid())
+  callId    String
+  name      String
+  userId    String?
+  joinedAt  DateTime @default(now())
+
+  @@index([callId])
+}
+
+model VideoCallTeamResponse {
+  id          String    @id @default(cuid())
+  callId      String
+  userId      String
+  status      String    @default("PENDING")
+  displayName String
+  respondedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@unique([callId, userId])
+}
+
+model VideoCallSignal {
+  id         String   @id @default(cuid())
+  callId     String
+  fromUserId String
+  type       String
+  payload    String
+  createdAt  DateTime @default(now())
+
+  @@index([callId, createdAt])
+}
+
 model Company {
   id              String   @id @default(cuid())
   userId          String   @unique
@@ -111,6 +144,18 @@ model CompanyProfileShare {
 
   @@index([toUserId, createdAt])
   @@index([companyOwnerUserId, profileId])
+}
+
+model CompanyProfileFeedback {
+  id                 String   @id @default(cuid())
+  companyOwnerUserId String
+  profileId          String
+  authorUserId       String
+  authorName         String
+  body               String
+  createdAt          DateTime @default(now())
+
+  @@index([companyOwnerUserId, profileId, createdAt])
 }
 
 model CompanyTalentList {

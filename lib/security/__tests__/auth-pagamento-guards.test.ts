@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach, afterEach } from "vitest";
+import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 import { isValidCNPJ, isValidCPF, isValidEmail, sanitizeInput } from "@/lib/security/security";
 import { validatePasswordStrength } from "@/lib/security/password-strength";
 import { isAdminUser, hasAdminAccess, validateAdminApiKey } from "@/lib/auth/admin-auth";
@@ -30,18 +30,17 @@ describe("login / cadastro — validação", () => {
 describe("admin", () => {
   const prevEmails = process.env.ADMIN_EMAILS;
   const prevKey = process.env.ADMIN_API_KEY;
-  const prevEnv = process.env.NODE_ENV;
 
   beforeEach(() => {
     process.env.ADMIN_EMAILS = "dono@recruta.com";
     process.env.ADMIN_API_KEY = "chave-secreta-admin";
-    process.env.NODE_ENV = "production";
+    vi.stubEnv("NODE_ENV", "production");
   });
 
   afterEach(() => {
     process.env.ADMIN_EMAILS = prevEmails;
     process.env.ADMIN_API_KEY = prevKey;
-    process.env.NODE_ENV = prevEnv;
+    vi.unstubAllEnvs();
   });
 
   it("só e-mail da lista ou role ADMIN", () => {

@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import { prisma } from '@/lib/db';
+import { applyCollaborationSchema } from '@/lib/infra/ensure-db-schema';
 import type { IndustrialFilters } from '@/lib/profile-industrial';
 import {
   calculateCompatibilityScore,
@@ -13,38 +14,7 @@ let tablesEnsured = false;
 
 export async function ensureCompanyFeatureTables(): Promise<void> {
   if (tablesEnsured) return;
-
-  const statements = [
-    `CREATE TABLE IF NOT EXISTS "CompanyTalentList" (
-      id TEXT PRIMARY KEY,
-      "companyUserId" TEXT NOT NULL,
-      name TEXT NOT NULL,
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
-    )`,
-    `CREATE TABLE IF NOT EXISTS "CompanyTalentListItem" (
-      id TEXT PRIMARY KEY,
-      "listId" TEXT NOT NULL,
-      "profileId" TEXT NOT NULL,
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE("listId", "profileId")
-    )`,
-    `CREATE TABLE IF NOT EXISTS "CompanyAlert" (
-      id TEXT PRIMARY KEY,
-      "companyUserId" TEXT NOT NULL,
-      name TEXT NOT NULL,
-      "filtersJSON" TEXT NOT NULL,
-      active BOOLEAN NOT NULL DEFAULT true,
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
-    )`,
-    `CREATE INDEX IF NOT EXISTS "CompanyTalentList_companyUserId_idx" ON "CompanyTalentList"("companyUserId")`,
-    `CREATE INDEX IF NOT EXISTS "CompanyTalentListItem_listId_idx" ON "CompanyTalentListItem"("listId")`,
-    `CREATE INDEX IF NOT EXISTS "CompanyAlert_companyUserId_idx" ON "CompanyAlert"("companyUserId")`,
-  ];
-
-  for (const sql of statements) {
-    await prisma.$executeRawUnsafe(sql);
-  }
-
+  await applyCollaborationSchema();
   tablesEnsured = true;
 }
 

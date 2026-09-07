@@ -40,13 +40,13 @@ const fieldBox: React.CSSProperties = {
   background: DASH.inner,
 };
 
-const labelStyle: React.CSSProperties = {
+export const labelStyle: React.CSSProperties = {
   ...dashLabel,
   margin: "0 0 4px",
   textTransform: "uppercase",
 };
 
-const valueStyle: React.CSSProperties = {
+export const valueStyle: React.CSSProperties = {
   color: DASH.text,
   fontSize: 14,
   margin: 0,

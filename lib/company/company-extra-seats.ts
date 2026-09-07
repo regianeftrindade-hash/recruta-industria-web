@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { getPlanFeatures } from "@/lib/company/company-plan";
 import { getCompanyPlanTier } from "@/lib/company-storage";
+import { applyCollaborationSchema } from "@/lib/infra/ensure-db-schema";
 
 /** Pacotes de usuários RH extras (acima do limite do plano). */
 export const COMPANY_EXTRA_SEAT_PACKAGES = [
@@ -42,27 +43,9 @@ export const COMPANY_EXTRA_SEAT = {
 
 let extraSeatsColumnReady = false;
 
-async function companyHasColumn(columnName: string): Promise<boolean> {
-  const rows = await prisma.$queryRaw<Array<{ exists: boolean }>>`
-    SELECT EXISTS (
-      SELECT 1
-      FROM information_schema.columns
-      WHERE table_schema = 'public'
-        AND table_name = 'Company'
-        AND column_name = ${columnName}
-    ) AS exists
-  `;
-  return Boolean(rows[0]?.exists);
-}
-
 export async function ensureCompanyExtraSeatsColumn(): Promise<void> {
   if (extraSeatsColumnReady) return;
-  const has = await companyHasColumn("extraSeats");
-  if (!has) {
-    await prisma.$executeRawUnsafe(
-      `ALTER TABLE "Company" ADD COLUMN "extraSeats" INTEGER NOT NULL DEFAULT 0`,
-    );
-  }
+  await applyCollaborationSchema();
   extraSeatsColumnReady = true;
 }
 

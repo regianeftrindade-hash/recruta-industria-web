@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/db";
 import { resolveCompanyActor } from "@/lib/company/company-team";
+import { applyCollaborationSchema } from "@/lib/infra/ensure-db-schema";
 
 export type ProfileFeedbackDTO = {
   id: string;
@@ -26,21 +27,7 @@ let feedbackTableReady = false;
 
 export async function ensureCompanyProfileFeedbackTable(): Promise<void> {
   if (feedbackTableReady) return;
-  await prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS "CompanyProfileFeedback" (
-      "id" TEXT NOT NULL,
-      "companyOwnerUserId" TEXT NOT NULL,
-      "profileId" TEXT NOT NULL,
-      "authorUserId" TEXT NOT NULL,
-      "authorName" TEXT NOT NULL,
-      "body" TEXT NOT NULL,
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT "CompanyProfileFeedback_pkey" PRIMARY KEY ("id")
-    )
-  `);
-  await prisma.$executeRawUnsafe(
-    `CREATE INDEX IF NOT EXISTS "CompanyProfileFeedback_owner_profile_idx" ON "CompanyProfileFeedback"("companyOwnerUserId", "profileId", "createdAt")`,
-  );
+  await applyCollaborationSchema();
   feedbackTableReady = true;
 }
 

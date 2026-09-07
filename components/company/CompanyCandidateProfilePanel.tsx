@@ -5,6 +5,7 @@ import type { FormEditPayload } from "@/lib/professional-profile-map";
 import {
   parseCursosDetalhados,
   parseCertificacoesDetalhadas,
+  type CursoDetalhado,
 } from "@/lib/professional-form-config";
 import { isArquivoAnexado, nomeArquivoAnexado } from "@/lib/arquivo-anexo";
 import { avatarImageStyle } from "@/lib/theme";
@@ -29,6 +30,8 @@ import BandeiraFavoritoIcon from "@/components/company/BandeiraFavoritoIcon";
 import PropostasEntrevistasEmpresa from "@/components/company/PropostasEntrevistasEmpresa";
 import CompanyCandidateNotesCard from "@/components/company/CompanyCandidateNotesCard";
 import CompanyCandidateFeedbackCard from "@/components/company/CompanyCandidateFeedbackCard";
+import CompanyCandidateMessagesCard from "@/components/company/CompanyCandidateMessagesCard";
+import CompanyCandidateTipsCard, { type TipItem } from "@/components/company/CompanyCandidateTipsCard";
 import {
   CAMPOS_SOBRE_MIM,
   CardSecaoPerfil,
@@ -37,14 +40,15 @@ import {
   PerfilTextoCorrido,
   TagList,
   goldTitle,
+  labelStyle,
   listaDeStrings,
+  valueStyle,
 } from "@/components/company/candidate-profile-bits";
 import OnlineStatusDot from "@/components/shared/OnlineStatusDot";
 import PlatformVideoCall from "@/components/shared/PlatformVideoCall";
 import { buildCareerTimeline } from "@/lib/professional/career-timeline";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
 import { formatReaisDisplay, turnoPropostaLabel } from "@/lib/format-reais";
-import { AVISO_RETENCAO_INBOX } from "@/lib/profile/inbox-retention";
 
 type Tracking = {
   contatado: boolean;
@@ -53,14 +57,6 @@ type Tracking = {
   contratado: boolean;
   naoContratado: boolean;
   notes: string;
-};
-
-type Tip = {
-  id: string;
-  message: string;
-  isAnonymous: boolean;
-  rating?: number | null;
-  createdAt: string;
 };
 
 type Resumo = {
@@ -106,7 +102,7 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
     naoContratado: false,
     notes: "",
   });
-  const [tips, setTips] = useState<Tip[]>([]);
+  const [tips, setTips] = useState<TipItem[]>([]);
   const [canUnlock, setCanUnlock] = useState(false);
   const [companyVerified, setCompanyVerified] = useState(true);
   const [canSendTips, setCanSendTips] = useState(false);
@@ -128,10 +124,6 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
   const [loadingShareMembers, setLoadingShareMembers] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
-  const [tipText, setTipText] = useState("");
-  const [sendingTip, setSendingTip] = useState(false);
-  const [mensagemTexto, setMensagemTexto] = useState("");
-  const [enviandoMensagem, setEnviandoMensagem] = useState(false);
   const [conversa, setConversa] = useState<
     Array<{
       id: string;
@@ -418,96 +410,6 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
       setShareMsg("Erro de rede ao compartilhar.");
     } finally {
       setSharing(false);
-    }
-  };
-
-  const handleSendTip = async () => {
-    if (!tipText.trim()) return;
-    setSendingTip(true);
-    try {
-      const res = await fetch("/api/company/tips", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ profileId, message: tipText.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || "Erro ao enviar dica");
-        return;
-      }
-      setTipText("");
-      await carregar();
-    } catch {
-      alert("Erro ao enviar dica");
-    } finally {
-      setSendingTip(false);
-    }
-  };
-
-  const handleExcluirDica = async (tipId: string) => {
-    if (!window.confirm("Excluir esta dica? Itens com mais de 1 mês também são apagados automaticamente.")) {
-      return;
-    }
-    try {
-      const res = await fetch(`/api/company/tips?id=${encodeURIComponent(tipId)}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        alert(data.error || "Não foi possível excluir a dica.");
-        return;
-      }
-      setTips((prev) => prev.filter((t) => t.id !== tipId));
-    } catch {
-      alert("Não foi possível excluir a dica.");
-    }
-  };
-
-  const handleExcluirMensagem = async (messageId: string) => {
-    if (!window.confirm("Excluir esta mensagem? Itens com mais de 1 mês também são apagados automaticamente.")) {
-      return;
-    }
-    try {
-      const res = await fetch(
-        `/api/company/messages?id=${encodeURIComponent(messageId)}&profileId=${encodeURIComponent(profileId)}`,
-        { method: "DELETE", credentials: "include" },
-      );
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        alert(data.error || "Não foi possível excluir a mensagem.");
-        return;
-      }
-      setConversa((prev) => prev.filter((m) => m.id !== messageId));
-    } catch {
-      alert("Não foi possível excluir a mensagem.");
-    }
-  };
-
-  const handleSendMessage = async () => {
-    const text = mensagemTexto.trim();
-    if (!text) return;
-    setEnviandoMensagem(true);
-    try {
-      const res = await fetch("/api/company/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ profileId, body: text }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || "Erro ao enviar mensagem");
-        return;
-      }
-      setMensagemTexto("");
-      await carregar();
-      alert("Mensagem enviada! O candidato verá no painel dele e poderá responder.");
-    } catch {
-      alert("Erro ao enviar mensagem");
-    } finally {
-      setEnviandoMensagem(false);
     }
   };
 
@@ -1388,153 +1290,13 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
 
           <CompanyCandidateFeedbackCard profileId={profileId} />
 
-          <section style={{ ...dashCard, padding: 18 }}>
-            <h3 style={{ ...goldTitle, margin: "0 0 12px", fontSize: 16 }}>✉️ Mensagem para o candidato</h3>
-            <p style={{ fontSize: 11, color: DASH.muted, margin: "0 0 10px", lineHeight: 1.45 }}>
-              {AVISO_RETENCAO_INBOX}
-            </p>
-            {resumo.bloqueado ? (
-              <p style={{ fontSize: 13, color: DASH.muted, margin: 0 }}>
-                Libere o contato para enviar mensagem direta ao profissional.
-              </p>
-            ) : (
-              <>
-                <p style={{ fontSize: 12, color: DASH.muted, margin: "0 0 10px", lineHeight: 1.45 }}>
-                  A mensagem aparece na caixa de entrada do candidato. Ele pode ler e responder por lá.
-                </p>
-
-                {conversa.length > 0 && (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 8,
-                      maxHeight: 240,
-                      overflowY: "auto",
-                      marginBottom: 12,
-                    }}
-                  >
-                    {conversa.map((m) => {
-                      const isProf = m.senderRole === "PROFESSIONAL";
-                      const quando = new Date(m.createdAt).toLocaleString("pt-BR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      });
-                      return (
-                        <div
-                          key={m.id}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 8,
-                            padding: "8px 10px",
-                            borderRadius: 10,
-                            border: `1px solid ${DASH.gold}`,
-                            background: isProf ? "rgba(200,155,60,0.12)" : DASH.inner,
-                          }}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => void handleExcluirMensagem(m.id)}
-                            style={{
-                              background: "transparent",
-                              border: "1px solid rgba(229,115,115,0.55)",
-                              color: "#e57373",
-                              borderRadius: 8,
-                              padding: "4px 8px",
-                              fontSize: 10,
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              flexShrink: 0,
-                              fontFamily: "inherit",
-                            }}
-                            title="Excluir mensagem"
-                          >
-                            Excluir
-                          </button>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <p
-                              style={{
-                                margin: 0,
-                                fontSize: 10,
-                                fontWeight: 700,
-                                color: isProf ? DASH.gold : DASH.muted,
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }}
-                            >
-                              {isProf ? m.from || "Profissional" : "Você"} · {quando}
-                            </p>
-                            <p
-                              style={{
-                                margin: "3px 0 0",
-                                fontSize: 12,
-                                lineHeight: 1.4,
-                                color: DASH.text,
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }}
-                              title={m.body}
-                            >
-                              {m.body}
-                            </p>
-                          </div>
-                          <span
-                            style={{
-                              flexShrink: 0,
-                              fontSize: 10,
-                              fontWeight: 700,
-                              color: isProf ? DASH.gold : DASH.muted,
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {isProf ? "Recebida" : "Enviada"}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                <textarea
-                  value={mensagemTexto}
-                  onChange={(e) => setMensagemTexto(e.target.value)}
-                  rows={4}
-                  maxLength={1000}
-                  placeholder="Escreva sua mensagem para o profissional..."
-                  style={{
-                    width: "100%",
-                    boxSizing: "border-box",
-                    padding: 10,
-                    borderRadius: 8,
-                    ...dashInput,
-                    fontSize: 13,
-                    lineHeight: 1.5,
-                    resize: "vertical",
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => void handleSendMessage()}
-                  disabled={enviandoMensagem || !mensagemTexto.trim()}
-                  style={{
-                    ...btnGold,
-                    width: "100%",
-                    marginTop: 8,
-                    padding: 10,
-                    fontSize: 13,
-                    opacity: enviandoMensagem || !mensagemTexto.trim() ? 0.7 : 1,
-                  }}
-                >
-                  {enviandoMensagem ? "Enviando..." : "Enviar mensagem"}
-                </button>
-              </>
-            )}
-          </section>
+          <CompanyCandidateMessagesCard
+            profileId={profileId}
+            bloqueado={resumo.bloqueado}
+            conversa={conversa}
+            onConversaChange={setConversa}
+            onReload={carregar}
+          />
 
           {canUseTalentBank && (
             <section style={{ ...dashCard, padding: 18 }}>
@@ -1674,82 +1436,14 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
             </section>
           )}
 
-          <section style={{ ...dashCard, padding: 18 }}>
-            <h3 style={{ ...goldTitle, margin: "0 0 8px", fontSize: 16 }}>💡 Dicas enviadas ao candidato</h3>
-            <p style={{ fontSize: 11, color: DASH.muted, margin: "0 0 12px", lineHeight: 1.45 }}>
-              {AVISO_RETENCAO_INBOX}
-            </p>
-            {tips.length > 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14, maxHeight: 220, overflowY: "auto" }}>
-                {tips.map((tip) => (
-                  <div
-                    key={tip.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: 8,
-                      padding: 10,
-                      ...dashInnerBox,
-                      borderLeft: `3px solid ${DASH.gold}`,
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => void handleExcluirDica(tip.id)}
-                      style={{
-                        background: "transparent",
-                        border: "1px solid rgba(229,115,115,0.55)",
-                        color: "#e57373",
-                        borderRadius: 8,
-                        padding: "4px 8px",
-                        fontSize: 10,
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        flexShrink: 0,
-                        fontFamily: "inherit",
-                      }}
-                      title="Excluir dica"
-                    >
-                      Excluir
-                    </button>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ margin: "0 0 4px", fontSize: 13, lineHeight: 1.5, color: DASH.text }}>{tip.message}</p>
-                      <p style={{ margin: 0, fontSize: 11, color: DASH.muted }}>{new Date(tip.createdAt).toLocaleString("pt-BR")}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p style={{ fontSize: 13, color: DASH.muted, margin: "0 0 14px" }}>Nenhuma dica enviada ainda.</p>
-            )}
-            {canSendTips && !resumo.bloqueado && (
-              <>
-                <textarea
-                  value={tipText}
-                  onChange={(e) => setTipText(e.target.value)}
-                  rows={3}
-                  maxLength={500}
-                  placeholder="Escreva uma dica anônima para o candidato..."
-                  style={{
-                    width: "100%",
-                    boxSizing: "border-box",
-                    padding: 10,
-                    borderRadius: 8,
-                    ...dashInput,
-                    fontSize: 13,
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={handleSendTip}
-                  disabled={sendingTip || !tipText.trim()}
-                  style={{ ...btnGold, width: "100%", marginTop: 8, padding: 10, fontSize: 13, opacity: sendingTip || !tipText.trim() ? 0.7 : 1 }}
-                >
-                  {sendingTip ? "Enviando..." : "Enviar dica"}
-                </button>
-              </>
-            )}
-          </section>
+          <CompanyCandidateTipsCard
+            profileId={profileId}
+            bloqueado={resumo.bloqueado}
+            canSendTips={canSendTips}
+            tips={tips}
+            onTipsChange={setTips}
+            onReload={carregar}
+          />
 
           <CompanyCandidateNotesCard
             profileId={profileId}
