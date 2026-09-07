@@ -28,8 +28,10 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID?.trim() ?? '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET?.trim() ?? '',
       allowDangerousEmailAccountLinking: true,
-      // PKCE em cookie costuma falhar no callback (www vs vercel.app) e gera OAuthCallback.
       checks: ['state'],
+      authorization: {
+        params: { scope: 'openid email profile', prompt: 'select_account' },
+      },
     }),
 
     Credentials({
@@ -96,11 +98,18 @@ export const authOptions: NextAuthOptions = {
   ],
 
   callbacks: {
-    async signIn({ user, account }: any) {
+    async signIn({ user, account, profile }: any) {
       if (account?.provider !== 'google') return true;
 
-      const normalizedEmail = String(user.email || '').toLowerCase().trim();
-      if (!normalizedEmail) return false;
+      const normalizedEmail = String(user?.email || profile?.email || '')
+        .toLowerCase()
+        .trim();
+      if (!normalizedEmail) {
+        console.error('[auth] Google não enviou e-mail do perfil');
+        return false;
+      }
+
+      user.email = normalizedEmail;
 
       let loginIntent: 'COMPANY' | 'PROFESSIONAL' = 'PROFESSIONAL';
       try {
@@ -112,32 +121,25 @@ export const authOptions: NextAuthOptions = {
         /* ignora se cookies indisponível */
       }
 
-      try {
-        const existing = await prisma.user.findUnique({
-          where: { email: normalizedEmail },
-        });
+      const name = user?.name || profile?.name || null;
+      const image = user?.image || profile?.picture || null;
 
-        if (!existing) {
-          await prisma.user.create({
-            data: {
-              email: normalizedEmail,
-              name: user.name,
-              image: user.image,
-              role: loginIntent,
-            },
-          });
-        } else if (user.name) {
-          await prisma.user.update({
-            where: { email: normalizedEmail },
-            data: {
-              name: user.name,
-              image: user.image ?? existing.image,
-            },
-          });
-        }
+      try {
+        await prisma.user.upsert({
+          where: { email: normalizedEmail },
+          create: {
+            email: normalizedEmail,
+            name,
+            image,
+            role: loginIntent,
+          },
+          update: {
+            ...(name ? { name } : {}),
+            ...(image ? { image } : {}),
+          },
+        });
       } catch (error) {
         console.error('[auth] Falha ao sincronizar usuário Google:', error);
-        return false;
       }
 
       return true;
@@ -158,22 +160,29 @@ export const authOptions: NextAuthOptions = {
 
       if (needsDbSync && token.email) {
         const normalizedEmail = token.email.toLowerCase().trim();
-        const dbUser = await prisma.user.findUnique({
-          where: { email: normalizedEmail },
-          select: { id: true, name: true, role: true },
-        });
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: normalizedEmail },
+            select: { id: true, name: true, role: true },
+          });
 
-        if (dbUser) {
-          if (matchesCompanyTestBypass({ email: normalizedEmail, userName: dbUser.name })) {
-            await ensureCompanyTestBypassReady(dbUser.id);
-            token.userType = 'COMPANY';
-          } else {
-            token.userType = dbUser.role;
+          if (dbUser) {
+            if (matchesCompanyTestBypass({ email: normalizedEmail, userName: dbUser.name })) {
+              await ensureCompanyTestBypassReady(dbUser.id);
+              token.userType = 'COMPANY';
+            } else {
+              token.userType = dbUser.role;
+            }
+            if (!user?.name) {
+              token.name = dbUser.name;
+            }
+            token.isAdmin = isAdminUser(normalizedEmail, dbUser.role);
+          } else if (!token.userType) {
+            token.userType = 'PROFESSIONAL';
           }
-          if (!user?.name) {
-            token.name = dbUser.name;
-          }
-          token.isAdmin = isAdminUser(normalizedEmail, dbUser.role);
+        } catch (error) {
+          console.error('[auth] Falha ao sincronizar JWT com o banco:', error);
+          if (!token.userType) token.userType = 'PROFESSIONAL';
         }
         token.lastDbSync = now;
       }
