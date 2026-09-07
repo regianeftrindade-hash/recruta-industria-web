@@ -31,12 +31,12 @@ export default function InstallAppPrompt({ variant = "banner", className }: Prop
         onClick={handleClick}
         title={
           isIos
-            ? "Toque em Compartilhar e depois em Adicionar à Tela de Início"
-            : "Instalar aplicativo"
+            ? "Instalar o Recruta no iPhone"
+            : "Baixar o aplicativo Recruta no celular"
         }
-        aria-label="Instalar aplicativo"
+        aria-label="Baixar aplicativo"
       >
-        Instalar app
+        Baixar app
       </button>
     );
   }
@@ -46,7 +46,7 @@ export default function InstallAppPrompt({ variant = "banner", className }: Prop
       <div className={`${styles.footerWrap} ${className ?? ""}`}>
         <p className={styles.footerText}>Tenha o Recruta Indústria sempre à mão no seu dispositivo.</p>
         <button type="button" className={`${styles.installBtn} ${styles.installBtnCompact}`} onClick={handleClick}>
-          Instalar aplicativo
+          Baixar aplicativo
         </button>
       </div>
     );
@@ -57,11 +57,11 @@ export default function InstallAppPrompt({ variant = "banner", className }: Prop
       <div className={`${styles.menuCard} ${className ?? ""}`}>
         <p className={styles.menuTitle}>Instalar aplicativo</p>
         <p className={styles.menuText}>
-          Acesse perfil, mensagens e oportunidades com mais rapidez.
-          {isIos ? " No iPhone, use Compartilhar → Adicionar à Tela de Início." : ""}
+          Instala o Recruta na lista de aplicativos do celular, com ícone próprio.
+          {isIos ? " No iPhone, a Apple instala pelo Safari até o app estar na App Store." : ""}
         </p>
         <button type="button" className={`${styles.installBtn} ${styles.installBtnCompact}`} onClick={handleClick}>
-          Instalar aplicativo
+          Baixar aplicativo
         </button>
       </div>
     );
@@ -77,12 +77,12 @@ export default function InstallAppPrompt({ variant = "banner", className }: Prop
         Instale o aplicativo e acesse seu perfil, mensagens e oportunidades com mais rapidez.
       </p>
       <button type="button" className={styles.installBtn} onClick={handleClick}>
-        Instalar aplicativo
+        Baixar aplicativo
       </button>
       <p className={styles.bannerHint}>
         {isIos
-          ? "No iPhone ou iPad: toque em Compartilhar e depois em Adicionar à Tela de Início."
-          : "No Android ou Chrome, use o prompt de instalação. No computador, instale como programa."}
+          ? "No iPhone a Apple não deixa baixar um arquivo de app pelo site. O Recruta abre como aplicativo pelo Safari."
+          : "No Android, o Chrome instala o Recruta na lista de aplicativos (não é atalho)."}
       </p>
     </section>
   );

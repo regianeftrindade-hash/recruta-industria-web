@@ -9,7 +9,15 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { getIsIos, getIsStandalone } from "@/lib/pwa/install-utils";
+import {
+  getAndroidApkUrl,
+  getAndroidStoreUrl,
+  getIsAndroid,
+  getIsIos,
+  getIsStandalone,
+  getIosStoreUrl,
+} from "@/lib/pwa/install-utils";
+import AndroidInstallModal from "./AndroidInstallModal";
 import IosInstallModal from "./IosInstallModal";
 
 type BeforeInstallPromptEvent = Event & {
@@ -21,7 +29,6 @@ type InstallPromptContextValue = {
   canNativeInstall: boolean;
   isIos: boolean;
   isInstalled: boolean;
-  /** Exibir CTA quando ainda não instalado e há prompt nativo ou é iOS. */
   showPrompt: boolean;
   install: () => Promise<void>;
   iosModalOpen: boolean;
@@ -36,6 +43,7 @@ export function InstallPromptProvider({ children }: { children: ReactNode }) {
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIos, setIsIos] = useState(false);
   const [iosModalOpen, setIosModalOpen] = useState(false);
+  const [androidModalOpen, setAndroidModalOpen] = useState(false);
 
   useEffect(() => {
     setIsIos(getIsIos());
@@ -50,6 +58,7 @@ export function InstallPromptProvider({ children }: { children: ReactNode }) {
       setDeferredPrompt(null);
       setIsInstalled(true);
       setIosModalOpen(false);
+      setAndroidModalOpen(false);
     };
 
     window.addEventListener("beforeinstallprompt", onBeforeInstall);
@@ -67,17 +76,41 @@ export function InstallPromptProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const install = useCallback(async () => {
+    const iosStore = getIosStoreUrl();
+    const androidStore = getAndroidStoreUrl();
+    const apkUrl = getAndroidApkUrl();
+
     if (getIsIos()) {
+      if (iosStore) {
+        window.location.assign(iosStore);
+        return;
+      }
       setIosModalOpen(true);
       return;
     }
-    if (!deferredPrompt) return;
 
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    setDeferredPrompt(null);
-    if (outcome === "accepted") {
-      setIsInstalled(true);
+    if (androidStore) {
+      window.location.assign(androidStore);
+      return;
+    }
+
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      setDeferredPrompt(null);
+      if (outcome === "accepted") {
+        setIsInstalled(true);
+      }
+      return;
+    }
+
+    if (apkUrl) {
+      window.location.assign(apkUrl);
+      return;
+    }
+
+    if (getIsAndroid()) {
+      setAndroidModalOpen(true);
     }
   }, [deferredPrompt]);
 
@@ -86,19 +119,25 @@ export function InstallPromptProvider({ children }: { children: ReactNode }) {
       canNativeInstall: Boolean(deferredPrompt),
       isIos,
       isInstalled,
-      showPrompt: !isInstalled && (Boolean(deferredPrompt) || isIos),
+      showPrompt: !isInstalled,
       install,
       iosModalOpen,
       openIosInstructions: () => setIosModalOpen(true),
       closeIosInstructions: () => setIosModalOpen(false),
     }),
-    [deferredPrompt, install, iosModalOpen, isInstalled, isIos]
+    [deferredPrompt, install, iosModalOpen, isInstalled, isIos],
   );
 
   return (
     <InstallPromptContext.Provider value={value}>
       {children}
       {iosModalOpen && <IosInstallModal onClose={() => setIosModalOpen(false)} />}
+      {androidModalOpen && (
+        <AndroidInstallModal
+          apkUrl={getAndroidApkUrl() || undefined}
+          onClose={() => setAndroidModalOpen(false)}
+        />
+      )}
     </InstallPromptContext.Provider>
   );
 }

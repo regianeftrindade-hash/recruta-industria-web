@@ -1,14 +1,19 @@
 {
+  "id": "https://www.recrutaindustria.com/",
   "name": "Recruta Indústria",
   "short_name": "Recruta",
   "description": "Plataforma de recrutamento para o setor industrial",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "any",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#3A3A3A",
+  "theme_color": "#3A3A3A",
   "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["business", "productivity"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/ri-192.png",

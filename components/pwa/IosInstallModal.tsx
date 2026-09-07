@@ -26,10 +26,11 @@ export default function IosInstallModal({ onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="ios-install-title" className={styles.modalTitle}>
-          Instalar no iPhone ou iPad
+          Instalar no iPhone
         </h2>
         <p className={styles.modalText}>
-          Toque em <strong>Compartilhar</strong> e depois em <strong>Adicionar à Tela de Início</strong>.
+          A Apple não permite baixar um arquivo de app pelo site. Sem a App Store, o iPhone
+          instala o Recruta pelo Safari — ele abre em tela cheia, com ícone próprio.
         </p>
         <ol className={styles.modalSteps}>
           <li>
