@@ -182,7 +182,11 @@ export default function PropostasEntrevistasEmpresa({
   };
 
   const excluir = async (id: string) => {
-    if (!confirm("Excluir este item? Itens com mais de 1 mês também são removidos automaticamente.")) {
+    if (
+      !confirm(
+        "Excluir esta proposta? Ela some também para o profissional. Use isso se a empresa se arrependeu de enviar.",
+      )
+    ) {
       return;
     }
     setBusyId(id);
@@ -289,12 +293,27 @@ export default function PropostasEntrevistasEmpresa({
         >
           {t.naoContratado ? "✓ " : ""}Não contratado
         </button>
-        <button type="button" disabled={busy} onClick={() => void excluir(p.id)} style={{ ...btnGhost, color: "#e57373" }}>
-          Excluir
-        </button>
       </div>
     );
   };
+
+  const botaoExcluir = (id: string) => (
+    <button
+      type="button"
+      disabled={busyId === id || saving}
+      onClick={() => void excluir(id)}
+      style={{
+        ...btnGhost,
+        marginTop: 8,
+        padding: "6px 10px",
+        fontSize: 11,
+        color: "#e57373",
+        borderColor: "rgba(229,115,115,0.55)",
+      }}
+    >
+      Excluir
+    </button>
+  );
 
   const cardBase: React.CSSProperties = {
     border: `1px solid ${DASH.gold}`,
@@ -454,14 +473,7 @@ export default function PropostasEntrevistasEmpresa({
                 <p style={{ margin: "0 0 8px", fontSize: 11, color: DASH.gold, fontWeight: 700 }}>
                   {STATUS_LABEL[p.status] || p.status}
                 </p>
-                <button
-                  type="button"
-                  disabled={busyId === p.id || saving}
-                  onClick={() => void excluir(p.id)}
-                  style={{ ...btnGhost, color: "#e57373", marginBottom: 8 }}
-                >
-                  Excluir
-                </button>
+                {botaoExcluir(p.id)}
                 {comprovante && (
                   <div
                     style={{
@@ -671,6 +683,7 @@ export default function PropostasEntrevistasEmpresa({
                         </p>
                       ) : null}
                       {funilBotoes(p)}
+                      {botaoExcluir(p.id)}
                     </div>
                   );
                 })}
@@ -705,14 +718,7 @@ export default function PropostasEntrevistasEmpresa({
                         {p.cargo} · {formatReaisDisplay(p.salario)}
                       </p>
                       <p style={{ margin: "0 0 8px", fontSize: 11, color: DASH.gold }}>{motivo}</p>
-                      <button
-                        type="button"
-                        disabled={busyId === p.id || saving}
-                        onClick={() => void excluir(p.id)}
-                        style={{ ...btnGhost, color: "#e57373" }}
-                      >
-                        Excluir
-                      </button>
+                      {botaoExcluir(p.id)}
                     </div>
                   );
                 })}

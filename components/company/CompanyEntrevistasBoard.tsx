@@ -154,7 +154,7 @@ export default function CompanyEntrevistasBoard() {
   const excluir = async (id: string) => {
     if (
       !confirm(
-        "Excluir este item? Itens com mais de 1 mês também são removidos automaticamente.",
+        "Excluir esta proposta? Ela some também para o profissional. Use isso se a empresa se arrependeu de enviar.",
       )
     ) {
       return;
