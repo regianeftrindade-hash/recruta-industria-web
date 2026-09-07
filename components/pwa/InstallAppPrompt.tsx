@@ -83,6 +83,10 @@ export default function InstallAppPrompt({ variant = "banner", className }: Prop
         {isIos
           ? "No iPhone a Apple não deixa baixar um arquivo de app pelo site. O Recruta abre como aplicativo pelo Safari."
           : "No Android, o Chrome instala o Recruta na lista de aplicativos (não é atalho)."}
+        {" "}
+        <a href="/baixar-app" className={styles.guideLink}>
+          Ver guia completo
+        </a>
       </p>
     </section>
   );

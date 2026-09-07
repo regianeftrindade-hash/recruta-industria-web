@@ -12,7 +12,6 @@ import {
 import {
   getAndroidApkUrl,
   getAndroidStoreUrl,
-  getIsAndroid,
   getIsIos,
   getIsStandalone,
   getIosStoreUrl,
@@ -109,9 +108,7 @@ export function InstallPromptProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    if (getIsAndroid()) {
-      setAndroidModalOpen(true);
-    }
+    setAndroidModalOpen(true);
   }, [deferredPrompt]);
 
   const value = useMemo<InstallPromptContextValue>(

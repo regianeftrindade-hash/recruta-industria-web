@@ -11,9 +11,11 @@ export default function ServiceWorkerRegister() {
     const isProduction = process.env.NODE_ENV === "production";
 
     if (isProduction) {
-      navigator.serviceWorker.register("/sw.js").catch((err) => {
-        console.error("✗ Erro ao registrar SW", err);
-      });
+      navigator.serviceWorker
+        .register("/sw.js", { scope: "/", updateViaCache: "none" })
+        .catch((err) => {
+          console.error("✗ Erro ao registrar SW", err);
+        });
     } else {
       navigator.serviceWorker
         .getRegistrations()

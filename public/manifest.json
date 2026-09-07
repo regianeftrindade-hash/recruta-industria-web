@@ -3,10 +3,14 @@
   "name": "Recruta Indústria",
   "short_name": "Recruta",
   "description": "Plataforma de recrutamento para o setor industrial",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": ["focus-existing", "auto"]
+  },
   "orientation": "any",
   "background_color": "#3A3A3A",
   "theme_color": "#3A3A3A",
@@ -14,6 +18,42 @@
   "dir": "ltr",
   "categories": ["business", "productivity"],
   "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Painel profissional",
+      "short_name": "Profissional",
+      "url": "/professional/dashboard",
+      "icons": [{ "src": "/icons/ri-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Painel empresa",
+      "short_name": "Empresa",
+      "url": "/company/dashboard-empresa",
+      "icons": [{ "src": "/icons/ri-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Baixar aplicativo",
+      "short_name": "Instalar",
+      "url": "/baixar-app",
+      "icons": [{ "src": "/icons/ri-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/empresa.jpg",
+      "type": "image/jpeg",
+      "sizes": "1280x720",
+      "form_factor": "wide",
+      "label": "Recruta Indústria para empresas"
+    },
+    {
+      "src": "/profissional.jpg",
+      "type": "image/jpeg",
+      "sizes": "750x1334",
+      "form_factor": "narrow",
+      "label": "Recruta Indústria para profissionais"
+    }
+  ],
   "icons": [
     {
       "src": "/icons/ri-192.png",

@@ -39,6 +39,9 @@ export default function AndroidInstallModal({ onClose, apkUrl }: Props) {
           <li>Toque em <strong>Instalar aplicativo</strong> ou <strong>Instalar app</strong></li>
           <li>Confirme em <strong>Instalar</strong></li>
         </ol>
+        <p className={styles.modalText} style={{ marginTop: 8 }}>
+          No computador: Chrome mostra um ícone de instalar na barra de endereço.
+        </p>
         {apkUrl ? (
           <a className={styles.modalCloseBtn} href={apkUrl} download style={{ display: "block", textAlign: "center", textDecoration: "none", marginBottom: 10 }}>
             Baixar o arquivo do app (APK)

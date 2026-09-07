@@ -41,6 +41,12 @@
   line-height: 1.45;
 }
 
+.guideLink {
+  color: #c89b3c;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
 .installBtn {
   display: inline-flex;
   align-items: center;

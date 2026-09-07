@@ -27,6 +27,7 @@ const oswald = Oswald({
 export const metadata: Metadata = {
   title: "RECRUTA INDÚSTRIA",
   description: "Plataforma de recrutamento para setor industrial",
+  applicationName: "Recruta Indústria",
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -60,6 +61,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
+  themeColor: "#3A3A3A",
 };
 
 export default function RootLayout({

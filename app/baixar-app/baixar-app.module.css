@@ -1,0 +1,61 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 28px 16px 48px;
+  background: #3a3a3a;
+  color: #f2f2f2;
+  box-sizing: border-box;
+}
+
+.card {
+  width: 100%;
+  max-width: 520px;
+  padding: 28px 22px;
+  border-radius: 16px;
+  border: 1px solid #c89b3c;
+  background: #2b2b2b;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+}
+
+.kicker {
+  margin: 18px 0 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c89b3c;
+}
+
+.title {
+  margin: 0 0 10px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #f2f2f2;
+}
+
+.text {
+  margin: 0 0 18px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: rgba(242, 242, 242, 0.85);
+}
+
+.steps {
+  margin: 20px 0 0;
+  padding-left: 18px;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: rgba(242, 242, 242, 0.8);
+}
+
+.back {
+  margin: 22px 0 0;
+  font-size: 0.85rem;
+}
+
+.back a {
+  color: #c89b3c;
+  font-weight: 600;
+}

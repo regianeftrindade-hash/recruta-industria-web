@@ -8,7 +8,7 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
     key: "Permissions-Policy",
-    value: "geolocation=(), microphone=(), camera=(), payment=()",
+    value: "geolocation=(), microphone=(self), camera=(self), payment=()",
   },
   { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
@@ -81,6 +81,12 @@ const nextConfig = {
         source: "/_next/static/:path*",
         headers: [
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/.well-known/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=300" },
         ],
       },
       {
