@@ -48,6 +48,11 @@ function trackingOf(p: JobProposalDTO) {
 }
 
 export function isArquivada(p: JobProposalDTO): boolean {
+  // Proposta ainda em aberto nunca vai para arquivadas — o tracking é por
+  // empresa+perfil e não pode “arrastar” uma proposta nova para o arquivo.
+  if (p.status === "SENT" || p.status === "MORE_INFO" || p.status === "INTERESTED") {
+    return false;
+  }
   const t = trackingOf(p);
   return (
     p.status === "DECLINED" ||

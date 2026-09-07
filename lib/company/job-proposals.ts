@@ -206,7 +206,12 @@ export async function createJobProposal(input: {
     )
   `;
 
-  await upsertCompanyProfileTracking(input.companyUserId, input.profileId, { contatado: true });
+  await upsertCompanyProfileTracking(input.companyUserId, input.profileId, {
+    contatado: true,
+    contratado: false,
+    naoContratado: false,
+    entrevistaCancelada: false,
+  });
 
   const created = await getProposalById(id);
   if (!created) throw new Error("Falha ao criar proposta");
