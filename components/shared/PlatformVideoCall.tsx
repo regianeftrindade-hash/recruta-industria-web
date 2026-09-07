@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { CALL_RTC_CONFIG } from "@/lib/video-call-peer";
 import { DASH, dashCard, dashSectionTitle } from "@/lib/dashboard-theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
+import styles from "./PlatformVideoCall.module.css";
 
 type CallStatus = "idle" | "ringing" | "team_invite" | "accepted" | "declined" | "ended" | "missed";
 
@@ -59,17 +61,11 @@ export default function PlatformVideoCall({
   const iceQueueRef = useRef<RTCIceCandidateInit[]>([]);
 
   const [overlay, setOverlay] = useState(false);
-  const [fixedPos, setFixedPos] = useState<{ top: number; left: number; width: number } | null>(null);
-  const [placeholderH, setPlaceholderH] = useState(0);
   const [minimized, setMinimized] = useState(false);
-  const [narrow, setNarrow] = useState(false);
+  const [portalReady, setPortalReady] = useState(false);
 
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 900px)");
-    const sync = () => setNarrow(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
+    setPortalReady(true);
   }, []);
 
   const [callId, setCallId] = useState<string | null>(null);
@@ -210,34 +206,15 @@ export default function PlatformVideoCall({
     };
   }, [role, profileId, status, callId, isInitiator, stopCamera]);
 
-  const pinAsOverlay = (fromEl: HTMLElement | null) => {
-    const mobile = typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches;
-    if (mobile) {
-      setPlaceholderH(0);
-      setFixedPos({ top: 0, left: 0, width: 112 });
-      setOverlay(true);
-      return;
-    }
-    if (!fromEl) {
-      setOverlay(true);
-      return;
-    }
-    const rect = fromEl.getBoundingClientRect();
-    setPlaceholderH(rect.height);
-    setFixedPos({
-      top: Math.max(8, rect.top),
-      left: Math.max(8, rect.left),
-      width: rect.width,
-    });
+  const pinAsOverlay = () => {
     setOverlay(true);
+    setMinimized(false);
   };
 
   // Convite da equipe: abre sobreposição automaticamente
   useEffect(() => {
     if (role !== "company" || status !== "team_invite" || overlay) return;
-    pinAsOverlay(panelRef.current);
-    // pinAsOverlay só depende do viewport e do painel no momento do convite
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    pinAsOverlay();
   }, [role, status, overlay]);
 
   // Empresa: poll status da chamada ativa (iniciador ou quem já entrou na equipe)
@@ -690,13 +667,11 @@ export default function PlatformVideoCall({
   };
 
   const enableOverlay = () => {
-    pinAsOverlay(panelRef.current);
+    pinAsOverlay();
   };
 
   const disableOverlay = () => {
     setOverlay(false);
-    setFixedPos(null);
-    setPlaceholderH(0);
     setMinimized(false);
   };
 
@@ -705,42 +680,20 @@ export default function PlatformVideoCall({
     else enableOverlay();
   };
 
-  const overlayPip = overlay && narrow;
+  const overlayPip = overlay;
 
   const panelBase: React.CSSProperties = {
     ...dashCard,
     border: `1px solid ${DASH.gold}`,
     borderRadius: overlayPip ? 12 : 16,
     overflow: "hidden",
-    padding: overlayPip ? 6 : compact ? 12 : 14,
+    padding: overlayPip ? 4 : compact ? 12 : 14,
     background: DASH.card,
     boxSizing: "border-box",
   };
 
   const panelStyle: React.CSSProperties = overlay
-    ? overlayPip
-      ? {
-          ...panelBase,
-          position: "fixed",
-          top: "auto",
-          left: "auto",
-          right: 10,
-          bottom: 12,
-          width: 118,
-          maxWidth: "calc(100vw - 20px)",
-          zIndex: 9999,
-          boxShadow: "0 12px 40px rgba(0,0,0,0.55)",
-        }
-      : {
-          ...panelBase,
-          position: "fixed",
-          top: fixedPos?.top ?? 16,
-          left: fixedPos?.left ?? 16,
-          width: minimized ? Math.min(220, fixedPos?.width || 220) : fixedPos?.width || (compact ? 280 : 340),
-          maxWidth: "calc(100vw - 16px)",
-          zIndex: 9999,
-          boxShadow: "0 12px 40px rgba(0,0,0,0.55)",
-        }
+    ? panelBase
     : {
         ...panelBase,
         width: "100%",
@@ -784,7 +737,7 @@ export default function PlatformVideoCall({
       >
         {overlay ? (overlayPip ? "Fixo" : "Fixo ✓") : "Sobrepor"}
       </button>
-      {overlay && !overlayPip && (
+      {overlay && (
         <button
           type="button"
           onClick={() => setMinimized((v) => !v)}
@@ -793,37 +746,23 @@ export default function PlatformVideoCall({
             border: `1px solid ${DASH.gold}`,
             color: DASH.gold,
             borderRadius: 8,
-            padding: "5px 8px",
-            fontSize: 10,
+            padding: overlayPip ? "4px 6px" : "5px 8px",
+            fontSize: overlayPip ? 9 : 10,
             cursor: "pointer",
           }}
         >
-          {minimized ? "Expandir" : "Minimizar"}
+          {minimized ? "+" : "−"}
         </button>
       )}
     </div>
   );
 
-  if (minimized && overlay && !overlayPip) {
-    return (
-      <div ref={wrapRef}>
-        {placeholderH > 0 && <div aria-hidden style={{ height: placeholderH }} />}
-        <section ref={panelRef as React.RefObject<HTMLElement>} className="dash-card" style={panelStyle}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: DASH.gold }}>
-              📹 {statusLabel}
-            </span>
-            {controls}
-          </div>
-        </section>
-      </div>
-    );
-  }
-
-  return (
-    <div ref={wrapRef}>
-      {overlay && placeholderH > 0 && <div aria-hidden style={{ height: placeholderH }} />}
-      <section ref={panelRef as React.RefObject<HTMLElement>} className="dash-card" style={panelStyle}>
+  const panel = (
+    <section
+      ref={panelRef as React.RefObject<HTMLElement>}
+      className={overlay ? `dash-card ${styles.pip}` : "dash-card"}
+      style={panelStyle}
+    >
         <div
           style={{
             display: "flex",
@@ -855,6 +794,7 @@ export default function PlatformVideoCall({
           </p>
         )}
 
+        {!(overlay && minimized) && (
         <div
           style={{
             display: "grid",
@@ -977,6 +917,7 @@ export default function PlatformVideoCall({
             )}
           </div>
         </div>
+        )}
 
         {!overlayPip && role === "company" && (isInitiator || status === "idle") && (
           <div
@@ -1137,15 +1078,16 @@ export default function PlatformVideoCall({
           </div>
         )}
 
-        {overlayPip && (
+        {overlayPip && !minimized && (
           <p style={{ margin: "0 0 4px", fontSize: 9, fontWeight: 700, color: DASH.gold }}>
             {status === "accepted" ? "Chamada" : statusLabel}
           </p>
         )}
-        {error && (
+        {error && !overlayPip && (
           <p style={{ margin: "0 0 8px", fontSize: overlayPip ? 9 : 11, color: "#f87171", lineHeight: 1.4 }}>{error}</p>
         )}
 
+        {!overlayPip && (
         <div style={{ display: "flex", gap: overlayPip ? 4 : 8, flexWrap: "wrap" }}>
           {role === "company" && status === "idle" && (
             <button
@@ -1291,6 +1233,26 @@ export default function PlatformVideoCall({
             </button>
           )}
         </div>
+        )}
+
+        {overlayPip && status === "accepted" && !minimized && (
+          <button
+            type="button"
+            onClick={() => void handleEnd()}
+            style={{
+              background: "transparent",
+              border: "1px solid #dc3545",
+              color: "#f87171",
+              borderRadius: 6,
+              padding: "3px 4px",
+              fontSize: 8,
+              cursor: "pointer",
+              width: "100%",
+            }}
+          >
+            Encerrar
+          </button>
+        )}
 
         {!overlayPip && (
           <p style={{ margin: "8px 0 0", fontSize: 10, color: DASH.muted, lineHeight: 1.4 }}>
@@ -1299,7 +1261,12 @@ export default function PlatformVideoCall({
               : "Quando a empresa ligar, use Aceitar ou Recusar. Use Sobrepor para rolar a página com o vídeo fixo."}
           </p>
         )}
-      </section>
+    </section>
+  );
+
+  return (
+    <div ref={wrapRef}>
+      {overlay && portalReady ? createPortal(panel, document.body) : panel}
     </div>
   );
 }

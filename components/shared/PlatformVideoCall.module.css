@@ -1,0 +1,21 @@
+.pip {
+  position: fixed !important;
+  top: auto !important;
+  left: auto !important;
+  right: 8px !important;
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+  width: 96px !important;
+  max-width: 30vw !important;
+  margin: 0 !important;
+  padding: 4px !important;
+  border-radius: 10px !important;
+  z-index: 2147483000 !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+  box-sizing: border-box !important;
+}
+
+.pipVideo {
+  aspect-ratio: 1 / 1;
+  max-height: 64px;
+  border-radius: 8px;
+}
