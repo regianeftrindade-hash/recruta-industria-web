@@ -13,7 +13,7 @@ function buildContentSecurityPolicy(): string {
       "connect-src 'self' ws: wss: http: https:",
       "frame-ancestors 'none'",
       "base-uri 'self'",
-      "form-action 'self'",
+      "form-action 'self' https://accounts.google.com",
       "object-src 'none'",
     ].join('; ');
   }
@@ -29,7 +29,8 @@ function buildContentSecurityPolicy(): string {
     "frame-src 'self' https://accounts.google.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
-    "form-action 'self'",
+    // NextAuth redireciona o POST de sign-in para o Google; 'self' sozinho bloqueia o OAuth.
+    "form-action 'self' https://accounts.google.com",
     "object-src 'none'",
     "upgrade-insecure-requests",
   ].join('; ');

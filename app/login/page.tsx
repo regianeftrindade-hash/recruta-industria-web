@@ -44,6 +44,9 @@ function LoginContent() {
         OAuthCallback: 'Falha ao retornar do Google. Tente novamente.',
         OAuthAccountNotLinked: 'Este e-mail já está vinculado a outro método de login.',
         Callback: 'Erro na autenticação. Tente novamente.',
+        Configuration: 'Login com Google não está configurado no servidor. Confira NEXTAUTH_URL e as credenciais Google.',
+        AccessDenied: 'Acesso com Google recusado. Tente outro e-mail ou o login com senha.',
+        google: 'Erro ao logar com Google.',
       };
       setErrorMessage(messages[authError] || 'Erro ao logar com Google.');
     }

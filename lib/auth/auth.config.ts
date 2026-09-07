@@ -22,8 +22,9 @@ import type { NextAuthOptions } from 'next-auth';
 export const authOptions: NextAuthOptions = {
   providers: [
     Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+      allowDangerousEmailAccountLinking: true,
     }),
 
     Credentials({
@@ -91,21 +92,25 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async signIn({ user, account }: any) {
-      if (account?.provider === 'google') {
-        const normalizedEmail = user.email!.toLowerCase().trim();
+      if (account?.provider !== 'google') return true;
+
+      const normalizedEmail = String(user.email || '').toLowerCase().trim();
+      if (!normalizedEmail) return false;
+
+      let loginIntent: 'COMPANY' | 'PROFESSIONAL' = 'PROFESSIONAL';
+      try {
+        const cookieStore = await cookies();
+        const intent = cookieStore.get('login_intent')?.value;
+        if (intent === 'company') loginIntent = 'COMPANY';
+        if (intent === 'professional') loginIntent = 'PROFESSIONAL';
+      } catch {
+        /* ignora se cookies indisponível */
+      }
+
+      try {
         const existing = await prisma.user.findUnique({
           where: { email: normalizedEmail },
         });
-
-        let loginIntent: 'COMPANY' | 'PROFESSIONAL' = 'PROFESSIONAL';
-        try {
-          const cookieStore = await cookies();
-          const intent = cookieStore.get('login_intent')?.value;
-          if (intent === 'company') loginIntent = 'COMPANY';
-          if (intent === 'professional') loginIntent = 'PROFESSIONAL';
-        } catch {
-          /* ignora se cookies indisponível */
-        }
 
         if (!existing) {
           await prisma.user.create({
@@ -125,6 +130,9 @@ export const authOptions: NextAuthOptions = {
             },
           });
         }
+      } catch (error) {
+        console.error('[auth] Falha ao sincronizar usuário Google:', error);
+        return false;
       }
 
       return true;
@@ -194,8 +202,11 @@ export const authOptions: NextAuthOptions = {
     maxAge: 8 * 60 * 60, // 8 horas
   },
 
+  useSecureCookies: process.env.NODE_ENV === 'production',
+
   pages: {
     signIn: '/login',
+    error: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
 };

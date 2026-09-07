@@ -18,7 +18,16 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith('/api/')) {
+  const isNextAuthFlow =
+    pathname === '/api/auth/session'
+    || pathname === '/api/auth/csrf'
+    || pathname === '/api/auth/providers'
+    || pathname === '/api/auth/error'
+    || pathname.startsWith('/api/auth/signin')
+    || pathname.startsWith('/api/auth/signout')
+    || pathname.startsWith('/api/auth/callback');
+
+  if (pathname.startsWith('/api/') && !isNextAuthFlow) {
     const sensitive =
       pathname.startsWith('/api/auth/') ||
       pathname.startsWith('/api/upload') ||
@@ -105,6 +114,14 @@ export async function proxy(request: NextRequest) {
   if (forwardedProto && forwardedProto !== 'https' && !isLocalhost) {
     const url = request.nextUrl.clone();
     url.protocol = 'https:';
+    return NextResponse.redirect(url, { status: 308 });
+  }
+
+  const hostname = host.split(':')[0].toLowerCase();
+  if (hostname === 'recrutaindustria.com') {
+    const url = request.nextUrl.clone();
+    url.protocol = 'https:';
+    url.hostname = 'www.recrutaindustria.com';
     return NextResponse.redirect(url, { status: 308 });
   }
 
