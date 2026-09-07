@@ -132,7 +132,7 @@ export default function CompanyEntrevistasBoard() {
         body.entrevistado = true;
       }
 
-      const res = await fetch(`/api/company/professionals/${encodeURIComponent(p.profileId)}`, {
+      const res = await fetch(`/api/company/proposals/${encodeURIComponent(p.id)}/funnel`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

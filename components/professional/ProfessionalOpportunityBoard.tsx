@@ -4,7 +4,12 @@ import React, { useMemo, useState } from "react";
 import { DASH, dashCard, dashInnerBox, dashSectionTitle } from "@/lib/dashboard-theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
-import { formatInterviewComprovante } from "@/lib/company/job-proposals-shared";
+import {
+  formatInterviewComprovante,
+  isArquivada,
+  isEntrevista,
+  isPropostaAtiva,
+} from "@/lib/company/job-proposals-shared";
 import { AVISO_RETENCAO_PROPOSTAS } from "@/lib/profile/inbox-retention";
 import { formatReaisDisplay, turnoPropostaLabel } from "@/lib/format-reais";
 import css from "./ProfessionalOpportunityBoard.module.css";
@@ -26,6 +31,8 @@ const nestedCard: React.CSSProperties = {
   background: DASH.inner,
 };
 
+export { isArquivada, isEntrevista, isPropostaAtiva };
+
 function trackingOf(p: JobProposalDTO) {
   return (
     p.tracking || {
@@ -37,34 +44,6 @@ function trackingOf(p: JobProposalDTO) {
       entrevistaCancelada: false,
     }
   );
-}
-
-export function isArquivada(p: JobProposalDTO): boolean {
-  // Proposta ainda em aberto nunca vai para arquivadas — o tracking é por
-  // empresa+perfil e não pode “arrastar” uma proposta nova para o arquivo.
-  if (p.status === "SENT" || p.status === "MORE_INFO" || p.status === "INTERESTED") {
-    return false;
-  }
-  const t = trackingOf(p);
-  return (
-    p.status === "DECLINED" ||
-    p.status === "INTERVIEW_DECLINED" ||
-    p.status === "INTERVIEW_CANCELLED" ||
-    p.interview?.status === "CANCELLED" ||
-    t.contratado ||
-    t.naoContratado ||
-    t.entrevistaCancelada
-  );
-}
-
-export function isEntrevista(p: JobProposalDTO): boolean {
-  if (isArquivada(p) || !p.interview) return false;
-  return p.status === "INTERVIEW_PENDING" || p.status === "INTERVIEW_CONFIRMED";
-}
-
-export function isPropostaAtiva(p: JobProposalDTO): boolean {
-  if (isArquivada(p) || isEntrevista(p)) return false;
-  return p.status === "SENT" || p.status === "MORE_INFO" || p.status === "INTERESTED";
 }
 
 export default function ProfessionalOpportunityBoard({ proposals, onChanged }: Props) {

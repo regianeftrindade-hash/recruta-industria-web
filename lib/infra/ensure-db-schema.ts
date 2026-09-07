@@ -223,6 +223,77 @@ export async function ensureJobProposalTables(): Promise<void> {
       `CREATE INDEX IF NOT EXISTS "JobInterview_scheduledAt_idx" ON "JobInterview"("scheduledAt")`,
     );
 
+    const hasFunnel = await tableExists('JobProposalTracking');
+    if (!hasFunnel) {
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE "JobProposalTracking" (
+          "id" TEXT NOT NULL,
+          "proposalId" TEXT NOT NULL,
+          "contatado" BOOLEAN NOT NULL DEFAULT false,
+          "entrevistado" BOOLEAN NOT NULL DEFAULT false,
+          "emTeste" BOOLEAN NOT NULL DEFAULT false,
+          "contratado" BOOLEAN NOT NULL DEFAULT false,
+          "naoContratado" BOOLEAN NOT NULL DEFAULT false,
+          "entrevistaCancelada" BOOLEAN NOT NULL DEFAULT false,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "JobProposalTracking_pkey" PRIMARY KEY ("id"),
+          CONSTRAINT "JobProposalTracking_proposalId_key" UNIQUE ("proposalId")
+        )
+      `);
+    }
+
+    await prisma.$executeRawUnsafe(
+      `CREATE INDEX IF NOT EXISTS "JobProposalTracking_proposalId_idx" ON "JobProposalTracking"("proposalId")`,
+    );
+
+    await ensureTrackingEmTesteColumn();
+    try {
+      await prisma.$executeRawUnsafe(`
+      INSERT INTO "JobProposalTracking" (
+        id, "proposalId", contatado, entrevistado, "emTeste", contratado, "naoContratado", "entrevistaCancelada", "createdAt", "updatedAt"
+      )
+      SELECT
+        ('fn-' || p.id),
+        p.id,
+        CASE
+          WHEN p.status IN ('SENT', 'MORE_INFO', 'INTERESTED') THEN TRUE
+          ELSE COALESCE(c.contatado, FALSE)
+        END,
+        CASE
+          WHEN p.status IN ('SENT', 'MORE_INFO', 'INTERESTED') THEN FALSE
+          ELSE COALESCE(c.entrevistado, FALSE)
+        END,
+        CASE
+          WHEN p.status IN ('SENT', 'MORE_INFO', 'INTERESTED') THEN FALSE
+          ELSE COALESCE(c."emTeste", FALSE)
+        END,
+        CASE
+          WHEN p.status IN ('SENT', 'MORE_INFO', 'INTERESTED') THEN FALSE
+          ELSE COALESCE(c.contratado, FALSE)
+        END,
+        CASE
+          WHEN p.status IN ('SENT', 'MORE_INFO', 'INTERESTED') THEN FALSE
+          ELSE COALESCE(c."naoContratado", FALSE)
+        END,
+        CASE
+          WHEN p.status = 'INTERVIEW_CANCELLED' THEN TRUE
+          WHEN p.status IN ('SENT', 'MORE_INFO', 'INTERESTED') THEN FALSE
+          ELSE COALESCE(c."entrevistaCancelada", FALSE)
+        END,
+        NOW(),
+        NOW()
+      FROM "JobProposal" p
+      LEFT JOIN "CompanyProfileTracking" c
+        ON c."companyUserId" = p."companyUserId" AND c."profileId" = p."profileId"
+      WHERE NOT EXISTS (
+        SELECT 1 FROM "JobProposalTracking" t WHERE t."proposalId" = p.id
+      )
+    `);
+    } catch (error) {
+      console.warn("[schema] Backfill JobProposalTracking:", error);
+    }
+
     jobProposalTablesReady = true;
   } catch (error) {
     console.error('[schema] Falha ao garantir tabelas JobProposal/JobInterview:', error);

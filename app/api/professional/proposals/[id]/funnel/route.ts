@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { resolveAuthEmail } from "@/lib/api-auth";
 import { ensurePaymentSchema } from "@/lib/ensure-db-schema";
 import { cancelInterview, getProposalById } from "@/lib/company/job-proposals";
-import { upsertCompanyProfileTracking } from "@/lib/company/company-profile-tracking";
+import { upsertProposalFunnel } from "@/lib/company/proposal-funnel";
 import {
   notifyProfessionalAsync,
   notifyCompanyInterviewCancelledByProfessional,
@@ -79,11 +79,7 @@ export async function PATCH(
       }
     }
 
-    const tracking = await upsertCompanyProfileTracking(
-      proposal.companyUserId,
-      proposal.profileId,
-      patch,
-    );
+    const tracking = await upsertProposalFunnel(proposalId, patch);
 
     return NextResponse.json({
       success: true,

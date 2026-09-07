@@ -43,8 +43,9 @@ export async function GET(request: NextRequest) {
            COUNT(*) FILTER (WHERE "emTeste" = true)::bigint AS testes,
            COUNT(*) FILTER (WHERE contratado = true)::bigint AS contratacoes,
            COUNT(*) FILTER (WHERE "naoContratado" = true)::bigint AS "naoContratacoes"
-         FROM "CompanyProfileTracking"
-         WHERE "profileId" = $1`,
+         FROM "JobProposalTracking" t
+         INNER JOIN "JobProposal" p ON p.id = t."proposalId"
+         WHERE p."profileId" = $1`,
         profileId,
       ).catch(() => [
         {

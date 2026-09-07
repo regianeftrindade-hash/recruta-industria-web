@@ -247,7 +247,7 @@ export default function PropostasEntrevistasEmpresa({
         }
       }
 
-      const res = await fetch(`/api/company/professionals/${encodeURIComponent(profileId)}`, {
+      const res = await fetch(`/api/company/proposals/${encodeURIComponent(p.id)}/funnel`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

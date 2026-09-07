@@ -21,6 +21,72 @@ export type JobInterviewDTO = {
   status: InterviewStatus;
 };
 
+export type ProposalFunnelTracking = {
+  contatado: boolean;
+  entrevistado: boolean;
+  emTeste: boolean;
+  contratado: boolean;
+  naoContratado: boolean;
+  entrevistaCancelada: boolean;
+};
+
+export const EMPTY_PROPOSAL_TRACKING: ProposalFunnelTracking = {
+  contatado: false,
+  entrevistado: false,
+  emTeste: false,
+  contratado: false,
+  naoContratado: false,
+  entrevistaCancelada: false,
+};
+
+export function mergeProposalFunnel(
+  current: ProposalFunnelTracking,
+  patch: Partial<ProposalFunnelTracking>,
+): ProposalFunnelTracking {
+  const next: ProposalFunnelTracking = {
+    contatado: patch.contatado ?? current.contatado,
+    entrevistado: patch.entrevistado ?? current.entrevistado,
+    emTeste: patch.emTeste ?? current.emTeste,
+    contratado: patch.contratado ?? current.contratado,
+    naoContratado: patch.naoContratado ?? current.naoContratado,
+    entrevistaCancelada: patch.entrevistaCancelada ?? current.entrevistaCancelada,
+  };
+  if (patch.contratado === true) next.naoContratado = false;
+  if (patch.naoContratado === true) next.contratado = false;
+  return next;
+}
+
+function trackingOf(p: JobProposalDTO): ProposalFunnelTracking {
+  return p.tracking || { ...EMPTY_PROPOSAL_TRACKING };
+}
+
+/** Funil por proposta: uma vaga arquivada não arrasta outra do mesmo perfil. */
+export function isArquivada(p: JobProposalDTO): boolean {
+  if (p.status === "SENT" || p.status === "MORE_INFO" || p.status === "INTERESTED") {
+    return false;
+  }
+  const t = trackingOf(p);
+  return (
+    p.status === "DECLINED" ||
+    p.status === "INTERVIEW_DECLINED" ||
+    p.status === "INTERVIEW_CANCELLED" ||
+    p.interview?.status === "CANCELLED" ||
+    t.contratado ||
+    t.naoContratado ||
+    t.entrevistaCancelada
+  );
+}
+
+export function isEntrevista(p: JobProposalDTO): boolean {
+  if (isArquivada(p) || !p.interview) return false;
+  return p.status === "INTERVIEW_PENDING" || p.status === "INTERVIEW_CONFIRMED";
+}
+
+export function isPropostaAtiva(p: JobProposalDTO): boolean {
+  if (isArquivada(p) || isEntrevista(p)) return false;
+  return p.status === "SENT" || p.status === "MORE_INFO" || p.status === "INTERESTED";
+}
+
 export type JobProposalDTO = {
   id: string;
   profileId: string;
@@ -39,14 +105,7 @@ export type JobProposalDTO = {
   createdAt: string;
   updatedAt: string;
   interview: JobInterviewDTO | null;
-  tracking: {
-    contatado: boolean;
-    entrevistado: boolean;
-    emTeste: boolean;
-    contratado: boolean;
-    naoContratado: boolean;
-    entrevistaCancelada: boolean;
-  };
+  tracking: ProposalFunnelTracking;
 };
 
 export type InterviewComprovanteInput = {

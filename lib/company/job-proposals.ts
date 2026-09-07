@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/db";
 import { ensureJobProposalTables } from "@/lib/ensure-db-schema";
+import { upsertProposalFunnel } from "@/lib/company/proposal-funnel";
 import { upsertCompanyProfileTracking } from "@/lib/company/company-profile-tracking";
 import { limiteRetencaoInbox } from "@/lib/profile/inbox-retention";
 import type {
@@ -46,6 +47,13 @@ export async function limparPropostasExpiradas(scope?: {
 
   if (scope?.profileId) {
     await prisma.$executeRaw`
+      DELETE FROM "JobProposalTracking"
+      WHERE "proposalId" IN (
+        SELECT id FROM "JobProposal"
+        WHERE "profileId" = ${scope.profileId} AND "createdAt" < ${limite}
+      )
+    `;
+    await prisma.$executeRaw`
       DELETE FROM "JobInterview"
       WHERE "proposalId" IN (
         SELECT id FROM "JobProposal"
@@ -61,6 +69,13 @@ export async function limparPropostasExpiradas(scope?: {
 
   if (scope?.companyUserId) {
     await prisma.$executeRaw`
+      DELETE FROM "JobProposalTracking"
+      WHERE "proposalId" IN (
+        SELECT id FROM "JobProposal"
+        WHERE "companyUserId" = ${scope.companyUserId} AND "createdAt" < ${limite}
+      )
+    `;
+    await prisma.$executeRaw`
       DELETE FROM "JobInterview"
       WHERE "proposalId" IN (
         SELECT id FROM "JobProposal"
@@ -74,6 +89,12 @@ export async function limparPropostasExpiradas(scope?: {
     return;
   }
 
+  await prisma.$executeRaw`
+    DELETE FROM "JobProposalTracking"
+    WHERE "proposalId" IN (
+      SELECT id FROM "JobProposal" WHERE "createdAt" < ${limite}
+    )
+  `;
   await prisma.$executeRaw`
     DELETE FROM "JobInterview"
     WHERE "proposalId" IN (
@@ -107,6 +128,12 @@ type ProposalRow = {
   meetingUrl: string | null;
   observacoes: string | null;
   interviewStatus: string | null;
+  trackContatado?: boolean;
+  trackEntrevistado?: boolean;
+  trackEmTeste?: boolean;
+  trackContratado?: boolean;
+  trackNaoContratado?: boolean;
+  trackEntrevistaCancelada?: boolean;
 };
 
 function mapRow(row: ProposalRow): JobProposalDTO {
@@ -159,12 +186,12 @@ function mapRow(row: ProposalRow): JobProposalDTO {
         : new Date(row.updatedAt as unknown as string).toISOString(),
     interview,
     tracking: {
-      contatado: false,
-      entrevistado: false,
-      emTeste: false,
-      contratado: false,
-      naoContratado: false,
-      entrevistaCancelada: false,
+      contatado: Boolean(row.trackContatado),
+      entrevistado: Boolean(row.trackEntrevistado),
+      emTeste: Boolean(row.trackEmTeste),
+      contratado: Boolean(row.trackContratado),
+      naoContratado: Boolean(row.trackNaoContratado),
+      entrevistaCancelada: Boolean(row.trackEntrevistaCancelada),
     },
   };
 }
@@ -175,9 +202,16 @@ const SELECT_JOIN = `
     p.cargo, p.salario, p.turno, p.cidade, p.beneficios, p.mensagem,
     p.status, p."respondedAt", p."createdAt", p."updatedAt",
     i.id AS "interviewId", i."scheduledAt", i."locationType",
-    i.address, i."meetingUrl", i.observacoes, i.status AS "interviewStatus"
+    i.address, i."meetingUrl", i.observacoes, i.status AS "interviewStatus",
+    COALESCE(t.contatado, false) AS "trackContatado",
+    COALESCE(t.entrevistado, false) AS "trackEntrevistado",
+    COALESCE(t."emTeste", false) AS "trackEmTeste",
+    COALESCE(t.contratado, false) AS "trackContratado",
+    COALESCE(t."naoContratado", false) AS "trackNaoContratado",
+    COALESCE(t."entrevistaCancelada", false) AS "trackEntrevistaCancelada"
   FROM "JobProposal" p
   LEFT JOIN "JobInterview" i ON i."proposalId" = p.id
+  LEFT JOIN "JobProposalTracking" t ON t."proposalId" = p.id
 `;
 
 export async function createJobProposal(input: {
@@ -206,11 +240,9 @@ export async function createJobProposal(input: {
     )
   `;
 
+  await upsertProposalFunnel(id, { contatado: true });
   await upsertCompanyProfileTracking(input.companyUserId, input.profileId, {
     contatado: true,
-    contratado: false,
-    naoContratado: false,
-    entrevistaCancelada: false,
   });
 
   const created = await getProposalById(id);
@@ -237,6 +269,7 @@ export async function deleteProposalForProfessional(
   if (!proposal || proposal.profileId !== profileId) {
     throw new Error("PROPOSAL_NOT_FOUND");
   }
+  await prisma.$executeRaw`DELETE FROM "JobProposalTracking" WHERE "proposalId" = ${proposalId}`;
   await prisma.$executeRaw`DELETE FROM "JobInterview" WHERE "proposalId" = ${proposalId}`;
   await prisma.$executeRaw`DELETE FROM "JobProposal" WHERE id = ${proposalId} AND "profileId" = ${profileId}`;
 }
@@ -250,6 +283,7 @@ export async function deleteProposalForCompany(
   if (!proposal || proposal.companyUserId !== companyUserId) {
     throw new Error("PROPOSAL_NOT_FOUND");
   }
+  await prisma.$executeRaw`DELETE FROM "JobProposalTracking" WHERE "proposalId" = ${proposalId}`;
   await prisma.$executeRaw`DELETE FROM "JobInterview" WHERE "proposalId" = ${proposalId}`;
   await prisma.$executeRaw`DELETE FROM "JobProposal" WHERE id = ${proposalId} AND "companyUserId" = ${companyUserId}`;
 }
@@ -267,7 +301,7 @@ export async function listProposalsForCompanyProfile(
     companyUserId,
     profileId,
   );
-  return attachTrackingForCompany(rows.map(mapRow), companyUserId);
+  return rows.map(mapRow);
 }
 
 /** Todas as oportunidades da empresa (propostas, entrevistas, arquivadas) com tracking. */
@@ -286,9 +320,16 @@ export async function listOpportunitiesForCompany(
       p.status, p."respondedAt", p."createdAt", p."updatedAt",
       i.id AS "interviewId", i."scheduledAt", i."locationType",
       i.address, i."meetingUrl", i.observacoes, i.status AS "interviewStatus",
-      COALESCE(u.name, pr.email, 'Profissional') AS "professionalName"
+      COALESCE(u.name, pr.email, 'Profissional') AS "professionalName",
+      COALESCE(t.contatado, false) AS "trackContatado",
+      COALESCE(t.entrevistado, false) AS "trackEntrevistado",
+      COALESCE(t."emTeste", false) AS "trackEmTeste",
+      COALESCE(t.contratado, false) AS "trackContratado",
+      COALESCE(t."naoContratado", false) AS "trackNaoContratado",
+      COALESCE(t."entrevistaCancelada", false) AS "trackEntrevistaCancelada"
     FROM "JobProposal" p
     LEFT JOIN "JobInterview" i ON i."proposalId" = p.id
+    LEFT JOIN "JobProposalTracking" t ON t."proposalId" = p.id
     INNER JOIN "Profile" pr ON pr.id = p."profileId"
     LEFT JOIN "User" u ON u.id = pr."userId"
     WHERE p."companyUserId" = $1
@@ -296,13 +337,11 @@ export async function listOpportunitiesForCompany(
     companyUserId,
   );
 
-  const mapped = rows.map((row) => {
+  return rows.map((row) => {
     const dto = mapRow(row);
     dto.professionalName = row.professionalName || "Profissional";
     return dto;
   });
-
-  return attachTrackingForCompany(mapped, companyUserId);
 }
 
 export type CompanyRecruitmentHistoryCounts = {
@@ -338,8 +377,9 @@ export async function getCompanyRecruitmentHistory(
          COUNT(*) FILTER (WHERE "emTeste" = true)::bigint AS testes,
          COUNT(*) FILTER (WHERE contratado = true)::bigint AS contratacoes,
          COUNT(*) FILTER (WHERE "naoContratado" = true)::bigint AS "naoContratacoes"
-       FROM "CompanyProfileTracking"
-       WHERE "companyUserId" = $1`,
+       FROM "JobProposalTracking" t
+       INNER JOIN "JobProposal" p ON p.id = t."proposalId"
+       WHERE p."companyUserId" = $1`,
       companyUserId,
     ).catch(() => [
       {
@@ -360,56 +400,6 @@ export async function getCompanyRecruitmentHistory(
   };
 }
 
-async function attachTrackingForCompany(
-  proposals: JobProposalDTO[],
-  companyUserId: string,
-): Promise<JobProposalDTO[]> {
-  if (proposals.length === 0) return proposals;
-  try {
-    const trackRows = await prisma.$queryRawUnsafe<
-      Array<{
-        profileId: string;
-        contatado: boolean;
-        entrevistado: boolean;
-        emTeste: boolean;
-        contratado: boolean;
-        naoContratado: boolean;
-        entrevistaCancelada: boolean;
-      }>
-    >(
-      `SELECT "profileId",
-              contatado,
-              entrevistado,
-              COALESCE("emTeste", false) AS "emTeste",
-              contratado,
-              COALESCE("naoContratado", false) AS "naoContratado",
-              COALESCE("entrevistaCancelada", false) AS "entrevistaCancelada"
-       FROM "CompanyProfileTracking"
-       WHERE "companyUserId" = $1`,
-      companyUserId,
-    );
-    const byProfile = new Map(
-      trackRows.map((t) => [
-        t.profileId,
-        {
-          contatado: Boolean(t.contatado),
-          entrevistado: Boolean(t.entrevistado),
-          emTeste: Boolean(t.emTeste),
-          contratado: Boolean(t.contratado),
-          naoContratado: Boolean(t.naoContratado),
-          entrevistaCancelada: Boolean(t.entrevistaCancelada),
-        },
-      ]),
-    );
-    return proposals.map((p) => ({
-      ...p,
-      tracking: byProfile.get(p.profileId) || p.tracking,
-    }));
-  } catch {
-    return proposals;
-  }
-}
-
 export async function listProposalsForProfessional(profileId: string): Promise<JobProposalDTO[]> {
   await limparPropostasExpiradas({ profileId });
   await ensureJobProposalTables();
@@ -419,52 +409,7 @@ export async function listProposalsForProfessional(profileId: string): Promise<J
      ORDER BY p."createdAt" DESC`,
     profileId,
   );
-  const mapped = rows.map(mapRow);
-  if (mapped.length === 0) return mapped;
-
-  try {
-    const trackRows = await prisma.$queryRawUnsafe<
-      Array<{
-        companyUserId: string;
-        contatado: boolean;
-        entrevistado: boolean;
-        emTeste: boolean;
-        contratado: boolean;
-        naoContratado: boolean;
-        entrevistaCancelada: boolean;
-      }>
-    >(
-      `SELECT "companyUserId",
-              contatado,
-              entrevistado,
-              COALESCE("emTeste", false) AS "emTeste",
-              contratado,
-              COALESCE("naoContratado", false) AS "naoContratado",
-              COALESCE("entrevistaCancelada", false) AS "entrevistaCancelada"
-       FROM "CompanyProfileTracking"
-       WHERE "profileId" = $1`,
-      profileId,
-    );
-    const byCompany = new Map(
-      trackRows.map((t) => [
-        t.companyUserId,
-        {
-          contatado: Boolean(t.contatado),
-          entrevistado: Boolean(t.entrevistado),
-          emTeste: Boolean(t.emTeste),
-          contratado: Boolean(t.contratado),
-          naoContratado: Boolean(t.naoContratado),
-          entrevistaCancelada: Boolean(t.entrevistaCancelada),
-        },
-      ]),
-    );
-    return mapped.map((p) => ({
-      ...p,
-      tracking: byCompany.get(p.companyUserId) || p.tracking,
-    }));
-  } catch {
-    return mapped;
-  }
+  return rows.map(mapRow);
 }
 
 export async function listScheduledInterviewsForCompany(
@@ -564,7 +509,7 @@ export async function respondToProposal(
   `;
 
   if (action === "INTERESTED") {
-    await upsertCompanyProfileTracking(proposal.companyUserId, profileId, { contatado: true });
+  await upsertProposalFunnel(proposalId, { contatado: true });
   }
 
   if (action === "MORE_INFO") {
@@ -662,9 +607,7 @@ export async function scheduleInterview(input: {
     WHERE id = ${input.proposalId}
   `;
 
-  await upsertCompanyProfileTracking(input.companyUserId, proposal.profileId, {
-    entrevistaCancelada: false,
-  });
+  await upsertProposalFunnel(input.proposalId, { entrevistaCancelada: false });
 
   const updated = await getProposalById(input.proposalId);
   if (!updated) throw new Error("PROPOSAL_NOT_FOUND");
@@ -717,9 +660,7 @@ export async function cancelInterview(input: {
     WHERE id = ${input.proposalId}
   `;
 
-  await upsertCompanyProfileTracking(proposal.companyUserId, proposal.profileId, {
-    entrevistaCancelada: true,
-  });
+  await upsertProposalFunnel(input.proposalId, { entrevistaCancelada: true });
 
   const updated = await getProposalById(input.proposalId);
   if (!updated) throw new Error("PROPOSAL_NOT_FOUND");
@@ -756,7 +697,7 @@ export async function respondToInterview(
   `;
 
   if (action === "CONFIRM") {
-    await upsertCompanyProfileTracking(proposal.companyUserId, profileId, {
+    await upsertProposalFunnel(proposalId, {
       contatado: true,
       entrevistado: true,
     });

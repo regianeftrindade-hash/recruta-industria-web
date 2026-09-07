@@ -324,8 +324,9 @@ model JobProposal {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  profile   Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  interview JobInterview?
+  profile    Profile               @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  interview  JobInterview?
+  funnel     JobProposalTracking?
 
   @@index([profileId])
   @@index([companyUserId])
@@ -352,6 +353,22 @@ model JobInterview {
 
   @@index([status])
   @@index([scheduledAt])
+}
+
+/// Funil (em teste, contratado, etc.) por proposta — não por perfil.
+model JobProposalTracking {
+  id                   String   @id @default(cuid())
+  proposalId           String   @unique
+  contatado            Boolean  @default(false)
+  entrevistado         Boolean  @default(false)
+  emTeste              Boolean  @default(false)
+  contratado           Boolean  @default(false)
+  naoContratado        Boolean  @default(false)
+  entrevistaCancelada  Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  proposal JobProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
 }
 
 // Registro de quem visualizou cada profissional
