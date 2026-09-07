@@ -62,6 +62,15 @@ export default function PlatformVideoCall({
   const [fixedPos, setFixedPos] = useState<{ top: number; left: number; width: number } | null>(null);
   const [placeholderH, setPlaceholderH] = useState(0);
   const [minimized, setMinimized] = useState(false);
+  const [narrow, setNarrow] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 900px)");
+    const sync = () => setNarrow(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
 
   const [callId, setCallId] = useState<string | null>(null);
   const [status, setStatus] = useState<CallStatus>("idle");
@@ -201,12 +210,19 @@ export default function PlatformVideoCall({
     };
   }, [role, profileId, status, callId, isInitiator, stopCamera]);
 
-  // Convite da equipe: abre sobreposição automaticamente
-  useEffect(() => {
-    if (role !== "company" || status !== "team_invite" || overlay) return;
-    const el = panelRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
+  const pinAsOverlay = (fromEl: HTMLElement | null) => {
+    const mobile = typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches;
+    if (mobile) {
+      setPlaceholderH(0);
+      setFixedPos({ top: 0, left: 0, width: 112 });
+      setOverlay(true);
+      return;
+    }
+    if (!fromEl) {
+      setOverlay(true);
+      return;
+    }
+    const rect = fromEl.getBoundingClientRect();
     setPlaceholderH(rect.height);
     setFixedPos({
       top: Math.max(8, rect.top),
@@ -214,6 +230,14 @@ export default function PlatformVideoCall({
       width: rect.width,
     });
     setOverlay(true);
+  };
+
+  // Convite da equipe: abre sobreposição automaticamente
+  useEffect(() => {
+    if (role !== "company" || status !== "team_invite" || overlay) return;
+    pinAsOverlay(panelRef.current);
+    // pinAsOverlay só depende do viewport e do painel no momento do convite
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role, status, overlay]);
 
   // Empresa: poll status da chamada ativa (iniciador ou quem já entrou na equipe)
@@ -666,19 +690,7 @@ export default function PlatformVideoCall({
   };
 
   const enableOverlay = () => {
-    const el = panelRef.current;
-    if (!el) {
-      setOverlay(true);
-      return;
-    }
-    const rect = el.getBoundingClientRect();
-    setPlaceholderH(rect.height);
-    setFixedPos({
-      top: Math.max(8, rect.top),
-      left: Math.max(8, rect.left),
-      width: rect.width,
-    });
-    setOverlay(true);
+    pinAsOverlay(panelRef.current);
   };
 
   const disableOverlay = () => {
@@ -693,27 +705,42 @@ export default function PlatformVideoCall({
     else enableOverlay();
   };
 
+  const overlayPip = overlay && narrow;
+
   const panelBase: React.CSSProperties = {
     ...dashCard,
     border: `1px solid ${DASH.gold}`,
-    borderRadius: 16,
+    borderRadius: overlayPip ? 12 : 16,
     overflow: "hidden",
-    padding: compact ? 12 : 14,
+    padding: overlayPip ? 6 : compact ? 12 : 14,
     background: DASH.card,
     boxSizing: "border-box",
   };
 
   const panelStyle: React.CSSProperties = overlay
-    ? {
-        ...panelBase,
-        position: "fixed",
-        top: fixedPos?.top ?? 16,
-        left: fixedPos?.left ?? 16,
-        width: minimized ? Math.min(220, fixedPos?.width || 220) : fixedPos?.width || (compact ? 280 : 340),
-        maxWidth: "calc(100vw - 16px)",
-        zIndex: 9999,
-        boxShadow: "0 12px 40px rgba(0,0,0,0.55)",
-      }
+    ? overlayPip
+      ? {
+          ...panelBase,
+          position: "fixed",
+          top: "auto",
+          left: "auto",
+          right: 10,
+          bottom: 12,
+          width: 118,
+          maxWidth: "calc(100vw - 20px)",
+          zIndex: 9999,
+          boxShadow: "0 12px 40px rgba(0,0,0,0.55)",
+        }
+      : {
+          ...panelBase,
+          position: "fixed",
+          top: fixedPos?.top ?? 16,
+          left: fixedPos?.left ?? 16,
+          width: minimized ? Math.min(220, fixedPos?.width || 220) : fixedPos?.width || (compact ? 280 : 340),
+          maxWidth: "calc(100vw - 16px)",
+          zIndex: 9999,
+          boxShadow: "0 12px 40px rgba(0,0,0,0.55)",
+        }
     : {
         ...panelBase,
         width: "100%",
@@ -746,8 +773,8 @@ export default function PlatformVideoCall({
         onClick={toggleOverlay}
         style={{
           ...btnGold,
-          padding: "5px 8px",
-          fontSize: 10,
+          padding: overlayPip ? "4px 6px" : "5px 8px",
+          fontSize: overlayPip ? 9 : 10,
           background: overlay ? DASH.gold : "transparent",
           color: overlay ? "#000" : DASH.gold,
           border: `1px solid ${DASH.gold}`,
@@ -755,9 +782,9 @@ export default function PlatformVideoCall({
         }}
         title="Mantém o vídeo no lugar enquanto você rola a página"
       >
-        {overlay ? "Fixo ✓" : "Sobrepor"}
+        {overlay ? (overlayPip ? "Fixo" : "Fixo ✓") : "Sobrepor"}
       </button>
-      {overlay && (
+      {overlay && !overlayPip && (
         <button
           type="button"
           onClick={() => setMinimized((v) => !v)}
@@ -777,7 +804,7 @@ export default function PlatformVideoCall({
     </div>
   );
 
-  if (minimized && overlay) {
+  if (minimized && overlay && !overlayPip) {
     return (
       <div ref={wrapRef}>
         {placeholderH > 0 && <div aria-hidden style={{ height: placeholderH }} />}
@@ -801,41 +828,46 @@ export default function PlatformVideoCall({
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            justifyContent: overlayPip ? "flex-end" : "space-between",
             gap: 8,
-            marginBottom: 10,
+            marginBottom: overlayPip ? 4 : 10,
             flexWrap: "wrap",
           }}
         >
-          <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: 0, fontSize: compact ? 13 : 14 }}>
-            📹 {title}
-          </h3>
+          {!overlayPip && (
+            <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: 0, fontSize: compact ? 13 : 14 }}>
+              📹 {title}
+            </h3>
+          )}
           {controls}
         </div>
 
-        <p
-          style={{
-            margin: "0 0 10px",
-            fontSize: 12,
-            fontWeight: 700,
-            color: status === "ringing" || status === "team_invite" ? "#22c55e" : DASH.gold,
-          }}
-        >
-          {statusLabel}
-        </p>
+        {!overlayPip && (
+          <p
+            style={{
+              margin: "0 0 10px",
+              fontSize: 12,
+              fontWeight: 700,
+              color: status === "ringing" || status === "team_invite" ? "#22c55e" : DASH.gold,
+            }}
+          >
+            {statusLabel}
+          </p>
+        )}
 
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 8,
-            marginBottom: 10,
+            gridTemplateColumns: overlayPip ? "1fr" : "1fr 1fr",
+            gap: overlayPip ? 4 : 8,
+            marginBottom: overlayPip ? 6 : 10,
           }}
         >
           <div
             style={{
-              aspectRatio: "4 / 3",
-              borderRadius: 10,
+              aspectRatio: overlayPip ? "1 / 1" : "4 / 3",
+              maxHeight: overlayPip ? 72 : undefined,
+              borderRadius: overlayPip ? 8 : 10,
               overflow: "hidden",
               border: `1px solid ${DASH.gold}`,
               background: "#0a0a0a",
@@ -871,27 +903,30 @@ export default function PlatformVideoCall({
                 {status === "accepted" ? "Abrindo câmera…" : "Câmera off"}
               </div>
             )}
-            <span
-              style={{
-                position: "absolute",
-                left: 6,
-                bottom: 6,
-                fontSize: 9,
-                fontWeight: 700,
-                background: "rgba(0,0,0,0.65)",
-                color: DASH.gold,
-                padding: "2px 6px",
-                borderRadius: 4,
-              }}
-            >
-              Você
-            </span>
+            {!overlayPip && (
+              <span
+                style={{
+                  position: "absolute",
+                  left: 6,
+                  bottom: 6,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  background: "rgba(0,0,0,0.65)",
+                  color: DASH.gold,
+                  padding: "2px 6px",
+                  borderRadius: 4,
+                }}
+              >
+                Você
+              </span>
+            )}
           </div>
 
           <div
             style={{
-              aspectRatio: "4 / 3",
-              borderRadius: 10,
+              aspectRatio: overlayPip ? "1 / 1" : "4 / 3",
+              maxHeight: overlayPip ? 72 : undefined,
+              borderRadius: overlayPip ? 8 : 10,
               overflow: "hidden",
               border: `1px solid ${DASH.gold}`,
               background: "#111",
@@ -900,7 +935,7 @@ export default function PlatformVideoCall({
               justifyContent: "center",
               position: "relative",
               color: DASH.muted,
-              fontSize: 11,
+              fontSize: overlayPip ? 9 : 11,
               textAlign: "center",
               padding: 0,
             }}
@@ -923,25 +958,27 @@ export default function PlatformVideoCall({
                   : `Aguardando ${peerLabel}…`}
               </div>
             )}
-            <span
-              style={{
-                position: "absolute",
-                left: 6,
-                bottom: 6,
-                fontSize: 9,
-                fontWeight: 700,
-                background: "rgba(0,0,0,0.65)",
-                color: DASH.gold,
-                padding: "2px 6px",
-                borderRadius: 4,
-              }}
-            >
-              {peerLabel}
-            </span>
+            {!overlayPip && (
+              <span
+                style={{
+                  position: "absolute",
+                  left: 6,
+                  bottom: 6,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  background: "rgba(0,0,0,0.65)",
+                  color: DASH.gold,
+                  padding: "2px 6px",
+                  borderRadius: 4,
+                }}
+              >
+                {peerLabel}
+              </span>
+            )}
           </div>
         </div>
 
-        {role === "company" && (isInitiator || status === "idle") && (
+        {!overlayPip && role === "company" && (isInitiator || status === "idle") && (
           <div
             style={{
               border: `1px solid ${DASH.gold}`,
@@ -1080,7 +1117,7 @@ export default function PlatformVideoCall({
           </div>
         )}
 
-        {role === "company" && !isInitiator && (status === "ringing" || status === "accepted") && participants.length > 0 && (
+        {!overlayPip && role === "company" && !isInitiator && (status === "ringing" || status === "accepted") && participants.length > 0 && (
           <div
             style={{
               border: `1px solid ${DASH.gold}`,
@@ -1100,11 +1137,16 @@ export default function PlatformVideoCall({
           </div>
         )}
 
+        {overlayPip && (
+          <p style={{ margin: "0 0 4px", fontSize: 9, fontWeight: 700, color: DASH.gold }}>
+            {status === "accepted" ? "Chamada" : statusLabel}
+          </p>
+        )}
         {error && (
-          <p style={{ margin: "0 0 8px", fontSize: 11, color: "#f87171", lineHeight: 1.4 }}>{error}</p>
+          <p style={{ margin: "0 0 8px", fontSize: overlayPip ? 9 : 11, color: "#f87171", lineHeight: 1.4 }}>{error}</p>
         )}
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: overlayPip ? 4 : 8, flexWrap: "wrap" }}>
           {role === "company" && status === "idle" && (
             <button
               type="button"
@@ -1225,8 +1267,8 @@ export default function PlatformVideoCall({
                 border: `1px solid #dc3545`,
                 color: "#f87171",
                 borderRadius: 8,
-                padding: "8px 12px",
-                fontSize: 12,
+                padding: overlayPip ? "4px 6px" : "8px 12px",
+                fontSize: overlayPip ? 9 : 12,
                 cursor: "pointer",
                 flex: 1,
               }}
@@ -1250,11 +1292,13 @@ export default function PlatformVideoCall({
           )}
         </div>
 
-        <p style={{ margin: "8px 0 0", fontSize: 10, color: DASH.muted, lineHeight: 1.4 }}>
-          {role === "company"
-            ? "Clique em Chamar. A câmera só liga quando o profissional aceitar. Use Sobrepor para rolar a página com o vídeo fixo."
-            : "Quando a empresa ligar, use Aceitar ou Recusar. Use Sobrepor para rolar a página com o vídeo fixo."}
-        </p>
+        {!overlayPip && (
+          <p style={{ margin: "8px 0 0", fontSize: 10, color: DASH.muted, lineHeight: 1.4 }}>
+            {role === "company"
+              ? "Clique em Chamar. A câmera só liga quando o profissional aceitar. Use Sobrepor para rolar a página com o vídeo fixo."
+              : "Quando a empresa ligar, use Aceitar ou Recusar. Use Sobrepor para rolar a página com o vídeo fixo."}
+          </p>
+        )}
       </section>
     </div>
   );
