@@ -9,6 +9,7 @@ export type ProfileFeedbackDTO = {
   authorName: string;
   body: string;
   createdAt: string;
+  mine: boolean;
 };
 
 type FeedbackRow = {
@@ -68,6 +69,7 @@ export async function listProfileFeedbacks(
     authorName: row.authorName,
     body: row.body,
     createdAt: new Date(row.createdAt).toISOString(),
+    mine: row.authorUserId === userId,
   }));
 }
 
@@ -101,4 +103,34 @@ export async function addProfileFeedback(input: {
   `;
 
   return listProfileFeedbacks(input.userId, input.profileId);
+}
+
+/** Só o autor pode excluir o próprio feedback. */
+export async function deleteProfileFeedback(input: {
+  userId: string;
+  feedbackId: string;
+}): Promise<{ profileId: string }> {
+  await ensureCompanyProfileFeedbackTable();
+
+  const actor = await resolveCompanyActor(input.userId);
+  if (!actor) throw new Error("FORBIDDEN");
+
+  const rows = await prisma.$queryRaw<FeedbackRow[]>`
+    SELECT * FROM "CompanyProfileFeedback"
+    WHERE id = ${input.feedbackId}
+      AND "companyOwnerUserId" = ${actor.ownerUserId}
+    LIMIT 1
+  `;
+  const row = rows[0];
+  if (!row) throw new Error("NOT_FOUND");
+  if (row.authorUserId !== input.userId) throw new Error("FORBIDDEN");
+
+  await prisma.$executeRaw`
+    DELETE FROM "CompanyProfileFeedback"
+    WHERE id = ${input.feedbackId}
+      AND "authorUserId" = ${input.userId}
+      AND "companyOwnerUserId" = ${actor.ownerUserId}
+  `;
+
+  return { profileId: row.profileId };
 }

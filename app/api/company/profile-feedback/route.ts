@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { resolveAuthEmail } from "@/lib/api-auth";
 import {
   addProfileFeedback,
+  deleteProfileFeedback,
   listProfileFeedbacks,
 } from "@/lib/company/company-profile-feedback";
 
@@ -71,5 +72,38 @@ export async function POST(request: NextRequest) {
     }
     console.error("Erro ao salvar feedback:", error);
     return NextResponse.json({ error: "Erro ao salvar feedback" }, { status: 500 });
+  }
+}
+
+/** Exclui o próprio feedback do membro da equipe. */
+export async function DELETE(request: NextRequest) {
+  try {
+    const user = await getCompanyUser(request);
+    if (!user || user.role !== "COMPANY") {
+      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+    }
+
+    const body = await request.json().catch(() => ({}));
+    const feedbackId = String(body?.id || request.nextUrl.searchParams.get("id") || "").trim();
+    if (!feedbackId) {
+      return NextResponse.json({ error: "Informe o feedback" }, { status: 400 });
+    }
+
+    const { profileId } = await deleteProfileFeedback({
+      userId: user.id,
+      feedbackId,
+    });
+    const feedbacks = await listProfileFeedbacks(user.id, profileId);
+    return NextResponse.json({ success: true, feedbacks });
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "";
+    if (msg === "FORBIDDEN") {
+      return NextResponse.json({ error: "Só é possível excluir o próprio feedback." }, { status: 403 });
+    }
+    if (msg === "NOT_FOUND") {
+      return NextResponse.json({ error: "Feedback não encontrado" }, { status: 404 });
+    }
+    console.error("Erro ao excluir feedback:", error);
+    return NextResponse.json({ error: "Erro ao excluir feedback" }, { status: 500 });
   }
 }

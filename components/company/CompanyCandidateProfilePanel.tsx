@@ -521,10 +521,11 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
   const [savingNotes, setSavingNotes] = useState(false);
   const [notaTexto, setNotaTexto] = useState("");
   const [feedbacks, setFeedbacks] = useState<
-    Array<{ id: string; authorName: string; body: string; createdAt: string }>
+    Array<{ id: string; authorName: string; body: string; createdAt: string; mine?: boolean }>
   >([]);
   const [feedbackText, setFeedbackText] = useState("");
   const [sendingFeedback, setSendingFeedback] = useState(false);
+  const [deletingFeedbackId, setDeletingFeedbackId] = useState<string | null>(null);
   const [feedbackMsg, setFeedbackMsg] = useState("");
   const [tipText, setTipText] = useState("");
   const [sendingTip, setSendingTip] = useState(false);
@@ -851,6 +852,30 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
       setFeedbackMsg("Erro de rede ao enviar o feedback.");
     } finally {
       setSendingFeedback(false);
+    }
+  };
+
+  const handleExcluirFeedback = async (feedbackId: string) => {
+    if (!window.confirm("Excluir este feedback?")) return;
+    setDeletingFeedbackId(feedbackId);
+    setFeedbackMsg("");
+    try {
+      const res = await fetch("/api/company/profile-feedback", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ id: feedbackId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setFeedbackMsg(data.error || "Não foi possível excluir o feedback.");
+        return;
+      }
+      if (Array.isArray(data.feedbacks)) setFeedbacks(data.feedbacks);
+    } catch {
+      setFeedbackMsg("Erro de rede ao excluir o feedback.");
+    } finally {
+      setDeletingFeedbackId(null);
     }
   };
 
@@ -1942,31 +1967,59 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
                       ...dashInnerBox,
                       padding: "8px 10px",
                       borderRadius: 8,
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 8,
                     }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "baseline",
-                        gap: 8,
-                        marginBottom: 4,
-                      }}
-                    >
-                      <strong style={{ fontSize: 12, color: DASH.gold }}>{fb.authorName}</strong>
-                      <span style={{ fontSize: 10, color: DASH.muted, flexShrink: 0 }}>
-                        {new Date(fb.createdAt).toLocaleDateString("pt-BR", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "2-digit",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
+                    {fb.mine ? (
+                      <button
+                        type="button"
+                        disabled={deletingFeedbackId === fb.id}
+                        onClick={() => void handleExcluirFeedback(fb.id)}
+                        style={{
+                          background: "transparent",
+                          border: "1px solid rgba(229,115,115,0.55)",
+                          color: "#e57373",
+                          borderRadius: 8,
+                          padding: "4px 8px",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          cursor: deletingFeedbackId === fb.id ? "wait" : "pointer",
+                          flexShrink: 0,
+                          fontFamily: "inherit",
+                          opacity: deletingFeedbackId === fb.id ? 0.7 : 1,
+                        }}
+                        title="Excluir meu feedback"
+                      >
+                        Excluir
+                      </button>
+                    ) : null}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "baseline",
+                          gap: 8,
+                          marginBottom: 4,
+                        }}
+                      >
+                        <strong style={{ fontSize: 12, color: DASH.gold }}>{fb.authorName}</strong>
+                        <span style={{ fontSize: 10, color: DASH.muted, flexShrink: 0 }}>
+                          {new Date(fb.createdAt).toLocaleDateString("pt-BR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: 12, color: DASH.text, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+                        {fb.body}
+                      </p>
                     </div>
-                    <p style={{ margin: 0, fontSize: 12, color: DASH.text, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
-                      {fb.body}
-                    </p>
                   </div>
                 ))}
               </div>
