@@ -6,6 +6,7 @@ import {
   isEntrevista,
   isPropostaAtiva,
   mergeProposalFunnel,
+  parseProposalFunnelPatch,
 } from "@/lib/company/job-proposals-shared";
 
 function proposta(over: Partial<JobProposalDTO> & Pick<JobProposalDTO, "status">): JobProposalDTO {
@@ -99,5 +100,16 @@ describe("listas por proposta (não por perfil)", () => {
     });
     expect(isArquivada(p)).toBe(true);
     expect(isEntrevista(p)).toBe(false);
+  });
+});
+
+describe("parseProposalFunnelPatch (API /funnel)", () => {
+  it("ignora corpo vazio e strings", () => {
+    expect(parseProposalFunnelPatch(null)).toEqual({});
+    expect(parseProposalFunnelPatch({ contratado: "sim" })).toEqual({});
+  });
+
+  it("aceita só booleanos do funil", () => {
+    expect(parseProposalFunnelPatch({ emTeste: true, lixo: 1 })).toEqual({ emTeste: true });
   });
 });

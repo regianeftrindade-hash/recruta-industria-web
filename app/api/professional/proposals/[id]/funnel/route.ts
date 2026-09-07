@@ -4,6 +4,7 @@ import { resolveAuthEmail } from "@/lib/api-auth";
 import { ensurePaymentSchema } from "@/lib/ensure-db-schema";
 import { cancelInterview, getProposalById } from "@/lib/company/job-proposals";
 import { upsertProposalFunnel } from "@/lib/company/proposal-funnel";
+import { parseProposalFunnelPatch } from "@/lib/company/job-proposals-shared";
 import {
   notifyProfessionalAsync,
   notifyCompanyInterviewCancelledByProfessional,
@@ -34,24 +35,8 @@ export async function PATCH(
       return NextResponse.json({ error: "Proposta não encontrada" }, { status: 404 });
     }
 
-    const body = await request.json();
-    const patch: {
-      contatado?: boolean;
-      entrevistado?: boolean;
-      emTeste?: boolean;
-      contratado?: boolean;
-      naoContratado?: boolean;
-      entrevistaCancelada?: boolean;
-    } = {};
-
-    if (typeof body.entrevistado === "boolean") patch.entrevistado = body.entrevistado;
-    if (typeof body.emTeste === "boolean") patch.emTeste = body.emTeste;
-    if (typeof body.contratado === "boolean") patch.contratado = body.contratado;
-    if (typeof body.naoContratado === "boolean") patch.naoContratado = body.naoContratado;
-    if (typeof body.entrevistaCancelada === "boolean") {
-      patch.entrevistaCancelada = body.entrevistaCancelada;
-    }
-    if (typeof body.contatado === "boolean") patch.contatado = body.contatado;
+    const body = await request.json().catch(() => ({}));
+    const patch = parseProposalFunnelPatch(body);
 
     if (Object.keys(patch).length === 0) {
       return NextResponse.json({ error: "Nada para atualizar" }, { status: 400 });

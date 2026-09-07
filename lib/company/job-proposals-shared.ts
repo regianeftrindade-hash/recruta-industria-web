@@ -56,6 +56,19 @@ export function mergeProposalFunnel(
   return next;
 }
 
+/** Corpo JSON do PATCH /funnel (empresa e profissional). */
+export function parseProposalFunnelPatch(body: unknown): Partial<ProposalFunnelTracking> {
+  const src = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const patch: Partial<ProposalFunnelTracking> = {};
+  if (typeof src.entrevistado === "boolean") patch.entrevistado = src.entrevistado;
+  if (typeof src.emTeste === "boolean") patch.emTeste = src.emTeste;
+  if (typeof src.contratado === "boolean") patch.contratado = src.contratado;
+  if (typeof src.naoContratado === "boolean") patch.naoContratado = src.naoContratado;
+  if (typeof src.entrevistaCancelada === "boolean") patch.entrevistaCancelada = src.entrevistaCancelada;
+  if (typeof src.contatado === "boolean") patch.contatado = src.contatado;
+  return patch;
+}
+
 function trackingOf(p: JobProposalDTO): ProposalFunnelTracking {
   return p.tracking || { ...EMPTY_PROPOSAL_TRACKING };
 }

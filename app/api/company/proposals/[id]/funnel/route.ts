@@ -5,7 +5,7 @@ import { ensureJobProposalTables } from "@/lib/ensure-db-schema";
 import { getProposalById } from "@/lib/company/job-proposals";
 import { upsertProposalFunnel } from "@/lib/company/proposal-funnel";
 import { resolveCompanyOwnerUserId } from "@/lib/company/company-team";
-import type { ProposalFunnelTracking } from "@/lib/company/job-proposals-shared";
+import { parseProposalFunnelPatch } from "@/lib/company/job-proposals-shared";
 
 async function getCompanyOwner(request: NextRequest) {
   const auth = await resolveAuthEmail(request);
@@ -37,15 +37,7 @@ export async function PATCH(
     }
 
     const body = await request.json().catch(() => ({}));
-    const patch: Partial<ProposalFunnelTracking> = {};
-    if (typeof body.entrevistado === "boolean") patch.entrevistado = body.entrevistado;
-    if (typeof body.emTeste === "boolean") patch.emTeste = body.emTeste;
-    if (typeof body.contratado === "boolean") patch.contratado = body.contratado;
-    if (typeof body.naoContratado === "boolean") patch.naoContratado = body.naoContratado;
-    if (typeof body.entrevistaCancelada === "boolean") {
-      patch.entrevistaCancelada = body.entrevistaCancelada;
-    }
-    if (typeof body.contatado === "boolean") patch.contatado = body.contatado;
+    const patch = parseProposalFunnelPatch(body);
 
     if (Object.keys(patch).length === 0) {
       return NextResponse.json({ error: "Nada para atualizar" }, { status: 400 });
