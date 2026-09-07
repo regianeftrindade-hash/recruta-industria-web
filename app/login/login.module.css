@@ -283,3 +283,14 @@
   font-size: 15px;
   letter-spacing: normal;
 }
+
+@media (max-width: 480px) {
+  .page {
+    padding: 12px;
+    align-items: flex-start;
+  }
+
+  .card {
+    padding: 24px 16px;
+  }
+}

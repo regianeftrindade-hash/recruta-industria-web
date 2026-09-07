@@ -369,3 +369,53 @@
   font-size: clamp(0.68rem, 1.1vw, 0.82rem);
   opacity: 0.9;
 }
+
+@media (max-width: 768px) {
+  .homePage {
+    height: auto;
+    max-height: none;
+    min-height: 100vh;
+    overflow: auto;
+    border-radius: 0;
+  }
+
+  .heroTagline {
+    white-space: normal;
+    font-size: 1.2rem;
+    padding: 0 12px;
+  }
+
+  .actionCards {
+    flex-direction: column;
+    align-items: stretch;
+    translate: none;
+    padding: 12px 16px 20px;
+  }
+
+  .bannerSection {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .bannerSideLeft,
+  .bannerSideRight {
+    display: none;
+  }
+
+  .bannerTextTitle,
+  .bannerTextSubtitle {
+    white-space: normal;
+  }
+
+  .homeContactsRow {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    justify-items: center;
+  }
+
+  .homeContacts,
+  .homeInstallBtn {
+    grid-column: auto;
+    justify-self: center;
+  }
+}

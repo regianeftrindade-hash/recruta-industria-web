@@ -110,7 +110,7 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
 
   if (!mounted || status === "loading") {
     return (
-      <DashboardThemeShell>
+      <DashboardThemeShell className="ri-company-dash">
         <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <AmpulhetaLoading label="Carregando..." size={42} color={DASH.gold} />
         </div>
@@ -128,7 +128,7 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
   const navBadges = dash.getBadges();
 
   return (
-    <DashboardThemeShell>
+      <DashboardThemeShell className="ri-company-dash">
       <header
         style={{
           ...dashHeader,

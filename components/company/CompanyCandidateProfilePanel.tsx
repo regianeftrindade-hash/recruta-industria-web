@@ -1051,6 +1051,7 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
   return (
     <div>
       <div
+        className="ri-candidate-profile-head"
         ref={headerRef}
         style={{
           position: "relative",

@@ -569,6 +569,7 @@ export default function DashboardProfissional() {
       </header>
 
       <div
+        className="ri-dash-two-col"
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",

@@ -55,9 +55,10 @@ export const metadata: Metadata = {
   },
 };
 
-/** Celular usa o mesmo layout do computador (1280px), evitando sobreposição do modo responsivo. */
 export const viewport: Viewport = {
-  width: 1280,
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
   userScalable: true,
 };
 

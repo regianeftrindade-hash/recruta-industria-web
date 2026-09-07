@@ -22,7 +22,9 @@
 html,
 body {
   width: 100%;
-  min-width: 1280px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
   height: 100%;
   background: var(--ri-preto);
   color: var(--ri-branco);
@@ -63,6 +65,11 @@ input[type="file"]::file-selector-button {
 input[type="file"]::file-selector-button:active {
   transform: translateY(2px);
   box-shadow: var(--ri-btn-3d-gold-active);
+}
+
+img,
+video {
+  max-width: 100%;
 }
 
 select option {

@@ -34,6 +34,7 @@ export default function CompanyDashboardTabContent() {
 
   return (
     <div
+      className="ri-company-dash-grid"
       style={{
         display: "grid",
         gridTemplateColumns: "minmax(260px, 300px) minmax(0, 1fr)",
