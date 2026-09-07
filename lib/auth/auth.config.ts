@@ -18,13 +18,18 @@ import {
   logAudit,
 } from '@/lib/security';
 import type { NextAuthOptions } from 'next-auth';
+import { ensureProductionNextAuthUrl } from '@/lib/auth/sync-nextauth-url';
+
+ensureProductionNextAuthUrl();
 
 export const authOptions: NextAuthOptions = {
   providers: [
     Google({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+      clientId: process.env.GOOGLE_CLIENT_ID?.trim() ?? '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET?.trim() ?? '',
       allowDangerousEmailAccountLinking: true,
+      // PKCE em cookie costuma falhar no callback (www vs vercel.app) e gera OAuthCallback.
+      checks: ['state'],
     }),
 
     Credentials({
@@ -201,8 +206,6 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
     maxAge: 8 * 60 * 60, // 8 horas
   },
-
-  useSecureCookies: process.env.NODE_ENV === 'production',
 
   pages: {
     signIn: '/login',

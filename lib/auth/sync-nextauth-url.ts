@@ -1,29 +1,23 @@
+const PRODUCTION_AUTH_URL = "https://www.recrutaindustria.com";
+
 /**
- * Garante NEXTAUTH_URL igual ao host real da requisição.
- * Evita OAuth quebrado quando a env na Vercel ainda aponta para localhost
- * ou para o domínio sem www.
+ * Fixa NEXTAUTH_URL no domínio público.
+ * Se a env na Vercel for localhost ou *.vercel.app, o Google volta com
+ * redirect_uri diferente do da ida e o NextAuth responde OAuthCallback.
  */
-export function syncNextAuthUrlFromRequest(req: Request): void {
-  const vercel = process.env.VERCEL === "1";
-  const prod = process.env.NODE_ENV === "production";
-  if (!vercel && !prod) return;
-
-  const host = (req.headers.get("x-forwarded-host") || req.headers.get("host") || "")
-    .split(",")[0]
-    .trim()
-    .toLowerCase();
-
-  if (!host || host.startsWith("localhost") || host.startsWith("127.0.0.1")) {
+export function ensureProductionNextAuthUrl(): void {
+  if (process.env.VERCEL_ENV === "preview") {
+    const host = process.env.VERCEL_URL?.replace(/^https?:\/\//, "").trim();
+    if (host) process.env.NEXTAUTH_URL = `https://${host}`;
     return;
   }
 
-  const proto = (req.headers.get("x-forwarded-proto") || "https")
-    .split(",")[0]
-    .trim()
-    .toLowerCase();
-  const origin = `${proto === "http" ? "https" : proto}://${host}`;
+  const onVercel = process.env.VERCEL === "1" || process.env.VERCEL_ENV === "production";
+  if (!onVercel) return;
 
-  if (origin.startsWith("https://")) {
-    process.env.NEXTAUTH_URL = origin;
-  }
+  process.env.NEXTAUTH_URL = PRODUCTION_AUTH_URL;
+}
+
+export function syncNextAuthUrlFromRequest(_req: Request): void {
+  ensureProductionNextAuthUrl();
 }
