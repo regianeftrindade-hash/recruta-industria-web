@@ -287,3 +287,18 @@ export async function ensureVideoApresentacaoColumn(): Promise<void> {
 
   videoApresentacaoColumnReady = true;
 }
+
+let userLastSeenColumnReady = false;
+
+/** Coluna de presença online em User (heartbeat). */
+export async function ensureUserLastSeenColumn(): Promise<void> {
+  if (userLastSeenColumnReady) return;
+  try {
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "lastSeenAt" TIMESTAMP(3)`,
+    );
+  } catch (error) {
+    console.warn("ensureUserLastSeenColumn:", error);
+  }
+  userLastSeenColumnReady = true;
+}

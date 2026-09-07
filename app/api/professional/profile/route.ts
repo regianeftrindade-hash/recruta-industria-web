@@ -15,8 +15,34 @@ import {
   saveProfileFormSnapshot,
 } from '@/lib/profile-snapshot';
 import { isProfessionalRegistrationComplete } from '@/lib/professional-registration';
-import { ensurePaymentSchema } from '@/lib/ensure-db-schema';
+import { ensurePaymentSchema, ensureUserLastSeenColumn } from '@/lib/ensure-db-schema';
 import { getVideoApresentacaoPath } from '@/lib/professional/professional-video-db';
+import type { User } from '@prisma/client';
+
+const userAuthSelect = {
+  id: true,
+  name: true,
+  email: true,
+  role: true,
+  image: true,
+} as const;
+
+function toUser(row: {
+  id: string;
+  name: string | null;
+  email: string;
+  role: string;
+  image: string | null;
+}): User {
+  return {
+    ...row,
+    passwordHash: null,
+    lastLogin: null,
+    lastSeenAt: null,
+    createdAt: new Date(0),
+    updatedAt: new Date(0),
+  };
+}
 
 async function resolveAuthEmail(request: NextRequest): Promise<{ email: string; name?: string } | null> {
   const session = await getServerSession(authOptions);
@@ -42,74 +68,8 @@ async function resolveAuthEmail(request: NextRequest): Promise<{ email: string; 
   return null;
 }
 
-export async function GET(request: NextRequest) {
-  try {
-    const auth = await resolveAuthEmail(request);
-
-    if (!auth) {
-      return NextResponse.json(
-        { error: 'Não autenticado' },
-        { status: 401 }
-      );
-    }
-
-    let user = await prisma.user.findUnique({
-      where: {
-        email: auth.email
-      },
-      include: {
-        profile: true
-      }
-    });
-
-    if (user && auth.name && auth.name.trim() && user.name !== auth.name.trim()) {
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: { name: auth.name.trim() },
-        include: { profile: true },
-      });
-    }
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email: auth.email,
-          name: auth.name?.trim() || auth.email.split('@')[0],
-          role: 'PROFESSIONAL'
-        },
-        include: {
-          profile: true
-        }
-      });
-    }
-
-    if (user.profile) {
-      let profile = user.profile;
-
-      if (!profile.formDataJSON?.trim()) {
-        const rebuilt = rebuildFormSnapshotFromProfile(profile, user);
-        profile = await prisma.profile.update({
-          where: { userId: user.id },
-          data: { formDataJSON: rebuilt },
-        });
-      }
-
-      const formSnapshot = profile.formDataJSON ?? (await getProfileFormSnapshot(user.id));
-      const dashboard = mapProfileToDashboard(profile, user);
-      const formEdit = mapProfileToFormEdit(profile, user, formSnapshot);
-      const videoPath = await getVideoApresentacaoPath(user.id);
-
-      return NextResponse.json({
-        ...dashboard,
-        formEdit,
-        hasProfile: true,
-        hasFormSnapshot: !!formSnapshot,
-        hasVideoApresentacao: Boolean(videoPath),
-        registrationComplete: isProfessionalRegistrationComplete(profile),
-      });
-    }
-
-    return NextResponse.json({
+function incompleteProfileResponse(user: { name: string | null; email: string }) {
+  return NextResponse.json({
       nome: user.name || user.email?.split('@')[0] || 'Usuário',
       email: user.email,
       profissao: 'Não preenchido',
@@ -133,7 +93,91 @@ export async function GET(request: NextRequest) {
       hasFormSnapshot: false,
       hasVideoApresentacao: false,
       registrationComplete: false,
+  });
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    await ensureUserLastSeenColumn();
+
+    const auth = await resolveAuthEmail(request);
+
+    if (!auth) {
+      return NextResponse.json(
+        { error: 'Não autenticado' },
+        { status: 401 }
+      );
+    }
+
+    let user = await prisma.user.findUnique({
+      where: { email: auth.email },
+      select: userAuthSelect,
     });
+
+    if (user && auth.name && auth.name.trim() && user.name !== auth.name.trim()) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { name: auth.name.trim() },
+        select: userAuthSelect,
+      });
+    }
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: auth.email,
+          name: auth.name?.trim() || auth.email.split('@')[0],
+          role: 'PROFESSIONAL'
+        },
+        select: userAuthSelect,
+      });
+    }
+
+    let profile = null;
+    try {
+      profile = await prisma.profile.findUnique({
+        where: { userId: user.id },
+      });
+    } catch (error) {
+      console.error('[profile] Falha ao ler Profile:', error);
+    }
+
+    if (profile) {
+      try {
+        if (!profile.formDataJSON?.trim()) {
+          const rebuilt = rebuildFormSnapshotFromProfile(profile, toUser(user));
+          profile = await prisma.profile.update({
+            where: { userId: user.id },
+            data: { formDataJSON: rebuilt },
+          });
+        }
+
+        const formSnapshot = profile.formDataJSON ?? (await getProfileFormSnapshot(user.id));
+        const mappedUser = toUser(user);
+        const dashboard = mapProfileToDashboard(profile, mappedUser);
+        const formEdit = mapProfileToFormEdit(profile, mappedUser, formSnapshot);
+        let videoPath: string | null = null;
+        try {
+          videoPath = await getVideoApresentacaoPath(user.id);
+        } catch (error) {
+          console.error('[profile] vídeo de apresentação:', error);
+        }
+
+        return NextResponse.json({
+          ...dashboard,
+          formEdit,
+          hasProfile: true,
+          hasFormSnapshot: !!formSnapshot,
+          hasVideoApresentacao: Boolean(videoPath),
+          registrationComplete: isProfessionalRegistrationComplete(profile),
+        });
+      } catch (error) {
+        console.error('[profile] Falha ao montar perfil:', error);
+        return incompleteProfileResponse(user);
+      }
+    }
+
+    return incompleteProfileResponse(user);
   } catch (error) {
     console.error('Erro ao buscar perfil:', error);
 
@@ -147,6 +191,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     await ensurePaymentSchema();
+    await ensureUserLastSeenColumn();
 
     const auth = await resolveAuthEmail(request);
 
@@ -160,9 +205,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     let user = await prisma.user.findUnique({
-      where: {
-        email: auth.email
-      }
+      where: { email: auth.email },
+      select: userAuthSelect,
     });
 
     if (!user) {
@@ -171,7 +215,8 @@ export async function POST(request: NextRequest) {
           email: auth.email,
           name: auth.name?.trim() || auth.email.split('@')[0],
           role: 'PROFESSIONAL'
-        }
+        },
+        select: userAuthSelect,
       });
     }
 

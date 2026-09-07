@@ -182,7 +182,7 @@ function LoginContent() {
       document.cookie = `login_intent=${isCompany ? 'company' : 'professional'}; path=/; max-age=600; SameSite=Lax${secure}`;
     }
 
-    const defaultCallback = isCompany ? '/company/dashboard-empresa' : '/professional/dashboard';
+    const defaultCallback = isCompany ? '/company/dashboard-empresa' : '/professional/register';
     const targetPath = redirectTo?.startsWith('/') ? redirectTo : defaultCallback;
     const callbackUrl = `${window.location.origin}${targetPath}`;
 
