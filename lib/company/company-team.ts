@@ -33,9 +33,11 @@ type TeamRow = {
 };
 
 let teamTableReady = false;
+let teamTableFailed = false;
 
 export async function ensureCompanyTeamTable(): Promise<void> {
-  if (teamTableReady) return;
+  if (teamTableReady || teamTableFailed) return;
+  try {
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS "CompanyTeamMember" (
       "id" TEXT NOT NULL,
@@ -65,7 +67,11 @@ export async function ensureCompanyTeamTable(): Promise<void> {
   await prisma.$executeRawUnsafe(
     `CREATE INDEX IF NOT EXISTS "CompanyTeamMember_owner_status_idx" ON "CompanyTeamMember"("companyOwnerUserId", "status")`,
   );
-  teamTableReady = true;
+    teamTableReady = true;
+  } catch (error) {
+    console.warn("[team] Não foi possível garantir a tabela CompanyTeamMember:", error);
+    teamTableFailed = true;
+  }
 }
 
 function mapRow(row: TeamRow, name?: string | null): CompanyTeamMemberDTO {
@@ -105,15 +111,25 @@ export async function resolveCompanyOwnerUserId(userId: string): Promise<string 
   return company?.userId ?? null;
 }
 
-export async function resolveCompanyActor(userId: string): Promise<{
+export function resolveCompanyActor(userId: string): Promise<{
   actorUserId: string;
   ownerUserId: string;
   teamRole: TeamMemberRole;
   isOwner: boolean;
 } | null> {
-  await ensureCompanyTeamTable();
+  return resolveCompanyActorInner(userId);
+}
 
-  const memberRows = await prisma.$queryRaw<TeamRow[]>`
+async function resolveCompanyActorInner(userId: string): Promise<{
+  actorUserId: string;
+  ownerUserId: string;
+  teamRole: TeamMemberRole;
+  isOwner: boolean;
+} | null> {
+  // Não cria tabela no caminho do dashboard — DDL no pooler trava o carregamento.
+
+  try {
+    const memberRows = await prisma.$queryRaw<TeamRow[]>`
     SELECT * FROM "CompanyTeamMember"
     WHERE "memberUserId" = ${userId}
       AND status = 'ACTIVE'
@@ -127,6 +143,9 @@ export async function resolveCompanyActor(userId: string): Promise<{
       teamRole: (memberRows[0].role as TeamMemberRole) || "RH",
       isOwner: false,
     };
+  }
+  } catch (error) {
+    console.warn("[team] Leitura de equipe falhou, seguindo como dono se houver Company:", error);
   }
 
   const company = await prisma.company.findUnique({

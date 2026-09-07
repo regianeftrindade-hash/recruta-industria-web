@@ -8,6 +8,8 @@ import {
   buildProfileUpsertPayload,
   mapProfileToDashboard,
   mapProfileToFormEdit,
+  keepExistingProfileFields,
+  readSnapshotDisplay,
 } from '@/lib/professional-profile-map';
 import {
   getProfileFormSnapshot,
@@ -16,7 +18,7 @@ import {
 import { isProfessionalRegistrationComplete } from '@/lib/professional-registration';
 import { ensurePaymentSchema, ensureUserLastSeenColumn } from '@/lib/ensure-db-schema';
 import { getVideoApresentacaoPath } from '@/lib/professional/professional-video-db';
-import type { User } from '@prisma/client';
+import type { User, Prisma } from '@prisma/client';
 
 const userAuthSelect = {
   id: true,
@@ -143,11 +145,39 @@ export async function GET(request: NextRequest) {
     }
 
     if (profile) {
-      const mappedUser = toUser(user);
+      const snap = readSnapshotDisplay(profile.formDataJSON);
+      if (snap.nome && !user.name?.trim()) {
+        try {
+          user = await prisma.user.update({
+            where: { id: user.id },
+            data: { name: snap.nome },
+            select: userAuthSelect,
+          });
+        } catch (error) {
+          console.error('[profile] Falha ao restaurar nome do snapshot:', error);
+        }
+      }
+
+      const mappedUser = toUser({
+        ...user,
+        name: user.name?.trim() || snap.nome || user.name,
+      });
+      const displayProfile = {
+        ...profile,
+        cargoDesejado: profile.cargoDesejado?.trim() || snap.cargo || profile.cargoDesejado,
+        title: (profile.title?.trim() && profile.title !== 'Profissional')
+          ? profile.title
+          : (snap.cargo || profile.title),
+        cidade: profile.cidade?.trim() || snap.cidade || profile.cidade,
+        estado: profile.estado?.trim() || snap.estado || profile.estado,
+        phone: profile.phone?.trim() || snap.telefone || profile.phone,
+        mensagemEmpresas: profile.mensagemEmpresas?.trim() || snap.mensagem || profile.mensagemEmpresas,
+      };
+
       try {
         const formSnapshot = profile.formDataJSON ?? (await getProfileFormSnapshot(user.id));
-        const dashboard = mapProfileToDashboard(profile, mappedUser);
-        const formEdit = mapProfileToFormEdit(profile, mappedUser, formSnapshot);
+        const dashboard = mapProfileToDashboard(displayProfile, mappedUser);
+        const formEdit = mapProfileToFormEdit(displayProfile, mappedUser, formSnapshot);
         let videoPath: string | null = null;
         try {
           videoPath = await getVideoApresentacaoPath(user.id);
@@ -233,32 +263,63 @@ export async function POST(request: NextRequest) {
       user.email
     );
 
+    const existingProfile = await prisma.profile.findUnique({
+      where: { userId: user.id },
+    });
+    const mergedData = keepExistingProfileFields(
+      profileData as Record<string, unknown>,
+      existingProfile as unknown as Record<string, unknown> | null,
+    );
+
+    let snapshotToSave = formDataJSON;
+    if (existingProfile?.formDataJSON?.trim() && formDataJSON) {
+      try {
+        const incoming = JSON.parse(formDataJSON) as Record<string, unknown>;
+        const previous = JSON.parse(existingProfile.formDataJSON) as Record<string, unknown>;
+        const filled = (obj: Record<string, unknown>) =>
+          Object.values(obj).filter((v) => {
+            if (typeof v === 'string') return v.trim().length > 0;
+            if (Array.isArray(v)) return v.length > 0;
+            return v != null && v !== false;
+          }).length;
+        if (filled(incoming) + 4 < filled(previous)) {
+          snapshotToSave = existingProfile.formDataJSON;
+        }
+      } catch {
+        snapshotToSave = existingProfile.formDataJSON;
+      }
+    }
+
     const profile = await prisma.profile.upsert({
       where: {
         userId: user.id
       },
       update: {
-        ...profileData,
+        ...(mergedData as Prisma.ProfileUncheckedUpdateInput),
+        formDataJSON: snapshotToSave,
         updatedAt: new Date()
       },
       create: {
+        ...(mergedData as Prisma.ProfileUncheckedCreateInput),
         userId: user.id,
-        ...profileData,
+        title: String(mergedData.title || 'Profissional'),
+        location: String(mergedData.location || 'Não informado'),
+        formDataJSON: snapshotToSave,
       }
     });
 
-    await saveProfileFormSnapshot(user.id, formDataJSON);
+    await saveProfileFormSnapshot(user.id, snapshotToSave);
 
     await prisma.professional.upsert({
       where: {
         userId: user.id
       },
       update: {
-        title: profileData.cargoDesejado || profileData.title || ''
+        title: String(mergedData.title || ''),
       },
       create: {
         userId: user.id,
-        title: profileData.cargoDesejado || profileData.title || 'Profissional'
+        title: String(mergedData.title || profileData.title || 'Profissional'),
       }
     });
 

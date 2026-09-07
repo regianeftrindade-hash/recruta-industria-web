@@ -19,6 +19,7 @@ import {
   type ProfileIndustrialData,
 } from '@/lib/profile-industrial'
 import { filterHabilidadesExtras } from '@/lib/company-profile-display'
+import { readSnapshotDisplay } from '@/lib/professional-profile-map'
 import { listarPerfisVisualizados } from '@/lib/profile-messages'
 import { notifyProfessionalAsync, notifyProfileViewed } from '@/lib/professional-notifications'
 import { listActivePremiumProfileIds } from '@/lib/professional-storage'
@@ -114,14 +115,15 @@ function industrialExtras(industrial: ProfileIndustrialData, showFull: boolean) 
 
 function buildSummary(profile: ProfileRow, industrial: ProfileIndustrialData, compatibilidade: number, emDestaque: boolean) {
   const habilidades = filterHabilidadesExtras(parseSkills(profile.skills), industrial)
-  return {
+    const snap = readSnapshotDisplay(profile.formDataJSON)
+    return {
     id: profile.id,
-    nome: maskName(profile.user.name),
-    cargo: profile.cargoDesejado || profile.title || '—',
+    nome: maskName(profile.user.name || snap.nome),
+    cargo: profile.cargoDesejado || profile.title || snap.cargo || '—',
     area: profile.areaInteresse || '—',
     local: profile.cidade && profile.estado
       ? `${profile.cidade}, ${profile.estado}`
-      : profile.estado || '—',
+      : profile.estado || snap.estado || snap.cidade || '—',
     escolaridade: profile.escolaridade || '—',
     turno: profile.turnoDisponivel || '—',
     experiencia: profile.tempoExperiencia || '—',
@@ -139,15 +141,16 @@ function buildSummary(profile: ProfileRow, industrial: ProfileIndustrialData, co
 
 function buildFull(profile: ProfileRow, industrial: ProfileIndustrialData, compatibilidade: number, showExtended: boolean, emDestaque: boolean) {
   const habilidades = filterHabilidadesExtras(parseSkills(profile.skills), industrial)
+  const snap = readSnapshotDisplay(profile.formDataJSON)
 
   const base = {
     id: profile.id,
-    nome: profile.user.name || '—',
-    cargo: profile.cargoDesejado || profile.title || '—',
+    nome: profile.user.name || snap.nome || '—',
+    cargo: profile.cargoDesejado || profile.title || snap.cargo || '—',
     area: profile.areaInteresse || '—',
     local: profile.cidade && profile.estado
       ? `${profile.cidade}, ${profile.estado}`
-      : profile.estado || '—',
+      : profile.estado || snap.estado || snap.cidade || '—',
     escolaridade: profile.escolaridade || '—',
     turno: profile.turnoDisponivel || '—',
     experiencia: profile.tempoExperiencia || '—',

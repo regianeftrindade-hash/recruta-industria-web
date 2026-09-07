@@ -163,7 +163,12 @@ function parseProfilePayload(data: Record<string, unknown>): Partial<DashData> |
 async function fetchSlice(slice: CacheSlice): Promise<{ ok: boolean; patch: Partial<DashData> }> {
   if (slice === "planFeatures") {
     const res = await fetch("/api/company/profile", { credentials: "include" });
-    if (!res.ok) return { ok: false, patch: {} };
+    if (!res.ok) {
+      return {
+        ok: true,
+        patch: { planReady: true, planTier: "FREE" },
+      };
+    }
     const data = (await res.json().catch(() => null)) as Record<string, unknown> | null;
     if (!data) return { ok: false, patch: {} };
     const patch = parseProfilePayload(data);

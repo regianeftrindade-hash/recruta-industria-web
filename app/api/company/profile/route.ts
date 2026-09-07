@@ -8,9 +8,19 @@ import { formatCPF, formatCNPJ } from '@/lib/security'
 import { getCompanyPlanContext } from '@/lib/company-plan'
 import { getPlanDefinition } from '@/lib/company-premium-plans'
 import { resolveCompanyActor } from '@/lib/company/company-team'
+import { ensureUserLastSeenColumn } from '@/lib/ensure-db-schema'
+
+const userCompanySelect = {
+  id: true,
+  email: true,
+  name: true,
+  role: true,
+  company: true,
+} as const
 
 export async function GET() {
   try {
+    await ensureUserLastSeenColumn()
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user?.email) {
@@ -20,7 +30,7 @@ export async function GET() {
     const email = session.user.email.toLowerCase().trim()
     let user = await prisma.user.findUnique({
       where: { email },
-      include: { company: true },
+      select: userCompanySelect,
     })
 
     if (!user) {
@@ -38,14 +48,14 @@ export async function GET() {
       await ensureCompanyTestBypassReady(user.id)
       user = await prisma.user.findUnique({
         where: { id: user.id },
-        include: { company: true },
+        select: userCompanySelect,
       })
       if (!user) {
         return NextResponse.json({ error: 'Empresa não encontrada' }, { status: 404 })
       }
     }
 
-    const actor = await resolveCompanyActor(user.id)
+    const actor = await resolveCompanyActor(user.id).catch(() => null)
     const ownerUserId = actor?.ownerUserId || user.id
 
     // Se o ator é o dono e já temos company no include, não busca de novo
@@ -54,7 +64,7 @@ export async function GET() {
         ? user
         : await prisma.user.findUnique({
             where: { id: ownerUserId },
-            include: { company: true },
+            select: userCompanySelect,
           })
 
     if (!ownerUser?.company) {

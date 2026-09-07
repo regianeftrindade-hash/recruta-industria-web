@@ -8,7 +8,7 @@ import {
   parseProfileIndustrial,
 } from '@/lib/profile-industrial';
 import { filterHabilidadesExtras } from '@/lib/company-profile-display';
-import { mapProfileToFormEdit } from '@/lib/professional-profile-map';
+import { mapProfileToFormEdit, readSnapshotDisplay } from '@/lib/professional-profile-map';
 import {
   getCompanyProfileTracking,
   upsertCompanyProfileTracking,
@@ -162,16 +162,17 @@ export async function GET(
     });
 
     const habilidades = filterHabilidadesExtras(parseSkills(profile.skills), industrial);
+    const snap = readSnapshotDisplay(profile.formDataJSON);
 
     const resumo = {
       id: profile.id,
-      nome: bloqueado ? maskName(profile.user.name) : profile.user.name || '—',
-      cargo: profile.cargoDesejado || profile.title || '—',
+      nome: bloqueado ? maskName(profile.user.name || snap.nome) : profile.user.name || snap.nome || '—',
+      cargo: profile.cargoDesejado || profile.title || snap.cargo || '—',
       area: profile.areaInteresse || '—',
       local:
         profile.cidade && profile.estado
           ? `${profile.cidade}, ${profile.estado}`
-          : profile.estado || '—',
+          : profile.estado || snap.estado || snap.cidade || '—',
       escolaridade: profile.escolaridade || '—',
       turno: profile.turnoDisponivel || '—',
       experiencia: profile.tempoExperiencia || '—',

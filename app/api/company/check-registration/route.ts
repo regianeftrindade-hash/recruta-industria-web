@@ -6,19 +6,39 @@ import { getCompanyExtraData, getCompanyVerificationInfo } from '@/lib/company-s
 import { ensureCompanyTestBypassReady, matchesCompanyTestBypass } from '@/lib/company/company-test-bypass'
 import { formatCPF } from '@/lib/security'
 import { resolveCompanyActor } from '@/lib/company/company-team'
+import { ensureUserLastSeenColumn } from '@/lib/ensure-db-schema'
+
+const userCompanySelect = {
+  id: true,
+  email: true,
+  name: true,
+  role: true,
+  company: true,
+} as const
 
 export async function GET(request: NextRequest) {
   try {
+    await ensureUserLastSeenColumn()
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user?.email) {
       return NextResponse.json({ authenticated: false }, { status: 401 })
     }
 
-    let user = await prisma.user.findUnique({
-      where: { email: session.user.email.toLowerCase().trim() },
-      include: { company: true },
-    })
+    let user: Awaited<ReturnType<typeof prisma.user.findUnique<{ where: { email: string }; select: typeof userCompanySelect }>>> = null
+    try {
+      user = await prisma.user.findUnique({
+        where: { email: session.user.email.toLowerCase().trim() },
+        select: userCompanySelect,
+      })
+    } catch (error) {
+      console.error('[company/check-registration] leitura User+Company falhou:', error)
+      const basic = await prisma.user.findUnique({
+        where: { email: session.user.email.toLowerCase().trim() },
+        select: { id: true, email: true, name: true, role: true },
+      })
+      user = basic ? { ...basic, company: null } : null
+    }
 
     if (!user) {
       return NextResponse.json({ authenticated: false, isCompany: false }, { status: 404 })
@@ -37,7 +57,7 @@ export async function GET(request: NextRequest) {
         await ensureCompanyTestBypassReady(user.id)
         user = await prisma.user.findUnique({
           where: { id: user.id },
-          include: { company: true },
+          select: userCompanySelect,
         })
         if (!user) {
           return NextResponse.json({ authenticated: false, isCompany: false }, { status: 404 })
@@ -58,14 +78,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ authenticated: false, isCompany: false }, { status: 404 })
     }
 
-    const actor = await resolveCompanyActor(user.id)
+    const actor = await resolveCompanyActor(user.id).catch(() => null)
     const ownerUserId = actor?.ownerUserId || user.id
     const ownerUser =
       ownerUserId === user.id
         ? user
         : await prisma.user.findUnique({
             where: { id: ownerUserId },
-            include: { company: true },
+            select: userCompanySelect,
           })
 
     let extra = null

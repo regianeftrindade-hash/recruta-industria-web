@@ -68,6 +68,61 @@ export function parseDateInput(value: unknown): Date | null {
   return null;
 }
 
+export function readSnapshotDisplay(formDataJSON?: string | null): {
+  nome: string;
+  cargo: string;
+  cidade: string;
+  estado: string;
+  telefone: string;
+  mensagem: string;
+} {
+  const saved = parseJsonSafe<Record<string, unknown> | null>(formDataJSON, null);
+  if (!saved) {
+    return { nome: '', cargo: '', cidade: '', estado: '', telefone: '', mensagem: '' };
+  }
+  const str = (v: unknown) => {
+    if (typeof v !== 'string') return '';
+    const t = v.trim();
+    if (!t || t === 'Não preenchido' || t === 'Não informado' || t === '—') return '';
+    return t;
+  };
+  return {
+    nome: str(saved.nome),
+    cargo: str(saved.cargoDesejado) || str(saved.areaInteresse) || str(saved.profissao),
+    cidade: str(saved.cidade),
+    estado: str(saved.estado),
+    telefone: str(saved.telefone),
+    mensagem: str(saved.mensagemEmpresas) || str(saved.descricaoPessoal),
+  };
+}
+
+function isBlankProfileValue(value: unknown): boolean {
+  if (value == null) return true;
+  if (typeof value === 'string') {
+    const t = value.trim();
+    return !t || t === 'Não preenchido' || t === 'Não informado' || t === '—';
+  }
+  return false;
+}
+
+/** Impede que um POST vazio apague colunas já preenchidas. */
+export function keepExistingProfileFields<T extends Record<string, unknown>>(
+  incoming: T,
+  existing: Record<string, unknown> | null | undefined,
+): T {
+  if (!existing) return incoming;
+  const out = { ...incoming };
+  for (const key of Object.keys(incoming) as Array<keyof T>) {
+    if (key === 'updatedAt' || key === 'userId' || key === 'id') continue;
+    const nextVal = incoming[key];
+    const prevVal = existing[key as string];
+    if (isBlankProfileValue(nextVal) && !isBlankProfileValue(prevVal)) {
+      out[key] = prevVal as T[keyof T];
+    }
+  }
+  return out;
+}
+
 function isEmptyValue(value: unknown): boolean {
   if (value === null || value === undefined || value === '') return true;
   if (value === false) return true;
