@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { CALL_RTC_CONFIG } from "@/lib/video-call-peer";
 import { DASH, dashCard, dashSectionTitle } from "@/lib/dashboard-theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 
@@ -36,8 +37,6 @@ type RhMember = {
   department: string;
 };
 
-const MAX_PARTICIPANTES_EMPRESA = 4;
-
 /**
  * Chamada pela plataforma:
  * - Empresa clica em Chamar → profissional vê "Chamando" + Aceitar
@@ -53,7 +52,11 @@ export default function PlatformVideoCall({
   const wrapRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const localRef = useRef<HTMLVideoElement>(null);
+  const remoteRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const seenSignalsRef = useRef<Set<string>>(new Set());
+  const iceQueueRef = useRef<RTCIceCandidateInit[]>([]);
 
   const [overlay, setOverlay] = useState(false);
   const [fixedPos, setFixedPos] = useState<{ top: number; left: number; width: number } | null>(null);
@@ -64,6 +67,7 @@ export default function PlatformVideoCall({
   const [status, setStatus] = useState<CallStatus>("idle");
   const [incomingCompany, setIncomingCompany] = useState("");
   const [cameraOn, setCameraOn] = useState(false);
+  const [remoteLive, setRemoteLive] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -283,6 +287,142 @@ export default function PlatformVideoCall({
       void startCamera();
     }
   }, [status, cameraOn, startCamera]);
+
+  // Troca o vídeo remoto via WebRTC (a câmera local sozinha não chega no outro)
+  useEffect(() => {
+    if (status !== "accepted" || !callId || !cameraOn || !streamRef.current) return;
+
+    let cancelled = false;
+    const isOfferer = role === "company" && isInitiator;
+    const localStream = streamRef.current;
+    const pc = new RTCPeerConnection(CALL_RTC_CONFIG);
+    pcRef.current = pc;
+    seenSignalsRef.current = new Set();
+    iceQueueRef.current = [];
+    setRemoteLive(false);
+
+    localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+
+    const attachRemote = (stream: MediaStream) => {
+      if (!remoteRef.current) return;
+      remoteRef.current.srcObject = stream;
+      void remoteRef.current.play().catch(() => {});
+      setRemoteLive(true);
+    };
+
+    pc.ontrack = (event) => {
+      const stream = event.streams[0];
+      if (stream) attachRemote(stream);
+    };
+
+    const postSignal = async (type: "offer" | "answer" | "ice", payload: unknown) => {
+      if (cancelled) return;
+      try {
+        await fetch(`/api/calls/${callId}/signal`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ type, payload }),
+        });
+      } catch {
+        /* ignore */
+      }
+    };
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        void postSignal("ice", event.candidate.toJSON());
+      }
+    };
+
+    const flushIce = async () => {
+      if (!pc.remoteDescription) return;
+      const queued = iceQueueRef.current;
+      iceQueueRef.current = [];
+      for (const candidate of queued) {
+        try {
+          await pc.addIceCandidate(candidate);
+        } catch {
+          /* candidato tardio */
+        }
+      }
+    };
+
+    const processSignals = async () => {
+      if (cancelled) return;
+      try {
+        const res = await fetch(`/api/calls/${callId}/signal`, { credentials: "include" });
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          signals?: Array<{ id: string; type: string; payload: string }>;
+        };
+        for (const signal of data.signals || []) {
+          if (seenSignalsRef.current.has(signal.id)) continue;
+          seenSignalsRef.current.add(signal.id);
+          let payload: RTCSessionDescriptionInit | RTCIceCandidateInit;
+          try {
+            payload = JSON.parse(signal.payload) as RTCSessionDescriptionInit | RTCIceCandidateInit;
+          } catch {
+            continue;
+          }
+
+          if (signal.type === "ice") {
+            const ice = payload as RTCIceCandidateInit;
+            if (!pc.remoteDescription) {
+              iceQueueRef.current.push(ice);
+            } else {
+              try {
+                await pc.addIceCandidate(ice);
+              } catch {
+                /* ignore */
+              }
+            }
+            continue;
+          }
+
+          if (signal.type === "offer" && !isOfferer) {
+            await pc.setRemoteDescription(payload as RTCSessionDescriptionInit);
+            await flushIce();
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            await postSignal("answer", answer);
+          }
+
+          if (signal.type === "answer" && isOfferer && pc.signalingState !== "stable") {
+            await pc.setRemoteDescription(payload as RTCSessionDescriptionInit);
+            await flushIce();
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+
+    const start = async () => {
+      if (isOfferer) {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        await postSignal("offer", offer);
+      }
+      await processSignals();
+    };
+
+    void start();
+    const timer = window.setInterval(() => {
+      void processSignals();
+    }, 1000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      pc.ontrack = null;
+      pc.onicecandidate = null;
+      pc.close();
+      if (pcRef.current === pc) pcRef.current = null;
+      if (remoteRef.current) remoteRef.current.srcObject = null;
+      setRemoteLive(false);
+    };
+  }, [status, callId, cameraOn, role, isInitiator]);
 
   // Profissional: escuta chamadas entrantes
   useEffect(() => {
@@ -748,98 +888,57 @@ export default function PlatformVideoCall({
             </span>
           </div>
 
-          {role === "professional" && status === "accepted" ? (
-            /* Grade 2x2: até 4 participantes da empresa */
-            <div
+          <div
+            style={{
+              aspectRatio: "4 / 3",
+              borderRadius: 10,
+              overflow: "hidden",
+              border: `1px solid ${DASH.gold}`,
+              background: "#111",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              position: "relative",
+              color: DASH.muted,
+              fontSize: 11,
+              textAlign: "center",
+              padding: 0,
+            }}
+          >
+            <video
+              ref={remoteRef}
+              playsInline
+              autoPlay
               style={{
-                aspectRatio: "4 / 3",
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gridTemplateRows: "1fr 1fr",
-                gap: 4,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: remoteLive ? "block" : "none",
+              }}
+            />
+            {!remoteLive && (
+              <div style={{ padding: 8 }}>
+                {status === "accepted"
+                  ? "Conectando o vídeo da outra pessoa…"
+                  : `Aguardando ${peerLabel}…`}
+              </div>
+            )}
+            <span
+              style={{
+                position: "absolute",
+                left: 6,
+                bottom: 6,
+                fontSize: 9,
+                fontWeight: 700,
+                background: "rgba(0,0,0,0.65)",
+                color: DASH.gold,
+                padding: "2px 6px",
+                borderRadius: 4,
               }}
             >
-              {Array.from({ length: MAX_PARTICIPANTES_EMPRESA }, (_, i) => {
-                const participante = participants[i];
-                return (
-                  <div
-                    key={participante?.id || `slot-${i}`}
-                    style={{
-                      borderRadius: 8,
-                      overflow: "hidden",
-                      border: `2px solid ${participante ? DASH.gold : DASH.border}`,
-                      background: participante ? "#111" : "#0a0a0a",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      position: "relative",
-                      color: DASH.muted,
-                      fontSize: 9,
-                      textAlign: "center",
-                      padding: 4,
-                      opacity: participante ? 1 : 0.5,
-                    }}
-                  >
-                    {participante ? "Conectado" : "Vago"}
-                    <span
-                      style={{
-                        position: "absolute",
-                        left: 3,
-                        bottom: 3,
-                        fontSize: 8,
-                        fontWeight: 700,
-                        background: "rgba(0,0,0,0.65)",
-                        color: DASH.gold,
-                        padding: "1px 5px",
-                        borderRadius: 4,
-                        maxWidth: "calc(100% - 6px)",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {participante?.name || `${i + 1}º`}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div
-              style={{
-                aspectRatio: "4 / 3",
-                borderRadius: 10,
-                overflow: "hidden",
-                border: `1px solid ${DASH.gold}`,
-                background: "#111",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                position: "relative",
-                color: DASH.muted,
-                fontSize: 11,
-                textAlign: "center",
-                padding: 8,
-              }}
-            >
-              {status === "accepted" ? `Conectado com ${peerLabel}` : `Aguardando ${peerLabel}…`}
-              <span
-                style={{
-                  position: "absolute",
-                  left: 6,
-                  bottom: 6,
-                  fontSize: 9,
-                  fontWeight: 700,
-                  background: "rgba(0,0,0,0.65)",
-                  color: DASH.gold,
-                  padding: "2px 6px",
-                  borderRadius: 4,
-                }}
-              >
-                Remoto
-              </span>
-            </div>
-          )}
+              {peerLabel}
+            </span>
+          </div>
         </div>
 
         {role === "company" && (isInitiator || status === "idle") && (

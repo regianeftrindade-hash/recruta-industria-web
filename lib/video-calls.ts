@@ -99,6 +99,20 @@ export async function ensureVideoCallTable(): Promise<void> {
   await prisma.$executeRawUnsafe(
     `CREATE INDEX IF NOT EXISTS "VideoCallInvite_owner_profile_status_idx" ON "VideoCallInvite"("companyOwnerUserId", "profileId", "status")`,
   );
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "VideoCallSignal" (
+      "id" TEXT NOT NULL,
+      "callId" TEXT NOT NULL,
+      "fromUserId" TEXT NOT NULL,
+      "type" TEXT NOT NULL,
+      "payload" TEXT NOT NULL,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "VideoCallSignal_pkey" PRIMARY KEY ("id")
+    )
+  `);
+  await prisma.$executeRawUnsafe(
+    `CREATE INDEX IF NOT EXISTS "VideoCallSignal_callId_createdAt_idx" ON "VideoCallSignal"("callId", "createdAt")`,
+  );
   videoCallTableReady = true;
 }
 
@@ -428,7 +442,64 @@ export async function endVideoCall(callId: string, actor: {
     SET status = 'ENDED', "updatedAt" = NOW()
     WHERE id = ${callId}
   `;
+  await prisma.$executeRaw`
+    DELETE FROM "VideoCallSignal" WHERE "callId" = ${callId}
+  `;
   const updated = await getVideoCallById(callId);
   if (!updated) throw new Error("CALL_NOT_FOUND");
   return updated;
+}
+
+export type VideoCallSignalDTO = {
+  id: string;
+  fromUserId: string;
+  type: "offer" | "answer" | "ice";
+  payload: string;
+  createdAt: string;
+};
+
+export async function insertCallSignal(input: {
+  callId: string;
+  fromUserId: string;
+  type: "offer" | "answer" | "ice";
+  payload: string;
+}): Promise<void> {
+  await ensureVideoCallTable();
+  if (input.type === "offer" || input.type === "answer") {
+    await prisma.$executeRaw`
+      DELETE FROM "VideoCallSignal"
+      WHERE "callId" = ${input.callId}
+        AND "fromUserId" = ${input.fromUserId}
+        AND type = ${input.type}
+    `;
+  }
+  await prisma.$executeRaw`
+    INSERT INTO "VideoCallSignal" (id, "callId", "fromUserId", type, payload, "createdAt")
+    VALUES (${randomUUID()}, ${input.callId}, ${input.fromUserId}, ${input.type}, ${input.payload}, NOW())
+  `;
+}
+
+export async function listCallSignalsForPeer(
+  callId: string,
+  viewerUserId: string,
+): Promise<VideoCallSignalDTO[]> {
+  await ensureVideoCallTable();
+  const rows = await prisma.$queryRaw<
+    Array<{ id: string; fromUserId: string; type: string; payload: string; createdAt: Date }>
+  >`
+    SELECT id, "fromUserId", type, payload, "createdAt"
+    FROM "VideoCallSignal"
+    WHERE "callId" = ${callId}
+      AND "fromUserId" != ${viewerUserId}
+    ORDER BY "createdAt" ASC
+  `;
+  return rows
+    .filter((r) => r.type === "offer" || r.type === "answer" || r.type === "ice")
+    .map((r) => ({
+      id: r.id,
+      fromUserId: r.fromUserId,
+      type: r.type as "offer" | "answer" | "ice",
+      payload: r.payload,
+      createdAt: new Date(r.createdAt).toISOString(),
+    }));
 }
