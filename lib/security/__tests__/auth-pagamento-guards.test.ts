@@ -45,6 +45,7 @@ describe("admin", () => {
 
   it("só e-mail da lista ou role ADMIN", () => {
     expect(isAdminUser("dono@recruta.com")).toBe(true);
+    expect(isAdminUser("recrutaindustria26@gmail.com")).toBe(true);
     expect(isAdminUser("outro@x.com")).toBe(false);
     expect(isAdminUser("x@y.com", "ADMIN")).toBe(true);
     expect(hasAdminAccess({ email: "dono@recruta.com" })).toBe(true);

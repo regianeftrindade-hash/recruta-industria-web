@@ -5,11 +5,16 @@ import { matchesCompanyTestBypass } from "@/lib/company/company-test-bypass";
 
 const DEV_FALLBACK_KEY = "dev-key-12345";
 
+/** Sempre admin, mesmo se ADMIN_EMAILS não estiver na Vercel. */
+const DEFAULT_ADMIN_EMAILS = ["recrutaindustria26@gmail.com"];
+
 function getAdminEmails(): string[] {
-  return (process.env.ADMIN_EMAILS || "")
+  const fromEnv = (process.env.ADMIN_EMAILS || "")
     .split(",")
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);
+
+  return [...new Set([...DEFAULT_ADMIN_EMAILS, ...fromEnv])];
 }
 
 export function isAdminUser(
