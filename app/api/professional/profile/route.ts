@@ -262,14 +262,15 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    const mappedUser = toUser(user);
     const savedSnapshot = await getProfileFormSnapshot(user.id);
-    const dashboard = mapProfileToDashboard(profile, user);
+    const dashboard = mapProfileToDashboard(profile, mappedUser);
 
     return NextResponse.json({
       success: true,
       message: 'Perfil salvo com sucesso',
       profile: dashboard,
-      formEdit: mapProfileToFormEdit(profile, user, savedSnapshot),
+      formEdit: mapProfileToFormEdit(profile, mappedUser, savedSnapshot),
     });
 
   } catch (error) {
