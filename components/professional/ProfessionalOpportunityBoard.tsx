@@ -336,6 +336,11 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
           <p className={css.sub} style={{ marginTop: 2, fontSize: 10, color: DASH.muted }}>
             {comprovante.dataLabel} · {comprovante.horaLabel} · {comprovante.localLabel}
           </p>
+          {p.interview.observacoes?.trim() ? (
+            <p className={css.sub} style={{ marginTop: 6, fontSize: 11, color: DASH.text, whiteSpace: "pre-wrap" }}>
+              <strong style={{ color: DASH.gold }}>Observação:</strong> {p.interview.observacoes.trim()}
+            </p>
+          ) : null}
         </div>
         <div
           className={css.acoes}

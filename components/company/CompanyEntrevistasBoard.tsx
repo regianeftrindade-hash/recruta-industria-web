@@ -392,6 +392,11 @@ export default function CompanyEntrevistasBoard() {
             {comprovante.dataLabel} · {comprovante.horaLabel}
           </p>
           <p style={{ margin: "2px 0 0", fontSize: 10, color: DASH.text }}>{comprovante.localLabel}</p>
+          {p.interview.observacoes?.trim() ? (
+            <p style={{ margin: "6px 0 0", fontSize: 11, color: DASH.text, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
+              <strong style={{ color: DASH.gold }}>Observação:</strong> {p.interview.observacoes.trim()}
+            </p>
+          ) : null}
           <p style={{ margin: "4px 0 0", fontSize: 9, color: DASH.muted }}>
             {p.status === "INTERVIEW_CONFIRMED" ? "Confirmada pelo profissional" : "Aguardando confirmação"}
           </p>
