@@ -49,12 +49,48 @@ export interface SendEmailOptions {
   headers?: Record<string, string>;
 }
 
+function smtpFromHeader(): string {
+  const user = (process.env.SMTP_USER || "").trim();
+  const configured = (process.env.SMTP_FROM || process.env.EMAIL_FROM || "").trim();
+  const extracted =
+    configured.match(/<([^>]+)>/)?.[1]?.trim() ||
+    (configured.includes("@") ? configured : "");
+  if (user && extracted && extracted.toLowerCase() !== user.toLowerCase()) {
+    return `"Recruta Indústria" <${user}>`;
+  }
+  if (configured && extracted.toLowerCase() === user.toLowerCase()) {
+    return configured;
+  }
+  return user ? `"Recruta Indústria" <${user}>` : configured;
+}
+
+function smtpFailureHint(error: unknown): string {
+  const raw = error instanceof Error ? `${error.message} ${error}` : String(error);
+  const lower = raw.toLowerCase();
+  if (
+    lower.includes("invalid login")
+    || lower.includes("authentication")
+    || lower.includes("eauth")
+    || lower.includes("535")
+  ) {
+    return "A Hostinger recusou o login SMTP. SMTP_USER tem que ser a caixa completa e SMTP_PASS a senha dessa caixa (não a do Gmail e sem aspas na Vercel).";
+  }
+  if (lower.includes("econnection") || lower.includes("etimedout") || lower.includes("enotfound")) {
+    return "Não conectou no SMTP_HOST. Use smtp.hostinger.com e porta 465 (SMTP_SECURE=true).";
+  }
+  return "O servidor de e-mail recusou o envio. Confira SMTP_HOST, SMTP_USER e SMTP_PASS na Vercel.";
+}
+
 export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
+  const result = await sendEmailDetailed(options);
+  return result.ok;
+}
+
+export async function sendEmailDetailed(
+  options: SendEmailOptions,
+): Promise<{ ok: boolean; error?: string }> {
   const transport = getTransporter();
-  const from =
-    process.env.SMTP_FROM?.trim()
-    || process.env.EMAIL_FROM?.trim()
-    || `"Recruta Indústria" <${process.env.SMTP_USER}>`;
+  const from = smtpFromHeader();
 
   if (!transport) {
     if (process.env.NODE_ENV === "development") {
@@ -65,7 +101,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
         text: options.text?.slice(0, 200),
       });
     }
-    return false;
+    return { ok: false, error: "SMTP não configurado." };
   }
 
   try {
@@ -80,10 +116,10 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
       ...(options.references ? { references: options.references } : {}),
       ...(options.headers ? { headers: options.headers } : {}),
     });
-    return true;
+    return { ok: true };
   } catch (error) {
     console.error("[email] Falha ao enviar:", error);
-    return false;
+    return { ok: false, error: smtpFailureHint(error) };
   }
 }
 

@@ -13,7 +13,7 @@ import {
 } from "@/lib/security/admin-2fa";
 import { logAudit } from "@/lib/security";
 import { generateSecureOtpCode } from "@/lib/security.server";
-import { isEmailConfigured, sendEmail } from "@/lib/email";
+import { isEmailConfigured, sendEmailDetailed } from "@/lib/email";
 import { enforceApiRateLimit, getClientIp } from "@/lib/security/api-guard";
 import { ensureSecurityAuditTable } from "@/lib/security/audit-store";
 
@@ -65,18 +65,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const sent = await sendEmail({
+    const sent = await sendEmailDetailed({
       to: email,
       subject: "Código de acesso admin — Recruta Indústria",
       text: `Seu código de verificação do painel admin é: ${code}\nVálido por 5 minutos.`,
       html: `<p>Seu código de verificação do painel admin é: <strong style="font-size:20px">${code}</strong></p><p>Válido por 5 minutos.</p>`,
     });
 
-    if (!sent) {
+    if (!sent.ok) {
       return NextResponse.json(
         {
-          error:
-            "Não foi possível enviar o e-mail. Confira spam do Gmail e as variáveis SMTP na Vercel (SMTP_HOST/USER/PASS).",
+          error: sent.error || "Não foi possível enviar o e-mail.",
         },
         { status: 502 },
       );
