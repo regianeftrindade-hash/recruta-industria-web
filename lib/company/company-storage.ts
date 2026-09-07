@@ -189,40 +189,98 @@ export async function saveCompanyExtraData(
   }
 }
 
-export async function getCompanyExtraData(userId: string): Promise<CompanyExtraData> {
-  const rows = await prisma.$queryRaw<Array<CompanyExtraData>>`
-    SELECT cnpj, "responsavelNome", "responsavelCpf", telefone, endereco,
-           "logoUrl", "fotoResponsavelUrl",
-           "emailCorporativo", "emailCorporativoVerificado",
-           "cartaoCnpjUrl", "verificationStatus", "verifiedAt", "rejectionReason"
-    FROM "Company"
-    WHERE "userId" = ${userId}
-    LIMIT 1
-  `;
+const EMPTY_COMPANY_EXTRA: CompanyExtraData = {
+  cnpj: null,
+  responsavelNome: null,
+  responsavelCpf: null,
+  telefone: null,
+  endereco: null,
+  logoUrl: null,
+  fotoResponsavelUrl: null,
+  emailCorporativo: null,
+  emailCorporativoVerificado: false,
+  cartaoCnpjUrl: null,
+  verificationStatus: 'PENDING',
+  verifiedAt: null,
+  rejectionReason: null,
+};
 
-  if (!rows[0]) {
-    return {
-      cnpj: null,
-      responsavelNome: null,
-      responsavelCpf: null,
-      telefone: null,
-      endereco: null,
-      logoUrl: null,
-      fotoResponsavelUrl: null,
-      emailCorporativo: null,
-      emailCorporativoVerificado: false,
-      cartaoCnpjUrl: null,
-      verificationStatus: 'PENDING',
-      verifiedAt: null,
-      rejectionReason: null,
-    };
+export type CompanyChromeRow = {
+  id: string;
+  name: string;
+  logoUrl: string | null;
+  fotoResponsavelUrl: string | null;
+};
+
+/** Lê a empresa sem SELECT * do Prisma (colunas novas ausentes no banco quebram o include). */
+export async function loadCompanyRowByUserId(userId: string): Promise<CompanyChromeRow | null> {
+  try {
+    const rows = await prisma.$queryRaw<
+      Array<{ id: string; name: string; logoUrl: string | null; fotoResponsavelUrl: string | null }>
+    >`
+      SELECT id, name, "logoUrl", "fotoResponsavelUrl"
+      FROM "Company"
+      WHERE "userId" = ${userId}
+      LIMIT 1
+    `;
+    if (rows[0]) return rows[0];
+  } catch (error) {
+    console.warn('[company] leitura com logo falhou, tentando colunas mínimas:', error);
+    try {
+      const rows = await prisma.$queryRaw<Array<{ id: string; name: string }>>`
+        SELECT id, name FROM "Company" WHERE "userId" = ${userId} LIMIT 1
+      `;
+      if (rows[0]) {
+        return { id: rows[0].id, name: rows[0].name, logoUrl: null, fotoResponsavelUrl: null };
+      }
+    } catch (fallbackError) {
+      console.error('[company] leitura mínima da Company falhou:', fallbackError);
+    }
   }
+  return null;
+}
 
-  return {
-    ...rows[0],
-    logoUrl: rows[0].logoUrl ?? null,
-    fotoResponsavelUrl: rows[0].fotoResponsavelUrl ?? null,
-  };
+export async function getCompanyExtraData(userId: string): Promise<CompanyExtraData> {
+  try {
+    const rows = await prisma.$queryRaw<Array<CompanyExtraData>>`
+      SELECT cnpj, "responsavelNome", "responsavelCpf", telefone, endereco,
+             "logoUrl", "fotoResponsavelUrl",
+             "emailCorporativo", "emailCorporativoVerificado",
+             "cartaoCnpjUrl", "verificationStatus", "verifiedAt", "rejectionReason"
+      FROM "Company"
+      WHERE "userId" = ${userId}
+      LIMIT 1
+    `;
+    if (!rows[0]) return { ...EMPTY_COMPANY_EXTRA };
+    return {
+      ...rows[0],
+      logoUrl: rows[0].logoUrl ?? null,
+      fotoResponsavelUrl: rows[0].fotoResponsavelUrl ?? null,
+    };
+  } catch (error) {
+    console.warn('[company] extras completos indisponíveis, lendo cadastro básico:', error);
+    try {
+      const rows = await prisma.$queryRaw<
+        Array<{
+          cnpj: string | null;
+          responsavelNome: string | null;
+          responsavelCpf: string | null;
+          telefone: string | null;
+          endereco: string | null;
+        }>
+      >`
+        SELECT cnpj, "responsavelNome", "responsavelCpf", telefone, endereco
+        FROM "Company"
+        WHERE "userId" = ${userId}
+        LIMIT 1
+      `;
+      if (!rows[0]) return { ...EMPTY_COMPANY_EXTRA };
+      return { ...EMPTY_COMPANY_EXTRA, ...rows[0] };
+    } catch (fallbackError) {
+      console.error('[company] extras básicos falharam:', fallbackError);
+      return { ...EMPTY_COMPANY_EXTRA };
+    }
+  }
 }
 
 export async function getCompanyVerificationInfo(

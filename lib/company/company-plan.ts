@@ -124,20 +124,24 @@ export async function getCompanyPlanContext(
     options?.verification
       ? Promise.resolve(options.verification)
       : getCompanyVerificationInfo(ownerUserId),
-    prisma.accessRecord.count({
-      where: {
-        companyUserId: ownerUserId,
-        createdAt: { gte: startOfMonth },
-      },
-    }),
-    prisma.accessRecord.count({
-      where: {
-        companyUserId: ownerUserId,
-        status: 'ACTIVE',
-        expiresAt: { gt: now },
-      },
-    }),
-    countCompanyFavorites(ownerUserId),
+    prisma.accessRecord
+      .count({
+        where: {
+          companyUserId: ownerUserId,
+          createdAt: { gte: startOfMonth },
+        },
+      })
+      .catch(() => 0),
+    prisma.accessRecord
+      .count({
+        where: {
+          companyUserId: ownerUserId,
+          status: 'ACTIVE',
+          expiresAt: { gt: now },
+        },
+      })
+      .catch(() => 0),
+    countCompanyFavorites(ownerUserId).catch(() => 0),
   ]);
 
   const baseFeatures = getPlanFeatures(tier);

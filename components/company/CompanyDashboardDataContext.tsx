@@ -126,8 +126,7 @@ function parseProfilePayload(data: Record<string, unknown>): Partial<DashData> |
     ? data.verification
     : null) as { status?: string } | null;
 
-  const rawTier = String(plan?.tier || data.planTier || "").trim().toUpperCase();
-  if (!rawTier) return null;
+  const rawTier = String(plan?.tier || data.planTier || "FREE").trim().toUpperCase() || "FREE";
 
   return {
     planFeatures: plan?.features || {},
@@ -164,10 +163,46 @@ async function fetchSlice(slice: CacheSlice): Promise<{ ok: boolean; patch: Part
   if (slice === "planFeatures") {
     const res = await fetch("/api/company/profile", { credentials: "include" });
     if (!res.ok) {
-      return {
-        ok: true,
-        patch: { planReady: true, planTier: "FREE" },
-      };
+      const check = await fetch("/api/company/check-registration", { credentials: "include" });
+      const checkData = check.ok
+        ? ((await check.json().catch(() => null)) as {
+            user?: {
+              razaoSocial?: string | null;
+              cnpj?: string | null;
+              responsavelNome?: string | null;
+              responsavelCpf?: string | null;
+              telefone?: string | null;
+              endereco?: string | null;
+              emailCorporativo?: string | null;
+              logoUrl?: string | null;
+              fotoResponsavelUrl?: string | null;
+              email?: string;
+            };
+          } | null)
+        : null;
+      const u = checkData?.user;
+      if (u && (u.razaoSocial || u.cnpj || u.responsavelNome)) {
+        return {
+          ok: true,
+          patch: {
+            planReady: true,
+            planTier: "FREE",
+            companyProfile: {
+              razaoSocial: u.razaoSocial || "",
+              cnpj: u.cnpj ?? null,
+              responsavelNome: u.responsavelNome ?? null,
+              responsavelCpf: u.responsavelCpf ?? null,
+              telefone: u.telefone ?? null,
+              endereco: u.endereco ?? null,
+              emailCorporativo: u.emailCorporativo ?? null,
+              logoUrl: u.logoUrl ?? null,
+              fotoResponsavelUrl: u.fotoResponsavelUrl ?? null,
+              email: u.email || "",
+            },
+          },
+        };
+      }
+      return { ok: false, patch: {} };
     }
     const data = (await res.json().catch(() => null)) as Record<string, unknown> | null;
     if (!data) return { ok: false, patch: {} };

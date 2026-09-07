@@ -1,5 +1,5 @@
 import React from "react";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Oswald } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegister from "@/components/app-shell/ServiceWorkerRegister";
@@ -55,6 +55,12 @@ export const metadata: Metadata = {
   },
 };
 
+/** Celular usa o mesmo layout do computador (1280px), evitando sobreposição do modo responsivo. */
+export const viewport: Viewport = {
+  width: 1280,
+  userScalable: true,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -62,9 +68,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${oswald.variable}`}>
         <ManifestInjector />
         <ServiceWorkerRegister />

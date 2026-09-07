@@ -2,21 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth.config'
 import { prisma } from '@/lib/db'
-import { getCompanyExtraData, getCompanyVerificationInfo } from '@/lib/company-storage'
+import { getCompanyExtraData, getCompanyVerificationInfo, loadCompanyRowByUserId } from '@/lib/company-storage'
 import { ensureCompanyTestBypassReady, matchesCompanyTestBypass } from '@/lib/company/company-test-bypass'
 import { formatCPF } from '@/lib/security'
 import { resolveCompanyActor } from '@/lib/company/company-team'
 import { ensureUserLastSeenColumn } from '@/lib/ensure-db-schema'
 
-const userCompanySelect = {
+const userSelect = {
   id: true,
   email: true,
   name: true,
   role: true,
-  company: true,
 } as const
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     await ensureUserLastSeenColumn()
     const session = await getServerSession(authOptions)
@@ -25,30 +24,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ authenticated: false }, { status: 401 })
     }
 
-    let user: Awaited<ReturnType<typeof prisma.user.findUnique<{ where: { email: string }; select: typeof userCompanySelect }>>> = null
-    try {
-      user = await prisma.user.findUnique({
-        where: { email: session.user.email.toLowerCase().trim() },
-        select: userCompanySelect,
-      })
-    } catch (error) {
-      console.error('[company/check-registration] leitura User+Company falhou:', error)
-      const basic = await prisma.user.findUnique({
-        where: { email: session.user.email.toLowerCase().trim() },
-        select: { id: true, email: true, name: true, role: true },
-      })
-      user = basic ? { ...basic, company: null } : null
-    }
+    let user = await prisma.user.findUnique({
+      where: { email: session.user.email.toLowerCase().trim() },
+      select: userSelect,
+    })
 
     if (!user) {
       return NextResponse.json({ authenticated: false, isCompany: false }, { status: 404 })
     }
 
-    // Match por e-mail primeiro — mesmo se o ensure falhar (ex.: coluna ausente no DB)
+    let company = await loadCompanyRowByUserId(user.id)
+
     const bypassByIdentity = matchesCompanyTestBypass({
       email: user.email,
       userName: user.name,
-      companyName: user.company?.name,
+      companyName: company?.name,
     })
 
     let isTestBypass = bypassByIdentity
@@ -57,11 +47,12 @@ export async function GET(request: NextRequest) {
         await ensureCompanyTestBypassReady(user.id)
         user = await prisma.user.findUnique({
           where: { id: user.id },
-          select: userCompanySelect,
+          select: userSelect,
         })
         if (!user) {
           return NextResponse.json({ authenticated: false, isCompany: false }, { status: 404 })
         }
+        company = await loadCompanyRowByUserId(user.id)
       } catch (err) {
         console.error('Bypass empresa: ensure falhou, liberando mesmo assim:', err)
       }
@@ -80,19 +71,15 @@ export async function GET(request: NextRequest) {
 
     const actor = await resolveCompanyActor(user.id).catch(() => null)
     const ownerUserId = actor?.ownerUserId || user.id
-    const ownerUser =
-      ownerUserId === user.id
-        ? user
-        : await prisma.user.findUnique({
-            where: { id: ownerUserId },
-            select: userCompanySelect,
-          })
+    if (ownerUserId !== user.id) {
+      company = (await loadCompanyRowByUserId(ownerUserId)) || company
+    }
 
     let extra = null
     let verification = null
     try {
-      extra = ownerUser?.company ? await getCompanyExtraData(ownerUserId) : null
-      verification = ownerUser?.company ? await getCompanyVerificationInfo(ownerUserId) : null
+      extra = company ? await getCompanyExtraData(ownerUserId) : null
+      verification = company ? await getCompanyVerificationInfo(ownerUserId) : null
     } catch (err) {
       console.error('Erro ao ler dados extras da empresa:', err)
       if (isTestBypass) {
@@ -114,7 +101,7 @@ export async function GET(request: NextRequest) {
     const isTeamMember = Boolean(actor && !actor.isOwner)
 
     const fieldsComplete = !!(
-      ownerUser?.company?.name?.trim() &&
+      company?.name?.trim() &&
       extra?.cnpj?.trim() &&
       extra?.responsavelNome?.trim() &&
       extra?.responsavelCpf?.trim() &&
@@ -122,7 +109,6 @@ export async function GET(request: NextRequest) {
       extra?.endereco?.trim()
     )
 
-    // Membro da equipe RH: usa cadastro do administrador / assinatura compartilhada
     const isRegistrationComplete = isTestBypass || isTeamMember || fieldsComplete
 
     return NextResponse.json({
@@ -147,7 +133,7 @@ export async function GET(request: NextRequest) {
         cartaoCnpjUrl: extra?.cartaoCnpjUrl || null,
         logoUrl: extra?.logoUrl || null,
         fotoResponsavelUrl: extra?.fotoResponsavelUrl || null,
-        razaoSocial: ownerUser?.company?.name || null,
+        razaoSocial: company?.name || null,
       },
     })
   } catch (error) {

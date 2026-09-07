@@ -18,6 +18,18 @@ export function parseJsonSafe<T>(value: string | null | undefined, fallback: T):
   }
 }
 
+/** Snapshot antigo às vezes veio aninhado em `{ formData: { ... } }`. */
+export function flattenFormSnapshot(
+  saved: Record<string, unknown> | null | undefined,
+): Record<string, unknown> | null {
+  if (!saved || typeof saved !== 'object') return null;
+  const nested = saved.formData;
+  if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+    return { ...(nested as Record<string, unknown>), ...saved };
+  }
+  return saved;
+}
+
 function parseLocation(location: string | null | undefined): { cidade: string; estado: string } {
   if (!location || location === 'Não informado' || location === 'Não preenchido') {
     return { cidade: '', estado: '' };
@@ -76,7 +88,7 @@ export function readSnapshotDisplay(formDataJSON?: string | null): {
   telefone: string;
   mensagem: string;
 } {
-  const saved = parseJsonSafe<Record<string, unknown> | null>(formDataJSON, null);
+  const saved = flattenFormSnapshot(parseJsonSafe<Record<string, unknown> | null>(formDataJSON, null));
   if (!saved) {
     return { nome: '', cargo: '', cidade: '', estado: '', telefone: '', mensagem: '' };
   }
@@ -126,6 +138,12 @@ export function keepExistingProfileFields<T extends Record<string, unknown>>(
 function isEmptyValue(value: unknown): boolean {
   if (value === null || value === undefined || value === '') return true;
   if (value === false) return true;
+  if (typeof value === 'string') {
+    const t = value.trim();
+    if (!t || t === 'Não preenchido' || t === 'Não informado' || t === '—' || t === 'Profissional') {
+      return true;
+    }
+  }
   if (Array.isArray(value) && value.length === 0) return true;
   if (Array.isArray(value) && value.length === 1 && value[0] === '') return true;
   if (
@@ -204,33 +222,34 @@ const FORM_FIELD_KEYS = [
 ] as const;
 
 export function storedPayloadToFormEdit(stored: Record<string, unknown>): FormEditPayload {
+  const source = flattenFormSnapshot(stored) || stored;
   const cursosDetalhados = parseCursosDetalhados(
-    stored.cursosDetalhados ?? stored.cursos ?? stored.cursosCertificacoes,
+    source.cursosDetalhados ?? source.cursos ?? source.cursosCertificacoes,
   );
   const cursos = cursosDetalhados.map((c) => c.nome).filter((n) => n.trim());
 
-  const empresas = Array.isArray(stored.empresas)
-    ? normalizeExperiencias(stored.empresas)
-    : normalizeExperiencias(stored.experiencias);
+  const empresas = Array.isArray(source.empresas)
+    ? normalizeExperiencias(source.empresas)
+    : normalizeExperiencias(source.experiencias);
 
   const formData: Record<string, unknown> = {};
   FORM_FIELD_KEYS.forEach((key) => {
-    if (key in stored && stored[key] !== undefined) {
-      formData[key] = stored[key];
+    if (key in source && source[key] !== undefined) {
+      formData[key] = source[key];
     }
   });
 
   const dataDisplay =
-    typeof stored.dataNascimentoDisplay === 'string'
-      ? stored.dataNascimentoDisplay
-      : formatDateBR(parseDateInput(String(stored.dataNascimento || '')) || undefined);
+    typeof source.dataNascimentoDisplay === 'string'
+      ? source.dataNascimentoDisplay
+      : formatDateBR(parseDateInput(String(source.dataNascimento || '')) || undefined);
 
   return {
     formData,
-    cpf: formatCpfInput(String(stored.cpf || '')),
-    telefone: String(stored.telefone || formData.telefone || ''),
-    telefone2: String(stored.telefone2 || formData.telefone2 || ''),
-    pretensaoSalarial: String(stored.pretensaoSalarial || formData.pretensaoSalarial || ''),
+    cpf: formatCpfInput(String(source.cpf || '')),
+    telefone: String(source.telefone || formData.telefone || ''),
+    telefone2: String(source.telefone2 || formData.telefone2 || ''),
+    pretensaoSalarial: String(source.pretensaoSalarial || formData.pretensaoSalarial || ''),
     dataNascimentoDisplay: dataDisplay,
     cursos: hasRealCursos(cursos) ? cursos : [''],
     cursosDetalhados,
@@ -470,7 +489,7 @@ export function mapProfileToFormEdit(
     (profile as Profile & { formDataJSON?: string | null }).formDataJSON;
 
   if (snapshotSource) {
-    const saved = parseJsonSafe<Record<string, unknown> | null>(snapshotSource, null);
+    const saved = flattenFormSnapshot(parseJsonSafe<Record<string, unknown> | null>(snapshotSource, null));
     if (saved && Object.keys(saved).length > 0) {
       const profileCpf = String(profile.cpf || '').replace(/\D/g, '');
       const savedCpf = String(saved.cpf || '').replace(/\D/g, '');

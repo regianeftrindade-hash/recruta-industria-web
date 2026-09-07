@@ -141,7 +141,17 @@ export async function GET(request: NextRequest) {
         where: { userId: user.id },
       });
     } catch (error) {
-      console.error('[profile] Falha ao ler Profile:', error);
+      console.error('[profile] Falha ao ler Profile via Prisma, tentando SELECT *:', error);
+      try {
+        const rows = await prisma.$queryRaw<Array<Record<string, unknown>>>`
+          SELECT * FROM "Profile" WHERE "userId" = ${user.id} LIMIT 1
+        `;
+        if (rows[0]) {
+          profile = rows[0] as typeof profile;
+        }
+      } catch (rawError) {
+        console.error('[profile] Leitura bruta do Profile falhou:', rawError);
+      }
     }
 
     if (profile) {
