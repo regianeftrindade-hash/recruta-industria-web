@@ -4,14 +4,16 @@ import { getToken } from "next-auth/jwt";
 import {
   ADMIN_2FA_COOKIE,
   admin2faCookieOptions,
+  consumeAdmin2faCode,
   createAdmin2faToken,
   isAdmin2faRequired,
+  persistAdmin2faCode,
   recordAdmin2faSuccess,
   verifyAdmin2faToken,
 } from "@/lib/security/admin-2fa";
-import { verify2FACode, logAudit, store2FACode } from "@/lib/security";
+import { logAudit } from "@/lib/security";
 import { generateSecureOtpCode } from "@/lib/security.server";
-import { sendEmail } from "@/lib/email";
+import { isEmailConfigured, sendEmail } from "@/lib/email";
 import { enforceApiRateLimit, getClientIp } from "@/lib/security/api-guard";
 import { ensureSecurityAuditTable } from "@/lib/security/audit-store";
 
@@ -50,15 +52,35 @@ export async function POST(request: NextRequest) {
     }
 
     const code = generateSecureOtpCode();
-    store2FACode(`admin:${email}`, code);
-    logAudit("admin_2fa_sent", email, ip, userAgent, "success", "Código 2FA admin enviado");
+    await persistAdmin2faCode(email, code);
+    logAudit("admin_2fa_sent", email, ip, userAgent, "success", "Código 2FA admin gerado");
 
-    await sendEmail({
+    if (!isEmailConfigured()) {
+      return NextResponse.json(
+        {
+          error:
+            "E-mail (SMTP) não está configurado na Vercel. Sem SMTP_HOST, SMTP_USER e SMTP_PASS o código não chega.",
+        },
+        { status: 503 },
+      );
+    }
+
+    const sent = await sendEmail({
       to: email,
       subject: "Código de acesso admin — Recruta Indústria",
       text: `Seu código de verificação do painel admin é: ${code}\nVálido por 5 minutos.`,
       html: `<p>Seu código de verificação do painel admin é: <strong style="font-size:20px">${code}</strong></p><p>Válido por 5 minutos.</p>`,
     });
+
+    if (!sent) {
+      return NextResponse.json(
+        {
+          error:
+            "Não foi possível enviar o e-mail. Confira spam do Gmail e as variáveis SMTP na Vercel (SMTP_HOST/USER/PASS).",
+        },
+        { status: 502 },
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -87,7 +109,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Código obrigatório" }, { status: 400 });
     }
 
-    const ok = verify2FACode(`admin:${email}`, code, 5);
+    const ok = await consumeAdmin2faCode(email, code);
     if (!ok) {
       logAudit("admin_2fa_failed", email, ip, userAgent, "failure", "Código inválido");
       return NextResponse.json({ error: "Código inválido ou expirado" }, { status: 400 });
