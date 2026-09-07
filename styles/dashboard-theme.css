@@ -161,15 +161,34 @@
 
   .ri-candidate-profile-head {
     grid-template-columns: 1fr !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    gap: 12px !important;
+  }
+
+  .ri-candidate-profile-head > svg {
+    display: none !important;
   }
 
   .ri-candidate-profile-head > .ri-candidate-profile-main,
   .ri-candidate-profile-head > .ri-candidate-profile-side {
     grid-column: 1;
+    min-width: 0 !important;
+    max-width: 100% !important;
   }
 
-  .ri-candidate-profile-head > div {
+  .ri-dashboard .dash-card,
+  .ri-dashboard [data-card="1"],
+  .ri-dashboard [data-perfil-card="1"] {
+    max-width: 100%;
     min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .ri-candidate-profile-side .dash-card {
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .ri-company-dash header nav {

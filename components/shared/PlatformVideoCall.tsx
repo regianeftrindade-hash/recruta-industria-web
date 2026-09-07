@@ -692,6 +692,7 @@ export default function PlatformVideoCall({
         ...panelBase,
         width: "100%",
         maxWidth: compact ? 280 : "100%",
+        minWidth: 0,
       };
 
   const statusLabel =
@@ -1248,8 +1249,8 @@ export default function PlatformVideoCall({
           </button>
         )}
 
-        {!overlayPip && (
-          <p style={{ margin: "8px 0 0", fontSize: 10, color: DASH.muted, lineHeight: 1.4 }}>
+        {!overlayPip && !compact && (
+          <p style={{ margin: "8px 0 0", fontSize: 10, color: DASH.muted, lineHeight: 1.4, overflowWrap: "anywhere" }}>
             {role === "company"
               ? "Clique em Chamar. A câmera só liga quando o profissional aceitar. Use Sobrepor para rolar a página com o vídeo fixo."
               : "Quando a empresa ligar, use Aceitar ou Recusar. Use Sobrepor para rolar a página com o vídeo fixo."}

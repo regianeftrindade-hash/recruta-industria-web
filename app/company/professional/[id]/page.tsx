@@ -53,7 +53,17 @@ export default function CompanyProfessionalPage() {
         </div>
       </header>
 
-      <main style={{ padding: "16px 12px 32px", maxWidth: 1200, margin: "0 auto", minWidth: 0, width: "100%", boxSizing: "border-box" }}>
+      <main
+        style={{
+          padding: "16px 12px 32px",
+          maxWidth: 1200,
+          margin: "0 auto",
+          minWidth: 0,
+          width: "100%",
+          boxSizing: "border-box",
+          overflowX: "hidden",
+        }}
+      >
         <CompanyCandidateProfilePanel
           profileId={profileId}
           onBack={() => router.push("/company/dashboard-empresa")}

@@ -955,6 +955,10 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
         setGoldLine(null);
         return;
       }
+      if (window.matchMedia("(max-width: 900px)").matches) {
+        setGoldLine(null);
+        return;
+      }
 
       const rootBox = root.getBoundingClientRect();
       const infoBox = info.getBoundingClientRect();
@@ -1049,7 +1053,7 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
   const carreiraTimeline = buildCareerTimeline(empresas);
 
   return (
-    <div>
+    <div style={{ width: "100%", maxWidth: "100%", minWidth: 0, overflowX: "hidden", boxSizing: "border-box" }}>
       <div
         className="ri-candidate-profile-head"
         ref={headerRef}
