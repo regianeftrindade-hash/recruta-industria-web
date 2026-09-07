@@ -1,40 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
-import * as fs from 'fs/promises'
-import * as path from 'path'
 import { requireAdmin } from '@/lib/admin-auth'
-
-const AUDIT_LOGS_FILE = path.join(process.cwd(), 'data', 'audit_logs.json')
+import { getPersistedAuditLogs, getAuditLogs } from '@/lib/security/audit-store'
 
 export async function GET(request: NextRequest) {
   try {
     const authError = await requireAdmin(request)
     if (authError) return authError
 
-    const content = await fs.readFile(AUDIT_LOGS_FILE, 'utf-8')
-    const logs = JSON.parse(content || '[]')
-
-    // Parse query parameters for filtering
     const searchParams = request.nextUrl.searchParams
-    const limit = parseInt(searchParams.get('limit') || '100')
-    const eventFilter = searchParams.get('event')
-    const userFilter = searchParams.get('user')
+    const limit = parseInt(searchParams.get('limit') || '100', 10)
+    const eventFilter = searchParams.get('event') || searchParams.get('action')
+    const userFilter = searchParams.get('user') || searchParams.get('email')
 
-    let filtered = logs
-    if (eventFilter) {
-      filtered = filtered.filter((log: any) => log.event === eventFilter)
-    }
-    if (userFilter) {
-      filtered = filtered.filter((log: any) => log.userId === userFilter)
-    }
+    const persisted = await getPersistedAuditLogs({
+      limit,
+      action: eventFilter,
+      email: userFilter,
+    })
 
-    // Sort by timestamp descending
-    filtered.sort((a: any, b: any) =>
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    )
+    const source = persisted.length > 0 ? persisted : getAuditLogs(limit)
 
-    return NextResponse.json(filtered.slice(0, limit))
+    const mapped = source.map((log) => ({
+      id: log.id || `mem_${log.timestamp}`,
+      event: log.action,
+      action: log.action,
+      userId: log.email,
+      email: log.email,
+      ip: log.ip,
+      result: log.result,
+      timestamp: new Date(log.timestamp).toISOString(),
+      details: {
+        text: log.details,
+        userAgent: log.userAgent,
+        result: log.result,
+      },
+    }))
+
+    return NextResponse.json(mapped)
   } catch (error) {
     console.error('Error reading audit logs:', error)
-    return NextResponse.json({ logs: [] })
+    return NextResponse.json([])
   }
 }

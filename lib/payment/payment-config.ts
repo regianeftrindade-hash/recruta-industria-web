@@ -1,7 +1,26 @@
+import { getAsaasConfig } from '@/lib/payment/asaas-client';
 import { getPagSeguroConfig } from '@/lib/pagseguro-client';
 
+export type PaymentProvider = 'pagseguro' | 'asaas';
+
+/** Provedor ativo: PAYMENT_PROVIDER ou detecção automática pela chave configurada. */
+export function getPaymentProvider(): PaymentProvider {
+  const explicit = (process.env.PAYMENT_PROVIDER || '').trim().toLowerCase();
+  if (explicit === 'asaas') return 'asaas';
+  if (explicit === 'pagseguro' || explicit === 'pagbank') return 'pagseguro';
+
+  const asaasKey = getAsaasConfig().apiKey;
+  const pagseguroToken = getPagSeguroConfig().token;
+
+  if (asaasKey && !pagseguroToken) return 'asaas';
+  return 'pagseguro';
+}
+
 /** Tipos de cobrança registrados em PaymentRecord.meta */
-export type PaymentMetaType = 'company_subscription' | 'professional_subscription';
+export type PaymentMetaType =
+  | 'company_subscription'
+  | 'company_extra_seats'
+  | 'professional_subscription';
 
 export type CompanyPaymentMeta = {
   type: 'company_subscription';
@@ -12,6 +31,15 @@ export type CompanyPaymentMeta = {
   billingMode?: 'one_time' | 'recurring';
   gatewaySubscriptionId?: string;
   isRenewal?: boolean;
+};
+
+/** Usuário(s) RH extras acima do limite do plano */
+export type CompanyExtraSeatsPaymentMeta = {
+  type: 'company_extra_seats';
+  companyUserId: string;
+  quantity: number;
+  expectedAmount: number;
+  activatedAt?: string;
 };
 
 export type ProfessionalPaymentMeta = {
@@ -41,10 +69,16 @@ export const PAYMENT_CONFIG = {
 } as const;
 
 export function isPaymentGatewayConfigured(): boolean {
+  if (getPaymentProvider() === 'asaas') {
+    return Boolean(getAsaasConfig().apiKey);
+  }
   return Boolean(getPagSeguroConfig().token);
 }
 
 export function isSandboxMode(): boolean {
+  if (getPaymentProvider() === 'asaas') {
+    return getAsaasConfig().apiUrl.includes('sandbox');
+  }
   const { apiUrl } = getPagSeguroConfig();
   return apiUrl.includes('sandbox');
 }
@@ -66,6 +100,17 @@ export function asCompanyPaymentMeta(meta: string | null | undefined): CompanyPa
   if (typeof parsed.companyUserId !== 'string') return null;
   if (typeof parsed.expectedAmount !== 'number') return null;
   return parsed as CompanyPaymentMeta;
+}
+
+export function asCompanyExtraSeatsPaymentMeta(
+  meta: string | null | undefined,
+): CompanyExtraSeatsPaymentMeta | null {
+  const parsed = parsePaymentMeta(meta);
+  if (!parsed || parsed.type !== 'company_extra_seats') return null;
+  if (typeof parsed.companyUserId !== 'string') return null;
+  if (typeof parsed.quantity !== 'number' || parsed.quantity < 1) return null;
+  if (typeof parsed.expectedAmount !== 'number') return null;
+  return parsed as CompanyExtraSeatsPaymentMeta;
 }
 
 export function asProfessionalPaymentMeta(meta: string | null | undefined): ProfessionalPaymentMeta | null {

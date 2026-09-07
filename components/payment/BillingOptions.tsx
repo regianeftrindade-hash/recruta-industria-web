@@ -3,6 +3,7 @@
 import React from "react";
 import type { BillingMode, BillingPeriod } from "@/lib/billing";
 import { billingModeLabel, billingPeriodLabel } from "@/lib/billing";
+import { goldButton3DMutedStyle, goldButton3DStyle } from "@/lib/button-3d";
 
 type BillingOptionsProps = {
   billingPeriod: BillingPeriod;
@@ -12,13 +13,10 @@ type BillingOptionsProps = {
 };
 
 const optionStyle = (active: boolean): React.CSSProperties => ({
+  ...(active ? goldButton3DStyle : goldButton3DMutedStyle),
   flex: 1,
   padding: 10,
   borderRadius: 6,
-  border: active ? "2px solid #C89B3C" : "1px solid #8D6B1F",
-  background: active ? "#C89B3C" : "#000",
-  color: active ? "#000" : "#F2F2F2",
-  cursor: "pointer",
   fontSize: 11,
   textAlign: "center",
   lineHeight: 1.35,

@@ -29,7 +29,7 @@ type PaymentData = {
 export default function PagamentoProfissionalPage() {
   return (
     <Suspense fallback={
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#000", color: "#F2F2F2" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#3A3A3A", color: "#F2F2F2" }}>
         Carregando...
       </div>
     }>
@@ -167,19 +167,19 @@ function PagamentoProfissional() {
 
   if (status === "loading") {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#000", color: "#F2F2F2" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#3A3A3A", color: "#F2F2F2" }}>
         Carregando...
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#000", color: "#F2F2F2", padding: "32px 20px" }}>
+    <div style={{ minHeight: "100vh", background: "#3A3A3A", color: "#F2F2F2", padding: "32px 20px" }}>
       <div style={{ maxWidth: 900, margin: "0 auto" }}>
         <button
           type="button"
           onClick={() => router.push("/professional/dashboard")}
-          style={{ background: "transparent", border: "1px solid #8D6B1F", color: "#F2F2F2", borderRadius: 6, padding: "8px 14px", cursor: "pointer", marginBottom: 20, fontSize: 12 }}
+          style={{ ...btnGold, padding: "8px 14px", fontSize: 12, marginBottom: 20 }}
         >
           ← Voltar ao painel
         </button>
@@ -230,15 +230,18 @@ function PagamentoProfissional() {
                         type="button"
                         onClick={() => setMethod(m)}
                         style={{
+                          ...btnGold,
                           flex: 1,
                           padding: 10,
                           borderRadius: 6,
-                          border: method === m ? "2px solid #C89B3C" : "1px solid #8D6B1F",
-                          background: method === m ? "#C89B3C" : "#000",
-                          color: method === m ? "#000" : "#F2F2F2",
-                          cursor: "pointer",
                           fontSize: 11,
                           textTransform: "uppercase",
+                          ...(method !== m
+                            ? {
+                                background: "linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8D6B1F 100%)",
+                                color: "#F2F2F2",
+                              }
+                            : {}),
                         }}
                       >
                         {m}

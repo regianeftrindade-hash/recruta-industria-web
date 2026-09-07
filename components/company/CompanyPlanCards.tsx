@@ -10,7 +10,7 @@ import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import { DASH, dashCard, dashPlanAccent } from "@/lib/dashboard-theme";
 
 interface CompanyPlanCardsProps {
-  currentTier: CompanyPlanTier;
+  currentTier: CompanyPlanTier | null;
   onSelectFree?: () => void;
 }
 
@@ -22,8 +22,16 @@ export default function CompanyPlanCards({ currentTier, onSelectFree }: CompanyP
       <h2 style={{ ...dashPlanAccent, margin: "0 0 4px", fontSize: 16, fontWeight: 700 }}>
         Planos para Empresas
       </h2>
-      <p style={{ color: DASH.muted, margin: "0 0 14px", fontSize: 11 }}>
-        Plano atual: <strong style={dashPlanAccent}>{currentTier}</strong>
+      <p style={{ color: DASH.muted, margin: "0 0 14px", fontSize: 11, lineHeight: 1.45 }}>
+        {currentTier ? (
+          <>
+            Plano atual: <strong style={dashPlanAccent}>{currentTier}</strong>
+            {" · "}
+          </>
+        ) : (
+          <>Carregando plano… · </>
+        )}
+        Planos pagos (Basic+) incluem caixa de contato direto com o e-mail da Recruta Indústria.
       </p>
 
       <div
@@ -34,19 +42,21 @@ export default function CompanyPlanCards({ currentTier, onSelectFree }: CompanyP
         }}
       >
         {COMPANY_PLAN_TIERS.map((plano) => {
-          const isCurrent = plano.id === currentTier;
+          const isCurrent = currentTier != null && plano.id === currentTier;
           const isPaid = plano.id !== "FREE";
 
           return (
             <div
               key={plano.id}
+              data-card="1"
+              className="dash-card"
               style={{
                 ...dashCard,
-                borderRadius: 10,
                 padding: "10px 10px 12px",
                 display: "flex",
                 flexDirection: "column",
                 minWidth: 0,
+                opacity: currentTier == null ? 0.7 : 1,
               }}
             >
               {isCurrent && (
@@ -110,7 +120,7 @@ export default function CompanyPlanCards({ currentTier, onSelectFree }: CompanyP
                   <p style={{ ...dashPlanAccent, margin: "0 0 4px", fontSize: 9, fontWeight: "bold" }}>Limites</p>
                   <ul style={{ margin: "0 0 10px", paddingLeft: 14, fontSize: 8.5, color: DASH.text, lineHeight: 1.4 }}>
                     {plano.limites.map((item) => (
-                      <li key={item}>⚠️ {item}</li>
+                      <li key={item}>📌 {item}</li>
                     ))}
                   </ul>
                 </>

@@ -54,16 +54,20 @@ export const dashPage: CSSProperties = {
 export const dashHeader: CSSProperties = {
   background: DASH.sidebar,
   borderBottom: `1px solid ${DASH.border}`,
-  padding: "14px 28px",
+  padding: "8px 20px",
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
+  flexWrap: "wrap",
+  gap: 8,
+  rowGap: 6,
 };
 
 export const dashCard: CSSProperties = {
   background: DASH.card,
   border: `1px solid ${DASH.gold}`,
-  borderRadius: 12,
+  borderRadius: 16,
+  overflow: "hidden",
 };
 
 export const dashAside: CSSProperties = {
@@ -77,7 +81,7 @@ export const dashInput: CSSProperties = {
   width: "100%",
   padding: "8px 10px",
   border: `1px solid ${DASH.border}`,
-  borderRadius: 8,
+  borderRadius: 12,
   backgroundColor: DASH.input,
   color: DASH.text,
   fontSize: 13,
@@ -91,14 +95,16 @@ export const dashTag: CSSProperties = {
   border: "1px solid #000",
   fontSize: 10,
   padding: "4px 8px",
-  borderRadius: 6,
+  borderRadius: 10,
   fontWeight: 600,
 };
 
+/** Bloco interno: sem moldura — a borda do card pai serve para os dois. */
 export const dashInnerBox: CSSProperties = {
   background: DASH.inner,
-  border: `1px solid ${DASH.gold}`,
-  borderRadius: 8,
+  border: "none",
+  borderRadius: 14,
+  overflow: "hidden",
 };
 
 export const dashSectionTitle: CSSProperties = {
@@ -110,7 +116,7 @@ export const dashSectionTitle: CSSProperties = {
 };
 
 export const dashLabel: CSSProperties = {
-  color: DASH.muted,
+  color: DASH.gold,
   fontSize: 11,
   fontWeight: 600,
   textTransform: "uppercase",
@@ -123,7 +129,7 @@ export const dashPlanAccent: CSSProperties = {
 
 export const dashPlanBox: CSSProperties = {
   ...dashInnerBox,
-  border: `1px solid ${DASH.border}`,
+  border: `1px solid ${DASH.gold}`,
   textAlign: "center",
   padding: 10,
 };
@@ -191,16 +197,18 @@ export function useDashboardTheme() {
 export function DashboardThemeShell({
   children,
   style,
+  className,
 }: {
   children: ReactNode;
   style?: CSSProperties;
+  className?: string;
 }) {
   const value = useDashboardThemeState();
 
   return (
     <DashboardThemeContext.Provider value={value}>
       <div
-        className="ri-dashboard"
+        className={["ri-dashboard", className].filter(Boolean).join(" ")}
         data-theme={value.theme}
         style={{ ...dashPage, ...style }}
       >

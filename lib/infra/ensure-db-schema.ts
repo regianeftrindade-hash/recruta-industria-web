@@ -69,6 +69,8 @@ export async function ensureProfileMessageTable(): Promise<void> {
           "companyUserId" TEXT NOT NULL,
           "companyName" TEXT NOT NULL,
           "body" TEXT NOT NULL,
+          "senderRole" TEXT NOT NULL DEFAULT 'COMPANY',
+          "replyToId" TEXT,
           "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
           CONSTRAINT "ProfileMessage_pkey" PRIMARY KEY ("id")
         )
@@ -85,6 +87,23 @@ export async function ensureProfileMessageTable(): Promise<void> {
       `CREATE INDEX IF NOT EXISTS "ProfileMessage_createdAt_idx" ON "ProfileMessage"("createdAt")`,
     );
 
+    // Colunas para resposta profissional ↔ empresa
+    const hasSenderRole = await profileMessageHasColumn('senderRole');
+    if (!hasSenderRole) {
+      await prisma.$executeRawUnsafe(
+        `ALTER TABLE "ProfileMessage" ADD COLUMN "senderRole" TEXT NOT NULL DEFAULT 'COMPANY'`,
+      );
+    }
+    const hasReplyToId = await profileMessageHasColumn('replyToId');
+    if (!hasReplyToId) {
+      await prisma.$executeRawUnsafe(
+        `ALTER TABLE "ProfileMessage" ADD COLUMN "replyToId" TEXT`,
+      );
+    }
+    await prisma.$executeRawUnsafe(
+      `CREATE INDEX IF NOT EXISTS "ProfileMessage_replyToId_idx" ON "ProfileMessage"("replyToId")`,
+    );
+
     profileMessageTableReady = true;
   } catch (error) {
     console.error('[schema] Falha ao garantir tabela ProfileMessage:', error);
@@ -92,27 +111,123 @@ export async function ensureProfileMessageTable(): Promise<void> {
   }
 }
 
+async function profileMessageHasColumn(columnName: string): Promise<boolean> {
+  const rows = await prisma.$queryRaw<Array<{ exists: boolean }>>`
+    SELECT EXISTS (
+      SELECT 1
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'ProfileMessage'
+        AND lower(column_name) = lower(${columnName})
+    ) AS exists
+  `;
+  return Boolean(rows[0]?.exists);
+}
+
 export async function ensurePaymentSchema(): Promise<void> {
   await ensureProfilePremiumColumns();
   await ensureProfileMessageTable();
+  await ensureJobProposalTables();
   await ensureSubscriptionBillingColumns();
   await ensureVideoApresentacaoColumn();
+  await ensureTrackingEmTesteColumn();
 }
 
-let videoApresentacaoColumnReady = false;
+let trackingEmTesteReady = false;
 
-/** Coluna de vídeo de apresentação em Profile. */
-export async function ensureVideoApresentacaoColumn(): Promise<void> {
-  if (videoApresentacaoColumnReady) return;
-
-  const hasColumn = await profileHasColumn('videoApresentacaoPath');
-  if (!hasColumn) {
+/** Coluna emTeste / naoContratado no acompanhamento empresa → profissional. */
+export async function ensureTrackingEmTesteColumn(): Promise<void> {
+  if (trackingEmTesteReady) return;
+  try {
     await prisma.$executeRawUnsafe(
-      `ALTER TABLE "Profile" ADD COLUMN IF NOT EXISTS "videoApresentacaoPath" TEXT`,
+      `ALTER TABLE "CompanyProfileTracking" ADD COLUMN IF NOT EXISTS "emTeste" BOOLEAN NOT NULL DEFAULT false`,
     );
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "CompanyProfileTracking" ADD COLUMN IF NOT EXISTS "naoContratado" BOOLEAN NOT NULL DEFAULT false`,
+    );
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "CompanyProfileTracking" ADD COLUMN IF NOT EXISTS "entrevistaCancelada" BOOLEAN NOT NULL DEFAULT false`,
+    );
+  } catch (error) {
+    console.warn("ensureTrackingEmTesteColumn:", error);
   }
+  trackingEmTesteReady = true;
+}
 
-  videoApresentacaoColumnReady = true;
+let jobProposalTablesReady = false;
+
+/** Tabelas JobProposal e JobInterview (proposta → entrevista). */
+export async function ensureJobProposalTables(): Promise<void> {
+  if (jobProposalTablesReady) return;
+
+  try {
+    const hasProposal = await tableExists('JobProposal');
+    if (!hasProposal) {
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE "JobProposal" (
+          "id" TEXT NOT NULL,
+          "profileId" TEXT NOT NULL,
+          "companyUserId" TEXT NOT NULL,
+          "companyName" TEXT NOT NULL,
+          "cargo" TEXT NOT NULL,
+          "salario" TEXT NOT NULL,
+          "turno" TEXT NOT NULL,
+          "cidade" TEXT NOT NULL,
+          "beneficios" TEXT NOT NULL,
+          "mensagem" TEXT NOT NULL,
+          "status" TEXT NOT NULL DEFAULT 'SENT',
+          "respondedAt" TIMESTAMP(3),
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "JobProposal_pkey" PRIMARY KEY ("id")
+        )
+      `);
+    }
+
+    const hasInterview = await tableExists('JobInterview');
+    if (!hasInterview) {
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE "JobInterview" (
+          "id" TEXT NOT NULL,
+          "proposalId" TEXT NOT NULL,
+          "scheduledAt" TIMESTAMP(3) NOT NULL,
+          "locationType" TEXT NOT NULL,
+          "address" TEXT,
+          "meetingUrl" TEXT,
+          "observacoes" TEXT NOT NULL,
+          "status" TEXT NOT NULL DEFAULT 'PENDING',
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "JobInterview_pkey" PRIMARY KEY ("id"),
+          CONSTRAINT "JobInterview_proposalId_key" UNIQUE ("proposalId")
+        )
+      `);
+    }
+
+    await prisma.$executeRawUnsafe(
+      `CREATE INDEX IF NOT EXISTS "JobProposal_profileId_idx" ON "JobProposal"("profileId")`,
+    );
+    await prisma.$executeRawUnsafe(
+      `CREATE INDEX IF NOT EXISTS "JobProposal_companyUserId_idx" ON "JobProposal"("companyUserId")`,
+    );
+    await prisma.$executeRawUnsafe(
+      `CREATE INDEX IF NOT EXISTS "JobProposal_status_idx" ON "JobProposal"("status")`,
+    );
+    await prisma.$executeRawUnsafe(
+      `CREATE INDEX IF NOT EXISTS "JobProposal_createdAt_idx" ON "JobProposal"("createdAt")`,
+    );
+    await prisma.$executeRawUnsafe(
+      `CREATE INDEX IF NOT EXISTS "JobInterview_status_idx" ON "JobInterview"("status")`,
+    );
+    await prisma.$executeRawUnsafe(
+      `CREATE INDEX IF NOT EXISTS "JobInterview_scheduledAt_idx" ON "JobInterview"("scheduledAt")`,
+    );
+
+    jobProposalTablesReady = true;
+  } catch (error) {
+    console.error('[schema] Falha ao garantir tabelas JobProposal/JobInterview:', error);
+    throw error;
+  }
 }
 
 let subscriptionBillingColumnsReady = false;
@@ -155,4 +270,20 @@ export async function ensureSubscriptionBillingColumns(): Promise<void> {
   }
 
   subscriptionBillingColumnsReady = true;
+}
+
+let videoApresentacaoColumnReady = false;
+
+/** Coluna de vídeo de apresentação em Profile. */
+export async function ensureVideoApresentacaoColumn(): Promise<void> {
+  if (videoApresentacaoColumnReady) return;
+
+  const hasColumn = await profileHasColumn('videoApresentacaoPath');
+  if (!hasColumn) {
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "Profile" ADD COLUMN IF NOT EXISTS "videoApresentacaoPath" TEXT`,
+    );
+  }
+
+  videoApresentacaoColumnReady = true;
 }

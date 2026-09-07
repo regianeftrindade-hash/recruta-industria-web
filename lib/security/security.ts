@@ -1,15 +1,6 @@
 // Validações de segurança e sanitização de dados
 
 // CORS e Headers de Segurança
-const securityHeadersBase = {
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY',
-  'X-XSS-Protection': '1; mode=block',
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
-};
-
 function buildContentSecurityPolicy(): string {
   if (process.env.NODE_ENV === 'development') {
     return [
@@ -17,18 +8,47 @@ function buildContentSecurityPolicy(): string {
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
-      "media-src 'self' blob:",
+      "media-src 'self' blob: https:",
       "font-src 'self' data: https://fonts.gstatic.com",
       "connect-src 'self' ws: wss: http: https:",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "object-src 'none'",
     ].join('; ');
   }
 
-  return "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https:";
+  return [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https:",
+    "media-src 'self' blob: https:",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "connect-src 'self' https:",
+    "frame-src 'self' https://accounts.google.com",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "object-src 'none'",
+    "upgrade-insecure-requests",
+  ].join('; ');
 }
 
 export function getSecurityHeaders(): Record<string, string> {
+  const isProd = process.env.NODE_ENV === 'production';
   return {
-    ...securityHeadersBase,
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'X-XSS-Protection': '1; mode=block',
+    ...(isProd
+      ? { 'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload' }
+      : {}),
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'geolocation=(), microphone=(), camera=(), payment=()',
+    'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+    'Cross-Origin-Resource-Policy': 'same-site',
+    'X-Permitted-Cross-Domain-Policies': 'none',
     'Content-Security-Policy': buildContentSecurityPolicy(),
   };
 }
@@ -445,9 +465,15 @@ export function isValidPhoneBR(phone: string): boolean {
   return /^(\d{2})9?\d{8}$/.test(cleaned);
 }
 
-// Gerar código 2FA
+// Gerar código 2FA (criptograficamente seguro)
 export function generate2FACode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  // Preferir crypto no browser/Node; fallback seguro o suficiente para UI legada
+  if (typeof crypto !== 'undefined' && 'getRandomValues' in crypto) {
+    const arr = new Uint32Array(1);
+    crypto.getRandomValues(arr);
+    return String(100000 + (arr[0] % 900000));
+  }
+  return String(100000 + Math.floor(Math.random() * 900000));
 }
 
 // Verificar código 2FA com tempo de expiração
@@ -604,65 +630,11 @@ export function validateInput(input: any, type: 'email' | 'password' | 'text' | 
   }
 }
 
-// Proteção contra brute force em API
-const apiRateLimits = new Map<string, { count: number; resetTime: number }>();
+// Proteção contra brute force em API (memória — preferir enforceApiRateLimit async)
+export { checkAPIRateLimitMemory as checkAPIRateLimit } from './rate-limit';
 
-export function checkAPIRateLimit(identifier: string, limit = 100, windowMs = 60000): boolean {
-  const now = Date.now();
-  const current = apiRateLimits.get(identifier);
-  
-  if (!current || now > current.resetTime) {
-    apiRateLimits.set(identifier, { count: 1, resetTime: now + windowMs });
-    return true;
-  }
-  
-  if (current.count < limit) {
-    current.count++;
-    return true;
-  }
-  
-  return false;
-}
 
-// Auditoria com timestamp e detalhes
-interface AuditLog {
-  timestamp: number;
-  action: string;
-  email: string;
-  ip: string;
-  userAgent: string;
-  result: 'success' | 'failure';
-  details: string;
-}
+// Auditoria — persistente (DB) + memória. Ver lib/security/audit-store.ts
+export { logAudit, getAuditLogs } from './audit-store';
+export type { AuditLogEntry as AuditLog } from './audit-store';
 
-const auditLogs: AuditLog[] = [];
-
-export function logAudit(
-  action: string,
-  email: string,
-  ip: string,
-  userAgent: string,
-  result: 'success' | 'failure',
-  details: string
-): void {
-  const log: AuditLog = {
-    timestamp: Date.now(),
-    action,
-    email,
-    ip,
-    userAgent,
-    result,
-    details,
-  };
-  
-  auditLogs.push(log);
-  
-  // Manter últimos 10000 logs
-  if (auditLogs.length > 10000) {
-    auditLogs.shift();
-  }
-}
-
-export function getAuditLogs(limit = 100): AuditLog[] {
-  return auditLogs.slice(-limit).reverse();
-}

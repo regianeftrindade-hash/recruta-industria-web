@@ -1,0 +1,201 @@
+.banner {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: clamp(14px, 2vw, 20px) clamp(16px, 3vw, 24px);
+  text-align: center;
+  border: 1px solid rgba(200, 155, 60, 0.55);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(17, 17, 17, 0.95) 0%, rgba(0, 0, 0, 0.98) 100%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+.bannerKicker {
+  margin: 0 0 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c89b3c;
+}
+
+.bannerTitle {
+  margin: 0 0 8px;
+  font-size: clamp(1rem, 2.2vw, 1.2rem);
+  font-weight: 700;
+  color: #f2f2f2;
+  line-height: 1.35;
+}
+
+.bannerText {
+  margin: 0 0 14px;
+  font-size: clamp(0.78rem, 1.6vw, 0.9rem);
+  color: rgba(242, 242, 242, 0.82);
+  line-height: 1.5;
+}
+
+.bannerHint {
+  margin: 10px 0 0;
+  font-size: 0.68rem;
+  color: rgba(242, 242, 242, 0.55);
+  line-height: 1.45;
+}
+
+.installBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #000000;
+  background: var(--ri-gold-gradient);
+  border: 1px solid #6b5218;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.installBtn:active {
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
+}
+
+.installBtnCompact {
+  padding: 8px 14px;
+  font-size: 0.72rem;
+}
+
+.installBtnInline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  color: #000000;
+  background: var(--ri-gold-gradient);
+  border: 1px solid #6b5218;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  white-space: nowrap;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.installBtnInline:active {
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
+}
+
+.menuCard {
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid rgba(200, 155, 60, 0.45);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.menuTitle {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #c89b3c;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.menuText {
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: rgba(242, 242, 242, 0.78);
+}
+
+.footerWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 0 2px;
+}
+
+.footerText {
+  margin: 0;
+  font-size: 0.62rem;
+  color: rgba(242, 242, 242, 0.7);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.modalCard {
+  width: 100%;
+  max-width: 420px;
+  padding: 22px 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(200, 155, 60, 0.55);
+  background: linear-gradient(180deg, #323232 0%, #2b2b2b 100%);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+}
+
+.modalTitle {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #f2f2f2;
+}
+
+.modalText {
+  margin: 0 0 14px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: rgba(242, 242, 242, 0.85);
+}
+
+.modalSteps {
+  margin: 0 0 18px;
+  padding-left: 18px;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: rgba(242, 242, 242, 0.78);
+}
+
+.modalCloseBtn {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #000000;
+  background: var(--ri-gold-gradient);
+  border: 1px solid #6b5218;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.modalCloseBtn:active {
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
+}

@@ -26,7 +26,8 @@ export function getProfessionalPlanFeatures(tier: ProfessionalPlanTier): Profess
     canSeeCompanyNames: isPremium,
     isFeaturedInSearch: isPremium,
     canAccessDetailedReports: isPremium,
-    canReceiveEmailNotifications: isPremium,
+    // E-mails de recrutamento liberados para todos até o Premium estar ativo no produto
+    canReceiveEmailNotifications: true,
   };
 }
 

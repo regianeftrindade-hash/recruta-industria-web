@@ -23,12 +23,12 @@ function UpgradePageContent() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#000000',
+      backgroundColor: '#3A3A3A',
       color: '#F2F2F2',
     }}>
       {/* CABEÇALHO */}
       <div style={{
-        backgroundColor: '#111111',
+        backgroundColor: '#2B2B2B',
         color: '#F2F2F2',
         borderBottom: '1px solid #8D6B1F',
         padding: '20px 40px',
@@ -49,7 +49,7 @@ function UpgradePageContent() {
       {/* CONTEÚDO */}
       <div style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto' }}>
         <div style={{
-          backgroundColor: '#111111',
+          backgroundColor: '#2B2B2B',
           padding: '40px',
           borderRadius: '15px',
           border: '1px solid #8D6B1F',
@@ -62,7 +62,7 @@ function UpgradePageContent() {
 
           {/* CARD DE PREÇO */}
           <div style={{
-            backgroundColor: '#000000',
+            backgroundColor: '#3A3A3A',
             padding: '40px',
             borderRadius: '15px',
             border: '1px solid #8D6B1F',
@@ -144,14 +144,15 @@ function UpgradePageContent() {
             <button
               onClick={() => router.push('/professional/dashboard')}
               style={{
-                background: 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)',
+                background: 'linear-gradient(180deg, #8D6B1F 0%, #C89B3C 45%, #A87E2E 100%)',
                 color: '#000',
                 padding: '14px 40px',
-                border: 'none',
+                border: '1px solid #6b5218',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontWeight: 'bold',
-                fontSize: '16px'
+                fontSize: '16px',
+                boxShadow: 'inset 0 1px 0 rgba(200, 155, 60, 0.45), inset 0 -2px 0 rgba(74, 50, 12, 0.42), 0 3px 0 #5a4512, 0 4px 10px rgba(0, 0, 0, 0.45)',
               }}
             >
               ← Voltar
@@ -159,14 +160,15 @@ function UpgradePageContent() {
             <button
               onClick={() => router.push('/professional/checkout')}
               style={{
-                background: 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)',
+                background: 'linear-gradient(180deg, #8D6B1F 0%, #C89B3C 45%, #A87E2E 100%)',
                 color: '#000',
                 padding: '14px 40px',
-                border: 'none',
+                border: '1px solid #6b5218',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontWeight: 'bold',
-                fontSize: '16px'
+                fontSize: '16px',
+                boxShadow: 'inset 0 1px 0 rgba(200, 155, 60, 0.45), inset 0 -2px 0 rgba(74, 50, 12, 0.42), 0 3px 0 #5a4512, 0 4px 10px rgba(0, 0, 0, 0.45)',
               }}
             >
               💳 Upgrade Agora

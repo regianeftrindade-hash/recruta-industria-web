@@ -23,6 +23,7 @@ import {
 } from "@/lib/teste-comportamental";
 
 const TOTAL = PERGUNTAS_TESTE.length;
+const dashTitleProf = { ...dashSectionTitle, color: DASH.gold };
 
 export default function TesteComportamentalPage() {
   const router = useRouter();
@@ -65,7 +66,7 @@ export default function TesteComportamentalPage() {
 
   const handleEnviar = async () => {
     if (!todasRespondidas) {
-      setErro("Responda todas as 20 perguntas antes de enviar.");
+      setErro(`Responda todas as ${TOTAL} perguntas antes de enviar.`);
       return;
     }
 
@@ -77,7 +78,7 @@ export default function TesteComportamentalPage() {
       for (let i = 1; i <= TOTAL; i++) {
         const nota = respostas[i];
         if (nota == null || nota < 1 || nota > 5) {
-          setErro("Responda todas as 20 perguntas antes de enviar.");
+          setErro(`Responda todas as ${TOTAL} perguntas antes de enviar.`);
           setEnviando(false);
           return;
         }
@@ -114,7 +115,7 @@ export default function TesteComportamentalPage() {
 
   if (loading) {
     return (
-      <DashboardThemeShell>
+      <DashboardThemeShell className="ri-dash-prof">
         <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>
           Carregando teste...
         </div>
@@ -123,7 +124,7 @@ export default function TesteComportamentalPage() {
   }
 
   return (
-    <DashboardThemeShell style={{ width: "100%", maxWidth: "none" }}>
+    <DashboardThemeShell className="ri-dash-prof" style={{ width: "100%", maxWidth: "none" }}>
       <header style={{ ...dashHeader, padding: "14px 16px" }}>
         <LogoRecruta size="xs" as="span" depth />
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -140,14 +141,15 @@ export default function TesteComportamentalPage() {
 
       <main style={{ maxWidth: 720, margin: "0 auto", padding: "16px 14px 32px" }}>
         <section style={{ ...dashCard, padding: 18, marginBottom: 16, boxShadow: DASH.shadow }}>
-          <h1 style={{ ...dashSectionTitle, margin: "0 0 8px", fontSize: 20 }}>Teste Comportamental</h1>
-          <p style={{ margin: "0 0 6px", fontSize: 13, fontWeight: 600, color: DASH.title }}>
-            Escala de Identificação
+          <h1 style={{ ...dashTitleProf, margin: "0 0 8px", fontSize: 20 }}>Teste Comportamental Pessoal</h1>
+          <p style={{ margin: "0 0 6px", fontSize: 13, fontWeight: 600, color: DASH.gold }}>
+            Como você age no dia a dia
           </p>
           <p style={{ margin: 0, fontSize: 12, color: DASH.muted, lineHeight: 1.5 }}>
-            Leia cada frase e marque de <strong>1 a 5</strong>, onde{" "}
+            Leia cada frase sobre sua vida e marque de <strong>1 a 5</strong>, onde{" "}
             <strong>1 = discordo plenamente</strong> e <strong>5 = concordo plenamente</strong>.
-            Este teste pode ser preenchido <strong>apenas uma vez</strong>.
+            O resultado mostra seu perfil pessoal predominante. Este teste pode ser preenchido{" "}
+            <strong>apenas uma vez</strong>.
           </p>
 
           <div
@@ -233,7 +235,7 @@ export default function TesteComportamentalPage() {
                         padding: "8px 4px",
                         border: `2px solid ${selecionado ? DASH.gold : DASH.border}`,
                         borderRadius: 10,
-                        background: selecionado ? "var(--dash-gold-soft, rgba(212,175,55,0.15))" : DASH.input,
+                        background: selecionado ? "var(--dash-gold-soft)" : DASH.input,
                         cursor: "pointer",
                         color: DASH.text,
                         minWidth: 0,

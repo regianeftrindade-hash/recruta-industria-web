@@ -15,8 +15,9 @@ type PaymentData = {
 };
 
 const COLORS = {
-  preto: "#000000",
-  cardBg: "#111111",
+  preto: "#3A3A3A",
+  cardBg: "#2B2B2B",
+  tinta: "#000000",
   dourado: "#C89B3C",
   douradoEscuro: "#8D6B1F",
   branco: "#F2F2F2",
@@ -25,7 +26,13 @@ const COLORS = {
 
 const BTN_GOLD: React.CSSProperties = {
   background: "linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)",
-  color: COLORS.preto,
+  color: COLORS.tinta,
+  border: "1px solid #6b5218",
+  borderRadius: 8,
+  fontWeight: 700,
+  cursor: "pointer",
+  boxShadow:
+    "inset 0 1px 0 rgba(255, 228, 150, 0.55), inset 0 -2px 0 rgba(74, 50, 12, 0.42), 0 3px 0 #5a4512, 0 4px 10px rgba(0, 0, 0, 0.45)",
 };
 
 export default function Pagamento() {

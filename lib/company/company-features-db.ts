@@ -3,8 +3,10 @@ import { prisma } from '@/lib/db';
 import type { IndustrialFilters } from '@/lib/profile-industrial';
 import {
   calculateCompatibilityScore,
+  hasActiveIndustrialFilters,
   matchesIndustrialFilters,
   parseProfileIndustrial,
+  sanitizeIndustrialFilters,
 } from '@/lib/profile-industrial';
 
 let tablesEnsured = false;
@@ -116,6 +118,62 @@ export async function removeProfileFromTalentList(
   `;
 }
 
+export type TalentListWithProfiles = {
+  id: string;
+  name: string;
+  createdAt: Date;
+  profiles: Array<{ id: string; nome: string; cargo: string }>;
+};
+
+/** Listas do banco de talentos com os perfis (nome e cargo) para agrupamento por cargo. */
+export async function listTalentListsWithProfiles(
+  companyUserId: string,
+): Promise<TalentListWithProfiles[]> {
+  await ensureCompanyFeatureTables();
+  const lists = await listTalentLists(companyUserId);
+  if (lists.length === 0) return [];
+
+  const items = await prisma.$queryRaw<Array<{ listId: string; profileId: string }>>`
+    SELECT i."listId", i."profileId"
+    FROM "CompanyTalentListItem" i
+    JOIN "CompanyTalentList" l ON l.id = i."listId"
+    WHERE l."companyUserId" = ${companyUserId}
+    ORDER BY i."createdAt" DESC
+  `;
+
+  const profileIds = [...new Set(items.map((i) => i.profileId))];
+  const profiles = profileIds.length
+    ? await prisma.profile.findMany({
+        where: { id: { in: profileIds } },
+        select: {
+          id: true,
+          title: true,
+          cargoDesejado: true,
+          user: { select: { name: true } },
+        },
+      })
+    : [];
+  const profileById = new Map(profiles.map((p) => [p.id, p]));
+
+  return lists.map((l) => ({
+    id: l.id,
+    name: l.name,
+    createdAt: l.createdAt,
+    profiles: items
+      .filter((i) => i.listId === l.id)
+      .map((i) => {
+        const p = profileById.get(i.profileId);
+        if (!p) return null;
+        return {
+          id: p.id,
+          nome: p.user?.name || 'Profissional',
+          cargo: p.cargoDesejado?.trim() || p.title?.trim() || 'Sem cargo informado',
+        };
+      })
+      .filter((p): p is { id: string; nome: string; cargo: string } => p !== null),
+  }));
+}
+
 export async function listTalentListProfileIds(listId: string, companyUserId: string): Promise<string[]> {
   await ensureCompanyFeatureTables();
   const rows = await prisma.$queryRaw<Array<{ profileId: string }>>`
@@ -126,6 +184,51 @@ export async function listTalentListProfileIds(listId: string, companyUserId: st
     ORDER BY i."createdAt" DESC
   `;
   return rows.map((r) => r.profileId);
+}
+
+/** Listas da empresa em que este perfil já está. */
+export async function listTalentListIdsForProfile(
+  companyUserId: string,
+  profileId: string,
+): Promise<string[]> {
+  await ensureCompanyFeatureTables();
+  const rows = await prisma.$queryRaw<Array<{ listId: string }>>`
+    SELECT i."listId"
+    FROM "CompanyTalentListItem" i
+    JOIN "CompanyTalentList" l ON l.id = i."listId"
+    WHERE l."companyUserId" = ${companyUserId}
+      AND i."profileId" = ${profileId}
+  `;
+  return rows.map((r) => r.listId);
+}
+
+/**
+ * Sincroniza membership: adiciona nas listas marcadas e remove das demais da empresa.
+ */
+export async function syncProfileTalentLists(
+  companyUserId: string,
+  profileId: string,
+  listIds: string[],
+): Promise<void> {
+  await ensureCompanyFeatureTables();
+  const wanted = Array.from(new Set(listIds.filter(Boolean)));
+  const owned = await listTalentLists(companyUserId);
+  const ownedIds = new Set(owned.map((l) => l.id));
+  const validWanted = wanted.filter((id) => ownedIds.has(id));
+  const current = await listTalentListIdsForProfile(companyUserId, profileId);
+  const currentSet = new Set(current);
+  const wantedSet = new Set(validWanted);
+
+  for (const listId of validWanted) {
+    if (!currentSet.has(listId)) {
+      await addProfileToTalentList(companyUserId, listId, profileId);
+    }
+  }
+  for (const listId of current) {
+    if (!wantedSet.has(listId)) {
+      await removeProfileFromTalentList(companyUserId, listId, profileId);
+    }
+  }
 }
 
 export type AlertRow = {
@@ -193,6 +296,8 @@ type ProfileForMatch = {
   cargoDesejado: string | null;
   title: string | null;
   areaInteresse: string | null;
+  situacaoProfissional: string | null;
+  trabalhouIndustria: string | null;
   tempoExperiencia: string | null;
   turnoDisponivel: string | null;
   recolocacao: string | null;
@@ -211,21 +316,40 @@ export async function findAlertMatches(
   since: Date,
   limit = 20,
 ): Promise<{ profileId: string; score: number; updatedAt: string }[]> {
+  const clean = sanitizeIndustrialFilters(filters);
+  if (!hasActiveIndustrialFilters(clean)) return [];
+
   const profiles = await prisma.profile.findMany({
     where: {
       isVisible: true,
       status: 'ACTIVE',
       updatedAt: { gte: since },
+      ...(clean.estado ? { estado: clean.estado } : {}),
+      ...(clean.cidade ? { cidade: { contains: clean.cidade, mode: 'insensitive' } } : {}),
+      ...(clean.area ? { areaInteresse: clean.area } : {}),
+      ...(clean.escolaridade ? { escolaridade: clean.escolaridade } : {}),
+      ...(clean.situacaoProfissional ? { situacaoProfissional: clean.situacaoProfissional } : {}),
+      ...(clean.trabalhouIndustria ? { trabalhouIndustria: clean.trabalhouIndustria } : {}),
+      ...(clean.turno ? { turnoDisponivel: clean.turno } : {}),
+      ...(clean.experiencia ? { tempoExperiencia: clean.experiencia } : {}),
+      ...(clean.cargo
+        ? {
+            OR: [
+              { cargoDesejado: { contains: clean.cargo, mode: 'insensitive' } },
+              { title: { contains: clean.cargo, mode: 'insensitive' } },
+            ],
+          }
+        : {}),
     },
     orderBy: { updatedAt: 'desc' },
-    take: 100,
+    take: Math.min(Math.max(limit * 4, 40), 120),
   }) as ProfileForMatch[];
 
   const matches: { profileId: string; score: number; updatedAt: string }[] = [];
   for (const profile of profiles) {
     const industrial = parseProfileIndustrial(profile);
-    if (!matchesIndustrialFilters(profile, industrial, filters)) continue;
-    const score = calculateCompatibilityScore(profile, industrial, filters);
+    if (!matchesIndustrialFilters(profile, industrial, clean)) continue;
+    const score = calculateCompatibilityScore(profile, industrial, clean);
     matches.push({
       profileId: profile.id,
       score,
@@ -240,7 +364,7 @@ export async function seedDefaultTalentLists(companyUserId: string): Promise<voi
   await ensureCompanyFeatureTables();
   const existing = await listTalentLists(companyUserId);
   if (existing.length > 0) return;
-  const defaults = ['Operadores CNC', 'Qualidade', 'PCP', 'Logística', 'Engenharia', 'Produção'];
+  const defaults = ['Usinagem', 'Qualidade', 'PCP', 'Logística', 'Manutenção', 'Engenharia', 'Produção'];
   for (const name of defaults) {
     await createTalentList(companyUserId, name);
   }

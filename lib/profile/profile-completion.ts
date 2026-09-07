@@ -9,9 +9,15 @@ export type ProfileCompletionInput = {
   estado?: string;
   cidade?: string;
   escolaridade?: string;
+  cursoFormacao?: string;
+  instituicaoFormacao?: string;
+  anoConclusaoFormacao?: string;
   situacaoProfissional?: string;
   areaInteresse?: string;
   cargoDesejado?: string;
+  nivelOperacional?: string;
+  areaNivel?: string;
+  detalheNivel?: string;
   trabalhouIndustria?: string;
   disponivelContratacao?: string;
   cursos?: string[];
@@ -79,6 +85,7 @@ export function calculateProfileCompletion(data: ProfileCompletionInput): number
     [filled(data.situacaoProfissional), 5],
     [filled(data.areaInteresse), 5],
     [filled(data.cargoDesejado), 5],
+    [filled(data.nivelOperacional), 5],
     [filled(data.trabalhouIndustria), 5],
     [filled(data.disponibilidadeInicio), 5],
   ];
@@ -91,7 +98,6 @@ export function calculateProfileCompletion(data: ProfileCompletionInput): number
     [filled(data.turnoDisponivel), 3],
     [filled(data.tempoExperiencia), 3],
     [filled(data.pretensaoSalarial), 3],
-    [anyCheckbox(data.segmentosIndustria), 2],
     [filled(data.mensagemEmpresas), 2],
     [filled(data.curriculo), 2],
   ];

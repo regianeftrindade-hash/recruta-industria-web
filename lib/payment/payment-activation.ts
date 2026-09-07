@@ -1,11 +1,16 @@
 import { prisma } from '@/lib/db';
 import {
+  asCompanyExtraSeatsPaymentMeta,
   asCompanyPaymentMeta,
   asProfessionalPaymentMeta,
 } from '@/lib/payment-config';
-import { activateCompanyPlanFromPayment } from '@/lib/company-payment';
+import {
+  activateCompanyExtraSeatsFromPayment,
+  activateCompanyPlanFromPayment,
+} from '@/lib/company-payment';
 import { activateProfessionalPlanFromPayment } from '@/lib/professional-payment';
 import { getPagSeguroChargeStatus } from '@/lib/pagseguro-client';
+import { getAsaasChargeStatus } from '@/lib/payment/asaas-client';
 import {
   getPagBankSubscriptionStatus,
   isPagBankSubscriptionId,
@@ -19,6 +24,9 @@ export function paymentBelongsToUser(
 ): boolean {
   const company = asCompanyPaymentMeta(meta);
   if (company) return company.companyUserId === userId;
+
+  const extraSeats = asCompanyExtraSeatsPaymentMeta(meta);
+  if (extraSeats) return extraSeats.companyUserId === userId;
 
   const professional = asProfessionalPaymentMeta(meta);
   if (professional) return professional.professionalUserId === userId;
@@ -48,6 +56,20 @@ export async function activatePaidPayment(
       return { activated: true, alreadyActive, type: 'company' };
     } catch (error) {
       console.error('[pagamento] falha ao ativar plano empresa:', error);
+      return { activated: false };
+    }
+  }
+
+  const extraSeatsMeta = asCompanyExtraSeatsPaymentMeta(payment.meta);
+  if (extraSeatsMeta) {
+    try {
+      const { alreadyActive } = await activateCompanyExtraSeatsFromPayment(
+        extraSeatsMeta.companyUserId,
+        paymentReference,
+      );
+      return { activated: true, alreadyActive, type: 'company_extra_seats' };
+    } catch (error) {
+      console.error('[pagamento] falha ao ativar usuário extra:', error);
       return { activated: false };
     }
   }
@@ -85,6 +107,11 @@ export async function syncPaymentStatusFromGateway(
 
   if (isPagBankSubscriptionId(paymentReference)) {
     const remote = await getPagBankSubscriptionStatus(paymentReference);
+    if (remote?.status) {
+      status = remote.status;
+    }
+  } else if (paymentReference.startsWith('pay_')) {
+    const remote = await getAsaasChargeStatus(paymentReference);
     if (remote?.status) {
       status = remote.status;
     }
@@ -128,6 +155,12 @@ export async function findPaymentRecordByGatewayRef(
   }
 
   if (!payment && ref.startsWith('CHAR_')) {
+    payment = await prisma.paymentRecord.findFirst({
+      where: { OR: [{ reference: ref }, { externalId: ref }] },
+    });
+  }
+
+  if (!payment && ref.startsWith('pay_')) {
     payment = await prisma.paymentRecord.findFirst({
       where: { OR: [{ reference: ref }, { externalId: ref }] },
     });

@@ -1,0 +1,35 @@
+---
+description: Logotipo oficial Recruta Indústria — usar sempre LogoRecruta / LogoRecrutaSymbol
+alwaysApply: true
+---
+
+# Logo padrão — Recruta Indústria
+
+Arte oficial em `public/logo-recruta.png` (logotipo) e `public/simbolo-recruta.png` (símbolo).
+Configuração em `lib/logo-recruta.ts`. Componentes: `LogoRecruta` e `LogoRecrutaSymbol`.
+
+## Regras obrigatórias
+
+1. **Logotipo completo** — sempre use `<LogoRecruta />` (nunca texto plano nem PNGs antigos `logo-texto-recruta.png`, `logo-r.png`).
+2. **Só o símbolo** (favicon, ícone de app, avatar de marca) — use `<LogoRecrutaSymbol />` ou `/simbolo-recruta.png`.
+3. **Não altere** as imagens oficiais sem pedido explícito do usuário.
+4. Configurações de tamanho ficam em `lib/logo-recruta.ts` — não duplique valores no componente.
+
+## Tamanhos do logotipo (`LogoRecruta`)
+
+| Prop `size` | Uso |
+|-------------|-----|
+| `hero` | Página inicial |
+| `sm` | Login |
+| `xs` | Cabeçalhos (dashboard empresa, etc.) |
+| `md` | Padrão genérico |
+
+## Exemplo
+
+```tsx
+import LogoRecruta from "@/app/components/LogoRecruta";
+import LogoRecrutaSymbol from "@/app/components/LogoRecrutaSymbol";
+
+<LogoRecruta size="sm" as="h1" />
+<LogoRecrutaSymbol size="md" />
+```

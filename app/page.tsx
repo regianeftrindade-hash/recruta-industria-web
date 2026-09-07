@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 /* 🔒 PÁGINA INICIAL BLOQUEADA (06/07/2026) — não editar sem pedido explícito do usuário (ver .cursor/rules/home-page-lock.mdc) */
 
@@ -16,8 +16,8 @@ const taglineFont = Dancing_Script({
 });
 
 const COLORS = {
-    preto: "#000000",
-    cardBg: "#111111",
+    preto: "#3A3A3A",
+    cardBg: "#2B2B2B",
     dourado: "#C89B3C",
     douradoEscuro: "#8D6B1F",
     branco: "#F2F2F2",
@@ -62,54 +62,32 @@ export default function Home() {
             }}
         >
             <div className={styles.homeTop}>
-            <section
-                style={{
-                    padding: "clamp(10px, 1.5vh, 20px) 16px 0",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: "100%",
-                    flexShrink: 0,
-                }}
-            >
-                <div className={styles.logoHero}>
-                    <LogoRecruta size="hero" depth />
-                </div>
+            <section className={styles.logoSection}>
+                <div className={styles.logoCard}>
+                    <div className={styles.logoHero}>
+                        <LogoRecruta size="hero" depth />
+                    </div>
 
-                <div className={styles.heroLineRow}>
-                    <span className={styles.heroLineSegment} aria-hidden />
-                    <span className={`${styles.heroTaglineStar} ${taglineFont.className}`} aria-hidden>
-                        ★
-                    </span>
-                    <p
-                        className={`${styles.heroTagline} ${taglineFont.className}`}
-                        style={screenSmooth}
-                    >
-                        A indústria evolui. O recrutamento também.
-                    </p>
-                    <span className={`${styles.heroTaglineStar} ${taglineFont.className}`} aria-hidden>
-                        ★
-                    </span>
-                    <span className={styles.heroLineSegment} aria-hidden />
+                    <div className={styles.heroLineRow}>
+                        <span className={styles.heroLineSegment} aria-hidden />
+                        <span className={`${styles.heroTaglineStar} ${taglineFont.className}`} aria-hidden>
+                            ★
+                        </span>
+                        <p
+                            className={`${styles.heroTagline} ${taglineFont.className}`}
+                            style={screenSmooth}
+                        >
+                            A indústria evolui. O recrutamento também.
+                        </p>
+                        <span className={`${styles.heroTaglineStar} ${taglineFont.className}`} aria-hidden>
+                            ★
+                        </span>
+                        <span className={styles.heroLineSegment} aria-hidden />
+                    </div>
                 </div>
             </section>
 
-            <section
-                style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    alignItems: "flex-start",
-                    gap: "clamp(22px, 3.5vw, 48px)",
-                    padding: "clamp(14px, 1.8vw, 22px) clamp(10px, 2vw, 24px) clamp(4px, 0.8vw, 10px)",
-                    flex: "0 0 auto",
-                    maxWidth: 1180,
-                    margin: "0 auto",
-                    width: "100%",
-                    boxSizing: "border-box",
-                }}
-            >
+            <section className={styles.actionCards}>
                 {[
                     {
                         href: "/login?tipo=profissional",
@@ -218,14 +196,16 @@ export default function Home() {
             </section>
 
             <div className={styles.homeContactsWrap}>
-                <div className={styles.homeContacts} style={screenSmooth}>
-                    <a href="mailto:contato@recrutaindustria.com" className={styles.homeContactLink}>
-                        contato@recrutaindustria.com
-                    </a>
-                    <span className={styles.homeContactSep} aria-hidden>/</span>
-                    <a href="mailto:suporte@recrutaindustria.com" className={styles.homeContactLink}>
-                        suporte@recrutaindustria.com
-                    </a>
+                <div className={styles.homeContactsRow}>
+                    <div className={styles.homeContacts} style={screenSmooth}>
+                        <a href="mailto:contato@recrutaindustria.com" className={styles.homeContactLink}>
+                            contato@recrutaindustria.com
+                        </a>
+                        <span className={styles.homeContactSep} aria-hidden>/</span>
+                        <a href="mailto:suporte@recrutaindustria.com" className={styles.homeContactLink}>
+                            suporte@recrutaindustria.com
+                        </a>
+                    </div>
                 </div>
                 <div className={styles.homeContactLine} aria-hidden />
             </div>
@@ -233,7 +213,7 @@ export default function Home() {
             <footer
                 suppressHydrationWarning
                 style={{
-                    background: COLORS.preto,
+                    background: COLORS.cardBg,
                     padding: "10px 20px 4px",
                     flexShrink: 0,
                     display: "flex",

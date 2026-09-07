@@ -1,26 +1,37 @@
 .ri-dashboard {
   --dash-gold: #c89b3c;
+  --dash-gold-soft: rgba(200, 155, 60, 0.15);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: subpixel-antialiased;
   -moz-osx-font-smoothing: auto;
 }
 
-/* Modo escuro */
+/* Modo escuro — alinhado à home (página clara, cards escuros) */
 .ri-dashboard[data-theme="dark"] {
-  --dash-bg: #151515;
-  --dash-sidebar: #1a1a1a;
-  --dash-card: #222222;
-  --dash-inner: #222222;
-  --dash-input-bg: #2a2a2a;
-  --dash-tag-bg: #2a2a2a;
+  --dash-bg: #3a3a3a;
+  --dash-sidebar: #2b2b2b;
+  --dash-card: #2b2b2b;
+  --dash-inner: #323232;
+  --dash-input-bg: #3a3a3a;
+  --dash-tag-bg: #323232;
   --dash-text: #f5f5f5;
   --dash-title: #f5f5f5;
   --dash-text-muted: #bdbdbd;
-  --dash-border: #3a3a3a;
+  --dash-border: #4a4a4a;
   --dash-compat-low: #444444;
   --dash-compat-low-text: #f5f5f5;
   --dash-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* Dashboard profissional — cards sólidos como o perfil da empresa (sem miolo lavado) */
+.ri-dashboard.ri-dash-prof[data-theme="dark"] {
+  --dash-card: #2b2b2b;
+  --dash-sidebar: #2b2b2b;
+  --dash-inner: #1f1f1f;
+  --dash-input-bg: #1a1a1a;
+  --dash-tag-bg: #1f1f1f;
+  --dash-compat-low: #1a1a1a;
 }
 
 /* Modo claro */
@@ -70,8 +81,31 @@
 .ri-dashboard h1,
 .ri-dashboard h2,
 .ri-dashboard h3,
-.ri-dashboard h4 {
-  color: var(--dash-title);
+.ri-dashboard h4,
+.ri-dashboard h5,
+.ri-dashboard h6 {
+  color: var(--dash-gold) !important;
   font-weight: 700;
   text-decoration: none;
 }
+
+/* Uma única moldura dourada por card externo (1px).
+   Cards aninhados não repetem a borda — a do pai serve para os dois. */
+.ri-dashboard .dash-card,
+.ri-dashboard [data-card="1"],
+.ri-dashboard [data-perfil-card="1"] {
+  border: 1px solid var(--dash-gold) !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+
+.ri-dashboard .dash-card .dash-card,
+.ri-dashboard .dash-card [data-card="1"],
+.ri-dashboard [data-card="1"] .dash-card,
+.ri-dashboard [data-card="1"] [data-card="1"],
+.ri-dashboard [data-perfil-card="1"] .dash-card,
+.ri-dashboard [data-perfil-card="1"] [data-card="1"] {
+  border: none !important;
+}
+
+

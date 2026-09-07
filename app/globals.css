@@ -5,15 +5,15 @@
 }
 
 :root {
-  --ri-preto: #000000;
-  --ri-card-bg: #111111;
+  --ri-preto: #3A3A3A;
+  --ri-card-bg: #2B2B2B;
   --ri-dourado: #C89B3C;
   --ri-dourado-escuro: #8D6B1F;
   --ri-branco: #F2F2F2;
   --ri-texto-suave: #F2F2F2;
-  --ri-gold-gradient: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #F0D878 70%, #C89B3C 100%);
+  --ri-gold-gradient: linear-gradient(180deg, #8D6B1F 0%, #C89B3C 45%, #A87E2E 100%);
   --ri-letter-spacing: normal;
-  --ri-btn-3d-gold-shadow: inset 0 1px 0 rgba(255, 228, 150, 0.55), inset 0 -2px 0 rgba(74, 50, 12, 0.42), 0 3px 0 #5a4512, 0 4px 10px rgba(0, 0, 0, 0.45);
+  --ri-btn-3d-gold-shadow: inset 0 1px 0 rgba(200, 155, 60, 0.45), inset 0 -2px 0 rgba(74, 50, 12, 0.42), 0 3px 0 #5a4512, 0 4px 10px rgba(0, 0, 0, 0.45);
   --ri-btn-3d-gold-active: inset 0 2px 5px rgba(0, 0, 0, 0.42), 0 1px 0 #5a4512;
   --ri-btn-3d-outline-shadow: inset 0 1px 0 rgba(200, 155, 60, 0.2), 0 2px 0 rgba(0, 0, 0, 0.38), 0 3px 8px rgba(0, 0, 0, 0.32);
   --ri-btn-3d-dark-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 0 rgba(0, 0, 0, 0.5), 0 3px 8px rgba(0, 0, 0, 0.35);
@@ -44,12 +44,12 @@ input[type="month"],
 input[type="date"],
 input[type="file"] {
   color-scheme: dark;
-  background-color: #000000 !important;
+  background-color: #3A3A3A !important;
   color: #F2F2F2 !important;
 }
 
 input[type="file"]::file-selector-button {
-  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  background: linear-gradient(180deg, #8D6B1F 0%, #C89B3C 45%, #A87E2E 100%);
   color: #000000;
   border: 1px solid #6b5218;
   border-radius: 6px;
@@ -65,7 +65,7 @@ input[type="file"]::file-selector-button:active {
 }
 
 select option {
-  background-color: #111111;
+  background-color: #2B2B2B;
   color: #F2F2F2;
 }
 
@@ -88,8 +88,8 @@ select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus,
 select:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px #000000 inset !important;
-  box-shadow: 0 0 0 1000px #000000 inset !important;
+  -webkit-box-shadow: 0 0 0 1000px #3A3A3A inset !important;
+  box-shadow: 0 0 0 1000px #3A3A3A inset !important;
   -webkit-text-fill-color: #f2f2f2 !important;
   caret-color: #f2f2f2;
   transition: background-color 99999s ease-out 0s;
@@ -122,14 +122,18 @@ select {
 
 select option {
   color: #f2f2f2;
-  background-color: #111111;
+  background-color: #2B2B2B;
 }
 
 select option[value=""] {
   color: #888888;
 }
 
-button {
+button,
+input[type="submit"],
+input[type="button"],
+.ri-btn-3d-gold {
+  display: inline-block;
   background: var(--ri-gold-gradient);
   color: #000000;
   border: 1px solid #6b5218;
@@ -139,24 +143,12 @@ button {
   cursor: pointer;
   border-radius: 8px;
   box-shadow: var(--ri-btn-3d-gold-shadow);
-  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.15s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
 }
 
-button:active:not(:disabled) {
-  transform: translateY(2px);
-  box-shadow: var(--ri-btn-3d-gold-active);
-}
-
-.ri-btn-3d-gold {
-  display: inline-block;
-  background: var(--ri-gold-gradient);
-  color: #000000;
-  border: 1px solid #6b5218;
-  font-weight: 700;
-  box-shadow: var(--ri-btn-3d-gold-shadow);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-
+button:active:not(:disabled),
+input[type="submit"]:active:not(:disabled),
+input[type="button"]:active:not(:disabled),
 .ri-btn-3d-gold:active {
   transform: translateY(2px);
   box-shadow: var(--ri-btn-3d-gold-active);
@@ -166,7 +158,9 @@ button:active:not(:disabled) {
   letter-spacing: normal;
 }
 
-button:disabled {
+button:disabled,
+input[type="submit"]:disabled,
+input[type="button"]:disabled {
   background: linear-gradient(180deg, #4a3810 0%, #5a4512 45%, #6b5218 100%);
   color: var(--ri-branco);
   opacity: 0.75;

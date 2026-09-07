@@ -24,6 +24,8 @@ type Mode = "idle" | "camera" | "recording" | "preview" | "uploading";
 type Props = {
   initialHasVideo?: boolean;
   onVideoChange?: (hasVideo: boolean) => void;
+  compact?: boolean;
+  thumbnailOnly?: boolean;
 };
 
 const btnSecondary: React.CSSProperties = {
@@ -40,6 +42,8 @@ const btnSecondary: React.CSSProperties = {
 export default function VideoApresentacaoSection({
   initialHasVideo = false,
   onVideoChange,
+  compact = false,
+  thumbnailOnly = false,
 }: Props) {
   const [hasVideo, setHasVideo] = useState(initialHasVideo);
   const [mode, setMode] = useState<Mode>("idle");
@@ -413,88 +417,149 @@ export default function VideoApresentacaoSection({
     }
   };
 
-  return (
-    <section style={{ ...dashCard, padding: 14, marginTop: 12, boxShadow: DASH.shadow }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
-        <h3 style={{ ...dashSectionTitle, margin: 0, fontSize: 14 }}>
-          Vídeo de apresentação
-        </h3>
-        {hasVideo && mode === "idle" && (
-          <span
+  const btnCompactGold: React.CSSProperties = {
+    ...btnGold,
+    padding: "6px 12px",
+    fontSize: 11,
+  };
+
+  const btnRowStyle: React.CSSProperties = {
+    display: "flex",
+    gap: 8,
+    marginTop: 8,
+    flexWrap: "wrap",
+    justifyContent: compact ? "center" : "flex-end",
+  };
+
+  const previewThumbStyle: React.CSSProperties = {
+    width: "min(200px, 100%)",
+    aspectRatio: "16 / 9",
+    borderRadius: 8,
+    objectFit: "cover",
+    background: "#000",
+    border: "1px solid rgba(141, 107, 31, 0.45)",
+    display: "block",
+    marginInline: compact ? "auto" : undefined,
+  };
+
+  const previewPlaceholderStyle: React.CSSProperties = {
+    width: "min(200px, 100%)",
+    aspectRatio: "16 / 9",
+    borderRadius: 8,
+    background: "#0d0d0d",
+    border: "1px dashed rgba(141, 107, 31, 0.45)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 28,
+    color: "#666",
+    marginInline: compact ? "auto" : undefined,
+  };
+
+  const content = (
+    <>
+      {!compact && (
+        <>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+            <h3 style={{ ...dashSectionTitle, margin: 0, fontSize: 14 }}>
+              Vídeo de apresentação
+            </h3>
+            {hasVideo && mode === "idle" && (
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#1a3d1a",
+                  background: "rgba(72, 187, 120, 0.22)",
+                  border: "1px solid rgba(72, 187, 120, 0.55)",
+                  borderRadius: 999,
+                  padding: "4px 10px",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                Vídeo anexado ao perfil
+              </span>
+            )}
+          </div>
+          <p style={{ margin: "0 0 10px", fontSize: 11, color: DASH.muted, lineHeight: 1.5 }}>
+            Grave um vídeo curto de até 30 segundos para mostrar sua experiência, postura profissional e
+            disponibilidade para empresas.
+          </p>
+          <p
             style={{
+              margin: "0 0 12px",
               fontSize: 10,
-              fontWeight: 700,
-              color: "#1a3d1a",
-              background: "rgba(72, 187, 120, 0.22)",
-              border: "1px solid rgba(72, 187, 120, 0.55)",
-              borderRadius: 999,
-              padding: "4px 10px",
-              letterSpacing: "0.02em",
+              color: DASH.gold,
+              lineHeight: 1.45,
+              padding: "8px 10px",
+              ...dashInnerBox,
             }}
           >
-            Vídeo anexado ao perfil
-          </span>
-        )}
-      </div>
-      <p style={{ margin: "0 0 10px", fontSize: 11, color: DASH.muted, lineHeight: 1.5 }}>
-        Grave um vídeo curto de até 30 segundos para mostrar sua experiência, postura profissional e
-        disponibilidade para empresas.
-      </p>
-      <p
-        style={{
-          margin: "0 0 12px",
-          fontSize: 10,
-          color: DASH.gold,
-          lineHeight: 1.45,
-          padding: "8px 10px",
-          ...dashInnerBox,
-        }}
-      >
-        <strong>Aviso:</strong> Seja objetivo. Fale seu nome, área de experiência, principais
-        habilidades e disponibilidade.
-      </p>
+            <strong>Aviso:</strong> Seja objetivo. Fale seu nome, área de experiência, principais
+            habilidades e disponibilidade.
+          </p>
+        </>
+      )}
+
+      {compact && (
+        <p style={{ margin: "0 0 8px", fontSize: 11, color: "#bbb", lineHeight: 1.45, textAlign: "right" }}>
+          Vídeo curto de até 30 segundos (MP4, MOV ou WebM).
+        </p>
+      )}
 
       {hasVideo && mode === "idle" && streamUrl && (
-        <div style={{ marginBottom: 12 }}>
-          <div
-            style={{
-              marginBottom: 10,
-              padding: "10px 12px",
-              borderRadius: 8,
-              ...dashInnerBox,
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-            }}
-          >
-            <span
-              aria-hidden
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 8,
-                background: "rgba(200, 155, 60, 0.2)",
-                border: `1px solid ${DASH.gold}`,
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 16,
-              }}
-            >
-              ▶
-            </span>
-            <div>
-              <p style={{ margin: 0, fontSize: 12, color: DASH.text, fontWeight: 700 }}>
-                Seu vídeo está salvo
-              </p>
-              <p style={{ margin: "2px 0 0", fontSize: 10, color: DASH.muted, lineHeight: 1.4 }}>
-                Empresas com perfil desbloqueado poderão assistir à sua apresentação.
-              </p>
-            </div>
-          </div>
-          <SecureVideoPlayer src={streamUrl} />
-          <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
-            <button type="button" onClick={() => void openCamera()} style={btnSecondary}>
+        <div style={{ marginBottom: compact ? 8 : 12, display: "flex", flexDirection: "column", alignItems: "stretch" }}>
+          {thumbnailOnly || compact ? (
+            <video
+              src={streamUrl}
+              muted
+              playsInline
+              preload="metadata"
+              style={previewThumbStyle}
+            />
+          ) : (
+            <>
+              <div
+                style={{
+                  marginBottom: 10,
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  ...dashInnerBox,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                }}
+              >
+                <span
+                  aria-hidden
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 8,
+                    background: "rgba(200, 155, 60, 0.2)",
+                    border: `1px solid ${DASH.gold}`,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 16,
+                  }}
+                >
+                  ▶
+                </span>
+                <div>
+                  <p style={{ margin: 0, fontSize: 12, color: DASH.text, fontWeight: 700 }}>
+                    Seu vídeo está salvo
+                  </p>
+                  <p style={{ margin: "2px 0 0", fontSize: 10, color: DASH.muted, lineHeight: 1.4 }}>
+                    Empresas com perfil desbloqueado poderão assistir à sua apresentação.
+                  </p>
+                </div>
+              </div>
+              <SecureVideoPlayer src={streamUrl} />
+            </>
+          )}
+          <div style={btnRowStyle}>
+            <button type="button" onClick={() => void openCamera()} style={compact ? btnCompactGold : btnSecondary}>
               Gravar vídeo agora
             </button>
             <button
@@ -517,13 +582,16 @@ export default function VideoApresentacaoSection({
       )}
 
       {!hasVideo && mode === "idle" && (
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-          <button type="button" onClick={() => void openCamera()} style={{ ...btnGold, padding: "10px 14px", fontSize: 12 }}>
-            Gravar vídeo agora
-          </button>
-          <button type="button" onClick={() => fileInputRef.current?.click()} style={btnSecondary}>
-            Enviar vídeo existente
-          </button>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 8, marginBottom: compact ? 0 : 12 }}>
+          {compact && <div style={previewPlaceholderStyle} aria-hidden>🎬</div>}
+          <div style={btnRowStyle}>
+            <button type="button" onClick={() => void openCamera()} style={compact ? btnCompactGold : { ...btnGold, padding: "10px 14px", fontSize: 12 }}>
+              Gravar vídeo agora
+            </button>
+            <button type="button" onClick={() => fileInputRef.current?.click()} style={btnSecondary}>
+              Enviar vídeo existente
+            </button>
+          </div>
         </div>
       )}
 
@@ -570,7 +638,7 @@ export default function VideoApresentacaoSection({
               </div>
             )}
           </div>
-          <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+          <div style={btnRowStyle}>
             {mode === "camera" && (
               <button type="button" onClick={startRecording} style={{ ...btnGold, padding: "8px 14px", fontSize: 12 }}>
                 Iniciar gravação
@@ -629,7 +697,7 @@ export default function VideoApresentacaoSection({
               <source src={previewUrl} type={previewMime || undefined} />
             )}
           </video>
-          <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+          <div style={btnRowStyle}>
             <button
               type="button"
               onClick={() => previewVideoRef.current?.play()}
@@ -663,6 +731,16 @@ export default function VideoApresentacaoSection({
         style={{ display: "none" }}
         onChange={(e) => void handleFileSelected(e)}
       />
+    </>
+  );
+
+  if (compact) {
+    return <div>{content}</div>;
+  }
+
+  return (
+    <section style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
+      {content}
     </section>
   );
 }

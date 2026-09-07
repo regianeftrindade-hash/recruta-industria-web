@@ -9,6 +9,7 @@ import LogoRecruta from "@/app/components/LogoRecruta";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import "@/app/dashboard/dashboard-theme.css";
 import { DASH, DashboardThemeShell, dashHeader } from "@/lib/dashboard-theme";
+import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 
 export default function CompanyProfessionalPage() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function CompanyProfessionalPage() {
     return (
       <DashboardThemeShell>
         <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <p style={{ color: DASH.text, fontSize: 16 }}>Carregando...</p>
+          <AmpulhetaLoading label="Carregando perfil..." size={42} color={DASH.gold} />
         </div>
       </DashboardThemeShell>
     );

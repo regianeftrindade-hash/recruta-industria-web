@@ -4,6 +4,8 @@ import { resolveAuthEmail } from '@/lib/api-auth';
 import { ensureVideoApresentacaoColumn } from '@/lib/ensure-db-schema';
 import { getVideoApresentacaoPathByProfileId } from '@/lib/professional/professional-video-db';
 import { streamVideoResponse } from '@/lib/professional/video-stream';
+import { isCompanyVerified } from '@/lib/company-storage';
+import { resolveCompanyOwnerUserId } from '@/lib/company/company-team';
 
 export const runtime = 'nodejs';
 
@@ -28,11 +30,13 @@ export async function GET(
     }
 
     const { id: profileId } = await params;
+    const ownerUserId = (await resolveCompanyOwnerUserId(companyUser.id)) || companyUser.id;
 
+    // Desbloqueio fica no dono do plano (equipe RH usa o mesmo AccessRecord)
     const unlocked = await prisma.accessRecord.findFirst({
       where: {
         profileId,
-        companyUserId: companyUser.id,
+        companyUserId: { in: [ownerUserId, companyUser.id] },
         status: 'ACTIVE',
         expiresAt: { gt: new Date() },
       },
@@ -40,6 +44,10 @@ export async function GET(
 
     if (!unlocked) {
       return NextResponse.json({ error: 'Perfil não desbloqueado' }, { status: 403 });
+    }
+
+    if (!(await isCompanyVerified(ownerUserId))) {
+      return NextResponse.json({ error: 'Empresa aguardando verificação do CNPJ.' }, { status: 403 });
     }
 
     const path = await getVideoApresentacaoPathByProfileId(profileId);

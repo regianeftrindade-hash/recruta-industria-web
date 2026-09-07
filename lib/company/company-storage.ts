@@ -7,11 +7,25 @@ import {
   applyCompanySubscriptionBilling,
   type ApplySubscriptionOptions,
 } from '@/lib/subscription-billing-storage';
+import type { CompanyVerificationInfo, CompanyVerificationStatus } from '@/lib/company/company-verification';
+import { isCompanyVerificationStatus } from '@/lib/company/company-verification';
+import { isCorporateEmailVerified } from '@/lib/company/corporate-email-confirmation';
+import { isCompanyTestBypassUserId } from '@/lib/company/company-test-bypass';
 
 export type CompanyExtraData = {
   cnpj: string | null;
   responsavelNome: string | null;
   responsavelCpf: string | null;
+  telefone: string | null;
+  endereco: string | null;
+  logoUrl: string | null;
+  fotoResponsavelUrl: string | null;
+  emailCorporativo: string | null;
+  emailCorporativoVerificado: boolean;
+  cartaoCnpjUrl: string | null;
+  verificationStatus: CompanyVerificationStatus;
+  verifiedAt: Date | null;
+  rejectionReason: string | null;
 };
 
 export async function findCompanyByCnpj(
@@ -54,7 +68,21 @@ export async function findCompanyByResponsavelCpf(
 
 export async function saveCompanyExtraData(
   userId: string,
-  data: { cnpj?: string; responsavelNome?: string; responsavelCpf?: string }
+  data: {
+    cnpj?: string;
+    responsavelNome?: string;
+    responsavelCpf?: string;
+    telefone?: string;
+    endereco?: string;
+    logoUrl?: string;
+    fotoResponsavelUrl?: string;
+    emailCorporativo?: string;
+    emailCorporativoVerificado?: boolean;
+    cartaoCnpjUrl?: string;
+    verificationStatus?: CompanyVerificationStatus;
+    verifiedAt?: Date | null;
+    rejectionReason?: string | null;
+  }
 ): Promise<void> {
   if (data.cnpj !== undefined) {
     await prisma.$executeRaw`
@@ -79,17 +107,178 @@ export async function saveCompanyExtraData(
       WHERE "userId" = ${userId}
     `;
   }
+
+  if (data.telefone !== undefined) {
+    await prisma.$executeRaw`
+      UPDATE "Company"
+      SET telefone = ${data.telefone}, "updatedAt" = NOW()
+      WHERE "userId" = ${userId}
+    `;
+  }
+
+  if (data.endereco !== undefined) {
+    await prisma.$executeRaw`
+      UPDATE "Company"
+      SET endereco = ${data.endereco}, "updatedAt" = NOW()
+      WHERE "userId" = ${userId}
+    `;
+  }
+
+  if (data.logoUrl !== undefined) {
+    await prisma.$executeRaw`
+      UPDATE "Company"
+      SET "logoUrl" = ${data.logoUrl}, "updatedAt" = NOW()
+      WHERE "userId" = ${userId}
+    `;
+  }
+
+  if (data.fotoResponsavelUrl !== undefined) {
+    await prisma.$executeRaw`
+      UPDATE "Company"
+      SET "fotoResponsavelUrl" = ${data.fotoResponsavelUrl}, "updatedAt" = NOW()
+      WHERE "userId" = ${userId}
+    `;
+  }
+
+  if (data.emailCorporativo !== undefined) {
+    await prisma.$executeRaw`
+      UPDATE "Company"
+      SET "emailCorporativo" = ${data.emailCorporativo}, "updatedAt" = NOW()
+      WHERE "userId" = ${userId}
+    `;
+  }
+
+  if (data.emailCorporativoVerificado !== undefined) {
+    await prisma.$executeRaw`
+      UPDATE "Company"
+      SET "emailCorporativoVerificado" = ${data.emailCorporativoVerificado}, "updatedAt" = NOW()
+      WHERE "userId" = ${userId}
+    `;
+  }
+
+  if (data.cartaoCnpjUrl !== undefined) {
+    await prisma.$executeRaw`
+      UPDATE "Company"
+      SET "cartaoCnpjUrl" = ${data.cartaoCnpjUrl}, "updatedAt" = NOW()
+      WHERE "userId" = ${userId}
+    `;
+  }
+
+  if (data.verificationStatus !== undefined) {
+    await prisma.$executeRaw`
+      UPDATE "Company"
+      SET "verificationStatus" = ${data.verificationStatus}, "updatedAt" = NOW()
+      WHERE "userId" = ${userId}
+    `;
+  }
+
+  if (data.verifiedAt !== undefined) {
+    await prisma.$executeRaw`
+      UPDATE "Company"
+      SET "verifiedAt" = ${data.verifiedAt}, "updatedAt" = NOW()
+      WHERE "userId" = ${userId}
+    `;
+  }
+
+  if (data.rejectionReason !== undefined) {
+    await prisma.$executeRaw`
+      UPDATE "Company"
+      SET "rejectionReason" = ${data.rejectionReason}, "updatedAt" = NOW()
+      WHERE "userId" = ${userId}
+    `;
+  }
 }
 
 export async function getCompanyExtraData(userId: string): Promise<CompanyExtraData> {
   const rows = await prisma.$queryRaw<Array<CompanyExtraData>>`
-    SELECT cnpj, "responsavelNome", "responsavelCpf"
+    SELECT cnpj, "responsavelNome", "responsavelCpf", telefone, endereco,
+           "logoUrl", "fotoResponsavelUrl",
+           "emailCorporativo", "emailCorporativoVerificado",
+           "cartaoCnpjUrl", "verificationStatus", "verifiedAt", "rejectionReason"
     FROM "Company"
     WHERE "userId" = ${userId}
     LIMIT 1
   `;
 
-  return rows[0] ?? { cnpj: null, responsavelNome: null, responsavelCpf: null };
+  if (!rows[0]) {
+    return {
+      cnpj: null,
+      responsavelNome: null,
+      responsavelCpf: null,
+      telefone: null,
+      endereco: null,
+      logoUrl: null,
+      fotoResponsavelUrl: null,
+      emailCorporativo: null,
+      emailCorporativoVerificado: false,
+      cartaoCnpjUrl: null,
+      verificationStatus: 'PENDING',
+      verifiedAt: null,
+      rejectionReason: null,
+    };
+  }
+
+  return {
+    ...rows[0],
+    logoUrl: rows[0].logoUrl ?? null,
+    fotoResponsavelUrl: rows[0].fotoResponsavelUrl ?? null,
+  };
+}
+
+export async function getCompanyVerificationInfo(
+  userId: string,
+  extras?: CompanyExtraData,
+): Promise<CompanyVerificationInfo> {
+  const extra = extras ?? (await getCompanyExtraData(userId));
+
+  if (await isCompanyTestBypassUserId(userId)) {
+    return {
+      verificationStatus: 'VERIFIED',
+      verifiedAt: extra.verifiedAt ?? new Date(),
+      rejectionReason: null,
+      cartaoCnpjUrl: extra.cartaoCnpjUrl,
+      emailCorporativo: extra.emailCorporativo,
+      emailCorporativoVerificado: true,
+      isDocumentVerified: true,
+      isEmailVerified: true,
+      canAccessSensitiveProfiles: true,
+    };
+  }
+
+  const status = isCompanyVerificationStatus(extra.verificationStatus)
+    ? extra.verificationStatus
+    : 'PENDING';
+
+  const isDocumentVerified = !!(
+    extra.cartaoCnpjUrl?.trim()
+    && status === 'VERIFIED'
+  );
+  const isEmailVerified = !!(
+    extra.emailCorporativo?.trim()
+    && extra.emailCorporativoVerificado
+  );
+
+  return {
+    verificationStatus: status,
+    verifiedAt: extra.verifiedAt,
+    rejectionReason: extra.rejectionReason,
+    cartaoCnpjUrl: extra.cartaoCnpjUrl,
+    emailCorporativo: extra.emailCorporativo,
+    emailCorporativoVerificado: extra.emailCorporativoVerificado,
+    isDocumentVerified,
+    isEmailVerified,
+    canAccessSensitiveProfiles: isDocumentVerified && isEmailVerified,
+  };
+}
+
+export async function canCompanyAccessSensitiveProfiles(userId: string): Promise<boolean> {
+  const info = await getCompanyVerificationInfo(userId);
+  return info.canAccessSensitiveProfiles;
+}
+
+/** @deprecated Use canCompanyAccessSensitiveProfiles */
+export async function isCompanyVerified(userId: string): Promise<boolean> {
+  return canCompanyAccessSensitiveProfiles(userId);
 }
 
 export async function getCompanyCnpj(userId: string): Promise<string | null> {
@@ -101,33 +290,125 @@ export async function saveCompanyCnpj(userId: string, cnpj: string): Promise<voi
   await saveCompanyExtraData(userId, { cnpj });
 }
 
+function asCompanyPlanTier(value: unknown): CompanyPlanTier | null {
+  const tier = String(value || '').trim().toUpperCase();
+  if (tier === 'BASIC' || tier === 'PREMIUM' || tier === 'EMPRESARIAL' || tier === 'FREE') {
+    return tier;
+  }
+  return null;
+}
+
+function asExpiryDate(value: unknown): Date | null {
+  if (!value) return null;
+  const d = value instanceof Date ? value : new Date(String(value));
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
 export async function getCompanyPlanTier(userId: string): Promise<CompanyPlanTier> {
-  const rows = await prisma.$queryRaw<
-    Array<{ planTier: string | null; subscriptionExpiresAt: Date | null }>
-  >`
-    SELECT "planTier", "subscriptionExpiresAt"
-    FROM "Company"
-    WHERE "userId" = ${userId}
-    LIMIT 1
-  `;
+  if (await isCompanyTestBypassUserId(userId)) {
+    return 'EMPRESARIAL';
+  }
 
-  const row = rows[0];
-  const tier = row?.planTier;
-  const expiresAt = row?.subscriptionExpiresAt;
+  let row:
+    | {
+        planTier: string | null;
+        subscriptionExpiresAt: Date | string | null;
+        autoRenew?: boolean | null;
+      }
+    | undefined;
 
-  if (
-    tier === 'BASIC' ||
-    tier === 'PREMIUM' ||
-    tier === 'EMPRESARIAL'
-  ) {
+  try {
+    const rows = await prisma.$queryRaw<
+      Array<{
+        planTier: string | null;
+        subscriptionExpiresAt: Date | string | null;
+        autoRenew: boolean | null;
+      }>
+    >`
+      SELECT "planTier", "subscriptionExpiresAt", "autoRenew"
+      FROM "Company"
+      WHERE "userId" = ${userId}
+      LIMIT 1
+    `;
+    row = rows[0];
+  } catch {
+    const rows = await prisma.$queryRaw<
+      Array<{ planTier: string | null; subscriptionExpiresAt: Date | string | null }>
+    >`
+      SELECT "planTier", "subscriptionExpiresAt"
+      FROM "Company"
+      WHERE "userId" = ${userId}
+      LIMIT 1
+    `;
+    row = rows[0];
+  }
+
+  const tier = asCompanyPlanTier(row?.planTier);
+  const expiresAt = asExpiryDate(row?.subscriptionExpiresAt);
+
+  if (tier === 'BASIC' || tier === 'PREMIUM' || tier === 'EMPRESARIAL') {
+    // Assinatura recorrente: mantém o plano mesmo se a data ainda não foi renovada no banco
+    if (row?.autoRenew) {
+      return tier;
+    }
+    // Expirado sem auto-renovação: FREE só na leitura (não grava no GET)
     if (expiresAt && expiresAt.getTime() < Date.now()) {
-      await setCompanyPlanTier(userId, 'FREE');
       return 'FREE';
     }
     return tier;
   }
 
-  return 'FREE';
+  // FREE no banco: tenta recuperar se um pagamento pago ainda cobriria o período
+  const recovered = await tryRecoverPaidCompanyPlan(userId);
+  return recovered || 'FREE';
+}
+
+/** Recupera plano pago apagado por downgrade indevido no GET (antes desta correção). */
+async function tryRecoverPaidCompanyPlan(userId: string): Promise<CompanyPlanTier | null> {
+  try {
+    const payments = await prisma.paymentRecord.findMany({
+      where: { status: 'PAID' },
+      orderBy: { createdAt: 'desc' },
+      take: 30,
+      select: { meta: true, createdAt: true },
+    });
+
+    for (const payment of payments) {
+      const meta = (() => {
+        try {
+          const parsed = payment.meta ? JSON.parse(payment.meta) : null;
+          if (!parsed || parsed.type !== 'company_subscription') return null;
+          if (parsed.companyUserId !== userId) return null;
+          if (typeof parsed.planTier !== 'string') return null;
+          return parsed as { planTier: string; billingPeriod?: string; billingMode?: string };
+        } catch {
+          return null;
+        }
+      })();
+      if (!meta) continue;
+
+      const paidTier = asCompanyPlanTier(meta.planTier);
+      if (!paidTier || paidTier === 'FREE') continue;
+
+      const period = String(meta.billingPeriod || '').toLowerCase() === 'annual' ? 'annual' : 'monthly';
+      const days = getSubscriptionDays(period);
+      const endsAt = new Date(payment.createdAt.getTime() + days * 24 * 60 * 60 * 1000);
+      const recurring = String(meta.billingMode || '').toLowerCase() === 'recurring';
+
+      if (recurring || endsAt.getTime() > Date.now()) {
+        await setCompanyPlanTier(userId, paidTier, {
+          billingPeriod: period,
+          billingMode: recurring ? 'recurring' : 'one_time',
+          autoRenew: recurring,
+          extendFromCurrent: false,
+        });
+        return paidTier;
+      }
+    }
+  } catch (error) {
+    console.error('[plan] Falha ao recuperar plano pago:', error);
+  }
+  return null;
 }
 
 export async function setCompanyPlanTier(

@@ -8,15 +8,18 @@ import { prisma } from '@/lib/db';
 
 import {
 
-  createPagSeguroPayment,
+  createGatewayPayment,
 
-  getPagSeguroConfig,
+  getGatewayApiUrl,
 
-  type PagSeguroPaymentMethod,
+  isRecurringGatewaySupported,
 
-} from '@/lib/pagseguro-client';
+  type GatewayPaymentMethod,
+
+} from '@/lib/payment/gateway';
 
 import { createPagBankRecurringSubscription } from '@/lib/pagseguro-subscriptions';
+import { getPagSeguroConfig } from '@/lib/pagseguro-client';
 
 import { buildProfessionalPaymentDescription } from '@/lib/professional-payment';
 
@@ -30,7 +33,7 @@ import {
 
 } from '@/lib/professional-premium-plans';
 
-import { isPaymentGatewayConfigured, isSandboxMode } from '@/lib/payment-config';
+import { isPaymentGatewayConfigured, isSandboxMode, getPaymentProvider } from '@/lib/payment-config';
 
 import { sanitizeTaxId, fallbackTaxIdForSandbox } from '@/lib/payment-tax';
 
@@ -58,7 +61,9 @@ export async function POST(req: NextRequest) {
 
           error: 'Gateway de pagamento não configurado',
 
-          detail: 'Defina PAGSEGURO_TOKEN no .env.local',
+          detail: getPaymentProvider() === 'asaas'
+            ? 'Defina ASAAS_API_KEY no .env.local'
+            : 'Defina PAGSEGURO_TOKEN no .env.local',
 
         },
 
@@ -106,7 +111,7 @@ export async function POST(req: NextRequest) {
 
     const billingMode = parseBillingMode(body?.billingMode);
 
-    const method = (body?.method || 'pix') as PagSeguroPaymentMethod;
+    const method = (body?.method || 'pix') as GatewayPaymentMethod;
 
 
 
@@ -153,6 +158,15 @@ export async function POST(req: NextRequest) {
 
 
     if (billingMode === 'recurring') {
+      if (!isRecurringGatewaySupported()) {
+        return NextResponse.json(
+          {
+            error: 'Assinatura recorrente indisponível com Asaas',
+            detail: 'Use pagamento único (Pix ou Boleto) ou configure PAYMENT_PROVIDER=pagseguro.',
+          },
+          { status: 400 },
+        );
+      }
 
       const subscription = await createPagBankRecurringSubscription({
 
@@ -276,7 +290,7 @@ export async function POST(req: NextRequest) {
 
 
 
-    const payment = await createPagSeguroPayment({
+    const payment = await createGatewayPayment({
 
       amount,
 
@@ -336,7 +350,7 @@ export async function POST(req: NextRequest) {
 
 
 
-    const { apiUrl } = getPagSeguroConfig();
+    const apiUrl = getGatewayApiUrl();
 
 
 
@@ -367,6 +381,8 @@ export async function POST(req: NextRequest) {
       billingMode,
 
       recurring: false,
+
+      provider: payment.provider,
 
       sandbox: apiUrl.includes('sandbox'),
 

@@ -1,0 +1,2 @@
+ALTER TABLE "Company" ADD COLUMN IF NOT EXISTS "logoUrl" TEXT;
+ALTER TABLE "Company" ADD COLUMN IF NOT EXISTS "fotoResponsavelUrl" TEXT;

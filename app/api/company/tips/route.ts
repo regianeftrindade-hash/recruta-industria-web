@@ -101,3 +101,44 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erro ao enviar dica' }, { status: 500 })
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email.toLowerCase().trim() },
+    })
+
+    if (!user || user.role !== 'COMPANY') {
+      return NextResponse.json({ error: 'Acesso restrito a empresas' }, { status: 403 })
+    }
+
+    const tipId = new URL(request.url).searchParams.get('id')?.trim() || ''
+    if (!tipId) {
+      return NextResponse.json({ error: 'id é obrigatório' }, { status: 400 })
+    }
+
+    const { resolveCompanyOwnerUserId } = await import('@/lib/company/company-team')
+    const ownerUserId = (await resolveCompanyOwnerUserId(user.id)) || user.id
+
+    const deleted = await prisma.tip.deleteMany({
+      where: {
+        id: tipId,
+        companyUserId: { in: [ownerUserId, user.id] },
+      },
+    })
+
+    if (deleted.count === 0) {
+      return NextResponse.json({ error: 'Dica não encontrada' }, { status: 404 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Erro ao excluir dica:', error)
+    return NextResponse.json({ error: 'Erro ao excluir dica' }, { status: 500 })
+  }
+}

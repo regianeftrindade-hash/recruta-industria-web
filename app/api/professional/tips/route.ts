@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth.config';
+import { limparDicasExpiradas } from '@/lib/profile/inbox-cleanup';
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,7 +25,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ tips: [] });
     }
 
-    // Buscar as dicas deixadas para este profissional
+    await limparDicasExpiradas(user.profile.id);
+
+    // Buscar as dicas deixadas para este profissional (último mês)
     const tips = await prisma.tip.findMany({
       where: { profileId: user.profile.id },
       orderBy: { createdAt: 'desc' }

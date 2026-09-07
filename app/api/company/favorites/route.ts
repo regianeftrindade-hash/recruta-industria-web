@@ -55,6 +55,7 @@ export async function GET() {
 
 
     const planContext = await getCompanyPlanContext(user.id)
+    const dataUserId = planContext.ownerUserId || user.id
 
     if (!planContext.features.canFavorite) {
 
@@ -64,7 +65,7 @@ export async function GET() {
 
 
 
-    const favorites = await listCompanyFavoriteProfileIds(user.id)
+    const favorites = await listCompanyFavoriteProfileIds(dataUserId)
 
 
 
@@ -113,6 +114,7 @@ export async function POST(request: NextRequest) {
 
 
     const planContext = await getCompanyPlanContext(user.id)
+    const dataUserId = planContext.ownerUserId || user.id
 
     if (!planContext.features.canFavorite) {
 
@@ -132,7 +134,7 @@ export async function POST(request: NextRequest) {
 
 
 
-    const existing = await hasCompanyFavorite(user.id, profileId)
+    const existing = await hasCompanyFavorite(dataUserId, profileId)
 
 
 
@@ -166,7 +168,7 @@ export async function POST(request: NextRequest) {
 
 
 
-    await createCompanyFavorite(user.id, profileId)
+    await createCompanyFavorite(dataUserId, profileId)
 
     notifyProfessionalAsync(() =>
       notifyProfileFavorited(profileId, user.id)
@@ -228,7 +230,9 @@ export async function DELETE(request: NextRequest) {
 
 
 
-    await deleteCompanyFavorite(user.id, profileId)
+    const planContext = await getCompanyPlanContext(user.id)
+    const dataUserId = planContext.ownerUserId || user.id
+    await deleteCompanyFavorite(dataUserId, profileId)
 
 
 

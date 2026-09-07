@@ -5,7 +5,7 @@
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { checkRateLimit } from '@/lib/security';
 import MathCaptcha from '../components/MathCaptcha';
 import LogoRecruta from '../components/LogoRecruta';
@@ -15,6 +15,9 @@ import styles from './login.module.css';
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { status: sessionStatus } = useSession();
+  const redirectTo = searchParams.get('redirect');
+  const isAdminRedirect = !!redirectTo?.startsWith('/admin');
   const tipoFromUrl = searchParams.get('tipo');
   const tipoLocked = tipoFromUrl === 'profissional' || tipoFromUrl === 'empresa';
   const [tipoLogin, setTipoLogin] = useState<'professional' | 'company'>(() =>
@@ -45,6 +48,24 @@ function LoginContent() {
       setErrorMessage(messages[authError] || 'Erro ao logar com Google.');
     }
   }, [searchParams]);
+
+  React.useEffect(() => {
+    if (!isAdminRedirect || !redirectTo || sessionStatus !== 'authenticated') return;
+
+    void fetch('/api/auth/is-admin', { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data: { isAdmin?: boolean; email?: string | null }) => {
+        if (data.isAdmin) {
+          window.location.href = redirectTo;
+          return;
+        }
+        const atual = data.email ? ` (logado como ${data.email})` : '';
+        setErrorMessage(
+          `Sem permissão de admin${atual}. Clique em "Sair e entrar com e-mail admin" e use um e-mail autorizado (ADMIN_EMAILS) ou a conta de teste paizaonacozinha.`,
+        );
+      })
+      .catch(() => undefined);
+  }, [sessionStatus, isAdminRedirect, redirectTo]);
 
   const [formData, setFormData] = useState({ email: '', senha: '' });
 
@@ -84,15 +105,29 @@ function LoginContent() {
       }
 
       if (result?.ok) {
-        const redirectTo = searchParams.get('redirect');
+        if (redirectTo?.startsWith('/admin')) {
+          const adminRes = await fetch('/api/auth/is-admin', { credentials: 'include' });
+          const adminData = await adminRes.json().catch(() => ({}));
+          if (adminData?.isAdmin) {
+            window.location.href = redirectTo;
+            return;
+          }
+          setErrorMessage(
+            'Este e-mail não tem permissão de admin. Confira ADMIN_EMAILS no .env e entre com o e-mail correto.',
+          );
+          setLoading(false);
+          return;
+        }
+
         if (redirectTo?.startsWith('/')) {
-          router.push(redirectTo);
+          window.location.href = redirectTo;
           return;
         }
 
         const typeRes = await fetch('/api/auth/get-user-type', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ email: formData.email })
         });
 
@@ -123,22 +158,39 @@ function LoginContent() {
     }
   };
 
+  const preserveLoginQuery = (tipo: 'profissional' | 'empresa') => {
+    const params = new URLSearchParams();
+    params.set('tipo', tipo);
+    if (redirectTo?.startsWith('/')) {
+      params.set('redirect', redirectTo);
+    }
+    router.replace(`/login?${params.toString()}`);
+  };
+
   const handleGoogleSignIn = () => {
     setErrorMessage('');
 
     const isCompany =
-      tipoLogin === 'company' || searchParams.get('tipo') === 'empresa';
+      !isAdminRedirect
+      && (tipoLogin === 'company' || searchParams.get('tipo') === 'empresa');
 
     if (typeof document !== 'undefined') {
-      document.cookie = `login_intent=${isCompany ? 'company' : 'professional'}; path=/; max-age=600; SameSite=Lax`;
+      const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+      document.cookie = `login_intent=${isCompany ? 'company' : 'professional'}; path=/; max-age=600; SameSite=Lax${secure}`;
     }
 
-    void signIn('google', {
-      callbackUrl: isCompany ? '/company/dashboard-empresa' : '/professional/dashboard',
-    });
+    const defaultCallback = isCompany ? '/company/dashboard-empresa' : '/professional/dashboard';
+    const targetPath = redirectTo?.startsWith('/') ? redirectTo : defaultCallback;
+    const callbackUrl = `${window.location.origin}${targetPath}`;
+
+    void signIn('google', { callbackUrl });
   };
 
   const handleCadastro = () => {
+    if (isAdminRedirect) {
+      setErrorMessage('Para acessar o admin, entre com o e-mail de administrador. Não use criar conta.');
+      return;
+    }
     router.push(tipoLogin === 'company' ? '/company/register' : '/professional/register');
   };
 
@@ -154,18 +206,22 @@ function LoginContent() {
 
           <p className={styles.subtitle}>
             <span className={styles.accessTag}>
-              {tipoLogin === 'company' ? 'Acesso Empresa' : 'Acesso Profissional'}
+              {isAdminRedirect
+                ? 'Acesso Admin'
+                : tipoLogin === 'company'
+                  ? 'Acesso Empresa'
+                  : 'Acesso Profissional'}
             </span>
           </p>
         </div>
 
-        {!tipoLocked && (
+        {!tipoLocked && !isAdminRedirect && (
           <div className={styles.tabs}>
             <button
               type="button"
               onClick={() => {
                 setTipoLogin('professional');
-                router.replace('/login?tipo=profissional');
+                preserveLoginQuery('profissional');
               }}
               className={`${styles.tab} ${tipoLogin === 'professional' ? styles.tabActive : ''}`}
             >
@@ -175,7 +231,7 @@ function LoginContent() {
               type="button"
               onClick={() => {
                 setTipoLogin('company');
-                router.replace('/login?tipo=empresa');
+                preserveLoginQuery('empresa');
               }}
               className={`${styles.tab} ${tipoLogin === 'company' ? styles.tabActive : ''}`}
             >
@@ -185,7 +241,22 @@ function LoginContent() {
         )}
 
         <form onSubmit={handleSubmit} className={styles.form}>
+          {isAdminRedirect && (
+            <p className={styles.error} style={{ color: '#C89B3C', borderColor: '#8D6B1F', background: 'rgba(200,155,60,0.12)' }}>
+              Acesso administrativo — use o e-mail de admin do sistema.
+            </p>
+          )}
           {errorMessage && <p className={styles.error}>{errorMessage}</p>}
+          {isAdminRedirect && sessionStatus === 'authenticated' && (
+            <button
+              type="button"
+              onClick={() => { window.location.href = '/api/auth/logout?redirect=/admin'; }}
+              className={styles.btnPrimary}
+              style={{ marginBottom: 12 }}
+            >
+              Sair e entrar com e-mail admin
+            </button>
+          )}
 
           <input
             type="email"
@@ -213,6 +284,19 @@ function LoginContent() {
             />
             Mostrar senha
           </label>
+
+          <div className={styles.forgotWrap}>
+            <Link
+              href={
+                tipoLogin === 'company'
+                  ? '/esqueci-senha?tipo=empresa'
+                  : '/esqueci-senha?tipo=profissional'
+              }
+              className={styles.forgotLink}
+            >
+              Esqueci a senha
+            </Link>
+          </div>
 
           {showCaptcha && <MathCaptcha onVerify={(ok) => setCaptchaVerified(ok)} />}
 
@@ -248,9 +332,11 @@ function LoginContent() {
           Entrar com Google
         </button>
 
-        <button type="button" onClick={handleCadastro} className={styles.btnSecondary}>
-          Criar conta
-        </button>
+        {!isAdminRedirect && (
+          <button type="button" onClick={handleCadastro} className={styles.btnSecondary}>
+            Criar conta
+          </button>
+        )}
 
         <div className={styles.footer}>
           <Link href="/" className={styles.footerLink}>

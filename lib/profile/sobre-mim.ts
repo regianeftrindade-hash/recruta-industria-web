@@ -16,14 +16,29 @@ export const SOBRE_MIM_VAZIO: SobreMimData = {
   assuntosInteresse: "",
 };
 
+export const SOBRE_MIM_LIMITE_CARACTERES = 30;
+
 export const SOBRE_MIM_LIMITES: Record<keyof SobreMimData, number> = {
-  hobbys: 80,
-  estiloMusical: 60,
-  livros: 80,
-  filmesSeries: 80,
-  fraseQueDefine: 120,
-  assuntosInteresse: 100,
+  hobbys: SOBRE_MIM_LIMITE_CARACTERES,
+  estiloMusical: SOBRE_MIM_LIMITE_CARACTERES,
+  livros: SOBRE_MIM_LIMITE_CARACTERES,
+  filmesSeries: SOBRE_MIM_LIMITE_CARACTERES,
+  fraseQueDefine: SOBRE_MIM_LIMITE_CARACTERES,
+  assuntosInteresse: SOBRE_MIM_LIMITE_CARACTERES,
 };
+
+export const SOBRE_MIM_CAMPOS: Array<{
+  key: keyof SobreMimData;
+  label: string;
+  placeholder: string;
+}> = [
+  { key: "hobbys", label: "Hobbies", placeholder: "Ex.: corrida, culinária..." },
+  { key: "estiloMusical", label: "Estilo musical", placeholder: "Ex.: rock, MPB..." },
+  { key: "livros", label: "Livros", placeholder: "Autores ou gêneros..." },
+  { key: "filmesSeries", label: "Filmes e séries", placeholder: "Filmes ou séries..." },
+  { key: "fraseQueDefine", label: "Uma frase que te define", placeholder: "Uma frase sobre você..." },
+  { key: "assuntosInteresse", label: "Assuntos que me interessam", placeholder: "Ex.: tecnologia, sustentabilidade..." },
+];
 
 export function truncarSobreMim(data: SobreMimData): SobreMimData {
   return {

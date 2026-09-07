@@ -8,6 +8,7 @@ import { avatarImageStyle } from "@/lib/theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import DashboardThemeToggle from "@/app/components/DashboardThemeToggle";
 import LogoRecruta from "@/app/components/LogoRecruta";
+import InstallAppPrompt from "@/components/pwa/InstallAppPrompt";
 import "@/app/dashboard/dashboard-theme.css";
 import {
   DASH,
@@ -15,22 +16,28 @@ import {
   dashCard,
   dashHeader,
   dashInnerBox,
-  dashInput,
-  dashLabel,
   dashSectionTitle,
   compatBadgeStyle,
 } from "@/lib/dashboard-theme";
-import { SOBRE_MIM_LIMITES, SOBRE_MIM_VAZIO, type SobreMimData } from "@/lib/sobre-mim";
+import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 import {
   PERFIL_INFO,
-  PONTUACAO_MAXIMA_PERFIL,
-  QUESTOES_POR_PERFIL,
+  TOTAL_PERGUNTAS_TESTE,
   type ResultadoTesteComportamental,
 } from "@/lib/teste-comportamental";
-import VideoApresentacaoSection from "@/components/professional/VideoApresentacaoSection";
+import { AVISO_RETENCAO_INBOX } from "@/lib/profile/inbox-retention";
+import CarreiraTimeline from "@/components/professional/CarreiraTimeline";
+import ProfessionalOpportunityBoard from "@/components/professional/ProfessionalOpportunityBoard";
+import ProfessionalRecruitmentHistory, {
+  type RecruitmentHistoryCounts,
+} from "@/components/professional/ProfessionalRecruitmentHistory";
+import PlatformVideoCall from "@/components/shared/PlatformVideoCall";
+import { buildCareerTimeline } from "@/lib/professional/career-timeline";
+import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
 
 const VAZIO = "—";
-const LIMITE_LISTA = 10;
+/** Títulos de seção do dashboard profissional — dourado */
+const dashTitleProf = { ...dashSectionTitle, color: DASH.gold };
 
 interface ProfileData {
   nome?: string;
@@ -43,7 +50,6 @@ interface ProfileData {
   fotoPerfil?: string | null;
   formEdit?: FormEditPayload | null;
   profileCompletion?: number;
-  hasVideoApresentacao?: boolean;
 }
 
 interface Tip {
@@ -58,6 +64,11 @@ interface InboxMessage {
   from: string;
   body: string;
   createdAt: string;
+  senderRole?: "COMPANY" | "PROFESSIONAL";
+  replyToId?: string | null;
+  companyUserId?: string;
+  companyName?: string;
+  replies?: InboxMessage[];
 }
 
 interface ProfileViewItem {
@@ -103,67 +114,10 @@ function formatarDataHoraCurta(iso: string): string {
   });
 }
 
-function aplicarLimiteLista<T>(items: T[]): T[] {
-  if (items.length > LIMITE_LISTA) return [];
-  return items.slice(0, LIMITE_LISTA);
-}
-
 function textoContagemVisualizacoesSemana(qtd: number): string {
   if (qtd === 0) return "Nenhuma visualização esta semana";
   if (qtd === 1) return "1 visualização esta semana";
   return `${qtd} visualizações esta semana`;
-}
-
-const campoSobreMimStyle: React.CSSProperties = {
-  ...dashInput,
-  width: "100%",
-  fontSize: 10,
-  padding: "4px 6px",
-  lineHeight: 1.35,
-  resize: "none",
-  minHeight: 28,
-  boxSizing: "border-box",
-};
-
-function CampoSobreMim({
-  label,
-  value,
-  onChange,
-  placeholder,
-  maxLength,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder: string;
-  maxLength: number;
-}) {
-  return (
-    <div style={{ minWidth: 0 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 6, marginBottom: 2 }}>
-        <label style={{ ...dashLabel, fontSize: 9, margin: 0 }}>{label}</label>
-        <span style={{ fontSize: 9, color: DASH.muted }}>{value.length}/{maxLength}</span>
-      </div>
-      <input
-        type="text"
-        value={value}
-        maxLength={maxLength}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        style={campoSobreMimStyle}
-      />
-    </div>
-  );
-}
-
-async function limparDicasSeExceder(tipsFromApi: Tip[]): Promise<Tip[]> {
-  if (tipsFromApi.length <= LIMITE_LISTA) return tipsFromApi;
-  await Promise.all(
-    tipsFromApi.map((tip) =>
-      fetch(`/api/professional/tips/${tip.id}`, { method: "DELETE", credentials: "include" })
-    )
-  );
-  return [];
 }
 
 export default function DashboardProfissional() {
@@ -174,17 +128,24 @@ export default function DashboardProfissional() {
   const [error, setError] = useState<string | null>(null);
   const [tips, setTips] = useState<Tip[]>([]);
   const [inboxMessages, setInboxMessages] = useState<InboxMessage[]>([]);
+  const [proposals, setProposals] = useState<JobProposalDTO[]>([]);
+  const [recruitmentHistory, setRecruitmentHistory] = useState<RecruitmentHistoryCounts>({
+    propostas: 0,
+    entrevistas: 0,
+    testes: 0,
+    contratacoes: 0,
+    naoContratacoes: 0,
+  });
   const [mensagemAbertaId, setMensagemAbertaId] = useState<string | null>(null);
-  const [sobreMim, setSobreMim] = useState<SobreMimData>(SOBRE_MIM_VAZIO);
-  const [salvandoSobreMim, setSalvandoSobreMim] = useState(false);
-  const [sobreMimSalvo, setSobreMimSalvo] = useState(false);
+  const [respostaTexto, setRespostaTexto] = useState<Record<string, string>>({});
+  const [enviandoRespostaId, setEnviandoRespostaId] = useState<string | null>(null);
+  const [abaDireita, setAbaDireita] = useState<"oportunidades" | "dicas" | "mensagens">("oportunidades");
   const [weekViewsCount, setWeekViewsCount] = useState(0);
   const [lastViewAt, setLastViewAt] = useState<string | null>(null);
   const [lastViewCompany, setLastViewCompany] = useState<string | null>(null);
   const [weekViews, setWeekViews] = useState<ProfileViewItem[]>([]);
   const [companyNamesHidden, setCompanyNamesHidden] = useState(true);
   const [testeComportamental, setTesteComportamental] = useState<ResultadoTesteComportamental | null>(null);
-  const [hasVideoApresentacao, setHasVideoApresentacao] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -204,16 +165,22 @@ export default function DashboardProfissional() {
         }
         setProfileData(data);
         setFormEdit(data.formEdit || null);
-        setHasVideoApresentacao(Boolean(data.hasVideoApresentacao));
+        setLoading(false);
 
-        const tipsRes = await fetch("/api/professional/tips", { credentials: "include" });
+        const [tipsRes, viewsRes, testeRes, msgsRes, propsRes, histRes] = await Promise.all([
+          fetch("/api/professional/tips", { credentials: "include" }),
+          fetch("/api/professional/profile-views", { credentials: "include" }),
+          fetch("/api/professional/teste-comportamental", { credentials: "include" }),
+          fetch("/api/professional/messages", { credentials: "include" }),
+          fetch("/api/professional/proposals", { credentials: "include" }),
+          fetch("/api/professional/recruitment-history", { credentials: "include" }),
+        ]);
+
         if (tipsRes.ok) {
           const tipsData = await tipsRes.json();
-          const normalizadas = await limparDicasSeExceder(tipsData.tips || []);
-          setTips(aplicarLimiteLista(normalizadas));
+          setTips(tipsData.tips || []);
         }
 
-        const viewsRes = await fetch("/api/professional/profile-views", { credentials: "include" });
         if (viewsRes.ok) {
           const viewsData = await viewsRes.json();
           const semana = (viewsData.weekViews || []) as ProfileViewItem[];
@@ -224,13 +191,6 @@ export default function DashboardProfissional() {
           setCompanyNamesHidden(Boolean(viewsData.companyNamesHidden));
         }
 
-        const sobreRes = await fetch("/api/professional/sobre-mim", { credentials: "include" });
-        if (sobreRes.ok) {
-          const sobreData = await sobreRes.json();
-          if (sobreData.sobreMim) setSobreMim(sobreData.sobreMim);
-        }
-
-        const testeRes = await fetch("/api/professional/teste-comportamental", { credentials: "include" });
         if (testeRes.ok) {
           const testeData = await testeRes.json();
           if (testeData.resultado) setTesteComportamental(testeData.resultado);
@@ -247,25 +207,108 @@ export default function DashboardProfissional() {
           /* ignore */
         }
 
-        try {
-          const msgsRes = await fetch("/api/professional/messages", { credentials: "include" });
-          if (msgsRes.ok) {
-            const msgsData = await msgsRes.json();
-            const filtradas = (msgsData.messages || []) as InboxMessage[];
-            const limitadas = aplicarLimiteLista(filtradas);
-            setInboxMessages(limitadas);
+        if (msgsRes.ok) {
+          const msgsData = await msgsRes.json();
+          setInboxMessages((msgsData.messages || []) as InboxMessage[]);
+        }
+
+        if (propsRes.ok) {
+          const propsData = await propsRes.json();
+          setProposals((propsData.proposals || []) as JobProposalDTO[]);
+        }
+
+        if (histRes.ok) {
+          const histData = await histRes.json();
+          if (histData.history) {
+            setRecruitmentHistory(histData.history as RecruitmentHistoryCounts);
           }
-        } catch {
-          /* ignore */
         }
       } catch {
         setError("Não foi possível carregar o perfil.");
-      } finally {
         setLoading(false);
       }
     };
     void fetchProfile();
   }, [router]);
+
+  // Mantém o profissional "online" enquanto estiver no painel; ao sair, marca offline
+  useEffect(() => {
+    let cancelled = false;
+
+    const beat = async () => {
+      try {
+        await fetch("/api/presence/heartbeat", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+      } catch {
+        /* ignore */
+      }
+    };
+
+    const goOffline = () => {
+      const payload = JSON.stringify({ offline: true });
+      try {
+        if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+          const blob = new Blob([payload], { type: "application/json" });
+          navigator.sendBeacon("/api/presence/heartbeat", blob);
+          return;
+        }
+      } catch {
+        /* fallback abaixo */
+      }
+      void fetch("/api/presence/heartbeat", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+        keepalive: true,
+      }).catch(() => {});
+    };
+
+    void beat();
+    const id = window.setInterval(() => {
+      if (!cancelled) void beat();
+    }, 45000);
+
+    const onPageHide = () => goOffline();
+    window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("beforeunload", onPageHide);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("beforeunload", onPageHide);
+      goOffline();
+    };
+  }, []);
+
+  const reloadProposals = async () => {
+    try {
+      const res = await fetch("/api/professional/proposals", { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        setProposals((data.proposals || []) as JobProposalDTO[]);
+      }
+      const histRes = await fetch("/api/professional/recruitment-history", { credentials: "include" });
+      if (histRes.ok) {
+        const histData = await histRes.json();
+        if (histData.history) {
+          setRecruitmentHistory(histData.history as RecruitmentHistoryCounts);
+        }
+      }
+      const msgsRes = await fetch("/api/professional/messages", { credentials: "include" });
+      if (msgsRes.ok) {
+        const msgsData = await msgsRes.json();
+        setInboxMessages((msgsData.messages || []) as InboxMessage[]);
+      }
+    } catch {
+      /* ignore */
+    }
+  };
 
   const handleFotoClick = () => fileInputRef.current?.click();
 
@@ -291,14 +334,22 @@ export default function DashboardProfissional() {
   };
 
   const handleLogout = () => {
+    try {
+      const payload = JSON.stringify({ offline: true });
+      if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+        navigator.sendBeacon("/api/presence/heartbeat", new Blob([payload], { type: "application/json" }));
+      }
+    } catch {
+      /* ignore */
+    }
     window.location.href = "/api/auth/logout";
   };
 
   if (loading) {
     return (
-      <DashboardThemeShell>
-        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
-          Carregando perfil...
+      <DashboardThemeShell className="ri-dash-prof">
+        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <AmpulhetaLoading label="Carregando perfil..." size={42} color={DASH.gold} />
         </div>
       </DashboardThemeShell>
     );
@@ -306,7 +357,7 @@ export default function DashboardProfissional() {
 
   if (error) {
     return (
-      <DashboardThemeShell>
+      <DashboardThemeShell className="ri-dash-prof">
         <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#dc3545", fontSize: 20 }}>
           {error}
         </div>
@@ -316,7 +367,7 @@ export default function DashboardProfissional() {
 
   if (!profileData) {
     return (
-      <DashboardThemeShell>
+      <DashboardThemeShell className="ri-dash-prof">
         <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
           Perfil não encontrado.
         </div>
@@ -348,6 +399,8 @@ export default function DashboardProfissional() {
   const turnoResumo = String(valor("turnoDisponivel", fd.turnoDisponivel));
   const experienciaResumo = String(valor("tempoExperiencia", profileData.experiencia));
   const recolocacaoResumo = String(valor("recolocacao", fd.recolocacao));
+  const empresasTimeline = edit?.empresas ?? [];
+  const temLinhaTempo = buildCareerTimeline(empresasTimeline).length > 0;
 
   const toggleMensagemAberta = (id: string) => {
     setMensagemAbertaId((atual) => (atual === id ? null : id));
@@ -361,11 +414,43 @@ export default function DashboardProfissional() {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Falha ao excluir");
-      const next = aplicarLimiteLista(inboxMessages.filter((msg) => msg.id !== messageId));
+      const next = inboxMessages.filter((msg) => msg.id !== messageId);
       setInboxMessages(next);
       if (mensagemAbertaId === messageId) setMensagemAbertaId(null);
     } catch {
       alert("Não foi possível excluir a mensagem.");
+    }
+  };
+
+  const handleResponderMensagem = async (messageId: string) => {
+    const texto = (respostaTexto[messageId] || "").trim();
+    if (!texto) return;
+    setEnviandoRespostaId(messageId);
+    try {
+      const res = await fetch("/api/professional/messages", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ replyToId: messageId, body: texto }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Não foi possível enviar a resposta.");
+        return;
+      }
+      const reply = data.message as InboxMessage;
+      setInboxMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId
+            ? { ...msg, replies: [...(msg.replies || []), reply] }
+            : msg,
+        ),
+      );
+      setRespostaTexto((prev) => ({ ...prev, [messageId]: "" }));
+    } catch {
+      alert("Erro de rede ao enviar a resposta.");
+    } finally {
+      setEnviandoRespostaId(null);
     }
   };
 
@@ -377,55 +462,109 @@ export default function DashboardProfissional() {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Falha ao excluir");
-      setTips((prev) => aplicarLimiteLista(prev.filter((tip) => tip.id !== tipId)));
+      setTips((prev) => prev.filter((tip) => tip.id !== tipId));
     } catch {
       alert("Não foi possível excluir a dica.");
     }
   };
 
-  const handleSalvarSobreMim = async () => {
-    setSalvandoSobreMim(true);
-    setSobreMimSalvo(false);
-    try {
-      const res = await fetch("/api/professional/sobre-mim", {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sobreMim),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(typeof data.error === "string" ? data.error : "Falha ao salvar");
-      }
-      if (data.sobreMim) setSobreMim(data.sobreMim);
-      setSobreMimSalvo(true);
-      setTimeout(() => setSobreMimSalvo(false), 2500);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Não foi possível salvar. Tente novamente.";
-      alert(msg);
-    } finally {
-      setSalvandoSobreMim(false);
-    }
-  };
-
-  const atualizarSobreMim = (campo: keyof SobreMimData, val: string) => {
-    const limite = SOBRE_MIM_LIMITES[campo];
-    setSobreMim((prev) => ({ ...prev, [campo]: val.slice(0, limite) }));
-    setSobreMimSalvo(false);
-  };
-
-  const dicasExibidas = aplicarLimiteLista(tips);
-  const mensagensExibidas = aplicarLimiteLista(inboxMessages);
-
   return (
-    <DashboardThemeShell style={{ width: "100%", maxWidth: "none" }}>
-      <header style={{ ...dashHeader, padding: "14px 12px" }}>
-        <LogoRecruta size="xs" as="span" depth />
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <DashboardThemeToggle />
-          <button type="button" onClick={handleLogout} style={{ ...btnGold, padding: "8px 16px", fontSize: 13 }}>
-            Sair
-          </button>
+    <DashboardThemeShell className="ri-dash-prof" style={{ width: "100%", maxWidth: "none" }}>
+      <header
+        style={{
+          ...dashHeader,
+          padding: "6px 20px 0",
+          flexDirection: "column",
+          alignItems: "stretch",
+          gap: 0,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 8,
+            paddingBottom: 6,
+          }}
+        >
+          <LogoRecruta size="xs" as="span" depth />
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <DashboardThemeToggle />
+            <InstallAppPrompt variant="inline" />
+            <button type="button" onClick={handleLogout} style={{ ...btnGold, padding: "5px 12px", fontSize: 11 }}>
+              Sair
+            </button>
+          </div>
+        </div>
+
+        {/* Abas à direita — mesmo lugar do dashboard empresa */}
+        <div
+          role="tablist"
+          aria-label="Área de comunicação"
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 6,
+            alignItems: "center",
+            justifyContent: "flex-end",
+            width: "100%",
+            paddingTop: 2,
+          }}
+        >
+          {(
+            [
+              { id: "oportunidades" as const, label: "Oportunidades", badge: proposals.length },
+              { id: "dicas" as const, label: "Dicas", badge: tips.length },
+              { id: "mensagens" as const, label: "Mensagens", badge: inboxMessages.length },
+            ]
+          ).map((tab) => {
+            const ativo = abaDireita === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={ativo}
+                onClick={() => setAbaDireita(tab.id)}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 5,
+                  padding: "5px 12px",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  whiteSpace: "nowrap",
+                  color: ativo ? "#000" : DASH.gold,
+                  background: ativo ? DASH.gold : "transparent",
+                  border: `1px solid ${DASH.gold}`,
+                  borderRadius: "10px 10px 0 0",
+                  boxShadow: ativo ? "0 2px 0 #5a4512" : "none",
+                  cursor: "pointer",
+                  lineHeight: 1.2,
+                  fontFamily: "inherit",
+                }}
+              >
+                {tab.label}
+                {tab.badge > 0 ? (
+                  <span
+                    style={{
+                      background: ativo ? "#000" : DASH.gold,
+                      color: ativo ? DASH.gold : "#000",
+                      borderRadius: 999,
+                      fontSize: 9,
+                      fontWeight: 800,
+                      padding: "1px 6px",
+                    }}
+                  >
+                    {tab.badge}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
         </div>
       </header>
 
@@ -434,25 +573,28 @@ export default function DashboardProfissional() {
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
           width: "100%",
-          minHeight: "calc(100vh - 56px)",
+          minHeight: "calc(100vh - 90px)",
           alignItems: "stretch",
         }}
       >
-        {/* Esquerda — perfil resumido + sobre mim */}
+        {/* Esquerda — perfil resumido, visualizações e histórico */}
         <main
           style={{
             padding: "12px 10px 12px 12px",
             overflowY: "auto",
-            maxHeight: "calc(100vh - 56px)",
+            maxHeight: "calc(100vh - 90px)",
             borderRight: `1px solid ${DASH.border}`,
             minWidth: 0,
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
           }}
         >
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFotoChange} style={{ display: "none" }} />
 
-          <section style={{ ...dashCard, padding: 14, marginBottom: 12, boxShadow: DASH.shadow }}>
+          <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
-              <h3 style={{ ...dashSectionTitle, margin: 0, fontSize: 14 }}>Perfil resumido</h3>
+              <h3 style={{ ...dashTitleProf, margin: 0, fontSize: 14 }}>Perfil resumido</h3>
               <button
                 type="button"
                 onClick={() => router.push("/professional/register?edit=1")}
@@ -481,7 +623,7 @@ export default function DashboardProfissional() {
                       height: 56,
                       borderRadius: "50%",
                       background: DASH.input,
-                      border: `2px solid ${DASH.gold}`,
+                      border: `1px solid ${DASH.gold}`,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -493,7 +635,7 @@ export default function DashboardProfissional() {
                 )}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: DASH.text }}>
+                <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: DASH.gold }}>
                   {nomeExibicao}
                 </p>
                 <p style={{ margin: "0 0 3px", fontSize: 11, color: DASH.text }}>
@@ -512,100 +654,52 @@ export default function DashboardProfissional() {
                 )}
               </div>
             </div>
-          </section>
-
-          <VideoApresentacaoSection
-            initialHasVideo={hasVideoApresentacao}
-            onVideoChange={setHasVideoApresentacao}
-          />
-
-          <section style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
-            <h3 style={{ ...dashSectionTitle, margin: "0 0 10px", fontSize: 14 }}>Sobre mim</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <CampoSobreMim label="Hobbies" value={sobreMim.hobbys} onChange={(v) => atualizarSobreMim("hobbys", v)} placeholder="Ex.: corrida, culinária..." maxLength={SOBRE_MIM_LIMITES.hobbys} />
-              <CampoSobreMim label="Estilo musical" value={sobreMim.estiloMusical} onChange={(v) => atualizarSobreMim("estiloMusical", v)} placeholder="Ex.: rock, MPB..." maxLength={SOBRE_MIM_LIMITES.estiloMusical} />
-              <CampoSobreMim label="Livros" value={sobreMim.livros} onChange={(v) => atualizarSobreMim("livros", v)} placeholder="Autores ou gêneros..." maxLength={SOBRE_MIM_LIMITES.livros} />
-              <CampoSobreMim label="Filmes e séries" value={sobreMim.filmesSeries} onChange={(v) => atualizarSobreMim("filmesSeries", v)} placeholder="Filmes ou séries..." maxLength={SOBRE_MIM_LIMITES.filmesSeries} />
-              <CampoSobreMim label="Uma frase que te define" value={sobreMim.fraseQueDefine} onChange={(v) => atualizarSobreMim("fraseQueDefine", v)} placeholder="Uma frase sobre você..." maxLength={SOBRE_MIM_LIMITES.fraseQueDefine} />
-              <CampoSobreMim label="Assuntos que me interessam" value={sobreMim.assuntosInteresse} onChange={(v) => atualizarSobreMim("assuntosInteresse", v)} placeholder="Ex.: tecnologia, sustentabilidade..." maxLength={SOBRE_MIM_LIMITES.assuntosInteresse} />
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, justifyContent: "flex-end" }}>
-              {sobreMimSalvo && <span style={{ fontSize: 10, color: DASH.muted }}>Salvo</span>}
-              <button
-                type="button"
-                onClick={() => void handleSalvarSobreMim()}
-                disabled={salvandoSobreMim}
-                style={{
-                  ...btnGold,
-                  padding: "6px 12px",
-                  fontSize: 11,
-                  opacity: salvandoSobreMim ? 0.7 : 1,
-                  cursor: salvandoSobreMim ? "wait" : "pointer",
-                }}
-              >
-                {salvandoSobreMim ? "Salvando..." : "Salvar"}
-              </button>
-            </div>
-          </section>
-
-          <section style={{ ...dashCard, padding: 14, marginTop: 12, boxShadow: DASH.shadow }}>
-            <h3 style={{ ...dashSectionTitle, margin: "0 0 8px", fontSize: 14 }}>Teste comportamental</h3>
-            {testeComportamental ? (
-              (() => {
-                const info = PERFIL_INFO[testeComportamental.perfilPrincipal];
-                const somaPrincipal = testeComportamental.pontuacoes[testeComportamental.perfilPrincipal];
-                return (
-                  <div>
-                    <p style={{ margin: "0 0 8px", fontSize: 10, color: DASH.muted }}>
-                      Concluído em {formatarDataHoraCurta(testeComportamental.completedAt)}
-                    </p>
-                    <p style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>
-                      {info.emoji} Perfil predominante: {info.titulo}
-                    </p>
-                    <p style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 800, color: DASH.text }}>
-                      <span style={{ color: DASH.gold }}>{somaPrincipal}</span> pontos
-                    </p>
-                    <p style={{ margin: "0 0 12px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
-                      {QUESTOES_POR_PERFIL} perguntas deste perfil · notas de 1 a 5 · máx. {PONTUACAO_MAXIMA_PERFIL} pts
-                    </p>
-
-                    <div style={{ marginBottom: 10 }}>
-                      <p style={{ margin: "0 0 4px", fontSize: 10, fontWeight: 700, color: DASH.title, textTransform: "uppercase" }}>
-                        Para o candidato
-                      </p>
-                      <p style={{ margin: 0, fontSize: 11, lineHeight: 1.5, color: DASH.text }}>{info.paraCandidato}</p>
-                    </div>
-
-                    <div style={{ marginBottom: 12 }}>
-                      <p style={{ margin: "0 0 4px", fontSize: 10, fontWeight: 700, color: DASH.title, textTransform: "uppercase" }}>
-                        Visão do recrutador
-                      </p>
-                      <p style={{ margin: 0, fontSize: 11, lineHeight: 1.5, color: DASH.text }}>{info.visaoRecrutador}</p>
-                    </div>
-                  </div>
-                );
-              })()
-            ) : (
-              <div>
-                <p style={{ margin: "0 0 12px", fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>
-                  Descubra seu perfil comportamental com 20 afirmações. Preencha uma única vez para ver seu resultado aqui no painel.
+            {temLinhaTempo && (
+              <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${DASH.border}` }}>
+                <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 700, color: DASH.gold, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  Linha do tempo
                 </p>
-                <button
-                  type="button"
-                  onClick={() => router.push("/professional/dashboard/teste-comportamental")}
-                  style={{ ...btnGold, padding: "8px 16px", fontSize: 12 }}
-                >
-                  Iniciar
-                </button>
+                <CarreiraTimeline experiencias={empresasTimeline} compact />
               </div>
             )}
-          </section>
-        </main>
 
-        {/* Direita — visualizações, dicas e mensagens */}
-        <aside style={{ padding: "12px 12px 12px 10px", overflowY: "auto", maxHeight: "calc(100vh - 56px)", display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
-          <section style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow, textAlign: "center" }}>
-            <h3 style={{ ...dashSectionTitle, margin: "0 0 12px", fontSize: 14 }}>Visualizações da semana</h3>
+            <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${DASH.border}` }}>
+              <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 700, color: DASH.gold, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                Perfil pessoal
+              </p>
+              {testeComportamental ? (
+                (() => {
+                  const info = PERFIL_INFO[testeComportamental.perfilPrincipal];
+                  return (
+                    <div>
+                      <p style={{ margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>
+                        {info.emoji} Perfil predominante: {info.titulo}
+                      </p>
+                      <p style={{ margin: 0, fontSize: 11, lineHeight: 1.5, color: DASH.text }}>
+                        {info.paraCandidato}
+                      </p>
+                    </div>
+                  );
+                })()
+              ) : (
+                <div>
+                  <p style={{ margin: "0 0 10px", fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>
+                    Descubra como você age no dia a dia com {TOTAL_PERGUNTAS_TESTE} afirmações pessoais. Preencha uma única vez para ver seu perfil aqui no painel.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => router.push("/professional/dashboard/teste-comportamental")}
+                    style={{ ...btnGold, padding: "8px 16px", fontSize: 12 }}
+                  >
+                    Iniciar
+                  </button>
+                </div>
+              )}
+            </div>
+          </section>
+
+          <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow, textAlign: "center" }}>
+            <h3 style={{ ...dashTitleProf, margin: "0 0 12px", fontSize: 14 }}>Visualizações da semana</h3>
             <p style={{ margin: "0 0 4px", fontSize: 28, fontWeight: 800, color: DASH.gold, lineHeight: 1.1 }}>
               {weekViewsCount}
             </p>
@@ -643,23 +737,68 @@ export default function DashboardProfissional() {
             ) : null}
           </section>
 
-          <section style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
-            <h3 style={{ ...dashSectionTitle, margin: "0 0 12px", fontSize: 14 }}>
-              Dicas recebidas ({dicasExibidas.length}/{LIMITE_LISTA})
+          <ProfessionalRecruitmentHistory history={recruitmentHistory} />
+        </main>
+
+        {/* Direita — conteúdo da aba ativa */}
+        <aside style={{ padding: "12px 12px 12px 10px", overflowY: "auto", maxHeight: "calc(100vh - 90px)", display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
+          {abaDireita === "oportunidades" && (
+            <>
+              <PlatformVideoCall role="professional" title="Chamada de vídeo" peerLabel="empresa" />
+              <ProfessionalOpportunityBoard proposals={proposals} onChanged={() => void reloadProposals()} />
+            </>
+          )}
+
+          {abaDireita === "dicas" && (
+          <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
+            <h3 style={{ ...dashTitleProf, margin: "0 0 6px", fontSize: 14 }}>
+              Dicas recebidas ({tips.length})
             </h3>
-            {dicasExibidas.length > 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {dicasExibidas.map((tip) => (
-                  <div key={tip.id} style={{ padding: 10, ...dashInnerBox }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                      <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: DASH.text, flex: 1 }}>{tip.message}</p>
-                      <button type="button" onClick={() => void handleExcluirDica(tip.id)} style={btnExcluirStyle} title="Excluir dica">
-                        Excluir
-                      </button>
+            <p style={{ margin: "0 0 12px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
+              {AVISO_RETENCAO_INBOX}
+            </p>
+            {tips.length > 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: "calc(100vh - 220px)", overflowY: "auto" }}>
+                {tips.map((tip) => (
+                  <div
+                    key={tip.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "8px 10px",
+                      border: "none",
+                      borderRadius: 14,
+                      background: DASH.inner,
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: 12,
+                          lineHeight: 1.4,
+                          color: DASH.text,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                        title={tip.message}
+                      >
+                        {tip.message}
+                      </p>
+                      <p style={{ margin: "2px 0 0", fontSize: 10, color: DASH.muted }}>
+                        {tip.isAnonymous ? "Dica anônima" : "Empresa"} · {formatarDataHoraCurta(tip.createdAt)}
+                      </p>
                     </div>
-                    <p style={{ margin: "6px 0 0", fontSize: 11, color: DASH.muted }}>
-                      {tip.isAnonymous ? "Dica anônima" : "Empresa"}
-                    </p>
+                    <button
+                      type="button"
+                      onClick={() => void handleExcluirDica(tip.id)}
+                      style={{ ...btnExcluirStyle, flexShrink: 0 }}
+                      title="Excluir dica"
+                    >
+                      Excluir
+                    </button>
                   </div>
                 ))}
               </div>
@@ -667,56 +806,157 @@ export default function DashboardProfissional() {
               <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Nenhuma dica recebida ainda.</p>
             )}
           </section>
+          )}
 
-          <section style={{ ...dashCard, padding: 12, boxShadow: DASH.shadow }}>
-            <h3 style={{ ...dashSectionTitle, margin: "0 0 10px", fontSize: 14 }}>
-              Mensagens ({mensagensExibidas.length}/{LIMITE_LISTA})
+          {abaDireita === "mensagens" && (
+          <section className="dash-card" style={{ ...dashCard, padding: 12, boxShadow: DASH.shadow }}>
+            <h3 style={{ ...dashTitleProf, margin: "0 0 6px", fontSize: 14 }}>
+              Mensagens ({inboxMessages.length})
             </h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 280, overflowY: "auto" }}>
-              {mensagensExibidas.length === 0 ? (
+            <p style={{ margin: "0 0 10px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
+              {AVISO_RETENCAO_INBOX} Abra a mensagem para ler e responder à empresa.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: "calc(100vh - 220px)", overflowY: "auto" }}>
+              {inboxMessages.length === 0 ? (
                 <p style={{ margin: 0, fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
-                  Quando uma empresa enviar mensagem, ela aparecerá aqui.
+                  Quando uma empresa enviar mensagem, ela aparecerá aqui para você responder.
                 </p>
               ) : (
-                mensagensExibidas.map((msg) => {
+                inboxMessages.map((msg) => {
                   const aberta = mensagemAbertaId === msg.id;
-                  const preview = msg.body.length > 42 ? `${msg.body.slice(0, 42)}...` : msg.body;
+                  const preview = msg.body.length > 48 ? `${msg.body.slice(0, 48)}...` : msg.body;
                   return (
-                    <div key={msg.id} style={{ ...dashInnerBox, overflow: "hidden" }}>
-                      <div style={{ display: "flex", alignItems: "stretch" }}>
+                    <div
+                      key={msg.id}
+                      style={{
+                        border: "none",
+                        borderRadius: 14,
+                        background: DASH.inner,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px" }}>
                         <button
                           type="button"
                           onClick={() => toggleMensagemAberta(msg.id)}
                           aria-expanded={aberta}
                           style={{
                             flex: 1,
-                            padding: "8px 10px",
+                            minWidth: 0,
+                            padding: 0,
                             border: "none",
                             background: "transparent",
                             cursor: "pointer",
-                            textAlign: "left",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            gap: 8,
+                            textAlign: "center",
                             color: DASH.text,
                           }}
                         >
-                          <span style={{ minWidth: 0 }}>
-                            <span style={{ display: "block", fontSize: 11, fontWeight: 700, color: DASH.title }}>{msg.from}</span>
-                            <span style={{ display: "block", fontSize: 10, color: DASH.muted, marginTop: 2 }}>
-                              {aberta ? formatarDataHora(msg.createdAt) : preview}
-                            </span>
+                          <span
+                            style={{
+                              display: "block",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              color: DASH.title,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              textAlign: "center",
+                            }}
+                          >
+                            {msg.from}
                           </span>
-                          <span aria-hidden style={{ fontSize: 9, color: DASH.muted }}>{aberta ? "▲" : "▼"}</span>
+                          <span
+                            style={{
+                              display: "block",
+                              fontSize: 10,
+                              color: DASH.muted,
+                              marginTop: 2,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              textAlign: "center",
+                            }}
+                          >
+                            {aberta ? formatarDataHora(msg.createdAt) : preview}
+                          </span>
                         </button>
-                        <button type="button" onClick={() => handleExcluirMensagem(msg.id)} style={{ ...btnExcluirStyle, alignSelf: "center", marginRight: 8 }} title="Excluir mensagem">
+                        <button
+                          type="button"
+                          onClick={() => handleExcluirMensagem(msg.id)}
+                          style={{ ...btnExcluirStyle, flexShrink: 0 }}
+                          title="Excluir mensagem"
+                        >
                           Excluir
                         </button>
                       </div>
                       {aberta && (
                         <div style={{ padding: "0 10px 10px", borderTop: `1px solid ${DASH.border}` }}>
                           <p style={{ margin: "8px 0 0", fontSize: 12, lineHeight: 1.5, color: DASH.text }}>{msg.body}</p>
+
+                          {(msg.replies || []).length > 0 && (
+                            <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+                              {(msg.replies || []).map((r) => (
+                                <div
+                                  key={r.id}
+                                  style={{
+                                    padding: "8px 10px",
+                                    borderRadius: 10,
+                                    background: "rgba(200,155,60,0.12)",
+                                    border: `1px solid ${DASH.gold}`,
+                                  }}
+                                >
+                                  <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: DASH.gold }}>
+                                    Sua resposta · {formatarDataHoraCurta(r.createdAt)}
+                                  </p>
+                                  <p style={{ margin: "4px 0 0", fontSize: 12, lineHeight: 1.45, color: DASH.text }}>
+                                    {r.body}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          <div style={{ marginTop: 10 }}>
+                            <textarea
+                              value={respostaTexto[msg.id] || ""}
+                              onChange={(e) =>
+                                setRespostaTexto((prev) => ({ ...prev, [msg.id]: e.target.value }))
+                              }
+                              rows={3}
+                              maxLength={1000}
+                              placeholder="Escreva sua resposta para a empresa..."
+                              style={{
+                                width: "100%",
+                                boxSizing: "border-box",
+                                padding: 8,
+                                borderRadius: 10,
+                                border: `1px solid ${DASH.border}`,
+                                background: DASH.input,
+                                color: DASH.text,
+                                fontSize: 12,
+                                lineHeight: 1.45,
+                                resize: "vertical",
+                                fontFamily: "inherit",
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => void handleResponderMensagem(msg.id)}
+                              disabled={enviandoRespostaId === msg.id || !(respostaTexto[msg.id] || "").trim()}
+                              style={{
+                                ...btnGold,
+                                marginTop: 6,
+                                padding: "7px 12px",
+                                fontSize: 11,
+                                opacity:
+                                  enviandoRespostaId === msg.id || !(respostaTexto[msg.id] || "").trim()
+                                    ? 0.7
+                                    : 1,
+                              }}
+                            >
+                              {enviandoRespostaId === msg.id ? "Enviando..." : "Responder"}
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -725,6 +965,7 @@ export default function DashboardProfissional() {
               )}
             </div>
           </section>
+          )}
         </aside>
       </div>
     </DashboardThemeShell>

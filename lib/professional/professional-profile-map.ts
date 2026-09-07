@@ -1,5 +1,13 @@
 import type { Profile, User } from '@prisma/client';
 import { calculateProfileCompletion } from '@/lib/profile-completion';
+import {
+  parseCursosDetalhados,
+  parseCertificacoesDetalhadas,
+  normalizeCursoDetalhado,
+  buildCargoDesejado,
+  collectSegmentosIndustria,
+  type CursoDetalhado,
+} from '@/lib/professional-form-config';
 
 export function parseJsonSafe<T>(value: string | null | undefined, fallback: T): T {
   if (!value) return fallback;
@@ -107,8 +115,10 @@ export function simNaoToBool(value: unknown): boolean | null {
 export type EmpresaExperiencia = {
   nome: string;
   cargo: string;
+  segmento?: string;
   dataInicio: string;
   dataFim: string;
+  descricao?: string;
 };
 
 export type FormEditPayload = {
@@ -119,6 +129,7 @@ export type FormEditPayload = {
   pretensaoSalarial: string;
   dataNascimentoDisplay: string;
   cursos: string[];
+  cursosDetalhados?: CursoDetalhado[];
   empresas: EmpresaExperiencia[];
 };
 
@@ -126,20 +137,22 @@ const FORM_FIELD_KEYS = [
   'nome', 'dataNascimento', 'idade', 'sexoBiologico', 'identidadeGenero', 'orientacaoSexual',
   'estadoCivil', 'religiao', 'antecedentes', 'possuiFilhos', 'quantidadeFilhos', 'faixaEtariaFilhos',
   'email', 'telefone', 'telefone2', 'whatsapp', 'estado', 'cidade', 'disponibilidadeMudanca',
-  'escolaridade', 'cursosCertificacoes', 'situacaoProfissional', 'areaInteresse', 'cargoDesejado',
+  'escolaridade', 'cursoFormacao', 'instituicaoFormacao', 'anoConclusaoFormacao', 'documentoFormacao', 'cursosCertificacoes', 'situacaoProfissional', 'areaInteresse', 'cargoDesejado',
+  'nivelOperacional', 'areaNivel', 'detalheNivel',
   'turnoDisponivel', 'disponibilidadeInicio', 'trabalhouIndustria', 'tempoExperiencia',
   'experiencias', 'recolocacao', 'pretensaoSalarial', 'fotoPerfil', 'curriculo', 'atestado',
-  'mensagemEmpresas', 'autorizoDados', 'declaroVerdadeiro',
+  'mensagemEmpresas', 'autorizoDados', 'declaroVerdadeiro', 'aceitoLGPD',
   'ultimoCargo', 'ultimaEmpresa', 'segmentosIndustria', 'maquinasEquipamentos',
   'qualidadeProcessos', 'informatica', 'possuiCNH', 'categoriaCNH', 'aceitaViagens',
-  'disponivelContratacao', 'certificados', 'cnhDocumento', 'certificacoes', 'idiomas',
+  'disponivelContratacao', 'certificados', 'cnhDocumento', 'certificacoes', 'certificacoesDetalhadas', 'idiomas',
   'profileCompletion',
 ] as const;
 
 export function storedPayloadToFormEdit(stored: Record<string, unknown>): FormEditPayload {
-  const cursos = Array.isArray(stored.cursos)
-    ? (stored.cursos as string[]).filter((c) => typeof c === 'string')
-    : normalizeCursos(stored.cursosCertificacoes);
+  const cursosDetalhados = parseCursosDetalhados(
+    stored.cursosDetalhados ?? stored.cursos ?? stored.cursosCertificacoes,
+  );
+  const cursos = cursosDetalhados.map((c) => c.nome).filter((n) => n.trim());
 
   const empresas = Array.isArray(stored.empresas)
     ? normalizeExperiencias(stored.empresas)
@@ -165,6 +178,7 @@ export function storedPayloadToFormEdit(stored: Record<string, unknown>): FormEd
     pretensaoSalarial: String(stored.pretensaoSalarial || formData.pretensaoSalarial || ''),
     dataNascimentoDisplay: dataDisplay,
     cursos: hasRealCursos(cursos) ? cursos : [''],
+    cursosDetalhados,
     empresas: hasRealEmpresas(empresas)
       ? empresas
       : [{ nome: '', cargo: '', dataInicio: '', dataFim: '' }],
@@ -194,6 +208,9 @@ export function mergeStoredOverApi(
     pretensaoSalarial: fromStored.pretensaoSalarial || api.pretensaoSalarial,
     dataNascimentoDisplay: fromStored.dataNascimentoDisplay || api.dataNascimentoDisplay,
     cursos: hasRealCursos(fromStored.cursos) ? fromStored.cursos : api.cursos,
+    cursosDetalhados: (fromStored.cursosDetalhados?.length ?? 0) > 0
+      ? fromStored.cursosDetalhados
+      : api.cursosDetalhados,
     empresas: hasRealEmpresas(fromStored.empresas) ? fromStored.empresas : api.empresas,
   };
 }
@@ -246,6 +263,9 @@ export function mergeFormEditWithStored(
     pretensaoSalarial: api.pretensaoSalarial || fromStored.pretensaoSalarial,
     dataNascimentoDisplay: api.dataNascimentoDisplay || fromStored.dataNascimentoDisplay,
     cursos: hasRealCursos(api.cursos) ? api.cursos : fromStored.cursos,
+    cursosDetalhados: (api.cursosDetalhados?.length ?? 0) > 0
+      ? api.cursosDetalhados
+      : fromStored.cursosDetalhados,
     empresas: hasRealEmpresas(api.empresas) ? api.empresas : fromStored.empresas,
   };
 }
@@ -281,6 +301,7 @@ export function rebuildFormSnapshotFromProfile(profile: Profile, user: User): st
     dataNascimentoDisplay: edit.dataNascimentoDisplay,
     cursos: edit.cursos.filter((c) => c.trim()),
     cursosCertificacoes: edit.cursos.filter((c) => c.trim()),
+    cursosDetalhados: edit.cursosDetalhados ?? [],
     empresas: edit.empresas,
     experiencias: edit.empresas,
     certificacoes: skills,
@@ -304,7 +325,8 @@ export function buildProfileUpsertPayload(
 }
 
 function buildFormEditFromProfileColumns(profile: Profile, user: User): FormEditPayload {
-  const cursosArr = parseJsonSafe<string[]>(profile.cursosCertificacoes, []);
+  const cursosDetalhados = parseCursosDetalhados(profile.cursosCertificacoes);
+  const cursosArr = cursosDetalhados.map((c) => c.nome).filter((n) => n.trim());
   const empresasArr = parseJsonSafe<EmpresaExperiencia[]>(profile.experienciasJSON, []);
   const faixaEtaria = parseJsonSafe<string[]>(profile.faixaEtariaFilhos, []);
   const parsedLocation = parseLocation(profile.location);
@@ -342,10 +364,16 @@ function buildFormEditFromProfileColumns(profile: Profile, user: User): FormEdit
       cidade: profile.cidade || parsedLocation.cidade,
       disponibilidadeMudanca: profile.disponibilidadeMudanca || '',
       escolaridade: profile.escolaridade || '',
+      cursoFormacao: '',
+      instituicaoFormacao: '',
+      anoConclusaoFormacao: '',
       cursosCertificacoes: cursosArr.join(', '),
       situacaoProfissional: profile.situacaoProfissional || '',
       areaInteresse: profile.areaInteresse || '',
       cargoDesejado: profile.cargoDesejado || profile.title || '',
+      nivelOperacional: '',
+      areaNivel: '',
+      detalheNivel: '',
       turnoDisponivel: profile.turnoDisponivel || '',
       disponibilidadeInicio: profile.disponibilidadeInicio || '',
       trabalhouIndustria: profile.trabalhouIndustria || '',
@@ -359,6 +387,7 @@ function buildFormEditFromProfileColumns(profile: Profile, user: User): FormEdit
       mensagemEmpresas: profile.mensagemEmpresas || profile.bio || profile.fullDescription || '',
       autorizoDados: true,
       declaroVerdadeiro: true,
+      aceitoLGPD: true,
     },
     cpf: formatCpfInput(profile.cpf || ''),
     telefone: profile.phone || '',
@@ -366,10 +395,11 @@ function buildFormEditFromProfileColumns(profile: Profile, user: User): FormEdit
     pretensaoSalarial: profile.pretensaoSalarial || '',
     dataNascimentoDisplay: formatDateBR(profile.dataNascimento),
     cursos: cursosArr.length > 0 ? cursosArr : [''],
+    cursosDetalhados,
     empresas:
       empresasArr.length > 0
         ? empresasArr
-        : [{ nome: '', cargo: '', dataInicio: '', dataFim: '' }],
+        : [{ nome: '', cargo: '', segmento: '', dataInicio: '', dataFim: '' }],
   };
 }
 
@@ -433,16 +463,32 @@ function normalizeExperiencias(value: unknown): EmpresaExperiencia[] {
       .map((e: any) => ({
         nome: e.nome || '',
         cargo: e.cargo || '',
+        segmento: e.segmento || '',
         dataInicio: e.dataInicio || '',
         dataFim: e.dataFim || '',
+        descricao: e.descricao || '',
       }));
   }
   return [];
 }
 
 export function buildProfileUpsertData(body: Record<string, unknown>, userEmail: string) {
-  const cursos = normalizeCursos(body.cursosCertificacoes);
-  const experiencias = normalizeExperiencias(body.experiencias);
+  const cursosDetalhados = parseCursosDetalhados(
+    body.cursosDetalhados ?? body.cursos ?? body.cursosCertificacoes,
+  );
+  const cursos = cursosDetalhados.map((c) => c.nome).filter((n) => n.trim());
+  const experiencias = normalizeExperiencias(body.empresas ?? body.experiencias);
+  const segmentosIndustria = collectSegmentosIndustria(
+    experiencias,
+    Array.isArray(body.segmentosIndustria) ? (body.segmentosIndustria as string[]) : [],
+  );
+  const cargoDerivado = buildCargoDesejado({
+    nivelOperacional: getStringValue(body.nivelOperacional) ?? undefined,
+    areaNivel: getStringValue(body.areaNivel) ?? undefined,
+    detalheNivel: getStringValue(body.detalheNivel) ?? undefined,
+  });
+  const cargoDesejado =
+    getStringValue(body.cargoDesejado) || cargoDerivado || getStringValue(body.profissao);
 
   const cleanedAvatar =
     getStringValue(body.fotoPerfil) || getStringValue(body.avatar) || null;
@@ -473,8 +519,8 @@ export function buildProfileUpsertData(body: Record<string, unknown>, userEmail:
     ...(Array.isArray(body.maquinasEquipamentos) ? (body.maquinasEquipamentos as string[]) : []),
     ...(Array.isArray(body.qualidadeProcessos) ? (body.qualidadeProcessos as string[]) : []),
     ...(Array.isArray(body.informatica) ? (body.informatica as string[]) : []),
-    ...(Array.isArray(body.segmentosIndustria) ? (body.segmentosIndustria as string[]) : []),
-    ...(Array.isArray(body.certificacoes) ? (body.certificacoes as string[]).filter(Boolean) : []),
+    ...(segmentosIndustria),
+    ...(parseCertificacoesDetalhadas(body.certificacoesDetalhadas ?? body.certificacoes).map((c) => c.nome).filter(Boolean)),
     ...(Array.isArray(body.idiomas) ? (body.idiomas as string[]).filter(Boolean) : []),
   ];
 
@@ -493,17 +539,13 @@ export function buildProfileUpsertData(body: Record<string, unknown>, userEmail:
       : calculateProfileCompletion({
           ...(body as Record<string, unknown>),
           cursos: normalizeCursos(body.cursosCertificacoes),
-          certificacoes: Array.isArray(body.certificacoes) ? (body.certificacoes as string[]) : [],
+          certificacoes: parseCertificacoesDetalhadas(body.certificacoesDetalhadas ?? body.certificacoes).map((c) => c.nome),
           idiomas: Array.isArray(body.idiomas) ? (body.idiomas as string[]) : [],
           empresas: experiencias,
         });
 
   return {
-    title:
-      getStringValue(body.cargoDesejado) ||
-      getStringValue(body.profissao) ||
-      getStringValue(body.nome) ||
-      'Profissional',
+    title: cargoDesejado || getStringValue(body.nome) || 'Profissional',
     bio:
       getStringValue(body.mensagemEmpresas) ||
       getStringValue(body.experiencias) ||
@@ -545,10 +587,15 @@ export function buildProfileUpsertData(body: Record<string, unknown>, userEmail:
     cidade,
     disponibilidadeMudanca: getStringValue(body.disponibilidadeMudanca),
     escolaridade: getStringValue(body.escolaridade),
-    cursosCertificacoes: cursos.length > 0 ? JSON.stringify(cursos) : null,
+    cursosCertificacoes:
+      cursosDetalhados.length > 0
+        ? JSON.stringify(cursosDetalhados)
+        : cursos.length > 0
+          ? JSON.stringify(cursos)
+          : null,
     situacaoProfissional: getStringValue(body.situacaoProfissional),
     areaInteresse: getStringValue(body.areaInteresse),
-    cargoDesejado: getStringValue(body.cargoDesejado) || getStringValue(body.profissao),
+    cargoDesejado,
     trabalhouIndustria: getStringValue(body.trabalhouIndustria),
     tempoExperiencia: getStringValue(body.tempoExperiencia),
     experienciasJSON: experiencias.length > 0 ? JSON.stringify(experiencias) : null,

@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background-color: #000000;
+  background-color: #3A3A3A;
   color: #f2f2f2;
   font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
   letter-spacing: normal;
@@ -15,7 +15,7 @@
 }
 
 .card {
-  background-color: #111111;
+  background-color: #2B2B2B;
   padding: 36px 32px;
   border-radius: 12px;
   border: 1px solid #c89b3c;
@@ -74,19 +74,20 @@
   padding: 11px 10px;
   cursor: pointer;
   font-family: inherit;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
   letter-spacing: normal;
   border-radius: 8px;
-  border: 1px solid #8d6b1f;
-  background: transparent;
+  border: 1px solid #6b5218;
+  background: linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8d6b1f 100%);
   color: #f2f2f2;
-  box-shadow: var(--ri-btn-3d-outline-shadow);
+  box-shadow: var(--ri-btn-3d-gold-shadow);
   transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .tab:active {
-  transform: translateY(1px);
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
 }
 
 .tabActive {
@@ -115,7 +116,7 @@
   padding: 12px 14px;
   border: 1px solid #8d6b1f;
   border-radius: 8px;
-  background-color: #000000;
+  background-color: #3A3A3A;
   color: #f2f2f2;
   font-family: inherit;
   font-size: 16px;
@@ -138,6 +139,24 @@
   align-items: center;
   gap: 8px;
   line-height: 1.4;
+}
+
+.forgotWrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -6px;
+}
+
+.forgotLink {
+  font-size: 13px;
+  color: #c89b3c;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+}
+
+.forgotLink:hover {
+  color: #d4af37;
 }
 
 .btnPrimary {
@@ -177,29 +196,29 @@
   padding: 13px 16px;
   margin-top: 10px;
   cursor: pointer;
-  background: #1a1508;
-  color: #f2f2f2;
-  border: 1px solid #8d6b1f;
+  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
+  color: #000000;
+  border: 1px solid #6b5218;
   border-radius: 8px;
   font-family: inherit;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: normal;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  box-shadow: var(--ri-btn-3d-dark-shadow);
+  box-shadow: var(--ri-btn-3d-gold-shadow);
   transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .btnGoogle:active:not(:disabled) {
   transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
 }
 
 .btnGoogle:hover:not(:disabled) {
-  border-color: #c89b3c;
-  background: #111111;
+  background: linear-gradient(180deg, #9a7620 0%, #e0bc42 45%, #d4af37 100%);
 }
 
 .btnGoogle:disabled {
@@ -218,26 +237,27 @@
   width: 100%;
   padding: 13px 16px;
   margin-top: 10px;
-  background: transparent;
-  color: #c89b3c;
-  border: 1px solid #c89b3c;
+  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
+  color: #000000;
+  border: 1px solid #6b5218;
   border-radius: 8px;
   cursor: pointer;
   font-family: inherit;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: normal;
-  box-shadow: var(--ri-btn-3d-outline-shadow);
-  transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .btnSecondary:active {
-  transform: translateY(1px);
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
 }
 
 .btnSecondary:hover {
-  background: #1a1508;
-  color: #f2f2f2;
+  background: linear-gradient(180deg, #9a7620 0%, #e0bc42 45%, #d4af37 100%);
+  color: #000000;
 }
 
 .footer {
@@ -253,7 +273,7 @@
 }
 
 .loadingFallback {
-  background-color: #000000;
+  background-color: #3A3A3A;
   color: #f2f2f2;
   min-height: 100vh;
   display: flex;

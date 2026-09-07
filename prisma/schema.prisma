@@ -18,12 +18,30 @@ model User {
   image         String?
   role          String   @default("PROFESSIONAL")
   lastLogin     DateTime?
+  /// Último heartbeat (presença online no sistema)
+  lastSeenAt    DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   company      Company?
   professional Professional?
   profile      Profile?
+}
+
+model VideoCallInvite {
+  id                 String   @id @default(cuid())
+  profileId          String
+  companyUserId      String
+  companyOwnerUserId String?
+  companyName        String
+  /// RINGING | ACCEPTED | DECLINED | ENDED | MISSED
+  status             String   @default("RINGING")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([profileId, status])
+  @@index([companyUserId])
+  @@index([companyOwnerUserId, profileId, status])
 }
 
 model Company {
@@ -33,8 +51,20 @@ model Company {
   cnpj            String?
   responsavelNome String?
   responsavelCpf  String?
+  telefone        String?
+  endereco        String?
+  logoUrl         String?
+  fotoResponsavelUrl String?
+  emailCorporativo String?
+  emailCorporativoVerificado Boolean @default(false)
+  cartaoCnpjUrl        String?
+  verificationStatus   String   @default("PENDING")
+  verifiedAt           DateTime?
+  rejectionReason      String?
   planTier        String   @default("FREE")
   subscriptionExpiresAt DateTime?
+  /// Usuários RH extras comprados acima do limite do plano
+  extraSeats      Int      @default(0)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -44,6 +74,43 @@ model Company {
   talentLists CompanyTalentList[]
   alerts CompanyAlert[]
   profileTracking CompanyProfileTracking[]
+}
+
+/// Usuários RH da mesma assinatura (dono convida; cada um tem login próprio)
+model CompanyTeamMember {
+  id                 String    @id @default(cuid())
+  companyOwnerUserId String
+  memberUserId       String?
+  invitedEmail       String
+  /// OWNER | ADMIN | RH | RECRUITER
+  role               String    @default("RH")
+  /// PENDING | ACTIVE | REVOKED
+  status             String    @default("PENDING")
+  inviteToken        String?   @unique
+  invitedAt          DateTime  @default(now())
+  acceptedAt         DateTime?
+  revokedAt          DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@unique([companyOwnerUserId, invitedEmail])
+  @@index([memberUserId])
+  @@index([companyOwnerUserId, status])
+}
+
+/// Perfil de profissional compartilhado entre usuários da mesma assinatura
+model CompanyProfileShare {
+  id                 String    @id @default(cuid())
+  companyOwnerUserId String
+  fromUserId         String
+  toUserId           String
+  profileId          String
+  note               String?
+  createdAt          DateTime  @default(now())
+  readAt             DateTime?
+
+  @@index([toUserId, createdAt])
+  @@index([companyOwnerUserId, profileId])
 }
 
 model CompanyTalentList {
@@ -101,6 +168,19 @@ model EmailVerification {
   createdAt DateTime @default(now())
 
   @@index([email])
+}
+
+model CorporateEmailConfirmation {
+  id         String    @id @default(cuid())
+  email      String
+  token      String    @unique
+  verified   Boolean   @default(false)
+  verifiedAt DateTime?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+
+  @@index([email])
+  @@index([token])
 }
 
 model PaymentRecord {
@@ -217,12 +297,61 @@ model Profile {
   accessRecords   AccessRecord[]
   tips            Tip[]
   profileMessages ProfileMessage[]
+  jobProposals    JobProposal[]
 
   @@index([userId])
   @@index([location])
   @@index([estado])
   @@index([status])
   @@index([createdAt])
+}
+
+// Proposta de vaga da empresa para o profissional
+model JobProposal {
+  id            String    @id @default(cuid())
+  profileId     String
+  companyUserId String
+  companyName   String
+  cargo         String
+  salario       String
+  turno         String
+  cidade        String
+  beneficios    String
+  mensagem      String
+  /// SENT | INTERESTED | MORE_INFO | DECLINED | INTERVIEW_PENDING | INTERVIEW_CONFIRMED | INTERVIEW_DECLINED
+  status        String    @default("SENT")
+  respondedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  profile   Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  interview JobInterview?
+
+  @@index([profileId])
+  @@index([companyUserId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Entrevista agendada a partir de uma proposta com interesse
+model JobInterview {
+  id            String   @id @default(cuid())
+  proposalId    String   @unique
+  scheduledAt   DateTime
+  /// PRESENTIAL | ONLINE | PLATFORM
+  locationType  String
+  address       String?
+  meetingUrl    String?
+  observacoes   String
+  /// PENDING | CONFIRMED | DECLINED | CANCELLED
+  status        String   @default("PENDING")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  proposal JobProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([scheduledAt])
 }
 
 // Registro de quem visualizou cada profissional
@@ -284,6 +413,9 @@ model ProfileMessage {
   companyUserId   String
   companyName     String
   body            String
+  /// COMPANY = empresa → profissional | PROFESSIONAL = resposta do candidato
+  senderRole      String   @default("COMPANY")
+  replyToId       String?
   createdAt       DateTime @default(now())
 
   profile         Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
@@ -291,6 +423,7 @@ model ProfileMessage {
   @@index([profileId])
   @@index([companyUserId])
   @@index([createdAt])
+  @@index([replyToId])
 }
 
 model CompanyFavorite {
@@ -323,7 +456,9 @@ model CompanyProfileTracking {
   profileId     String
   contatado     Boolean  @default(false)
   entrevistado  Boolean  @default(false)
+  emTeste       Boolean  @default(false)
   contratado    Boolean  @default(false)
+  naoContratado Boolean  @default(false)
   notes         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -333,4 +468,356 @@ model CompanyProfileTracking {
   @@unique([companyUserId, profileId])
   @@index([companyUserId])
   @@index([profileId])
+}
+
+/// Visitas ao site (analytics do painel admin)
+model SiteVisit {
+  id        String   @id @default(cuid())
+  path      String
+  referrer  String?
+  sessionId String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([path])
+  @@index([sessionId])
+}
+
+/// Auditoria de segurança (login, reset, admin, etc.)
+model SecurityAuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  email     String
+  ip        String
+  userAgent String
+  result    String
+  details   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action])
+  @@index([email])
+}
+
+// =============================================================================
+// Camada de planos / assinaturas / IA / chat / notificações (scaffold)
+// Tabelas novas — convivem com Company.planTier e Profile.planTier existentes
+// =============================================================================
+
+model Plan {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  audience    String   @default("COMPANY") // COMPANY | PROFESSIONAL | BOTH
+  priceCents  Int      @default(0)
+  currency    String   @default("BRL")
+  interval    String   @default("monthly") // monthly | annual | one_time
+  active      Boolean  @default(true)
+  description String?
+  metadata    String? // JSON
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions   PlanPermission[]
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+model PlanPermission {
+  id        String   @id @default(cuid())
+  planId    String
+  key       String
+  value     String   @default("true")
+  createdAt DateTime @default(now())
+
+  plan Plan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, key])
+  @@index([key])
+  @@map("plan_permissions")
+}
+
+model Subscription {
+  id                     String    @id @default(cuid())
+  userId                 String
+  planId                 String
+  status                 String    @default("ACTIVE") // ACTIVE | PAST_DUE | CANCELED | TRIALING | EXPIRED
+  billingPeriod          String    @default("monthly")
+  billingMode            String    @default("one_time")
+  autoRenew              Boolean   @default(false)
+  gatewaySubscriptionId  String?
+  currentPeriodStart     DateTime  @default(now())
+  currentPeriodEnd       DateTime?
+  canceledAt             DateTime?
+  metadata               String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  plan Plan @relation(fields: [planId], references: [id])
+
+  @@index([userId, status])
+  @@index([planId])
+  @@index([currentPeriodEnd])
+  @@map("subscriptions")
+}
+
+model AssistantUsage {
+  id           String   @id @default(cuid())
+  userId       String
+  periodKey    String // YYYY-MM
+  tokensIn     Int      @default(0)
+  tokensOut    Int      @default(0)
+  requestCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, periodKey])
+  @@index([periodKey])
+  @@map("assistant_usage")
+}
+
+model AssistantConversation {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String?
+  messages  String   @default("[]") // JSON array
+  model     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, updatedAt])
+  @@map("assistant_conversations")
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String?
+  href      String?
+  readAt    DateTime?
+  metadata  String?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt, createdAt])
+  @@index([type])
+  @@map("notifications")
+}
+
+/// Preferências de canal (WhatsApp exige consentimento explícito — telefone vem de Profile/Company)
+model UserNotificationPreference {
+  userId             String    @id
+  inAppEnabled       Boolean   @default(true)
+  emailEnabled       Boolean   @default(true)
+  whatsappEnabled    Boolean   @default(false)
+  phoneVerified      Boolean   @default(false)
+  whatsappConsent    Boolean   @default(false)
+  whatsappConsentAt  DateTime?
+  blocked            Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@map("user_notification_preferences")
+}
+
+/// Outbox / log de entregas (idempotente por canal)
+model NotificationDelivery {
+  id                String    @id @default(cuid())
+  userId            String
+  event             String
+  channel           String
+  templateKey       String
+  status            String    @default("queued")
+  idempotencyKey    String    @unique
+  provider          String?
+  providerMessageId String?
+  attemptCount      Int       @default(0)
+  maxAttempts       Int       @default(5)
+  lastError         String?
+  errorCode         String?
+  payloadSummary    String?
+  recipientHint     String?
+  createdAt         DateTime  @default(now())
+  attemptedAt       DateTime?
+  sentAt            DateTime?
+  deliveredAt       DateTime?
+  readAt            DateTime?
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@index([providerMessageId])
+  @@map("notification_deliveries")
+}
+
+model FavoriteJob {
+  id        String   @id @default(cuid())
+  userId    String
+  jobKey    String
+  title     String?
+  metadata  String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, jobKey])
+  @@index([userId])
+  @@map("favorite_jobs")
+}
+
+model FavoriteCandidate {
+  id        String   @id @default(cuid())
+  userId    String
+  profileId String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, profileId])
+  @@index([userId])
+  @@index([profileId])
+  @@map("favorite_candidates")
+}
+
+/// Visitas ao perfil do profissional (além de ProfileView legado)
+model ProfileViewLog {
+  id            String   @id @default(cuid())
+  profileId     String
+  viewerUserId  String?
+  companyUserId String?
+  source        String?
+  createdAt     DateTime @default(now())
+
+  @@index([profileId, createdAt])
+  @@index([viewerUserId])
+  @@map("profile_views")
+}
+
+model CompanyView {
+  id           String   @id @default(cuid())
+  companyId    String
+  viewerUserId String?
+  source       String?
+  createdAt    DateTime @default(now())
+
+  @@index([companyId, createdAt])
+  @@index([viewerUserId])
+  @@map("company_views")
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  actorType String   @default("USER")
+  action    String
+  entity    String?
+  entityId  String?
+  metadata  String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+  @@map("activity_logs")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  action    String
+  target    String?
+  ip        String?
+  userAgent String?
+  result    String   @default("success")
+  details   String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action])
+  @@index([actorId])
+  @@map("audit_logs")
+}
+
+model ChatRoom {
+  id           String   @id @default(cuid())
+  type         String   @default("DIRECT") // DIRECT | GROUP | SUPPORT
+  name         String?
+  createdById  String?
+  metadata     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  messages ChatMessage[]
+
+  @@index([type, updatedAt])
+  @@map("chat_rooms")
+}
+
+model ChatMessage {
+  id         String    @id @default(cuid())
+  roomId     String
+  senderId   String
+  body       String
+  readAt     DateTime?
+  metadata   String?
+  createdAt  DateTime  @default(now())
+
+  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, createdAt])
+  @@index([senderId])
+  @@map("messages")
+}
+
+model Interview {
+  id            String    @id @default(cuid())
+  companyUserId String
+  profileId     String
+  proposalId    String?
+  scheduledAt   DateTime
+  status        String    @default("PENDING")
+  locationType  String    @default("PLATFORM")
+  address       String?
+  meetingUrl    String?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  ratings Rating[]
+
+  @@index([companyUserId, scheduledAt])
+  @@index([profileId])
+  @@index([status])
+  @@map("interviews")
+}
+
+model Rating {
+  id            String   @id @default(cuid())
+  interviewId   String?
+  companyUserId String
+  profileId     String
+  score         Int
+  comment       String?
+  createdAt     DateTime @default(now())
+
+  interview Interview? @relation(fields: [interviewId], references: [id], onDelete: SetNull)
+
+  @@index([companyUserId])
+  @@index([profileId])
+  @@index([interviewId])
+  @@map("ratings")
+}
+
+model Report {
+  id          String    @id @default(cuid())
+  reporterId  String
+  targetType  String
+  targetId    String
+  reason      String
+  details     String?
+  status      String    @default("OPEN") // OPEN | REVIEWING | RESOLVED | DISMISSED
+  resolvedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+  @@index([reporterId])
+  @@map("reports")
 }

@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { Prisma } from '@prisma/client';
 import type { ProfessionalPlanTier } from '@/lib/professional-premium-plans';
 import { ensureProfilePremiumColumns } from '@/lib/ensure-db-schema';
 import type { BillingPeriod } from '@/lib/billing';
@@ -77,15 +78,15 @@ export async function listActivePremiumProfileIds(profileIds: string[]): Promise
   try {
     await ensureProfilePremiumColumns();
 
-    const allowed = new Set(profileIds);
-    const rows = await prisma.$queryRaw<Array<{ id: string }>>`
+    const premiumRows = await prisma.$queryRaw<Array<{ id: string }>>`
       SELECT id
       FROM "Profile"
-      WHERE "planTier" = 'PREMIUM'
+      WHERE id IN (${Prisma.join(profileIds)})
+        AND "planTier" = 'PREMIUM'
         AND ("subscriptionExpiresAt" IS NULL OR "subscriptionExpiresAt" > NOW())
     `;
 
-    return new Set(rows.map((r) => r.id).filter((id) => allowed.has(id)));
+    return new Set(premiumRows.map((r) => r.id));
   } catch (error) {
     console.warn('[premium] listActivePremiumProfileIds fallback vazio:', error);
     return new Set();

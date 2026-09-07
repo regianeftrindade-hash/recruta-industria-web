@@ -20,6 +20,7 @@ import { parseTesteComportamentalJSON } from '@/lib/teste-comportamental';
 import { lerCampoJsonDoPerfil } from '@/lib/profile-json-fields';
 import { getVideoApresentacaoPathByProfileId } from '@/lib/professional/professional-video-db';
 import { notifyProfessionalAsync, notifyProfileViewed } from '@/lib/professional-notifications';
+import { getCompanyAnonymousMode } from '@/lib/company/company-preferences';
 function parseSkills(skills: string | null): string[] {
   if (!skills) return [];
   try {
@@ -108,43 +109,48 @@ export async function GET(
     }
 
     const planContext = await getCompanyPlanContext(companyUser.id);
-    const { features, tier } = planContext;
+    const dataUserId = planContext.ownerUserId || companyUser.id;
+    const { features, tier, verification } = planContext;
 
     const unlocked = await prisma.accessRecord.findFirst({
       where: {
         profileId,
-        companyUserId: companyUser.id,
+        companyUserId: dataUserId,
         status: 'ACTIVE',
         expiresAt: { gt: new Date() },
       },
     });
 
-    const bloqueado = !unlocked;
+    const bloqueado = !unlocked || !verification.canAccessSensitiveProfiles;
     const industrial = parseProfileIndustrial(profile);
     const compatibilidade = calculateCompatibilityScore(profile, industrial, {});
-    const favoritos = await listCompanyFavoriteProfileIds(companyUser.id);
+    const favoritos = await listCompanyFavoriteProfileIds(dataUserId);
     const favorito = favoritos.includes(profileId);
+
+    // Modo anônimo: a visualização é registrada sem identificar a empresa
+    // (sufixo _ANON) e o profissional não recebe notificação.
+    const anonymousMode = await getCompanyAnonymousMode(dataUserId).catch(() => false);
 
     await prisma.profileView.create({
       data: {
         profileId,
-        companyUserId: companyUser.id,
-        viewType: bloqueado ? 'SUMMARY' : 'FULL',
+        companyUserId: dataUserId,
+        viewType: `${bloqueado ? 'SUMMARY' : 'FULL'}${anonymousMode ? '_ANON' : ''}`,
       },
     }).catch((err) => {
       console.warn('Falha ao registrar visualização:', err);
     });
 
-    if (!bloqueado) {
+    if (!bloqueado && !anonymousMode) {
       notifyProfessionalAsync(() =>
-        notifyProfileViewed(profileId, companyUser.id)
+        notifyProfileViewed(profileId, dataUserId)
       );
     }
 
-    const tracking = await getCompanyProfileTracking(companyUser.id, profileId);
+    const tracking = await getCompanyProfileTracking(dataUserId, profileId);
 
     const tips = await prisma.tip.findMany({
-      where: { profileId, companyUserId: companyUser.id },
+      where: { profileId, companyUserId: dataUserId },
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
@@ -212,9 +218,9 @@ export async function GET(
       : mapProfileToFormEdit(profile, profile.user, profile.formDataJSON);
 
     const sobreMimRaw = bloqueado ? null : await lerCampoJsonDoPerfil(profile.userId, 'sobreMimJSON');
-    const testeRaw = await lerCampoJsonDoPerfil(profile.userId, 'testeComportamentalJSON');
+    const testeRaw = bloqueado ? null : await lerCampoJsonDoPerfil(profile.userId, 'testeComportamentalJSON');
     const sobreMim = bloqueado ? null : parseSobreMimJSON(sobreMimRaw);
-    const testeComportamental = parseTesteComportamentalJSON(testeRaw);
+    const testeComportamental = bloqueado ? null : parseTesteComportamentalJSON(testeRaw);
     const documentos = bloqueado
       ? []
       : listarDocumentosAnexos(profile, industrial.certificadosUrl);
@@ -232,7 +238,9 @@ export async function GET(
       documentos,
       hasVideoApresentacao: Boolean(videoPath),
       videoApresentacaoUrl: videoPath ? `/api/company/professionals/${profileId}/video` : null,
-      planTier: tier,      features,
+      planTier: tier,
+      features,
+      verification,
       canUnlock:
         bloqueado
         && features.canUnlockContacts
@@ -266,15 +274,21 @@ export async function PATCH(
       return NextResponse.json({ error: 'Perfil não encontrado' }, { status: 404 });
     }
 
+    const planContext = await getCompanyPlanContext(companyUser.id);
+    const dataUserId = planContext.ownerUserId || companyUser.id;
+
     const body = await request.json();
     const patch: Partial<CompanyProfileTrackingData> = {};
 
     if (typeof body.contatado === 'boolean') patch.contatado = body.contatado;
     if (typeof body.entrevistado === 'boolean') patch.entrevistado = body.entrevistado;
+    if (typeof body.emTeste === 'boolean') patch.emTeste = body.emTeste;
     if (typeof body.contratado === 'boolean') patch.contratado = body.contratado;
+    if (typeof body.naoContratado === 'boolean') patch.naoContratado = body.naoContratado;
+    if (typeof body.entrevistaCancelada === 'boolean') patch.entrevistaCancelada = body.entrevistaCancelada;
     if (typeof body.notes === 'string') patch.notes = body.notes;
 
-    const tracking = await upsertCompanyProfileTracking(companyUser.id, profileId, patch);
+    const tracking = await upsertCompanyProfileTracking(dataUserId, profileId, patch);
     return NextResponse.json({ tracking });
   } catch (error) {
     console.error('Erro ao salvar anotações:', error);

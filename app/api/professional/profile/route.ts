@@ -44,8 +44,6 @@ async function resolveAuthEmail(request: NextRequest): Promise<{ email: string; 
 
 export async function GET(request: NextRequest) {
   try {
-    await ensurePaymentSchema();
-
     const auth = await resolveAuthEmail(request);
 
     if (!auth) {

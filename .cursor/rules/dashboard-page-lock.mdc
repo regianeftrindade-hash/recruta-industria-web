@@ -1,0 +1,39 @@
+---
+description: Dashboards empresa e profissional BLOQUEADOS — proibido editar sem pedido explícito do usuário
+globs: app/company/dashboard-empresa/**,app/professional/dashboard/**
+alwaysApply: true
+---
+
+# Dashboards bloqueados (Empresa e Profissional)
+
+**Status: 🔒 BLOQUEADO** (pedido explícito do usuário em 06/07/2026)
+
+Os dashboards estão **congelados**. O agente **NÃO DEVE** abrir, modificar, reformatar nem “melhorar” os arquivos dos dashboards em tarefas sobre outros módulos.
+
+## Rotas protegidas
+
+| Fluxo | URL principal |
+|-------|----------------|
+| Empresa | `/company/dashboard-empresa` |
+| Profissional | `/professional/dashboard` |
+| Profissional (subpáginas) | `/professional/dashboard/painel`, `/professional/dashboard/teste-comportamental`, etc. |
+
+## Arquivos protegidos
+
+- `app/company/dashboard-empresa/**`
+- `app/professional/dashboard/**`
+
+## Proibido sem pedido explícito
+
+- Qualquer diff nos arquivos acima (empresa **ou** profissional)
+- Ajustes de layout, cards, favoritos, planos, vitrine, filtros, cores, espaçamentos
+- Refatorações que toquem o dashboard “de passagem” ao trabalhar em APIs, pagamento, cadastro, etc.
+- Alterar componentes compartilhados **somente** para mudar o dashboard — prefira pedir autorização ou editar fora do escopo bloqueado
+
+## Permitido somente se o usuário disser claramente
+
+Exemplos: “altere o dashboard empresa”, “mude o dashboard profissional”, “desbloqueie o dashboard e…”.
+
+## Escopo mínimo quando autorizado
+
+Altere **apenas** o trecho necessário ao pedido (empresa ou profissional). Não reestilize o restante.

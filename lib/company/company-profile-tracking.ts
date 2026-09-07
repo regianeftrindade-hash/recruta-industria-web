@@ -1,70 +1,72 @@
-import { prisma } from '@/lib/db';
+import { randomUUID } from "crypto";
+import { prisma } from "@/lib/db";
+import { ensureTrackingEmTesteColumn } from "@/lib/ensure-db-schema";
 
 export type CompanyProfileTrackingData = {
   contatado: boolean;
   entrevistado: boolean;
+  emTeste: boolean;
   contratado: boolean;
+  naoContratado: boolean;
+  entrevistaCancelada: boolean;
   notes: string;
 };
 
 export const EMPTY_TRACKING: CompanyProfileTrackingData = {
   contatado: false,
   entrevistado: false,
+  emTeste: false,
   contratado: false,
-  notes: '',
+  naoContratado: false,
+  entrevistaCancelada: false,
+  notes: "",
 };
 
 type TrackingRow = {
   contatado: boolean;
   entrevistado: boolean;
+  emTeste?: boolean;
   contratado: boolean;
+  naoContratado?: boolean;
+  entrevistaCancelada?: boolean;
   notes: string | null;
 };
 
-type TrackingDelegate = {
-  findUnique: (args: {
-    where: { companyUserId_profileId: { companyUserId: string; profileId: string } };
-  }) => Promise<TrackingRow | null>;
-  upsert: (args: {
-    where: { companyUserId_profileId: { companyUserId: string; profileId: string } };
-    create: Record<string, unknown>;
-    update: Record<string, unknown>;
-  }) => Promise<TrackingRow>;
-};
-
-function getTrackingDelegate(): TrackingDelegate | null {
-  const delegate = (prisma as unknown as { companyProfileTracking?: TrackingDelegate })
-    .companyProfileTracking;
-  if (!delegate?.findUnique || !delegate?.upsert) return null;
-  return delegate;
-}
-
 function mapRow(row: TrackingRow): CompanyProfileTrackingData {
   return {
-    contatado: row.contatado,
-    entrevistado: row.entrevistado,
-    contratado: row.contratado,
-    notes: row.notes || '',
+    contatado: Boolean(row.contatado),
+    entrevistado: Boolean(row.entrevistado),
+    emTeste: Boolean(row.emTeste),
+    contratado: Boolean(row.contratado),
+    naoContratado: Boolean(row.naoContratado),
+    entrevistaCancelada: Boolean(row.entrevistaCancelada),
+    notes: row.notes || "",
   };
 }
 
 export async function getCompanyProfileTracking(
   companyUserId: string,
-  profileId: string
+  profileId: string,
 ): Promise<CompanyProfileTrackingData> {
-  const db = getTrackingDelegate();
-  if (!db) return { ...EMPTY_TRACKING };
-
+  await ensureTrackingEmTesteColumn();
   try {
-    const row = await db.findUnique({
-      where: {
-        companyUserId_profileId: { companyUserId, profileId },
-      },
-    });
-    if (!row) return { ...EMPTY_TRACKING };
-    return mapRow(row);
+    const rows = await prisma.$queryRawUnsafe<TrackingRow[]>(
+      `SELECT contatado, entrevistado,
+              COALESCE("emTeste", false) AS "emTeste",
+              contratado,
+              COALESCE("naoContratado", false) AS "naoContratado",
+              COALESCE("entrevistaCancelada", false) AS "entrevistaCancelada",
+              notes
+       FROM "CompanyProfileTracking"
+       WHERE "companyUserId" = $1 AND "profileId" = $2
+       LIMIT 1`,
+      companyUserId,
+      profileId,
+    );
+    if (!rows[0]) return { ...EMPTY_TRACKING };
+    return mapRow(rows[0]);
   } catch (error) {
-    console.warn('CompanyProfileTracking indisponível:', error);
+    console.warn("CompanyProfileTracking indisponível:", error);
     return { ...EMPTY_TRACKING };
   }
 }
@@ -72,45 +74,63 @@ export async function getCompanyProfileTracking(
 export async function upsertCompanyProfileTracking(
   companyUserId: string,
   profileId: string,
-  data: Partial<CompanyProfileTrackingData>
+  data: Partial<CompanyProfileTrackingData>,
 ): Promise<CompanyProfileTrackingData> {
-  const db = getTrackingDelegate();
-  if (!db) {
-    console.warn('CompanyProfileTracking indisponível — reinicie o servidor após prisma generate');
-    return {
-      ...EMPTY_TRACKING,
-      ...data,
-      notes: data.notes ?? '',
-    };
-  }
-
+  await ensureTrackingEmTesteColumn();
   try {
-    const row = await db.upsert({
-      where: {
-        companyUserId_profileId: { companyUserId, profileId },
-      },
-      create: {
-        companyUserId,
-        profileId,
-        contatado: data.contatado ?? false,
-        entrevistado: data.entrevistado ?? false,
-        contratado: data.contratado ?? false,
-        notes: data.notes?.trim() || null,
-      },
-      update: {
-        ...(data.contatado !== undefined ? { contatado: data.contatado } : {}),
-        ...(data.entrevistado !== undefined ? { entrevistado: data.entrevistado } : {}),
-        ...(data.contratado !== undefined ? { contratado: data.contratado } : {}),
-        ...(data.notes !== undefined ? { notes: data.notes.trim() || null } : {}),
-      },
-    });
-    return mapRow(row);
+    const current = await getCompanyProfileTracking(companyUserId, profileId);
+    const next: CompanyProfileTrackingData = {
+      contatado: data.contatado ?? current.contatado,
+      entrevistado: data.entrevistado ?? current.entrevistado,
+      emTeste: data.emTeste ?? current.emTeste,
+      contratado: data.contratado ?? current.contratado,
+      naoContratado: data.naoContratado ?? current.naoContratado,
+      entrevistaCancelada: data.entrevistaCancelada ?? current.entrevistaCancelada,
+      notes: data.notes !== undefined ? data.notes : current.notes,
+    };
+
+    if (data.contratado === true) next.naoContratado = false;
+    if (data.naoContratado === true) next.contratado = false;
+
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO "CompanyProfileTracking" (
+         id, "companyUserId", "profileId",
+         contatado, entrevistado, "emTeste", contratado, "naoContratado", "entrevistaCancelada", notes,
+         "createdAt", "updatedAt"
+       ) VALUES (
+         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW()
+       )
+       ON CONFLICT ("companyUserId", "profileId") DO UPDATE SET
+         contatado = EXCLUDED.contatado,
+         entrevistado = EXCLUDED.entrevistado,
+         "emTeste" = EXCLUDED."emTeste",
+         contratado = EXCLUDED.contratado,
+         "naoContratado" = EXCLUDED."naoContratado",
+         "entrevistaCancelada" = EXCLUDED."entrevistaCancelada",
+         notes = EXCLUDED.notes,
+         "updatedAt" = NOW()`,
+      randomUUID(),
+      companyUserId,
+      profileId,
+      next.contatado,
+      next.entrevistado,
+      next.emTeste,
+      next.contratado,
+      next.naoContratado,
+      next.entrevistaCancelada,
+      next.notes.trim() || null,
+    );
+
+    return next;
   } catch (error) {
-    console.warn('Falha ao salvar CompanyProfileTracking:', error);
+    console.warn("Falha ao salvar CompanyProfileTracking:", error);
     return {
       ...EMPTY_TRACKING,
       ...data,
-      notes: data.notes ?? '',
+      notes: data.notes ?? "",
+      emTeste: data.emTeste ?? false,
+      naoContratado: data.naoContratado ?? false,
+      entrevistaCancelada: data.entrevistaCancelada ?? false,
     };
   }
 }

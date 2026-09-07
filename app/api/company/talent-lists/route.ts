@@ -7,10 +7,13 @@ import {
   addProfileToTalentList,
   createTalentList,
   deleteTalentList,
+  listTalentListIdsForProfile,
   listTalentListProfileIds,
   listTalentLists,
+  listTalentListsWithProfiles,
   removeProfileFromTalentList,
   seedDefaultTalentLists,
+  syncProfileTalentLists,
 } from '@/lib/company-features-db'
 
 export async function GET(request: NextRequest) {
@@ -28,19 +31,39 @@ export async function GET(request: NextRequest) {
     }
 
     const planContext = await getCompanyPlanContext(user.id)
+    const dataUserId = planContext.ownerUserId || user.id
     if (!planContext.features.canUseTalentBank) {
       return NextResponse.json({ error: 'Banco de talentos disponível no plano Empresarial.' }, { status: 403 })
     }
 
     await seedDefaultTalentLists(user.id)
-    const lists = await listTalentLists(user.id)
 
     const { searchParams } = new URL(request.url)
+
+    if (searchParams.get('include') === 'profiles') {
+      const listsWithProfiles = await listTalentListsWithProfiles(user.id)
+      return NextResponse.json({
+        lists: listsWithProfiles.map((l) => ({
+          id: l.id,
+          name: l.name,
+          itemCount: l.profiles.length,
+          profiles: l.profiles,
+          createdAt: l.createdAt.toISOString(),
+        })),
+      })
+    }
+
+    const lists = await listTalentLists(user.id)
     const listId = searchParams.get('listId')
     if (listId) {
       const profileIds = await listTalentListProfileIds(listId, user.id)
       return NextResponse.json({ profileIds })
     }
+
+    const profileId = searchParams.get('profileId')
+    const membershipListIds = profileId
+      ? await listTalentListIdsForProfile(user.id, profileId)
+      : []
 
     return NextResponse.json({
       lists: lists.map((l) => ({
@@ -49,6 +72,7 @@ export async function GET(request: NextRequest) {
         itemCount: Number(l.itemCount),
         createdAt: l.createdAt.toISOString(),
       })),
+      membershipListIds,
     })
   } catch (error) {
     console.error('Erro ao listar banco de talentos:', error)
@@ -71,6 +95,7 @@ export async function POST(request: NextRequest) {
     }
 
     const planContext = await getCompanyPlanContext(user.id)
+    const dataUserId = planContext.ownerUserId || user.id
     if (!planContext.features.canUseTalentBank) {
       return NextResponse.json({ error: 'Banco de talentos disponível no plano Empresarial.' }, { status: 403 })
     }
@@ -92,6 +117,19 @@ export async function POST(request: NextRequest) {
       }
       await addProfileToTalentList(user.id, listId, profileId)
       return NextResponse.json({ success: true })
+    }
+
+    if (action === 'syncProfileLists') {
+      const profileId = String(body.profileId || '').trim()
+      const listIds = Array.isArray(body.listIds)
+        ? body.listIds.map((id: unknown) => String(id || '').trim()).filter(Boolean)
+        : []
+      if (!profileId) {
+        return NextResponse.json({ error: 'Perfil é obrigatório' }, { status: 400 })
+      }
+      await syncProfileTalentLists(user.id, profileId, listIds)
+      const membershipListIds = await listTalentListIdsForProfile(user.id, profileId)
+      return NextResponse.json({ success: true, membershipListIds })
     }
 
     return NextResponse.json({ error: 'Ação inválida' }, { status: 400 })

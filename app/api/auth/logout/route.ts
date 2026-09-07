@@ -1,7 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
+import { resolveAuthEmail } from '@/lib/api-auth';
+import { clearUserPresence } from '@/lib/presence';
 
-function handleLogout(request: NextRequest) {
-  const response = NextResponse.redirect(new URL('/login?tipo=profissional', request.url), {
+async function handleLogout(request: NextRequest) {
+  try {
+    const auth = await resolveAuthEmail(request);
+    if (auth) {
+      const user = await prisma.user.findUnique({
+        where: { email: auth.email },
+        select: { id: true },
+      });
+      if (user) await clearUserPresence(user.id);
+    }
+  } catch {
+    /* segue com logout mesmo se presença falhar */
+  }
+
+  const redirectParam = request.nextUrl.searchParams.get('redirect');
+  const loginUrl = new URL('/login', request.url);
+
+  if (redirectParam?.startsWith('/')) {
+    loginUrl.searchParams.set('redirect', redirectParam);
+  } else {
+    loginUrl.searchParams.set('tipo', 'profissional');
+  }
+
+  const response = NextResponse.redirect(loginUrl, {
     status: 302,
   });
 
@@ -32,5 +57,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/login?tipo=profissional', request.url));
   }
 }
-
-

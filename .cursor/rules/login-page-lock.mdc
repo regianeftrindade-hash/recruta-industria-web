@@ -1,0 +1,48 @@
+---
+description: Login profissional e empresa BLOQUEADOS — proibido editar app/login sem pedido explícito do usuário
+globs: app/login/page.tsx,app/login/login.module.css
+alwaysApply: true
+---
+
+# Login bloqueado (Profissional e Empresa)
+
+**Status: 🔒 BLOQUEADO** (pedido explícito do usuário em 06/07/2026)
+
+Os fluxos de login estão **congelados**. O agente **NÃO DEVE** abrir, modificar, reformatar nem “melhorar” os arquivos do login em tarefas sobre outros módulos.
+
+## Uma página, dois fluxos
+
+| Fluxo | URL |
+|-------|-----|
+| Profissional | `/login?tipo=profissional` |
+| Empresa | `/login?tipo=empresa` |
+| Sem tipo (abas) | `/login` |
+
+Implementação única: `app/login/page.tsx` + `app/login/login.module.css`
+
+## Arquivos protegidos
+
+- `app/login/page.tsx`
+- `app/login/login.module.css`
+
+## Proibido sem pedido explícito
+
+- Qualquer diff nos arquivos acima (profissional **ou** empresa)
+- Ajustes de logo, tag de acesso, abas, formulário, captcha, cores, espaçamentos
+- Refatorações que toquem o login “de passagem” ao trabalhar em cadastro, dashboard, etc.
+- Alterar botões 3D globalmente via login — use `lib/button-3d.ts` e `app/globals.css`
+
+## Layout aprovado (não alterar)
+
+- Logo `<LogoRecruta size="sm" depth />` em `.loginHeader`
+- Tag `.accessTag`: “Acesso Profissional” ou “Acesso Empresa”
+- Com `?tipo=` na URL: **sem abas** — só o fluxo escolhido
+- Sem `?tipo=`: abas Profissional / Empresa visíveis
+
+## Permitido somente se o usuário disser claramente
+
+Exemplos: “altere o login”, “mude o login profissional”, “mude o login empresa”, “desbloqueie o login e…”.
+
+## Escopo mínimo quando autorizado
+
+Altere **apenas** o trecho necessário ao pedido (profissional ou empresa). Não reestilize o restante.

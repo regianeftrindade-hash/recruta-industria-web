@@ -6,7 +6,7 @@ import React from "react";
 
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 
-import { DASH, dashCard, dashInput, dashInnerBox, dashLabel, dashPlanAccent, dashSectionTitle } from "@/lib/dashboard-theme";
+import { DASH, dashCard, dashInnerBox, dashLabel, dashPlanAccent, dashSectionTitle } from "@/lib/dashboard-theme";
 
 
 
@@ -31,6 +31,8 @@ export type CompanyAlert = {
 
   active: boolean;
 
+  filters?: Record<string, string>;
+
   newMatches: { profileId: string; score: number }[];
 
 };
@@ -52,7 +54,7 @@ export function DashboardStatsBar({ stats }: { stats: DashboardStats }) {
 
       {items.map(([label, val]) => (
 
-        <div key={String(label)} style={{ ...dashCard, borderRadius: 8, padding: 10, textAlign: "center" }}>
+        <div key={String(label)} data-card="1" className="dash-card" style={{ ...dashCard, padding: 10, textAlign: "center" }}>
 
           <p style={{ ...dashLabel, margin: "0 0 4px", fontSize: 9 }}>{label}</p>
 
@@ -80,6 +82,8 @@ export function AlertsPanel({
 
   onDelete,
 
+  onOpenMatches,
+
 }: {
 
   alerts: CompanyAlert[];
@@ -90,15 +94,25 @@ export function AlertsPanel({
 
   onDelete: (id: string) => void;
 
+  onOpenMatches?: (alert: CompanyAlert) => void;
+
 }) {
 
   return (
 
-    <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${DASH.border}` }}>
+    <div
+      data-card="1"
+      className="dash-card"
+      style={{
+        ...dashCard,
+        padding: 12,
+        marginTop: 14,
+      }}
+    >
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
 
-        <h4 style={{ ...dashSectionTitle, margin: 0, fontSize: 12 }}>🔔 Alertas de talentos</h4>
+        <h4 style={{ ...dashSectionTitle, color: DASH.gold, margin: 0, fontSize: 12 }}>🔔 Alertas de talentos</h4>
 
         <button type="button" onClick={onCreate} style={{ ...btnGold, padding: "4px 8px", fontSize: 9 }}>+ Novo</button>
 
@@ -116,7 +130,7 @@ export function AlertsPanel({
 
             <div style={{ display: "flex", justifyContent: "space-between", gap: 6 }}>
 
-              <strong style={{ color: DASH.text }}>{a.name}</strong>
+              <strong style={{ color: DASH.gold }}>{a.name}</strong>
 
               <label style={{ color: DASH.muted, fontSize: 9 }}>
 
@@ -126,15 +140,47 @@ export function AlertsPanel({
 
             </div>
 
-            {a.newMatches.length > 0 && (
+            <button
 
-              <p style={{ ...dashPlanAccent, margin: "4px 0 0", fontSize: 10 }}>
+              type="button"
 
-                {a.newMatches.length} novo(s) compatível(is)
+              onClick={() => onOpenMatches?.(a)}
 
-              </p>
+              style={{
 
-            )}
+                ...dashPlanAccent,
+
+                margin: "4px 0 0",
+
+                padding: 0,
+
+                fontSize: 10,
+
+                fontWeight: 700,
+
+                background: "none",
+
+                border: "none",
+
+                cursor: onOpenMatches ? "pointer" : "default",
+
+                textDecoration: onOpenMatches ? "underline" : "none",
+
+                textAlign: "left",
+
+              }}
+
+              title="Ver somente os profissionais compatíveis com as preferências"
+
+            >
+
+              {a.newMatches.length > 0
+
+                ? `${a.newMatches.length} novo(s) compatível(is)`
+
+                : "Ver profissionais compatíveis"}
+
+            </button>
 
             <button type="button" onClick={() => onDelete(a.id)} style={{ background: "none", border: "none", color: "#dc3545", fontSize: 9, cursor: "pointer", marginTop: 4, padding: 0 }}>
 
@@ -166,6 +212,8 @@ export function TalentBankPanel({
 
   onSelectList,
 
+  onOpenList,
+
 }: {
 
   lists: TalentList[];
@@ -176,41 +224,114 @@ export function TalentBankPanel({
 
   onSelectList: (id: string) => void;
 
+  onOpenList?: (list: TalentList) => void;
+
 }) {
 
   return (
 
-    <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${DASH.border}` }}>
+    <div
+      data-card="1"
+      className="dash-card"
+      style={{
+        ...dashCard,
+        padding: 12,
+        marginTop: 14,
+      }}
+    >
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
 
-        <h4 style={{ ...dashSectionTitle, margin: 0, fontSize: 12 }}>📁 Banco de talentos</h4>
+        <h4 style={{ ...dashSectionTitle, color: DASH.gold, margin: 0, fontSize: 12 }}>📁 Banco de talentos</h4>
 
         <button type="button" onClick={onAddList} style={{ ...btnGold, padding: "4px 8px", fontSize: 9 }}>+ Lista</button>
 
       </div>
 
-      <select
+      {lists.length === 0 ? (
 
-        value={selectedListId}
+        <p style={{ color: DASH.muted, fontSize: 10, margin: 0 }}>Nenhuma lista criada.</p>
 
-        onChange={(e) => onSelectList(e.target.value)}
+      ) : (
 
-        style={{ ...dashInput, fontSize: 10, marginBottom: 6 }}
+        lists.map((l) => {
 
-      >
+          const selected = selectedListId === l.id;
 
-        <option value="">Selecione uma lista</option>
+          return (
 
-        {lists.map((l) => (
+            <div
 
-          <option key={l.id} value={l.id}>{l.name} ({l.itemCount})</option>
+              key={l.id}
 
-        ))}
+              role="button"
 
-      </select>
+              tabIndex={0}
 
-      <p style={{ color: DASH.muted, fontSize: 9, margin: 0 }}>Use &quot;+ Lista&quot; nos perfis desbloqueados para organizar candidatos.</p>
+              onClick={() => {
+                onSelectList(l.id);
+                onOpenList?.(l);
+              }}
+
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelectList(l.id);
+                  onOpenList?.(l);
+                }
+              }}
+
+              style={{
+
+                ...dashInnerBox,
+
+                padding: 8,
+
+                marginBottom: 6,
+
+                fontSize: 10,
+
+                cursor: "pointer",
+
+                boxShadow: selected ? `inset 0 0 0 1px ${DASH.gold}` : undefined,
+
+              }}
+
+              title="Abrir perfis desta lista"
+
+            >
+
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 6, alignItems: "center" }}>
+
+                <strong style={{ color: DASH.gold }}>{l.name}</strong>
+
+                <span style={{ ...dashPlanAccent, fontSize: 10, fontWeight: 700 }}>
+
+                  {l.itemCount} perfil(is)
+
+                </span>
+
+              </div>
+
+              {selected && (
+
+                <p style={{ color: DASH.muted, fontSize: 9, margin: "4px 0 0" }}>Lista selecionada para adicionar</p>
+
+              )}
+
+            </div>
+
+          );
+
+        })
+
+      )}
+
+      <p style={{ color: DASH.muted, fontSize: 9, margin: "6px 0 0" }}>
+
+        Clique na lista para ver os perfis na vitrine. Para adicionar, abra o perfil do profissional.
+
+      </p>
 
     </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { goldButton3DStyle } from "@/lib/button-3d";
 
 type PixQrCodeProps = {
   copyPasteKey: string;
@@ -50,13 +51,10 @@ export function PixQrCode({ copyPasteKey, qrCodeDataUrl, expiresAt }: PixQrCodeP
         type="button"
         onClick={handleCopy}
         style={{
+          ...goldButton3DStyle,
           marginTop: 12,
           padding: "8px 16px",
           borderRadius: 6,
-          border: "1px solid #8D6B1F",
-          background: copied ? "#1a3d1a" : "#000",
-          color: copied ? "#8f8" : "#F2F2F2",
-          cursor: "pointer",
           fontSize: 12,
         }}
       >
@@ -66,7 +64,7 @@ export function PixQrCode({ copyPasteKey, qrCodeDataUrl, expiresAt }: PixQrCodeP
         style={{
           fontSize: 10,
           wordBreak: "break-all",
-          background: "#000",
+          background: "#2B2B2B",
           padding: 10,
           borderRadius: 6,
           marginTop: 12,

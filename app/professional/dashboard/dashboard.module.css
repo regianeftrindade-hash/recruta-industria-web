@@ -1,7 +1,7 @@
 /* 🔒 BLOQUEADO (06/07/2026) — não editar sem pedido explícito. Ver .cursor/rules/dashboard-page-lock.mdc */
 /* Tema industrial — alinhado à Home */
 .container {
-  background-color: #000000;
+  background-color: #3A3A3A;
   min-height: 100vh;
   padding: clamp(15px, 4vw, 30px);
   font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -12,7 +12,7 @@
 }
 
 .header {
-  background-color: #111111;
+  background-color: #2B2B2B;
   color: #F2F2F2;
   padding: clamp(15px, 4vw, 20px) clamp(20px, 5vw, 40px);
   border-radius: 15px;
@@ -41,24 +41,39 @@
 }
 
 .updateBtn {
-  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  background: linear-gradient(180deg, #8D6B1F 0%, #C89B3C 45%, #A87E2E 100%);
   color: #000000;
-  border: none;
+  border: 1px solid #6b5218;
   padding: clamp(8px, 2vw, 10px) clamp(15px, 3vw, 20px);
   border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
   font-size: clamp(12px, 2vw, 14px);
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.updateBtn:active {
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
 }
 
 .logoutBtn {
-  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  background: linear-gradient(180deg, #8D6B1F 0%, #C89B3C 45%, #A87E2E 100%);
   color: #000000;
-  border: none;
+  border: 1px solid #6b5218;
   padding: clamp(8px, 2vw, 10px) clamp(15px, 3vw, 20px);
   border-radius: 8px;
   cursor: pointer;
   font-size: clamp(12px, 2vw, 14px);
+  font-weight: 700;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.logoutBtn:active {
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
 }
 
 .grid {
@@ -85,7 +100,7 @@
 }
 
 .profileSection {
-  background-color: #111111;
+  background-color: #2B2B2B;
   padding: clamp(25px, 5vw, 40px);
   border-radius: 20px;
   border: 1px solid #8D6B1F;
@@ -148,7 +163,7 @@
 }
 
 .visitsCard {
-  background-color: #111111;
+  background-color: #2B2B2B;
   color: #F2F2F2;
   padding: clamp(30px, 5vw, 40px) clamp(15px, 3vw, 20px);
   border-radius: 20px;
@@ -207,7 +222,7 @@
 }
 
 .hiringCard {
-  background-color: #111111;
+  background-color: #2B2B2B;
   padding: 20px;
   border-radius: 20px;
   border: 1px solid #8D6B1F;

@@ -1,0 +1,74 @@
+---
+description: TODAS as páginas e UI em uso do site BLOQUEADAS — proibido editar sem pedido explícito
+alwaysApply: true
+---
+
+# Site bloqueado (páginas em uso)
+
+**Status: 🔒 BLOQUEADO** (pedido explícito do usuário em 12/07/2026)
+
+Todas as páginas e superfícies de UI que estão em uso no Recruta Indústria estão **congeladas**. O agente **NÃO DEVE** abrir, modificar, reformatar nem “melhorar” esses arquivos em tarefas que não peçam explicitamente o desbloqueio.
+
+Regras específicas já existentes (home, login, dashboards, logo) **continuam válidas** e somam a este bloqueio geral.
+
+## Rotas protegidas
+
+| Área | URLs |
+|------|------|
+| Home | `/` |
+| Login / senha | `/login`, `/esqueci-senha`, `/reset-password` |
+| Termos | `/termos/[slug]` |
+| Cadastro profissional | `/professional/register`, `/professional/boas-vindas`, `/professional/checkout`, `/professional/pagamento`, `/professional/success`, `/professional/subscription`, `/professional/upgrade`, `/professional/upgrade-success` |
+| Dashboard profissional | `/professional/dashboard`, `/professional/dashboard/painel`, `/professional/dashboard/teste-comportamental` |
+| Cadastro empresa | `/company/register`, `/company/boas-vindas`, `/company/pagamento`, `/company/success` |
+| Dashboard empresa | `/company/dashboard-empresa` |
+| Perfil candidato (empresa) | `/company/professional/[id]` |
+| Pagamento genérico | `/pagamento` |
+| Admin | `/admin`, `/admin/**`, `/admin-verify-2fa` |
+
+## Arquivos protegidos (páginas)
+
+- `app/page.tsx`, `app/home.module.css`
+- `app/login/**`
+- `app/esqueci-senha/**`, `app/reset-password/**`
+- `app/termos/**`
+- `app/pagamento/**`
+- `app/professional/**`
+- `app/company/**`
+- `app/admin/**`
+- `app/admin-verify-2fa/**`
+
+## Componentes de UI ligados a essas páginas (também bloqueados)
+
+- `components/company/**`
+- `components/professional/**`
+- `components/shared/PlatformVideoCall.tsx`
+- `components/shared/OnlineStatusDot.tsx`
+- `components/shared/SecureVideoPlayer.tsx`
+- `app/components/CompanyDashboardTools.tsx` (re-export) e equivalentes em `components/company/`
+- `app/components/CompanyPlanCards.tsx`, `CompanyExclusiveFeatures.tsx`, `CompanyCandidateProfilePanel.tsx` (re-exports)
+- `lib/ui/dashboard-theme.tsx`, `styles/dashboard-theme.css`, `app/dashboard/dashboard-theme.css`
+- `public/logo-recruta.png`, `public/simbolo-recruta.png`, `lib/logo-recruta.ts`
+- `app/components/LogoRecruta.tsx`, `LogoRecrutaSymbol.tsx`
+- Assets da home: `public/profissional.jpg`, `public/empresa.jpg`, `public/welding-*.png`
+
+## Proibido sem pedido explícito
+
+- Qualquer diff nos arquivos/páginas acima
+- “Melhorias” de layout, cores, molduras, textos, logos, CSS ou UX “de passagem”
+- Refatorações que toquem páginas bloqueadas para facilitar outra tarefa
+- Alterar APIs **somente** para mudar comportamento de UI congelada (exceto bug crítico pedido pelo usuário)
+
+## Permitido sem desbloquear páginas
+
+- Correções de API/banco **sem** alterar JSX/CSS das páginas bloqueadas, se o usuário pedir explicitamente a correção de backend
+- Documentação em `docs/**` (exceto se o usuário pedir para não mexer)
+- Scripts, testes e configs de infra que não mudem a UI
+
+## Permitido somente se o usuário disser claramente
+
+Exemplos: “desbloqueie o site”, “altere a home”, “mude o dashboard empresa”, “edite o login”, “pode mexer no cadastro profissional”.
+
+## Escopo mínimo quando autorizado
+
+Altere **apenas** o trecho e a página citados. Não reestilize o restante do site.

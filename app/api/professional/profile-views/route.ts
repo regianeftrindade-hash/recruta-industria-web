@@ -59,14 +59,18 @@ export async function GET(request: NextRequest) {
       : [];
     const companyNameByUserId = new Map(companies.map((c) => [c.userId, c.name]));
 
-    const enrichedViews = profileViews.map((view) => ({
-      id: view.id,
-      createdAt: view.createdAt,
-      viewType: view.viewType,
-      companyName: canSeeNames
-        ? (companyNameByUserId.get(view.companyUserId) || 'Empresa')
-        : null,
-    }));
+    // Visualizações em modo anônimo (sufixo _ANON) nunca revelam o nome da empresa.
+    const enrichedViews = profileViews.map((view) => {
+      const isAnon = view.viewType.endsWith('_ANON');
+      return {
+        id: view.id,
+        createdAt: view.createdAt,
+        viewType: isAnon ? view.viewType.replace('_ANON', '') : view.viewType,
+        companyName: canSeeNames && !isAnon
+          ? (companyNameByUserId.get(view.companyUserId) || 'Empresa')
+          : null,
+      };
+    });
 
     const startOfWeek = getStartOfWeek(new Date());
     const weekViews = enrichedViews.filter(
@@ -79,8 +83,8 @@ export async function GET(request: NextRequest) {
       allViews: enrichedViews,
       totalViews: profileViews.length,
       lastViewAt: lastView?.createdAt ?? null,
-      lastViewType: lastView?.viewType ?? null,
-      lastViewCompany: lastView && canSeeNames
+      lastViewType: lastView ? lastView.viewType.replace('_ANON', '') : null,
+      lastViewCompany: lastView && canSeeNames && !lastView.viewType.endsWith('_ANON')
         ? (companyNameByUserId.get(lastView.companyUserId) || 'Empresa')
         : null,
       weekViews,

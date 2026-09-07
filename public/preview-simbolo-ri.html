@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prévia — Marca oficial | Recruta Indústria</title>
+  <style>
+    :root { --bg:#0a0a0a; --card:#141414; --gold:#c89b3c; --text:#f2f2f2; --muted:#9a9a9a; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; padding: 32px 20px 48px;
+      background: radial-gradient(ellipse at top, #1a1508 0%, var(--bg) 55%);
+      color: var(--text); font-family: system-ui, sans-serif;
+    }
+    h1 { margin: 0 0 8px; font-size: 1.35rem; color: var(--gold); letter-spacing: 0.04em; text-transform: uppercase; }
+    .sub { margin: 0 0 28px; color: var(--muted); font-size: 0.95rem; max-width: 720px; line-height: 1.5; }
+    .grid { display: grid; gap: 20px; max-width: 960px; margin: 0 auto; }
+    .card { background: var(--card); border: 1px solid rgba(200,155,60,.35); border-radius: 14px; padding: 20px; }
+    .card h2 { margin: 0 0 14px; font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; color: var(--gold); }
+    .hero { display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap; padding: 24px 12px; }
+    .hero img { max-width: min(420px, 90vw); height: auto; }
+    .row { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; justify-content: center; }
+    .row img { display: block; }
+    .note { margin: 24px auto 0; max-width: 960px; padding: 14px 16px; border-left: 3px solid var(--gold); background: rgba(200,155,60,.08); font-size: .88rem; line-height: 1.5; color: #ddd; }
+  </style>
+</head>
+<body>
+  <div class="grid">
+    <div>
+      <h1>Prévia da marca oficial</h1>
+      <p class="sub">Logotipo completo e símbolo enviados — aplicados em todo o projeto via <code>LogoRecruta</code> e <code>LogoRecrutaSymbol</code>.</p>
+    </div>
+    <section class="card">
+      <h2>Logotipo completo</h2>
+      <div class="hero"><img src="/logo-recruta-trim.png" alt="Logotipo Recruta Indústria" /></div>
+    </section>
+    <section class="card">
+      <h2>Símbolo (ícone / favicon)</h2>
+      <div class="hero"><img src="/simbolo-recruta.png" alt="Símbolo Recruta Indústria" style="width:min(280px,70vw)" /></div>
+    </section>
+    <section class="card">
+      <h2>Tamanhos do símbolo</h2>
+      <div class="row">
+        <img src="/icons/ri-16.png" width="16" height="16" alt="16" />
+        <img src="/icons/ri-32.png" width="32" height="32" alt="32" />
+        <img src="/icons/ri-192.png" width="64" height="64" alt="192" />
+        <img src="/icons/ri-512.png" width="96" height="96" alt="512" />
+      </div>
+    </section>
+  </div>
+  <p class="note">Home, login e dashboards passam a usar automaticamente o novo logotipo pelo componente compartilhado.</p>
+</body>
+</html>

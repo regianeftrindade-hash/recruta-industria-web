@@ -2,15 +2,24 @@
 
 import React from "react";
 import styles from "@/app/professional/register/register.module.css";
+import type { MarcadorPreenchimento } from "@/app/professional/register/RegisterLabelMarcador";
 
 interface RegisterSectionHeaderProps {
   emoji: string;
   title: string;
+  marcador?: MarcadorPreenchimento;
 }
 
-export default function RegisterSectionHeader({ emoji, title }: RegisterSectionHeaderProps) {
+export default function RegisterSectionHeader({ emoji, title, marcador }: RegisterSectionHeaderProps) {
+  const marcadorClass =
+    marcador === "obrigatorio"
+      ? styles.sectionTitleMarcadorObrigatorio
+      : marcador === "recomendado"
+        ? styles.sectionTitleMarcadorRecomendado
+        : "";
+
   return (
-    <h2 className={styles.sectionTitle}>
+    <h2 className={[styles.sectionTitle, marcadorClass].filter(Boolean).join(" ")}>
       {emoji} {title}
     </h2>
   );

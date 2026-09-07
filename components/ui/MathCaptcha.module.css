@@ -1,5 +1,5 @@
 .wrap {
-  background-color: #000000;
+  background-color: #3A3A3A;
   border: 1px solid #8d6b1f;
   border-radius: 8px;
   padding: 16px;
@@ -27,7 +27,7 @@
 }
 
 .questionBox {
-  background-color: #111111;
+  background-color: #2B2B2B;
   padding: 12px;
   border-radius: 8px;
   border: 1px solid #8d6b1f;
@@ -57,7 +57,7 @@
   border-radius: 8px;
   font-size: 15px;
   outline: none;
-  background: #000000;
+  background: #3A3A3A;
   color: #f2f2f2;
   font-family: inherit;
   letter-spacing: normal;
@@ -107,7 +107,7 @@
 }
 
 .verified {
-  background-color: #111111;
+  background-color: #2B2B2B;
   padding: 11px 14px;
   border-radius: 8px;
   border: 1px solid #c89b3c;

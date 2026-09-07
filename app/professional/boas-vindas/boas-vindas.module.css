@@ -1,0 +1,162 @@
+/* Tema industrial — alinhado ao cadastro profissional */
+:root {
+  --primary-color: #C89B3C;
+  --secondary-color: #8D6B1F;
+  --background: #3A3A3A;
+  --card-bg: #2B2B2B;
+  --text-primary: #F2F2F2;
+  --border-color: #8D6B1F;
+  --focus-outline: rgba(200, 155, 60, 0.35);
+}
+
+.container {
+  background-color: var(--background);
+  min-height: 100vh;
+  padding: clamp(20px, 3vw, 40px) clamp(14px, 3vw, 28px);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--text-primary);
+}
+
+.inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.logoWrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.heroCard {
+  background-color: var(--card-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 16px;
+  padding: clamp(20px, 4vw, 32px) clamp(16px, 3vw, 28px);
+  text-align: center;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+  margin-bottom: 16px;
+}
+
+.emoji {
+  font-size: clamp(40px, 7vw, 56px);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.title {
+  margin: 0 0 8px;
+  color: var(--primary-color);
+  font-size: clamp(22px, 4vw, 30px);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: clamp(14px, 2.2vw, 16px);
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.messageCard {
+  background-color: #0d0d0d;
+  border: 1px solid rgba(200, 155, 60, 0.55);
+  border-radius: 12px;
+  padding: clamp(14px, 2.5vw, 20px);
+  margin-bottom: 16px;
+}
+
+.messageTitle {
+  margin: 0 0 8px;
+  color: var(--primary-color);
+  font-size: clamp(15px, 2.5vw, 18px);
+  font-weight: 800;
+}
+
+.messageText {
+  margin: 0;
+  font-size: clamp(13px, 2vw, 14px);
+  line-height: 1.55;
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stepCard {
+  background-color: var(--card-bg);
+  border: 1px solid rgba(141, 107, 31, 0.45);
+  border-radius: 10px;
+  padding: 12px 10px;
+  text-align: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+}
+
+.stepEmoji {
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.stepTitle {
+  margin: 0 0 4px;
+  color: var(--primary-color);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.stepText {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #ddd;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+}
+
+.primaryBtn {
+  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
+  color: #000000;
+  border: 1px solid #6b5218;
+  border-radius: 10px;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: filter 0.2s ease, transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.primaryBtn:hover {
+  filter: brightness(1.06);
+}
+
+.primaryBtn:active {
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
+}
+
+.primaryBtn:focus {
+  outline: 3px solid var(--focus-outline);
+  outline-offset: 2px;
+}
+
+.note {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: #bbb;
+  line-height: 1.45;
+}
+
+@media (max-width: 560px) {
+  .stepsGrid {
+    grid-template-columns: 1fr;
+  }
+}

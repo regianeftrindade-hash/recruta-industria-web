@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { timingSafeEqual } from 'crypto';
 import { prisma } from '@/lib/db';
 import {
   extractGatewayReference,
@@ -9,6 +10,7 @@ import {
   findPaymentRecordByGatewayRef,
   syncPaymentStatusFromGateway,
 } from '@/lib/payment-activation';
+import { enforceApiRateLimit, getClientIp } from '@/lib/security/api-guard';
 
 function mapWebhookStatus(status?: string): string {
   const normalized = (status || 'PENDING').toUpperCase();
@@ -18,8 +20,47 @@ function mapWebhookStatus(status?: string): string {
   return 'PENDING';
 }
 
+function isValidWebhookSecret(request: NextRequest): boolean {
+  const expected = process.env.PAGSEGURO_WEBHOOK_SECRET?.trim()
+    || process.env.PAGBANK_WEBHOOK_SECRET?.trim();
+
+  // Em desenvolvimento, permite sem secret se não configurado
+  if (!expected) {
+    return process.env.NODE_ENV !== 'production';
+  }
+
+  const provided =
+    request.headers.get('x-webhook-secret')
+    || request.headers.get('x-pagseguro-secret')
+    || new URL(request.url).searchParams.get('secret')
+    || '';
+
+  try {
+    const a = Buffer.from(provided);
+    const b = Buffer.from(expected);
+    return a.length === b.length && timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    if (!(await enforceApiRateLimit(`webhook-pagseguro:${ip}`, 120, 60_000))) {
+      return new Response(JSON.stringify({ error: 'rate_limited' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!isValidWebhookSecret(req)) {
+      return new Response(JSON.stringify({ error: 'unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const contentType = req.headers.get('content-type') || '';
     let body: Record<string, unknown> = {};
 
@@ -79,18 +120,13 @@ export async function POST(req: NextRequest) {
 
     const { status, activated } = await syncPaymentStatusFromGateway(payment.reference);
 
-    return new Response(
-      JSON.stringify({
-        ok: true,
-        reference: payment.reference,
-        status,
-        activated,
-      }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } },
-    );
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'unexpected';
-    return new Response(JSON.stringify({ error: message }), {
+    return new Response(JSON.stringify({ ok: true, status, activated }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Webhook PagSeguro erro:', error);
+    return new Response(JSON.stringify({ error: 'internal' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

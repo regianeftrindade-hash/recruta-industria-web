@@ -6,6 +6,7 @@ import {
   isValidEmail,
   isValidCPF,
   isValidCNPJ,
+  isValidPhoneBR,
   checkRegisterRateLimit,
   incrementRegisterAttempts,
   resetRegisterAttempts,
@@ -21,6 +22,8 @@ import { logAudit as logSecurityAudit } from '@/lib/security-audit'
 import { buildProfileUpsertPayload } from '@/lib/professional-profile-map'
 import { saveProfileFormSnapshot } from '@/lib/profile-snapshot'
 import { saveCompanyExtraData, findCompanyByResponsavelCpf } from '@/lib/company-storage'
+import { corporateEmailError, normalizeCorporateEmail } from '@/lib/company/corporate-email'
+import { isCorporateEmailVerified } from '@/lib/company/corporate-email-confirmation'
 
 async function completarPerfilProfissionalExistente(
   userId: string,
@@ -96,6 +99,11 @@ export async function POST(request: NextRequest) {
       name,
       responsavelNome,
       responsavelCpf,
+      telefone,
+      endereco,
+      cartaoCnpjUrl,
+      logoUrl,
+      fotoResponsavelUrl,
     } = body
 
     const nomeProfissional = String(name || (body as Record<string, unknown>).nome || '').trim()
@@ -235,6 +243,28 @@ export async function POST(request: NextRequest) {
         incrementRegisterAttempts(ip)
         return NextResponse.json({ error: 'CPF do responsável já cadastrado' }, { status: 409 })
       }
+      const telefoneEmpresa = String(telefone || '').trim()
+      const enderecoEmpresa = String(endereco || '').trim()
+      if (!telefoneEmpresa) {
+        incrementRegisterAttempts(ip)
+        return NextResponse.json({ error: 'Telefone da empresa é obrigatório' }, { status: 400 })
+      }
+      if (!isValidPhoneBR(telefoneEmpresa)) {
+        incrementRegisterAttempts(ip)
+        return NextResponse.json({ error: 'Telefone inválido. Informe DDD + número.' }, { status: 400 })
+      }
+      if (!enderecoEmpresa || enderecoEmpresa.length < 5) {
+        incrementRegisterAttempts(ip)
+        return NextResponse.json({ error: 'Endereço da empresa é obrigatório' }, { status: 400 })
+      }
+      const emailCorporativo = normalizeCorporateEmail(String(email || ''))
+      if (emailCorporativo) {
+        const emailValidationError = corporateEmailError(emailCorporativo)
+        if (emailValidationError) {
+          incrementRegisterAttempts(ip)
+          return NextResponse.json({ error: emailValidationError }, { status: 400 })
+        }
+      }
     }
 
     const hashedPassword = password ? await hashPassword(password) : null
@@ -260,11 +290,39 @@ export async function POST(request: NextRequest) {
           name: name || normalizedEmail.split('@')[0],
         },
       })
-      await saveCompanyExtraData(user.id, {
+      const emailCorporativo = normalizeCorporateEmail(String(email || ''))
+      const emailCorporativoVerificado = emailCorporativo
+        ? await isCorporateEmailVerified(emailCorporativo)
+        : false
+      const cartaoUrl = String(cartaoCnpjUrl || '').trim()
+
+      const extraData: Parameters<typeof saveCompanyExtraData>[1] = {
         cnpj: cnpjLimpo || undefined,
         responsavelNome: String(responsavelNome || '').trim(),
         responsavelCpf: cpfResp || undefined,
-      })
+        telefone: String(telefone || '').trim(),
+        endereco: String(endereco || '').trim(),
+      }
+
+      if (emailCorporativo) {
+        extraData.emailCorporativo = emailCorporativo
+        extraData.emailCorporativoVerificado = emailCorporativoVerificado
+      }
+
+      if (cartaoUrl) {
+        extraData.cartaoCnpjUrl = cartaoUrl
+        extraData.verificationStatus = 'PENDING'
+        extraData.verifiedAt = null
+        extraData.rejectionReason = null
+      }
+
+      const logo = String(logoUrl || '').trim()
+      if (logo) extraData.logoUrl = logo
+
+      const fotoResp = String(fotoResponsavelUrl || '').trim()
+      if (fotoResp) extraData.fotoResponsavelUrl = fotoResp
+
+      await saveCompanyExtraData(user.id, extraData)
     }
 
     if (userType === 'professional') {

@@ -5,6 +5,7 @@ import {
   gerarResultado,
   parseTesteComportamentalJSON,
   serializeTesteComportamental,
+  TOTAL_PERGUNTAS_TESTE,
   validarRespostas,
 } from "@/lib/teste-comportamental";
 import { lerCampoJsonDoPerfil, salvarCampoJsonNoPerfil } from "@/lib/profile-json-fields";
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
 
     if (!respostas) {
       return NextResponse.json(
-        { error: "Responda todas as 20 perguntas com notas de 1 (discordo plenamente) a 5 (concordo plenamente)." },
+        { error: `Responda todas as ${TOTAL_PERGUNTAS_TESTE} perguntas com notas de 1 (discordo plenamente) a 5 (concordo plenamente).` },
         { status: 400 }
       );
     }

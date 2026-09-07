@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db';
-import { countCompanyFavorites, getCompanyPlanTier } from '@/lib/company-storage';
+import { countCompanyFavorites, getCompanyPlanTier, getCompanyVerificationInfo } from '@/lib/company-storage';
 import type { CompanyPlanTier } from '@/lib/company-premium-plans';
 
 export type CompanyPlanFeatures = {
@@ -12,12 +12,18 @@ export type CompanyPlanFeatures = {
   canFavorite: boolean;
   canSearchHistory: boolean;
   canSendTips: boolean;
+  canSendProposals: boolean;
   canViewAvailability: boolean;
   canViewLastUpdate: boolean;
   canUseAlerts: boolean;
   canUseTalentBank: boolean;
   canExportProfiles: boolean;
   canViewDashboardStats: boolean;
+  canContactRecruta: boolean;
+  /** IA básica (busca/filtros) — todos os planos empresa, quando a feature estiver ligada */
+  canUseAiBasic: boolean;
+  /** IA completa de recrutamento — só PREMIUM e EMPRESARIAL (Company.planTier) */
+  canUseAiPremium: boolean;
   unlimitedUnlocks: boolean;
   unlimitedFavorites: boolean;
   maxUnlocksPerMonth: number | null;
@@ -38,7 +44,6 @@ function hasMinTier(current: CompanyPlanTier, required: CompanyPlanTier): boolea
 export function getPlanFeatures(tier: CompanyPlanTier): CompanyPlanFeatures {
   const isPaid = hasMinTier(tier, 'BASIC');
   const isPremium = hasMinTier(tier, 'PREMIUM');
-  const isEmpresarial = tier === 'EMPRESARIAL';
 
   return {
     canSearch: true,
@@ -50,44 +55,93 @@ export function getPlanFeatures(tier: CompanyPlanTier): CompanyPlanFeatures {
     canFavorite: isPaid,
     canSearchHistory: isPaid,
     canSendTips: isPaid,
+    canSendProposals: isPaid,
     canViewAvailability: isPaid,
     canViewLastUpdate: isPaid,
     canUseAlerts: isPremium,
-    canUseTalentBank: isEmpresarial,
+    canUseTalentBank: isPremium,
     canExportProfiles: isPremium,
     canViewDashboardStats: isPaid,
+    canContactRecruta: isPaid,
+    // IA usa o mesmo Company.planTier — sem tabelas/enums de plano novos
+    // FREE/BASIC: sem recursos avançados de IA (Premium only)
+    canUseAiBasic: false,
+    canUseAiPremium: isPremium,
     unlimitedUnlocks: isPremium,
-    unlimitedFavorites: isPremium,
-    maxUnlocksPerMonth: tier === 'BASIC' ? 50 : isPremium ? null : 0,
-    maxFavorites: tier === 'BASIC' ? 100 : isPremium ? null : 0,
-    maxUsers: tier === 'BASIC' ? 1 : tier === 'PREMIUM' ? 5 : tier === 'EMPRESARIAL' ? null : 1,
+    unlimitedFavorites: isPaid,
+    maxUnlocksPerMonth: tier === 'BASIC' ? 150 : isPremium ? null : 0,
+    maxFavorites: isPaid ? null : 0,
+    // Assentos RH inclusos (Admin conta como 1): Basic 1 · Premium 2 · Empresarial 4
+    // Acima disso: usuário extra pago (ver company-extra-seats)
+    maxUsers: tier === 'BASIC' ? 1 : tier === 'PREMIUM' ? 2 : tier === 'EMPRESARIAL' ? 4 : 1,
   };
 }
 
-export async function getCompanyPlanContext(companyUserId: string) {
-  const tier = await getCompanyPlanTier(companyUserId);
-  const features = getPlanFeatures(tier);
+/** Atalho: IA Premium liberada pelo plano atual da empresa (PREMIUM ou EMPRESARIAL). */
+export function companyPlanUnlocksPremiumAi(tier: CompanyPlanTier): boolean {
+  return getPlanFeatures(tier).canUseAiPremium;
+}
+
+export function applyVerificationToFeatures(
+  features: CompanyPlanFeatures,
+  isVerified: boolean,
+): CompanyPlanFeatures {
+  if (isVerified) return features;
+
+  return {
+    ...features,
+    canViewContacts: false,
+    canViewFullResume: false,
+    canUnlockContacts: false,
+    canExportProfiles: false,
+    canSendTips: false,
+    canSendProposals: false,
+    maxUnlocksPerMonth: 0,
+  };
+}
+
+export async function getCompanyPlanContext(
+  companyUserId: string,
+  options?: {
+    ownerUserId?: string;
+    verification?: Awaited<ReturnType<typeof getCompanyVerificationInfo>>;
+  },
+) {
+  const ownerUserId =
+    options?.ownerUserId ||
+    (await (async () => {
+      const { resolveCompanyOwnerUserId } = await import('@/lib/company/company-team');
+      return (await resolveCompanyOwnerUserId(companyUserId)) || companyUserId;
+    })());
 
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
+  const now = new Date();
 
-  const unlocksThisMonth = await prisma.accessRecord.count({
-    where: {
-      companyUserId,
-      createdAt: { gte: startOfMonth },
-    },
-  });
+  const [tier, verification, unlocksThisMonth, activeUnlocks, favoritesCount] = await Promise.all([
+    getCompanyPlanTier(ownerUserId),
+    options?.verification
+      ? Promise.resolve(options.verification)
+      : getCompanyVerificationInfo(ownerUserId),
+    prisma.accessRecord.count({
+      where: {
+        companyUserId: ownerUserId,
+        createdAt: { gte: startOfMonth },
+      },
+    }),
+    prisma.accessRecord.count({
+      where: {
+        companyUserId: ownerUserId,
+        status: 'ACTIVE',
+        expiresAt: { gt: now },
+      },
+    }),
+    countCompanyFavorites(ownerUserId),
+  ]);
 
-  const activeUnlocks = await prisma.accessRecord.count({
-    where: {
-      companyUserId,
-      status: 'ACTIVE',
-      expiresAt: { gt: new Date() },
-    },
-  });
-
-  const favoritesCount = await countCompanyFavorites(companyUserId);
+  const baseFeatures = getPlanFeatures(tier);
+  const features = applyVerificationToFeatures(baseFeatures, verification.canAccessSensitiveProfiles);
 
   let unlocksRemaining: number | null = null;
   if (features.unlimitedUnlocks) {
@@ -106,8 +160,10 @@ export async function getCompanyPlanContext(companyUserId: string) {
   }
 
   return {
+    ownerUserId,
     tier,
     features,
+    verification,
     usage: {
       unlocksThisMonth,
       activeUnlocks,
@@ -120,8 +176,10 @@ export async function getCompanyPlanContext(companyUserId: string) {
 
 export function isAdvancedFilterKey(key: string): boolean {
   return [
-    'escolaridade', 'turno', 'recolocacao', 'experiencia', 'pretensaoSalarial',
+    'escolaridade', 'situacaoProfissional', 'nivelOperacional', 'areaNivel',
+    'disponibilidadeInicio', 'pretensaoSalarial', 'trabalhouIndustria',
     'segmentoIndustria', 'maquinaEquipamento', 'qualidadeProcesso', 'informatica',
-    'possuiCNH', 'aceitaViagens', 'disponibilidadeMudanca', 'cursoCertificacao',
+    'possuiCNH', 'categoriaCNH', 'aceitaViagens', 'disponibilidadeMudanca',
+    'cursoCertificacao', 'areaCurso', 'idioma',
   ].includes(key);
 }

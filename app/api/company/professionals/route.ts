@@ -22,7 +22,6 @@ import { filterHabilidadesExtras } from '@/lib/company-profile-display'
 import { listarPerfisVisualizados } from '@/lib/profile-messages'
 import { notifyProfessionalAsync, notifyProfileViewed } from '@/lib/professional-notifications'
 import { listActivePremiumProfileIds } from '@/lib/professional-storage'
-import { ensurePaymentSchema } from '@/lib/ensure-db-schema'
 
 function salarySearchTerms(input: string): string[] {
   const trimmed = input.trim()
@@ -73,6 +72,8 @@ type ProfileRow = {
   disponibilidadeInicio: string | null
   disponivelContratacao: string | null
   disponibilidadeMudanca: string | null
+  situacaoProfissional?: string | null
+  trabalhouIndustria?: string | null
   phone: string | null
   whatsapp: string | null
   email: string | null
@@ -182,8 +183,6 @@ function buildFull(profile: ProfileRow, industrial: ProfileIndustrialData, compa
 
 export async function GET(request: NextRequest) {
   try {
-    await ensurePaymentSchema();
-
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user?.email) {
@@ -199,16 +198,25 @@ export async function GET(request: NextRequest) {
     }
 
     const planContext = await getCompanyPlanContext(companyUser.id)
-    const { features, usage, tier } = planContext
+    const { features, usage, tier, verification } = planContext
+    const dataUserId = planContext.ownerUserId || companyUser.id
 
     const { searchParams } = new URL(request.url)
     const filters = parseIndustrialFiltersFromParams(searchParams)
+    const requestedIds = [
+      ...new Set(
+        (searchParams.get('ids') || '')
+          .split(',')
+          .map((id) => id.trim())
+          .filter(Boolean),
+      ),
+    ].slice(0, 100)
     const rawFilters: Record<string, string> = {}
     for (const key of INDUSTRIAL_FILTER_KEYS) {
       if (filters[key]) rawFilters[key] = filters[key]!
     }
 
-    if (!features.canUseAdvancedFilters) {
+    if (!features.canUseAdvancedFilters && requestedIds.length === 0) {
       const blocked = Object.keys(rawFilters).filter(isAdvancedFilterKey)
       if (blocked.length > 0) {
         return NextResponse.json({
@@ -219,23 +227,27 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    if (features.canSearchHistory && Object.keys(rawFilters).length > 0) {
-      await createCompanySearchHistory(companyUser.id, JSON.stringify(rawFilters))
+    if (features.canSearchHistory && Object.keys(rawFilters).length > 0 && requestedIds.length === 0) {
+      await createCompanySearchHistory(dataUserId, JSON.stringify(rawFilters))
     }
 
-    const activeAccess = await prisma.accessRecord.findMany({
+    const activeAccessPromise = prisma.accessRecord.findMany({
       where: {
-        companyUserId: companyUser.id,
+        companyUserId: dataUserId,
         status: 'ACTIVE',
         expiresAt: { gt: new Date() },
       },
       select: { profileId: true },
     })
 
+    const [activeAccess, favoriteProfileIds, viewedIds] = await Promise.all([
+      activeAccessPromise,
+      listCompanyFavoriteProfileIds(dataUserId),
+      listarPerfisVisualizados(dataUserId),
+    ])
+
     const unlockedIds = new Set(activeAccess.map((a) => a.profileId))
-    const favoriteProfileIds = await listCompanyFavoriteProfileIds(companyUser.id)
     const favoriteIds = new Set(favoriteProfileIds)
-    const viewedIds = await listarPerfisVisualizados(companyUser.id)
 
     const salaryTerms = filters.pretensaoSalarial ? salarySearchTerms(filters.pretensaoSalarial) : []
     const extraFilters: Record<string, unknown>[] = []
@@ -255,24 +267,64 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    const profileSelect = {
+      id: true,
+      title: true,
+      bio: true,
+      mensagemEmpresas: true,
+      areaInteresse: true,
+      cargoDesejado: true,
+      estado: true,
+      cidade: true,
+      escolaridade: true,
+      turnoDisponivel: true,
+      tempoExperiencia: true,
+      recolocacao: true,
+      pretensaoSalarial: true,
+      disponibilidadeInicio: true,
+      disponivelContratacao: true,
+      disponibilidadeMudanca: true,
+      phone: true,
+      whatsapp: true,
+      email: true,
+      avatar: true,
+      skills: true,
+      curricoURL: true,
+      formDataJSON: true,
+      cursosCertificacoes: true,
+      experienciasJSON: true,
+      profileCompletion: true,
+      updatedAt: true,
+      situacaoProfissional: true,
+      trabalhouIndustria: true,
+      user: { select: { name: true, email: true } },
+    } as const
+
+    // Limite menor + select: evita carregar centenas de linhas completas a cada busca.
+    const scanLimit = requestedIds.length > 0 ? requestedIds.length : 72
+
     const dbProfiles = await prisma.profile.findMany({
       where: {
         isVisible: true,
         status: 'ACTIVE',
-        ...(filters.estado ? { estado: filters.estado } : {}),
-        ...(filters.cidade ? { cidade: { contains: filters.cidade, mode: 'insensitive' } } : {}),
-        ...(filters.area ? { areaInteresse: { contains: filters.area, mode: 'insensitive' } } : {}),
-        ...(filters.escolaridade ? { escolaridade: { contains: filters.escolaridade, mode: 'insensitive' } } : {}),
-        ...(filters.turno ? { turnoDisponivel: { contains: filters.turno, mode: 'insensitive' } } : {}),
-        ...(filters.recolocacao ? { recolocacao: { contains: filters.recolocacao, mode: 'insensitive' } } : {}),
-        ...(filters.experiencia ? { tempoExperiencia: { contains: filters.experiencia, mode: 'insensitive' } } : {}),
-        ...(extraFilters.length > 0 ? { AND: extraFilters } : {}),
+        ...(requestedIds.length > 0
+          ? { id: { in: requestedIds } }
+          : {
+              ...(filters.estado ? { estado: filters.estado } : {}),
+              ...(filters.cidade ? { cidade: { contains: filters.cidade, mode: 'insensitive' } } : {}),
+              ...(filters.area ? { areaInteresse: filters.area } : {}),
+              ...(filters.escolaridade ? { escolaridade: filters.escolaridade } : {}),
+              ...(filters.situacaoProfissional ? { situacaoProfissional: filters.situacaoProfissional } : {}),
+              ...(filters.trabalhouIndustria ? { trabalhouIndustria: filters.trabalhouIndustria } : {}),
+              ...(filters.turno ? { turnoDisponivel: filters.turno } : {}),
+              ...(filters.recolocacao ? { recolocacao: { contains: filters.recolocacao, mode: 'insensitive' } } : {}),
+              ...(filters.experiencia ? { tempoExperiencia: filters.experiencia } : {}),
+              ...(extraFilters.length > 0 ? { AND: extraFilters } : {}),
+            }),
       },
-      include: {
-        user: { select: { name: true, email: true } },
-      },
+      select: profileSelect,
       orderBy: [{ profileCompletion: 'desc' }, { updatedAt: 'desc' }],
-      take: 500,
+      take: scanLimit,
     }) as unknown as ProfileRow[]
 
     const scored = dbProfiles
@@ -288,13 +340,18 @@ export async function GET(request: NextRequest) {
       scored.map((s) => s.profile.id),
     )
 
-    scored.sort((a, b) => {
-      const aFeatured = premiumProfileIds.has(a.profile.id) ? 1 : 0
-      const bFeatured = premiumProfileIds.has(b.profile.id) ? 1 : 0
-      if (bFeatured !== aFeatured) return bFeatured - aFeatured
-      return b.compatibilidade - a.compatibilidade
-        || b.profile.profileCompletion - a.profile.profileCompletion
-    })
+    if (requestedIds.length > 0) {
+      const order = new Map(requestedIds.map((id, index) => [id, index]))
+      scored.sort((a, b) => (order.get(a.profile.id) ?? 999) - (order.get(b.profile.id) ?? 999))
+    } else {
+      scored.sort((a, b) => {
+        const aFeatured = premiumProfileIds.has(a.profile.id) ? 1 : 0
+        const bFeatured = premiumProfileIds.has(b.profile.id) ? 1 : 0
+        if (bFeatured !== aFeatured) return bFeatured - aFeatured
+        return b.compatibilidade - a.compatibilidade
+          || b.profile.profileCompletion - a.profile.profileCompletion
+      })
+    }
 
     const pageRaw = parseInt(searchParams.get('page') || '1', 10)
     const perPageRaw = parseInt(searchParams.get('perPage') || '12', 10)
@@ -307,8 +364,16 @@ export async function GET(request: NextRequest) {
     const offset = (safePage - 1) * perPage
     const pageSlice = scored.slice(offset, offset + perPage)
 
-    const allDesbloqueados = scored
-      .filter(({ profile }) => unlockedIds.has(profile.id))
+    const unlockedScored = verification.canAccessSensitiveProfiles
+      ? scored.filter(({ profile }) => unlockedIds.has(profile.id))
+      : []
+
+    // Só monta payload completo dos desbloqueados da página atual (mais leve).
+    const pageUnlockedIds = new Set(
+      pageSlice.filter(({ profile }) => unlockedIds.has(profile.id)).map(({ profile }) => profile.id),
+    )
+    const allDesbloqueados = unlockedScored
+      .filter(({ profile }) => pageUnlockedIds.has(profile.id))
       .map(({ profile, industrial, compatibilidade }) => ({
         ...buildFull(profile, industrial, compatibilidade, features.canViewContacts, premiumProfileIds.has(profile.id)),
         favorito: favoriteIds.has(profile.id),
@@ -316,7 +381,7 @@ export async function GET(request: NextRequest) {
       }))
 
     const profissionais = pageSlice.map(({ profile, industrial, compatibilidade }) => {
-      const unlocked = unlockedIds.has(profile.id)
+      const unlocked = unlockedIds.has(profile.id) && verification.canAccessSensitiveProfiles
       const emDestaque = premiumProfileIds.has(profile.id)
       const base = unlocked
         ? buildFull(profile, industrial, compatibilidade, features.canViewContacts, emDestaque)
@@ -334,7 +399,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       profissionais,
       desbloqueados: allDesbloqueados,
-      bloqueados: profissionais.filter((p) => p.bloqueado),
+      desbloqueadosTotal: unlockedScored.length,
       pagination: {
         page: safePage,
         perPage,
@@ -343,6 +408,7 @@ export async function GET(request: NextRequest) {
       },
       planTier: tier,
       features,
+      verification,
       unlockedCount: usage.activeUnlocks,
       unlocksThisMonth: usage.unlocksThisMonth,
       maxUnlocks,
@@ -375,13 +441,17 @@ export async function POST(request: NextRequest) {
     }
 
     const planContext = await getCompanyPlanContext(companyUser.id)
-    const { features, usage, tier } = planContext
+    const dataUserId = planContext.ownerUserId || companyUser.id
+    const { features, usage, tier, verification } = planContext
 
     if (!features.canUnlockContacts) {
       return NextResponse.json({
-        error: 'Liberação de contatos disponível a partir do plano Basic.',
+        error: verification.canAccessSensitiveProfiles
+          ? 'Liberação de contatos disponível a partir do plano Basic.'
+          : 'Para liberar contatos, confirme o e-mail corporativo e aguarde a aprovação do cartão CNPJ.',
         planTier: tier,
-        upgradeRequired: 'BASIC',
+        upgradeRequired: verification.canAccessSensitiveProfiles ? 'BASIC' : undefined,
+        verificationStatus: verification.verificationStatus,
       }, { status: 403 })
     }
 
@@ -403,7 +473,7 @@ export async function POST(request: NextRequest) {
     const existing = await prisma.accessRecord.findFirst({
       where: {
         profileId,
-        companyUserId: companyUser.id,
+        companyUserId: dataUserId,
         status: 'ACTIVE',
         expiresAt: { gt: new Date() },
       },
@@ -438,7 +508,7 @@ export async function POST(request: NextRequest) {
     await prisma.accessRecord.create({
       data: {
         profileId,
-        companyUserId: companyUser.id,
+        companyUserId: dataUserId,
         accessType: 'FULL',
         expiresAt,
         status: 'ACTIVE',
@@ -448,13 +518,13 @@ export async function POST(request: NextRequest) {
     await prisma.profileView.create({
       data: {
         profileId,
-        companyUserId: companyUser.id,
+        companyUserId: dataUserId,
         viewType: 'FULL',
       },
     })
 
     notifyProfessionalAsync(() =>
-      notifyProfileViewed(profileId, companyUser.id)
+      notifyProfileViewed(profileId, dataUserId)
     )
 
     return NextResponse.json({

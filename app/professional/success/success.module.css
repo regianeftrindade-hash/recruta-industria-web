@@ -2,8 +2,8 @@
 :root {
   --primary-color: #C89B3C;
   --secondary-color: #8D6B1F;
-  --background: #000000;
-  --card-bg: #111111;
+  --background: #3A3A3A;
+  --card-bg: #2B2B2B;
   --text-primary: #F2F2F2;
   --text-secondary: #F2F2F2;
   --border-color: #8D6B1F;
@@ -70,28 +70,32 @@
 }
 
 .primary {
-  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  background: linear-gradient(180deg, #8D6B1F 0%, #C89B3C 45%, #A87E2E 100%);
   color: #000000;
   padding: 0.75rem 1.25rem;
-  border: none;
+  border: 1px solid #6b5218;
   border-radius: 8px;
   font-weight: 700;
   cursor: pointer;
   font-size: 1rem;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
 }
 
 .secondary {
-  background: linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8D6B1F 100%);
-  color: #F2F2F2;
+  background: linear-gradient(180deg, #8D6B1F 0%, #C89B3C 45%, #A87E2E 100%);
+  color: #000000;
   padding: 0.75rem 1.25rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid #6b5218;
   border-radius: 8px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   font-size: 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
 }
 
 .icon {
@@ -106,13 +110,12 @@
 }
 
 .primary:hover {
-  filter: brightness(1.08);
+  filter: brightness(1.05);
 }
 
 .secondary:hover {
-  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  filter: brightness(1.05);
   color: #000000;
-  border-color: var(--primary-color);
 }
 
 .live {

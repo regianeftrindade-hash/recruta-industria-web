@@ -2,7 +2,7 @@
   max-width: 1000px;
   margin: 0 auto;
   padding: 2rem;
-  background: #000000;
+  background: #3A3A3A;
   min-height: 100vh;
   color: #F2F2F2;
   font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -12,7 +12,7 @@
 }
 
 .checkoutCard {
-  background: #111111;
+  background: #2B2B2B;
   border-radius: 12px;
   padding: 2rem;
   border: 1px solid #8D6B1F;
@@ -38,26 +38,33 @@
   flex: 1;
   max-width: 150px;
   padding: 1rem;
-  border: 1px solid #8D6B1F;
+  border: 1px solid #6b5218;
   border-radius: 8px;
   background: linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8D6B1F 100%);
   cursor: pointer;
   font-size: 0.95em;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  font-weight: 700;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
   color: #F2F2F2;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
 }
 
 .methodBtn:hover {
-  border-color: #C89B3C;
-  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  border-color: #6b5218;
+  background: linear-gradient(180deg, #8D6B1F 0%, #C89B3C 45%, #A87E2E 100%);
   color: #000000;
 }
 
 .methodBtn.active {
-  border-color: #C89B3C;
-  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  border-color: #6b5218;
+  background: linear-gradient(180deg, #8D6B1F 0%, #C89B3C 45%, #A87E2E 100%);
   color: #000000;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+}
+
+.methodBtn:active {
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
 }
 
 .paymentSection {
@@ -78,7 +85,7 @@
   text-align: center;
   margin: 2rem 0;
   padding: 1.5rem;
-  background: #111111;
+  background: #2B2B2B;
   border-radius: 8px;
   border: 2px dashed #8D6B1F;
 }
@@ -100,7 +107,7 @@
 .keySection {
   margin: 2rem 0;
   padding: 1.5rem;
-  background: #111111;
+  background: #2B2B2B;
   border-radius: 8px;
   border: 1px solid #8D6B1F;
 }
@@ -118,31 +125,37 @@
   font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 0.95em;
   letter-spacing: normal;
-  background: #000000;
+  background: #3A3A3A;
   color: #F2F2F2;
 }
 
 .copyBtn {
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  background: linear-gradient(180deg, #8D6B1F 0%, #C89B3C 45%, #A87E2E 100%);
   color: #000000;
-  border: none;
-  border-radius: 4px;
+  border: 1px solid #6b5218;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 600;
-  transition: filter 0.3s ease;
+  font-weight: 700;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
   white-space: nowrap;
 }
 
 .copyBtn:hover {
-  filter: brightness(1.08);
+  filter: brightness(1.05);
+}
+
+.copyBtn:active {
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
 }
 
 .barcodeSection {
   text-align: center;
   margin: 2rem 0;
   padding: 1.5rem;
-  background: #111111;
+  background: #2B2B2B;
   border-radius: 8px;
   border: 1px solid #8D6B1F;
 }
@@ -153,7 +166,7 @@
   align-items: center;
   margin: 1rem 0;
   padding: 1rem;
-  background: #000000;
+  background: #3A3A3A;
   border-radius: 4px;
 }
 
@@ -163,7 +176,7 @@
 }
 
 .boletoInfo {
-  background: #111111;
+  background: #2B2B2B;
   padding: 1.5rem;
   border-radius: 8px;
   margin: 1.5rem 0;
@@ -192,7 +205,7 @@
 }
 
 .cardForm {
-  background: #111111;
+  background: #2B2B2B;
   padding: 1.5rem;
   border-radius: 8px;
   border: 1px solid #8D6B1F;
@@ -215,7 +228,7 @@
   border: 1px solid #8D6B1F;
   border-radius: 4px;
   font-size: 1em;
-  background: #000000;
+  background: #3A3A3A;
   color: #F2F2F2;
   transition: border-color 0.3s ease;
 }
@@ -269,24 +282,25 @@
 .confirmBtn {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%);
+  background: linear-gradient(180deg, #8D6B1F 0%, #C89B3C 45%, #A87E2E 100%);
   color: #000000;
-  border: none;
-  border-radius: 4px;
+  border: 1px solid #6b5218;
+  border-radius: 8px;
   font-size: 1.1em;
   font-weight: 700;
   cursor: pointer;
-  transition: filter 0.2s ease, transform 0.2s ease;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
   margin-top: 1rem;
 }
 
 .confirmBtn:hover {
-  filter: brightness(1.08);
-  transform: translateY(-2px);
+  filter: brightness(1.05);
 }
 
 .confirmBtn:active {
-  transform: translateY(0);
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
 }
 
 .orderSummary {
@@ -316,7 +330,7 @@
 }
 
 .customerInfo {
-  background: #111111;
+  background: #2B2B2B;
   padding: 2rem;
   border-radius: 12px;
   border: 1px solid #8D6B1F;

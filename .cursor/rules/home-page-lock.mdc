@@ -1,0 +1,40 @@
+---
+description: Página inicial BLOQUEADA — proibido editar app/page.tsx e home.module.css sem pedido explícito do usuário
+globs: app/page.tsx,app/home.module.css,public/welding-left.png,public/welding-right.png,public/logo-texto-recruta.png,public/profissional.jpg,public/empresa.jpg
+alwaysApply: true
+---
+
+# Página inicial bloqueada
+
+**Status: 🔒 BLOQUEADA** (pedido explícito do usuário em 06/07/2026)
+
+A rota `/` e os arquivos da home estão **congelados**. O agente **NÃO DEVE** abrir, modificar, reformatar nem “melhorar” esses arquivos em tarefas sobre outros módulos.
+
+## Arquivos protegidos
+
+- `app/page.tsx`
+- `app/home.module.css`
+- `public/profissional.jpg`, `public/empresa.jpg`
+- `public/welding-left.png`, `public/welding-right.png`
+- `public/logo-texto-recruta.png` (legado — não usar no código)
+
+## Proibido sem pedido explícito
+
+- Qualquer diff em `app/page.tsx` ou `app/home.module.css`
+- Ajustes de logo, tagline, cards, banner, contatos, rodapé, espaçamentos ou CSS da home
+- Refatorações que importem ou alterem a home “de passagem”
+- Mover estilos da home para outros arquivos ou vice-versa
+
+## Permitido somente se o usuário disser claramente
+
+Exemplos: “altere a home”, “desbloqueie a página inicial”, “mude o logo na home”.
+
+## Escopo mínimo quando autorizado
+
+Altere **apenas** o trecho necessário ao pedido. Não reestilize o restante da página.
+
+## Logo e CTAs (referência)
+
+- Logo na home: `<LogoRecruta size="hero" depth />` — config em `lib/logo-recruta.ts`
+- Botões dos cards: `.cardCta` em `home.module.css`
+- Botões do resto do site: `lib/button-3d.ts` e `app/globals.css` — **não** mudar a home para isso

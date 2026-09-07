@@ -11,9 +11,18 @@ import {
   toggleCompanyAlert,
 } from '@/lib/company-features-db'
 import type { IndustrialFilters } from '@/lib/profile-industrial'
+import { sanitizeIndustrialFilters, hasActiveIndustrialFilters } from '@/lib/profile-industrial'
 import { parseJsonSafe } from '@/lib/professional-profile-map'
 
-export async function GET() {
+function parseAlertFilters(filtersJSON: string | IndustrialFilters | null | undefined): IndustrialFilters {
+  if (filtersJSON && typeof filtersJSON === 'object') {
+    return sanitizeIndustrialFilters(filtersJSON)
+  }
+  const raw = parseJsonSafe<IndustrialFilters>(String(filtersJSON || ''), {})
+  return sanitizeIndustrialFilters(raw)
+}
+
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
@@ -28,28 +37,63 @@ export async function GET() {
     }
 
     const planContext = await getCompanyPlanContext(user.id)
+    const dataUserId = planContext.ownerUserId || user.id
     if (!planContext.features.canUseAlerts) {
       return NextResponse.json({ error: 'Alertas disponíveis a partir do plano Premium.' }, { status: 403 })
     }
 
     const alerts = await listCompanyAlerts(user.id)
-    const since = new Date()
-    since.setDate(since.getDate() - 30)
+    const includeMatches = new URL(request.url).searchParams.get('matches') === '1'
 
-    const withMatches = await Promise.all(
-      alerts.map(async (alert) => {
-        const filters = parseJsonSafe<IndustrialFilters>(alert.filtersJSON, {})
-        const matches = alert.active ? await findAlertMatches(filters, since, 5) : []
-        return {
-          id: alert.id,
-          name: alert.name,
-          filters,
-          active: alert.active,
-          createdAt: alert.createdAt.toISOString(),
-          newMatches: matches,
+    // Matches pesados só sob demanda (?matches=1) — listagem fica leve no mount.
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    const withMatches = await Promise.all(alerts.map(async (alert) => {
+      const filters = parseAlertFilters(alert.filtersJSON)
+      let newMatches: { profileId: string; score: number; updatedAt: string; nome?: string; cargo?: string }[] = []
+      if (includeMatches && alert.active) {
+        try {
+          newMatches = await findAlertMatches(filters, since, 10)
+        } catch {
+          newMatches = []
         }
-      }),
-    )
+      }
+      return {
+        id: alert.id,
+        name: alert.name,
+        filters,
+        active: alert.active,
+        createdAt: alert.createdAt.toISOString(),
+        newMatches,
+        matchCount: newMatches.length,
+      }
+    }))
+
+    // Enriquece matches com nome e cargo (uma consulta só)
+    if (includeMatches) {
+      const matchIds = [...new Set(withMatches.flatMap((a) => a.newMatches.map((m) => m.profileId)))]
+      if (matchIds.length > 0) {
+        const profiles = await prisma.profile.findMany({
+          where: { id: { in: matchIds } },
+          select: {
+            id: true,
+            title: true,
+            cargoDesejado: true,
+            user: { select: { name: true } },
+          },
+        })
+        const byId = new Map(profiles.map((p) => [p.id, p]))
+        for (const alert of withMatches) {
+          alert.newMatches = alert.newMatches.map((m) => {
+            const p = byId.get(m.profileId)
+            return {
+              ...m,
+              nome: p?.user?.name || 'Profissional',
+              cargo: p?.cargoDesejado?.trim() || p?.title?.trim() || 'Sem cargo informado',
+            }
+          })
+        }
+      }
+    }
 
     return NextResponse.json({ alerts: withMatches })
   } catch (error) {
@@ -73,15 +117,21 @@ export async function POST(request: NextRequest) {
     }
 
     const planContext = await getCompanyPlanContext(user.id)
+    const dataUserId = planContext.ownerUserId || user.id
     if (!planContext.features.canUseAlerts) {
       return NextResponse.json({ error: 'Alertas disponíveis a partir do plano Premium.' }, { status: 403 })
     }
 
     const body = await request.json()
     const name = String(body.name || '').trim()
-    const filters = (body.filters || {}) as IndustrialFilters
+    const filters = sanitizeIndustrialFilters(body.filters || {})
     if (!name) {
       return NextResponse.json({ error: 'Informe um nome para o alerta' }, { status: 400 })
+    }
+    if (!hasActiveIndustrialFilters(filters)) {
+      return NextResponse.json({
+        error: 'Defina ao menos um filtro de preferência antes de criar o alerta.',
+      }, { status: 400 })
     }
 
     const id = await createCompanyAlert(user.id, name, filters)

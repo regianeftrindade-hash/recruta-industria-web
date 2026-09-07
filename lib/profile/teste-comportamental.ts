@@ -1,4 +1,17 @@
-export type PerfilComportamental = "executor" | "comunicador" | "planejador" | "analista";
+/**
+ * Índice de Perfil Pessoal (IPP) — Recruta Indústria.
+ *
+ * Teste próprio para mapear como a pessoa age no dia a dia: reflexão, iniciativa,
+ * estabilidade, relações e adaptação. Não é cópia de DISC, PDA ou outra ferramenta
+ * comercial protegida.
+ */
+
+export type PerfilComportamental =
+  | "reflexivo"
+  | "dinamico"
+  | "estavel"
+  | "relacional"
+  | "explorador";
 
 export interface PerguntaTeste {
   id: number;
@@ -7,10 +20,11 @@ export interface PerguntaTeste {
 }
 
 export interface PontuacoesComportamental {
-  executor: number;
-  comunicador: number;
-  planejador: number;
-  analista: number;
+  reflexivo: number;
+  dinamico: number;
+  estavel: number;
+  relacional: number;
+  explorador: number;
 }
 
 export interface ResultadoTesteComportamental {
@@ -33,30 +47,54 @@ export const ESCALA_EXTREMOS = {
   max: { valor: 5 as const, rotulo: "Concordo plenamente" },
 };
 
+/**
+ * 25 perguntas sobre comportamento no dia a dia — 5 por perfil.
+ * Ids fixos para permitir migração e persistência estável.
+ */
 export const PERGUNTAS_TESTE: PerguntaTeste[] = [
-  { id: 1, texto: "Quando tenho um problema para resolver, prefiro agir rápido e tentar uma solução prática imediatamente em vez de planejar muito.", perfil: "executor" },
-  { id: 2, texto: "Tenho muita facilidade para puxar assunto, fazer novos amigos e me enturmar em ambientes onde não conheço ninguém.", perfil: "comunicador" },
-  { id: 3, texto: "Sinto-me muito desconfortável quando mudam a minha rotina ou os meus planos de última hora.", perfil: "planejador" },
-  { id: 4, texto: "Sou extremamente detalhista e reviso minhas tarefas várias vezes para garantir que não haja nenhum erro.", perfil: "analista" },
-  { id: 5, texto: "Se vejo uma meta difícil pela frente, fico ainda mais motivado e determinado a superá-la.", perfil: "executor" },
-  { id: 6, texto: "Em um grupo ou equipe, eu naturalmente assumo o papel de animar as pessoas e manter o ambiente leve e divertido.", perfil: "comunicador" },
-  { id: 7, texto: "Prefiro realizar minhas tarefas de forma calma, constante e segura, seguindo um passo a passo, em vez de trabalhar sob forte pressão.", perfil: "planejador" },
-  { id: 8, texto: "Eu sigo as regras e normas estritamente, mesmo quando não concordo totalmente com elas.", perfil: "analista" },
-  { id: 9, texto: "Não tenho medo de assumir a liderança de uma situação ou de tomar decisões difíceis quando ninguém quer assumir.", perfil: "executor" },
-  { id: 10, texto: "Para mim, o relacionamento humano e o bem-estar das pessoas ao meu redor são mais importantes do que processos rígidos.", perfil: "comunicador" },
-  { id: 11, texto: "Detesto discussões e conflitos; muitas vezes prefiro ceder ou ficar em silêncio para manter a paz e a harmonia.", perfil: "planejador" },
-  { id: 12, texto: "Tomo minhas decisões diárias e financeiras baseado estritamente em dados, fatos e lógica, nunca pela emoção ou impulso.", perfil: "analista" },
-  { id: 13, texto: "Fico muito impaciente quando as coisas demoram para acontecer ou quando convivo com pessoas que agem de forma lenta.", perfil: "executor" },
-  { id: 14, texto: "Gosto de expressar minhas opiniões em público, participar de debates e vender minhas ideias para os outros.", perfil: "comunicador" },
-  { id: 15, texto: "Sou uma pessoa muito paciente para ouvir o desabafo ou os problemas dos outros e oferecer apoio.", perfil: "planejador" },
-  { id: 16, texto: "Sinto uma grande satisfação pessoal em ver minhas coisas, papéis ou arquivos organizados por categorias e padrões claros.", perfil: "analista" },
-  { id: 17, texto: "Prefiro que me deem apenas o objetivo final e me deixem livre para trabalhar do meu jeito, com total autonomia.", perfil: "executor" },
-  { id: 18, texto: "Trabalhar isolado por muito tempo, sem poder conversar ou interagir com ninguém, me deixa desanimado.", perfil: "comunicador" },
-  { id: 19, texto: "Sou muito leal e constante: quando começo um projeto ou assumo um compromisso, vou até o fim sem oscilar.", perfil: "planejador" },
-  { id: 20, texto: "Antes de começar a usar uma ferramenta nova, prefiro ler o manual ou assistir a um tutorial completo em vez de ir testando na prática.", perfil: "analista" },
+  // Reflexivo — análise, introspecção, entender antes de agir
+  { id: 1, texto: "Antes de tomar uma decisão importante na vida, costumo refletir e analisar prós e contras.", perfil: "reflexivo" },
+  { id: 2, texto: "Prefiro entender bem o que está acontecendo em uma situação antes de reagir ou opinar.", perfil: "reflexivo" },
+  { id: 3, texto: "Quando alguém me conta um problema, costumo pensar nas causas antes de sugerir algo.", perfil: "reflexivo" },
+  { id: 4, texto: "Gosto de organizar meus pensamentos escrevendo, anotando ou conversando comigo mesmo.", perfil: "reflexivo" },
+  { id: 5, texto: "Confio mais na minha análise do que em agir por impulso quando algo me afeta pessoalmente.", perfil: "reflexivo" },
+
+  // Dinâmico — ação, energia, iniciativa na vida
+  { id: 6, texto: "Quando tenho uma ideia, costumo colocá-la em prática logo, mesmo sem ter tudo planejado.", perfil: "dinamico" },
+  { id: 7, texto: "Em situações novas, prefiro experimentar e aprender fazendo do que esperar orientações.", perfil: "dinamico" },
+  { id: 8, texto: "Sinto-me bem quando o dia é agitado e tenho várias coisas para fazer e resolver.", perfil: "dinamico" },
+  { id: 9, texto: "Quando vejo algo que precisa ser feito em casa, no trabalho ou na vida, costumo resolver na hora.", perfil: "dinamico" },
+  { id: 10, texto: "Fico incomodado quando as coisas demoram demais para acontecer e procuro destravar a situação.", perfil: "dinamico" },
+
+  // Estável — rotina, organização, previsibilidade
+  { id: 11, texto: "Gosto de ter uma rotina definida para meu dia a dia (horários, hábitos, organização).", perfil: "estavel" },
+  { id: 12, texto: "Me sinto mal quando minha casa, meu ambiente ou minhas coisas estão desorganizadas.", perfil: "estavel" },
+  { id: 13, texto: "Prefiro estabilidade e previsibilidade a mudanças frequentes na minha vida.", perfil: "estavel" },
+  { id: 14, texto: "Costumo cumprir compromissos e horários que assumi com família, amigos ou na vida pessoal.", perfil: "estavel" },
+  { id: 15, texto: "Planejo com antecedência viagens, compromissos e tarefas importantes do dia a dia.", perfil: "estavel" },
+
+  // Relacional — empatia, vínculos, apoio às pessoas
+  { id: 16, texto: "Costumo perceber como as outras pessoas estão se sentindo, mesmo quando não dizem abertamente.", perfil: "relacional" },
+  { id: 17, texto: "Gosto de ajudar amigos, familiares ou colegas quando precisam de apoio emocional ou prático.", perfil: "relacional" },
+  { id: 18, texto: "Faço questão de manter contato e cuidar dos relacionamentos importantes na minha vida.", perfil: "relacional" },
+  { id: 19, texto: "Consigo conversar e mediar quando há conflito entre pessoas próximas a mim.", perfil: "relacional" },
+  { id: 20, texto: "As pessoas costumam me procurar para desabafar ou pedir conselho.", perfil: "relacional" },
+
+  // Explorador — curiosidade, adaptação, busca de causas e soluções
+  { id: 21, texto: "A curiosidade me leva a aprender coisas novas por conta própria, mesmo fora do trabalho.", perfil: "explorador" },
+  { id: 22, texto: "Quando algo não funciona na minha vida, investigo a causa em vez de só aceitar ou reclamar.", perfil: "explorador" },
+  { id: 23, texto: "Gosto de testar jeitos diferentes de resolver um problema antes de desistir.", perfil: "explorador" },
+  { id: 24, texto: "Adaptar-me a mudanças inesperadas costuma ser mais fácil para mim do que para muitas pessoas.", perfil: "explorador" },
+  { id: 25, texto: "Prefiro entender por que algo aconteceu do que apenas seguir em frente sem refletir.", perfil: "explorador" },
 ];
 
-const ORDEM_DESEMPATE: PerfilComportamental[] = ["executor", "comunicador", "planejador", "analista"];
+export const PERFIS_ORDEM: PerfilComportamental[] = [
+  "reflexivo",
+  "dinamico",
+  "estavel",
+  "relacional",
+  "explorador",
+];
 
 /** Cada perfil usa 5 perguntas; cada resposta vale de 1 a 5 → máximo 25 pontos por perfil. */
 export const QUESTOES_POR_PERFIL = 5;
@@ -66,13 +104,14 @@ export const PONTUACAO_MAXIMA_PERFIL = QUESTOES_POR_PERFIL * NOTA_MAXIMA;
 export const TOTAL_PERGUNTAS_TESTE = PERGUNTAS_TESTE.length;
 
 export const LEGENDA_PONTUACAO_TESTE =
-  `O teste tem ${TOTAL_PERGUNTAS_TESTE} perguntas. Cada perfil soma 5 delas (notas de 1 a 5). Máximo: ${PONTUACAO_MAXIMA_PERFIL} pontos por perfil.`;
+  `O Índice de Perfil Pessoal (IPP) tem ${TOTAL_PERGUNTAS_TESTE} perguntas sobre como você age no dia a dia. Cada perfil soma 5 delas (notas de 1 a 5). Máximo: ${PONTUACAO_MAXIMA_PERFIL} pontos por perfil.`;
 
 export const PERGUNTAS_POR_PERFIL: Record<PerfilComportamental, number[]> = {
-  executor: [1, 5, 9, 13, 17],
-  comunicador: [2, 6, 10, 14, 18],
-  planejador: [3, 7, 11, 15, 19],
-  analista: [4, 8, 12, 16, 20],
+  reflexivo: [1, 2, 3, 4, 5],
+  dinamico: [6, 7, 8, 9, 10],
+  estavel: [11, 12, 13, 14, 15],
+  relacional: [16, 17, 18, 19, 20],
+  explorador: [21, 22, 23, 24, 25],
 };
 
 export interface PerfilComportamentalInfo {
@@ -83,49 +122,100 @@ export interface PerfilComportamentalInfo {
 }
 
 export const PERFIL_INFO: Record<PerfilComportamental, PerfilComportamentalInfo> = {
-  executor: {
-    emoji: "🚀",
-    titulo: "Executor",
+  reflexivo: {
+    emoji: "🧠",
+    titulo: "Reflexivo",
     paraCandidato:
-      "Você é alguém determinado, que gosta de desafios e não espera as coisas acontecerem. Tem iniciativa e liderança natural.",
+      "Você tende a observar, analisar e entender antes de agir. Valoriza clareza mental e decisões bem pensadas na vida pessoal e profissional.",
     visaoRecrutador:
-      "Jovem com forte potencial para posições que exigem proatividade, metas e tomada de decisão. Possui senso de dono e urgência elevado. Deve ser lapidado para não parecer impaciente.",
+      "Perfil ponderado e analítico no dia a dia. Bom para funções que exigem atenção, critério e comunicação cuidadosa. Pode precisar de estímulo para agir com mais rapidez em cenários urgentes.",
   },
-  comunicador: {
-    emoji: "📣",
-    titulo: "Comunicador",
+  dinamico: {
+    emoji: "⚡",
+    titulo: "Dinâmico",
     paraCandidato:
-      "Você tem facilidade para fazer amigos, se expressa muito bem e adora trabalhar em equipe. É o ponto de alegria do grupo.",
+      "Você gosta de agir, tomar iniciativa e manter ritmo. Prefere resolver na prática e não esperar que as coisas aconteçam sozinhas.",
     visaoRecrutador:
-      "Excelente para áreas de atendimento, recepção, vendas ou RH. Tem alta inteligência social e empatia. O foco do desenvolvimento deve ser a atenção a rotinas detalhadas.",
+      "Perfil de iniciativa e energia. Responde bem a metas, pressão e ambientes que pedem ação. Pode se beneficiar de rotinas e processos para equilibrar impulso e consistência.",
   },
-  planejador: {
+  estavel: {
+    emoji: "🗓️",
+    titulo: "Estável",
+    paraCandidato:
+      "Você valoriza rotina, organização e compromissos. Gosta de previsibilidade e de manter a vida em ordem, o que traz segurança para você e para quem está ao seu redor.",
+    visaoRecrutador:
+      "Perfil confiável, pontual e disciplinado. Forte em funções com rotina, procedimentos e continuidade. Pode preferir estabilidade a mudanças frequentes de escopo.",
+  },
+  relacional: {
     emoji: "🤝",
-    titulo: "Planejador",
+    titulo: "Relacional",
     paraCandidato:
-      "Você é uma pessoa confiável, leal e empática. Gosta de ambientes calmos e faz de tudo para ajudar quem está ao seu redor.",
+      "Você se conecta com as pessoas, percebe sentimentos e gosta de apoiar quem está perto. Relacionamentos e empatia são centrais no seu jeito de viver.",
     visaoRecrutador:
-      "Perfil ideal para suporte administrativo, atendimento ao cliente e áreas de backoffice. É constante nas entregas, muito ético e lida muito bem com regras e hierarquias.",
+      "Perfil empático e colaborativo. Facilita trabalho em equipe, atendimento e ambientes que dependem de confiança humana. Pode precisar de reforço em tarefas muito solitárias ou altamente técnicas.",
   },
-  analista: {
-    emoji: "🎯",
-    titulo: "Analista",
+  explorador: {
+    emoji: "🔍",
+    titulo: "Explorador",
     paraCandidato:
-      "Você é focado, observador e muito organizado. Prefere agir com certeza, baseando-se em fatos, regras e lógica.",
+      "Você é curioso, adaptável e gosta de entender causas e testar soluções. Aprende com a vida e se reinventa quando algo precisa mudar.",
     visaoRecrutador:
-      "Altíssimo potencial para controle de qualidade, almoxarifado, TI, finanças ou áreas técnicas. Demonstra maturidade precoce, forte compromisso com a ética, conformidade com normas e precisão nas tarefas enviadas.",
+      "Perfil versátil e orientado a aprendizado. Bom para ambientes em mudança, resolução de problemas e novas responsabilidades. Pode precisar de estrutura para não dispersar energia em muitas frentes.",
   },
 };
 
-export function calcularPontuacoes(respostas: Record<string, number>): PontuacoesComportamental {
-  const pontuacoes: PontuacoesComportamental = {
-    executor: 0,
-    comunicador: 0,
-    planejador: 0,
-    analista: 0,
-  };
+/** Perfis do formato industrial (IPI) e legado anterior. */
+const MAPA_PERFIL_INDUSTRIAL: Record<string, PerfilComportamental> = {
+  analitico: "reflexivo",
+  executor: "dinamico",
+  organizador: "estavel",
+  lider_operacional: "relacional",
+  solucionador: "explorador",
+  analista: "reflexivo",
+  planejador: "estavel",
+  comunicador: "relacional",
+};
 
-  for (const perfil of ORDEM_DESEMPATE) {
+function criarPontuacoesZeradas(): PontuacoesComportamental {
+  return {
+    reflexivo: 0,
+    dinamico: 0,
+    estavel: 0,
+    relacional: 0,
+    explorador: 0,
+  };
+}
+
+function normalizarPerfilPrincipal(raw: string): PerfilComportamental {
+  if (PERFIS_ORDEM.includes(raw as PerfilComportamental)) {
+    return raw as PerfilComportamental;
+  }
+  return MAPA_PERFIL_INDUSTRIAL[raw] ?? "reflexivo";
+}
+
+function migrarPontuacoesSalvas(raw: Record<string, unknown>): PontuacoesComportamental {
+  const pontuacoes = criarPontuacoesZeradas();
+
+  for (const [chave, valor] of Object.entries(raw)) {
+    const num = Number(valor);
+    if (!Number.isFinite(num)) continue;
+
+    if (chave in pontuacoes) {
+      pontuacoes[chave as PerfilComportamental] = num;
+      continue;
+    }
+
+    const alvo = MAPA_PERFIL_INDUSTRIAL[chave];
+    if (alvo) pontuacoes[alvo] = num;
+  }
+
+  return pontuacoes;
+}
+
+export function calcularPontuacoes(respostas: Record<string, number>): PontuacoesComportamental {
+  const pontuacoes = criarPontuacoesZeradas();
+
+  for (const perfil of PERFIS_ORDEM) {
     pontuacoes[perfil] = PERGUNTAS_POR_PERFIL[perfil].reduce((soma, id) => {
       const nota = Number(respostas[String(id)]);
       return soma + (nota >= 1 && nota <= 5 ? nota : 0);
@@ -136,10 +226,10 @@ export function calcularPontuacoes(respostas: Record<string, number>): Pontuacoe
 }
 
 export function definirPerfilPrincipal(pontuacoes: PontuacoesComportamental): PerfilComportamental {
-  let melhor: PerfilComportamental = "executor";
+  let melhor: PerfilComportamental = "reflexivo";
   let maior = -1;
 
-  for (const perfil of ORDEM_DESEMPATE) {
+  for (const perfil of PERFIS_ORDEM) {
     if (pontuacoes[perfil] > maior) {
       maior = pontuacoes[perfil];
       melhor = perfil;
@@ -155,7 +245,7 @@ export function validarRespostas(respostas: unknown): Record<string, number> | n
   const normalizadas: Record<string, number> = {};
   const obj = respostas as Record<string, unknown>;
 
-  for (let i = 1; i <= 20; i++) {
+  for (let i = 1; i <= TOTAL_PERGUNTAS_TESTE; i++) {
     const raw = obj[String(i)] ?? obj[i];
     const nota = Number(raw);
     if (!Number.isInteger(nota) || nota < 1 || nota > 5) return null;
@@ -180,15 +270,21 @@ export function parseTesteComportamentalJSON(
 ): ResultadoTesteComportamental | null {
   if (!raw?.trim()) return null;
   try {
-    const parsed = JSON.parse(raw) as Partial<ResultadoTesteComportamental>;
-    if (!parsed.perfilPrincipal || !parsed.pontuacoes || !parsed.respostas) return null;
-    const perfil = parsed.perfilPrincipal;
-    if (!ORDEM_DESEMPATE.includes(perfil)) return null;
+    const parsed = JSON.parse(raw) as Partial<ResultadoTesteComportamental> & {
+      pontuacoes?: Record<string, unknown>;
+    };
+    if (!parsed.pontuacoes || !parsed.respostas) return null;
+
+    const perfilPrincipal = normalizarPerfilPrincipal(
+      typeof parsed.perfilPrincipal === "string" ? parsed.perfilPrincipal : ""
+    );
+    const pontuacoes = migrarPontuacoesSalvas(parsed.pontuacoes);
+
     return {
       completedAt: parsed.completedAt ?? new Date().toISOString(),
       respostas: parsed.respostas,
-      pontuacoes: parsed.pontuacoes,
-      perfilPrincipal: perfil,
+      pontuacoes,
+      perfilPrincipal,
     };
   } catch {
     return null;
