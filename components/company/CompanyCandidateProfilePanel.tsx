@@ -3,12 +3,8 @@
 import React, { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { FormEditPayload } from "@/lib/professional-profile-map";
 import {
-  CURSO_STATUS_META,
-  getCursoStatus,
   parseCursosDetalhados,
   parseCertificacoesDetalhadas,
-  type CursoDetalhado,
-  type CertificacaoDetalhada,
 } from "@/lib/professional-form-config";
 import { isArquivoAnexado, nomeArquivoAnexado } from "@/lib/arquivo-anexo";
 import { avatarImageStyle } from "@/lib/theme";
@@ -25,24 +21,30 @@ import {
   dashInput,
   dashLabel,
   dashPlanAccent,
-  dashSectionTitle,
   dashTag,
 } from "@/lib/dashboard-theme";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 import CarreiraTimeline from "@/components/professional/CarreiraTimeline";
 import BandeiraFavoritoIcon from "@/components/company/BandeiraFavoritoIcon";
 import PropostasEntrevistasEmpresa from "@/components/company/PropostasEntrevistasEmpresa";
+import CompanyCandidateNotesCard from "@/components/company/CompanyCandidateNotesCard";
+import CompanyCandidateFeedbackCard from "@/components/company/CompanyCandidateFeedbackCard";
+import {
+  CAMPOS_SOBRE_MIM,
+  CardSecaoPerfil,
+  CertificacaoDetalheItem,
+  CursoDetalheItem,
+  PerfilTextoCorrido,
+  TagList,
+  goldTitle,
+  listaDeStrings,
+} from "@/components/company/candidate-profile-bits";
 import OnlineStatusDot from "@/components/shared/OnlineStatusDot";
 import PlatformVideoCall from "@/components/shared/PlatformVideoCall";
 import { buildCareerTimeline } from "@/lib/professional/career-timeline";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
 import { formatReaisDisplay, turnoPropostaLabel } from "@/lib/format-reais";
 import { AVISO_RETENCAO_INBOX } from "@/lib/profile/inbox-retention";
-
-const goldTitle: React.CSSProperties = {
-  ...dashSectionTitle,
-  color: DASH.gold,
-};
 
 type Tracking = {
   contatado: boolean;
@@ -52,33 +54,6 @@ type Tracking = {
   naoContratado: boolean;
   notes: string;
 };
-
-type NotaInterna = {
-  id: string;
-  text: string;
-  createdAt: string;
-};
-
-function parseNotasInternas(raw: string): NotaInterna[] {
-  const trimmed = String(raw || "").trim();
-  if (!trimmed) return [];
-  try {
-    const parsed = JSON.parse(trimmed) as unknown;
-    if (Array.isArray(parsed)) {
-      return parsed
-        .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object")
-        .map((item) => ({
-          id: String(item.id || `${Date.now()}`),
-          text: String(item.text || "").trim(),
-          createdAt: String(item.createdAt || new Date().toISOString()),
-        }))
-        .filter((item) => item.text);
-    }
-  } catch {
-    /* texto antigo em um único bloco */
-  }
-  return [{ id: "legado", text: trimmed, createdAt: new Date().toISOString() }];
-}
 
 type Tip = {
   id: string;
@@ -111,371 +86,6 @@ type DocumentoAnexo = {
   label: string;
   url: string;
 };
-
-const CAMPOS_SOBRE_MIM: Array<{ key: keyof SobreMimData; label: string }> = [
-  { key: "hobbys", label: "Hobbies" },
-  { key: "estiloMusical", label: "Estilo musical" },
-  { key: "livros", label: "Livros" },
-  { key: "filmesSeries", label: "Filmes e séries" },
-  { key: "fraseQueDefine", label: "Uma frase que define" },
-  { key: "assuntosInteresse", label: "Assuntos de interesse" },
-];
-
-const fieldBox: React.CSSProperties = {
-  padding: "10px 12px",
-  ...dashInnerBox,
-  border: `1px solid ${DASH.gold}`,
-  borderRadius: 8,
-  minHeight: 40,
-  background: DASH.inner,
-};
-
-const labelStyle: React.CSSProperties = {
-  ...dashLabel,
-  margin: "0 0 4px",
-  textTransform: "uppercase",
-};
-
-const valueStyle: React.CSSProperties = {
-  color: DASH.text,
-  fontSize: 14,
-  margin: 0,
-  lineHeight: 1.55,
-  wordBreak: "break-word",
-};
-
-function Campo({ label, value, span = 1 }: { label: string; value?: unknown; span?: number }) {
-  const text = value === undefined || value === null || value === "" ? "—" : String(value);
-  return (
-    <div style={{ ...fieldBox, gridColumn: span > 1 ? `span ${span}` : undefined }}>
-      <p style={labelStyle}>{label}</p>
-      <p style={valueStyle}>{text}</p>
-    </div>
-  );
-}
-
-/**
- * Fluxo livre: cada campo ocupa só o tamanho do texto.
- * Sem colunas fixas — o que couber fica na mesma linha
- * (ex.: Idade + Sexo + Identidade; Área + Cargo; Contato completo).
- */
-function PerfilTextoCorrido({
-  pares,
-}: {
-  pares: Array<{ label: string; value?: unknown }>;
-}) {
-  const partes = pares
-    .map(({ label, value }) => {
-      if (value === undefined || value === null || value === "") return null;
-      const texto = Array.isArray(value)
-        ? value.map(String).filter(Boolean).join(" · ")
-        : String(value).trim();
-      if (!texto || texto === "—") return null;
-      return { label, texto };
-    })
-    .filter(Boolean) as Array<{ label: string; texto: string }>;
-
-  if (partes.length === 0) {
-    return <p style={{ ...valueStyle, color: DASH.muted }}>Sem dados para exibir.</p>;
-  }
-
-  /** Só textos bem longos (mensagem etc.) usam a linha inteira */
-  const linhaInteira = (label: string, texto: string) => {
-    if (/mensagem|apresenta|sobre mim|faixa etária|equipamentos|qualidade|informática|segmentos|cursos|certifica/i.test(label)) {
-      return texto.length > 28;
-    }
-    return texto.length > 90;
-  };
-
-  const labelEl = (label: string) => (
-    <span
-      style={{
-        color: DASH.gold,
-        textDecoration: "underline",
-        textUnderlineOffset: 3,
-        fontWeight: 600,
-      }}
-    >
-      {label}
-    </span>
-  );
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        columnGap: 14,
-        rowGap: 8,
-        alignItems: "baseline",
-        width: "100%",
-      }}
-    >
-      {partes.map((item) => {
-        const full = linhaInteira(item.label, item.texto);
-        return (
-          <p
-            key={`${item.label}-${item.texto}`}
-            style={{
-              margin: 0,
-              color: DASH.text,
-              fontSize: 14,
-              lineHeight: 1.4,
-              flex: full ? "1 1 100%" : "0 0 auto",
-              whiteSpace: full ? "normal" : "nowrap",
-              wordBreak: full ? "break-word" : undefined,
-              maxWidth: full ? "100%" : undefined,
-            }}
-          >
-            {labelEl(item.label)}
-            {": "}
-            {item.texto}
-          </p>
-        );
-      })}
-    </div>
-  );
-}
-
-function CardSecaoPerfil({
-  emoji,
-  titulo,
-  pares,
-}: {
-  emoji: string;
-  titulo: string;
-  pares: Array<{ label: string; value?: unknown }>;
-}) {
-  const temDados = pares.some(({ value }) => {
-    if (value === undefined || value === null || value === "" || value === "—") return false;
-    if (Array.isArray(value)) return value.some((v) => String(v || "").trim());
-    return String(value).trim().length > 0;
-  });
-  if (!temDados) return null;
-
-  return (
-    <section
-      data-perfil-card="1"
-      style={{ ...dashCard, padding: 18 }}
-    >
-      <h4
-        style={{
-          ...goldTitle,
-          margin: "0 0 14px",
-          fontSize: 15,
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-        }}
-      >
-        <span aria-hidden>{emoji}</span>
-        {titulo}
-      </h4>
-      <PerfilTextoCorrido pares={pares} />
-    </section>
-  );
-}
-
-function listaDeStrings(value: unknown): string[] {
-  if (Array.isArray(value)) return value.map(String).filter(Boolean);
-  if (typeof value === "string" && value.trim()) {
-    try {
-      const parsed = JSON.parse(value);
-      if (Array.isArray(parsed)) return parsed.map(String).filter(Boolean);
-    } catch {
-      return value.split(/[,;|]/).map((s) => s.trim()).filter(Boolean);
-    }
-  }
-  return [];
-}
-
-function TagList({ items }: { items: string[] }) {
-  if (!items.length) {
-    return <p style={{ ...valueStyle, color: DASH.muted }}>—</p>;
-  }
-  // Texto simples — sem tags/pills
-  return (
-    <p style={{ ...valueStyle, margin: 0 }}>
-      {items.join(" · ")}
-    </p>
-  );
-}
-
-function formatarDataCurta(iso: string | undefined): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("pt-BR", { year: "numeric", month: "2-digit" });
-}
-
-function CursoDetalheItem({ curso }: { curso: CursoDetalhado }) {
-  const status = getCursoStatus(curso);
-  const badge = CURSO_STATUS_META[status];
-  const linhaSecundaria = [
-    curso.instituicao,
-    curso.cargaHoraria,
-    formatarDataCurta(curso.dataConclusao),
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
-  return (
-    <div
-      style={{
-        padding: "8px 10px",
-        borderRadius: 8,
-        border: `1px solid ${badge.border}`,
-        background: badge.bg,
-        display: "flex",
-        flexDirection: "column",
-        gap: 4,
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: DASH.text }}>{curso.nome}</p>
-        <span
-          style={{
-            fontSize: 10,
-            fontWeight: 700,
-            color: badge.color,
-            padding: "3px 8px",
-            borderRadius: 999,
-            border: `1px solid ${badge.border}`,
-            background: "rgba(0,0,0,0.25)",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {badge.label}
-        </span>
-      </div>
-      {linhaSecundaria && (
-        <p style={{ margin: 0, fontSize: 11, color: DASH.muted }}>{linhaSecundaria}</p>
-      )}
-      {curso.certificadoUrl && (
-        <a
-          href={curso.certificadoUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ fontSize: 10, color: DASH.gold, textDecoration: "underline", marginTop: 2 }}
-        >
-          Ver anexo
-        </a>
-      )}
-    </div>
-  );
-}
-
-function CertificacaoDetalheItem({ cert }: { cert: CertificacaoDetalhada }) {
-  const status = getCursoStatus({
-    nome: cert.nome,
-    validadeCertificado: cert.validade,
-    possuiCertificado: cert.possuiCertificado,
-    certificadoUrl: cert.certificadoUrl,
-    verificado: cert.verificado,
-  });
-  const badge = CURSO_STATUS_META[status];
-  const linhaSecundaria = [cert.emissor, formatarDataCurta(cert.validade)].filter(Boolean).join(" · ");
-
-  return (
-    <div
-      style={{
-        padding: "8px 10px",
-        borderRadius: 8,
-        border: `1px solid ${badge.border}`,
-        background: badge.bg,
-        display: "flex",
-        flexDirection: "column",
-        gap: 4,
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: DASH.text }}>{cert.nome}</p>
-        {cert.certificadoUrl && (
-          <span
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: badge.color,
-              padding: "3px 8px",
-              borderRadius: 999,
-              border: `1px solid ${badge.border}`,
-              background: "rgba(0,0,0,0.25)",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {badge.label}
-          </span>
-        )}
-      </div>
-      {linhaSecundaria && (
-        <p style={{ margin: 0, fontSize: 11, color: DASH.muted }}>{linhaSecundaria}</p>
-      )}
-      {cert.certificadoUrl && (
-        <a
-          href={cert.certificadoUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ fontSize: 10, color: DASH.gold, textDecoration: "underline", marginTop: 2 }}
-        >
-          Ver anexo
-        </a>
-      )}
-    </div>
-  );
-}
-
-function SimNaoToggle({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: boolean;
-  onChange: (next: boolean) => void;
-}) {
-  return (
-    <div
-      style={{
-        ...fieldBox,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 8,
-      }}
-    >
-      <p style={{ ...labelStyle, margin: 0 }}>{label}</p>
-      <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-        {[
-          { label: "Sim", active: value },
-          { label: "Não", active: !value },
-        ].map((opt) => (
-          <button
-            key={opt.label}
-            type="button"
-            onClick={() => onChange(opt.label === "Sim")}
-            style={{
-              padding: "4px 12px",
-              fontSize: 11,
-              borderRadius: 7,
-              cursor: "pointer",
-              fontWeight: 600,
-              ...(opt.active
-                ? btnGold
-                : {
-                    background: "transparent",
-                    color: DASH.text,
-                    border: `1px solid ${DASH.gold}`,
-                    boxShadow: "none",
-                  }),
-            }}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 type Props = {
   profileId: string;
@@ -518,15 +128,6 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
   const [loadingShareMembers, setLoadingShareMembers] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
-  const [savingNotes, setSavingNotes] = useState(false);
-  const [notaTexto, setNotaTexto] = useState("");
-  const [feedbacks, setFeedbacks] = useState<
-    Array<{ id: string; authorName: string; body: string; createdAt: string; mine?: boolean }>
-  >([]);
-  const [feedbackText, setFeedbackText] = useState("");
-  const [sendingFeedback, setSendingFeedback] = useState(false);
-  const [deletingFeedbackId, setDeletingFeedbackId] = useState<string | null>(null);
-  const [feedbackMsg, setFeedbackMsg] = useState("");
   const [tipText, setTipText] = useState("");
   const [sendingTip, setSendingTip] = useState(false);
   const [mensagemTexto, setMensagemTexto] = useState("");
@@ -704,52 +305,6 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
     };
   }, [profileId]);
 
-  const salvarTracking = async (patch: Partial<Tracking>) => {
-    setSavingNotes(true);
-    try {
-      const res = await fetch(`/api/company/professionals/${profileId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(patch),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || "Erro ao salvar");
-        return false;
-      }
-      setTracking(data.tracking);
-      return true;
-    } catch {
-      alert("Erro ao salvar anotações");
-      return false;
-    } finally {
-      setSavingNotes(false);
-    }
-  };
-
-  const salvarNotaInterna = async () => {
-    const text = notaTexto.trim();
-    if (!text) {
-      alert("Escreva a anotação antes de salvar.");
-      return;
-    }
-    const atuais = parseNotasInternas(tracking.notes);
-    const nova: NotaInterna = {
-      id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `n-${Date.now()}`,
-      text,
-      createdAt: new Date().toISOString(),
-    };
-    const ok = await salvarTracking({ notes: JSON.stringify([nova, ...atuais]) });
-    if (ok) setNotaTexto("");
-  };
-
-  const apagarNotaInterna = async (id: string) => {
-    if (!confirm("Apagar esta anotação?")) return;
-    const atuais = parseNotasInternas(tracking.notes).filter((n) => n.id !== id);
-    await salvarTracking({ notes: atuais.length ? JSON.stringify(atuais) : "" });
-  };
-
   const handleUnlock = async () => {
     setUnlocking(true);
     try {
@@ -808,74 +363,6 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
       alert("Erro ao atualizar favorito");
     } finally {
       setFavoriting(false);
-    }
-  };
-
-  const carregarFeedbacks = useCallback(async () => {
-    try {
-      const res = await fetch(
-        `/api/company/profile-feedback?profileId=${encodeURIComponent(profileId)}`,
-        { credentials: "include" },
-      );
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && Array.isArray(data.feedbacks)) {
-        setFeedbacks(data.feedbacks);
-      }
-    } catch {
-      /* ignore */
-    }
-  }, [profileId]);
-
-  useEffect(() => {
-    void carregarFeedbacks();
-  }, [carregarFeedbacks]);
-
-  const handleSendFeedback = async () => {
-    if (!feedbackText.trim()) return;
-    setSendingFeedback(true);
-    setFeedbackMsg("");
-    try {
-      const res = await fetch("/api/company/profile-feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ profileId, body: feedbackText.trim() }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setFeedbackMsg(data.error || "Não foi possível enviar o feedback.");
-        return;
-      }
-      if (Array.isArray(data.feedbacks)) setFeedbacks(data.feedbacks);
-      setFeedbackText("");
-    } catch {
-      setFeedbackMsg("Erro de rede ao enviar o feedback.");
-    } finally {
-      setSendingFeedback(false);
-    }
-  };
-
-  const handleExcluirFeedback = async (feedbackId: string) => {
-    if (!window.confirm("Excluir este feedback?")) return;
-    setDeletingFeedbackId(feedbackId);
-    setFeedbackMsg("");
-    try {
-      const res = await fetch("/api/company/profile-feedback", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ id: feedbackId }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setFeedbackMsg(data.error || "Não foi possível excluir o feedback.");
-        return;
-      }
-      if (Array.isArray(data.feedbacks)) setFeedbacks(data.feedbacks);
-    } catch {
-      setFeedbackMsg("Erro de rede ao excluir o feedback.");
-    } finally {
-      setDeletingFeedbackId(null);
     }
   };
 
@@ -1899,132 +1386,7 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
             />
           )}
 
-          <section style={{ ...dashCard, padding: 18 }}>
-            <h3 style={{ ...goldTitle, margin: "0 0 12px", fontSize: 16 }}>
-              💬 Feedback da equipe
-            </h3>
-            <p style={{ margin: "0 0 10px", fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>
-              Todos da mesma assinatura veem os feedbacks deixados sobre este candidato.
-            </p>
-
-            <div
-              style={{
-                ...dashInnerBox,
-                padding: 10,
-                border: `1px solid ${DASH.gold}`,
-                display: "grid",
-                gap: 8,
-                marginBottom: 12,
-              }}
-            >
-              <textarea
-                value={feedbackText}
-                onChange={(e) => setFeedbackText(e.target.value)}
-                rows={3}
-                maxLength={1000}
-                placeholder="Escreva seu feedback sobre o candidato..."
-                style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  padding: 8,
-                  borderRadius: 8,
-                  ...dashInput,
-                  fontSize: 12,
-                  lineHeight: 1.5,
-                  resize: "vertical",
-                }}
-              />
-              {feedbackMsg ? (
-                <p style={{ margin: 0, fontSize: 11, color: "#f87171" }}>{feedbackMsg}</p>
-              ) : null}
-              <button
-                type="button"
-                onClick={() => void handleSendFeedback()}
-                disabled={sendingFeedback || !feedbackText.trim()}
-                style={{
-                  ...btnGold,
-                  padding: "6px 12px",
-                  fontSize: 12,
-                  width: "fit-content",
-                  justifySelf: "end",
-                  opacity: sendingFeedback || !feedbackText.trim() ? 0.7 : 1,
-                }}
-              >
-                {sendingFeedback ? "Enviando..." : "Enviar feedback"}
-              </button>
-            </div>
-
-            {feedbacks.length === 0 ? (
-              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
-                Nenhum feedback ainda. Seja o primeiro a avaliar.
-              </p>
-            ) : (
-              <div style={{ display: "grid", gap: 8, maxHeight: 320, overflowY: "auto" }}>
-                {feedbacks.map((fb) => (
-                  <div
-                    key={fb.id}
-                    style={{
-                      ...dashInnerBox,
-                      padding: "8px 10px",
-                      borderRadius: 8,
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: 8,
-                    }}
-                  >
-                    {fb.mine ? (
-                      <button
-                        type="button"
-                        disabled={deletingFeedbackId === fb.id}
-                        onClick={() => void handleExcluirFeedback(fb.id)}
-                        style={{
-                          background: "transparent",
-                          border: "1px solid rgba(229,115,115,0.55)",
-                          color: "#e57373",
-                          borderRadius: 8,
-                          padding: "4px 8px",
-                          fontSize: 10,
-                          fontWeight: 700,
-                          cursor: deletingFeedbackId === fb.id ? "wait" : "pointer",
-                          flexShrink: 0,
-                          fontFamily: "inherit",
-                          opacity: deletingFeedbackId === fb.id ? 0.7 : 1,
-                        }}
-                        title="Excluir meu feedback"
-                      >
-                        Excluir
-                      </button>
-                    ) : null}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "baseline",
-                          gap: 8,
-                          marginBottom: 4,
-                        }}
-                      >
-                        <strong style={{ fontSize: 12, color: DASH.gold }}>{fb.authorName}</strong>
-                        <span style={{ fontSize: 10, color: DASH.muted, flexShrink: 0 }}>
-                          {new Date(fb.createdAt).toLocaleDateString("pt-BR", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "2-digit",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
-                      <p style={{ margin: 0, fontSize: 12, color: DASH.text, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
-                        {fb.body}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
+          <CompanyCandidateFeedbackCard profileId={profileId} />
 
           <section style={{ ...dashCard, padding: 18 }}>
             <h3 style={{ ...goldTitle, margin: "0 0 12px", fontSize: 16 }}>✉️ Mensagem para o candidato</h3>
@@ -2389,90 +1751,11 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
             )}
           </section>
 
-          <section style={{ ...dashCard, padding: 18, minWidth: 0, maxWidth: "100%", boxSizing: "border-box" }}>
-            <h3 style={{ ...goldTitle, margin: "0 0 8px", fontSize: 16 }}>📝 Anotações internas</h3>
-            <p style={{ margin: "0 0 10px", fontSize: 11, color: DASH.muted, lineHeight: 1.4 }}>
-              Visível só para a sua empresa. Salve para virar um card. Use Apagar para remover.
-            </p>
-            <textarea
-              value={notaTexto}
-              onChange={(e) => setNotaTexto(e.target.value)}
-              rows={4}
-              placeholder="Escreva uma observação sobre este candidato..."
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                marginTop: 6,
-                padding: 12,
-                borderRadius: 8,
-                ...dashInput,
-                border: `1px solid ${DASH.gold}`,
-                fontSize: 14,
-                lineHeight: 1.5,
-                resize: "vertical",
-              }}
-            />
-            <button
-              type="button"
-              disabled={savingNotes || !notaTexto.trim()}
-              onClick={() => void salvarNotaInterna()}
-              style={{
-                ...btnGold,
-                width: "100%",
-                marginTop: 8,
-                padding: 10,
-                fontSize: 13,
-                opacity: savingNotes || !notaTexto.trim() ? 0.7 : 1,
-              }}
-            >
-              {savingNotes ? "Salvando..." : "Salvar"}
-            </button>
-            <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
-              {parseNotasInternas(tracking.notes).map((nota) => (
-                <div
-                  key={nota.id}
-                  style={{
-                    ...dashInnerBox,
-                    padding: 12,
-                    border: `1px solid ${DASH.gold}`,
-                    borderRadius: 10,
-                    minWidth: 0,
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: 13,
-                      color: DASH.text,
-                      lineHeight: 1.5,
-                      whiteSpace: "pre-wrap",
-                      overflowWrap: "anywhere",
-                    }}
-                  >
-                    {nota.text}
-                  </p>
-                  <p style={{ margin: "8px 0 0", fontSize: 10, color: DASH.muted }}>
-                    {new Date(nota.createdAt).toLocaleString("pt-BR")}
-                  </p>
-                  <button
-                    type="button"
-                    disabled={savingNotes}
-                    onClick={() => void apagarNotaInterna(nota.id)}
-                    style={{
-                      ...dashGhostBtn,
-                      marginTop: 8,
-                      padding: "5px 8px",
-                      fontSize: 10,
-                      color: "#e57373",
-                      borderColor: "rgba(229,115,115,0.55)",
-                    }}
-                  >
-                    Apagar
-                  </button>
-                </div>
-              ))}
-            </div>
-          </section>
+          <CompanyCandidateNotesCard
+            profileId={profileId}
+            notes={tracking.notes}
+            onNotesChange={(notes) => setTracking((t) => ({ ...t, notes }))}
+          />
         </aside>
         </div>
       </div>
