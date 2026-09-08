@@ -42,19 +42,29 @@ export default function CompanyProfissionalSlugPage() {
           error?: string;
         };
         if (cancelled) return;
-        if (!res.ok || !data.profileId) {
-          setResolveError(data.error || "Perfil não encontrado");
+        if (res.ok && data.profileId) {
+          setProfileId(data.profileId);
+          if (data.slug) {
+            setCanonicalSlug(data.slug);
+            if (data.slug !== rawParam) {
+              router.replace(companyProfessionalPath(data.slug));
+            }
+          }
           return;
         }
-        setProfileId(data.profileId);
-        if (data.slug) {
-          setCanonicalSlug(data.slug);
-          if (data.slug !== rawParam) {
-            router.replace(companyProfessionalPath(data.slug));
-          }
+        // Fallback: URL ainda com id antigo (cuid) — abre direto.
+        if (/^c[a-z0-9]{20,}$/i.test(rawParam)) {
+          setProfileId(rawParam);
+          return;
         }
+        setResolveError(data.error || "Perfil não encontrado");
       } catch {
-        if (!cancelled) setResolveError("Erro ao abrir o perfil");
+        if (cancelled) return;
+        if (/^c[a-z0-9]{20,}$/i.test(rawParam)) {
+          setProfileId(rawParam);
+          return;
+        }
+        setResolveError("Erro ao abrir o perfil");
       }
     })();
     return () => {
