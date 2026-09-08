@@ -1,73 +1,84 @@
-/* 🔒 PÁGINA INICIAL BLOQUEADA (06/07/2026) — não editar sem pedido explícito do usuário (ver .cursor/rules/home-page-lock.mdc) */
+/* Home — polimento visual autorizado (07/09/2026). Ver .cursor/rules/home-page-lock.mdc */
 
 .homePage {
+  --ri-gold: #c89b3c;
+  --ri-gold-dark: #8d6b1f;
+  --ri-ink: #3a3a3a;
+  --ri-panel: #2b2b2b;
+  --ri-text: #f2f2f2;
+  position: relative;
+  min-height: 100vh;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  color: var(--ri-text);
+  background: var(--ri-ink);
   letter-spacing: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: auto;
-  height: 100vh;
-  max-height: 100vh;
-  overflow: hidden;
-  box-sizing: border-box;
-  border: 1px solid rgba(200, 155, 60, 0.65);
-  border-radius: clamp(12px, 1.4vw, 18px);
 }
 
-.homeTop {
-  flex: 1 1 auto;
-  min-height: 0;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 0;
+.atmosphere {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(58, 58, 58, 0.72) 0%, rgba(43, 43, 43, 0.88) 45%, rgba(58, 58, 58, 0.95) 100%),
+    url("/welding-left.png") left center / cover no-repeat,
+    url("/welding-right.png") right center / cover no-repeat,
+    #3a3a3a;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
 }
 
-.homeBottom {
-  flex-shrink: 0;
-  margin-top: auto;
-  width: 100%;
+.atmosphereGlow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 45% at 50% 8%, rgba(200, 155, 60, 0.16), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 100%, rgba(0, 0, 0, 0.35), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
-.homePage h1,
-.homePage h2,
-.homePage p,
-.homePage span,
-.homePage a {
-  letter-spacing: normal;
-}
-
-.logoSection {
-  width: 100%;
-  flex-shrink: 0;
-  padding: 0 0 clamp(16px, 2.2vh, 28px);
-  box-sizing: border-box;
-}
-
-.logoCard {
-  --logo-card-radius: clamp(12px, 1.4vw, 18px);
-  width: 100%;
-  box-sizing: border-box;
+.homeShell {
   position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(12px, 2vh, 24px) clamp(16px, 3vw, 28px) 12px;
+  box-sizing: border-box;
+  animation: homeFadeIn 0.7s ease both;
+}
+
+@keyframes homeFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #2b2b2b;
-  /* Sem linha de cima — a moldura da página faz esse papel */
-  border: 1px solid #8d6b1f;
-  border-top: none;
-  border-radius: 0 0 var(--logo-card-radius) var(--logo-card-radius);
+  text-align: center;
+  padding: clamp(8px, 1.5vh, 18px) 0 clamp(20px, 3vh, 36px);
 }
 
 .logoHero {
   width: 100%;
-  margin: 0 auto;
-  padding: clamp(8px, 1.4vh, 16px) 16px clamp(26px, 3.6vh, 40px);
   line-height: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  text-align: center;
+  padding: clamp(4px, 1vh, 12px) 12px clamp(18px, 2.5vh, 28px);
   box-sizing: border-box;
 }
 
@@ -77,137 +88,85 @@
   transform: translateX(-0.5cm);
 }
 
-/* Linha inferior do card = linha da frase (emenda contínua) */
 .heroLineRow {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  transform: translateY(50%);
   display: flex;
   align-items: center;
-  width: 100%;
-  margin: 0;
-  /* Sem gap: evita tracinho dourado entre ★ e a frase */
-  padding: 0 var(--logo-card-radius);
+  width: min(100%, 920px);
   gap: 0;
-  box-sizing: border-box;
-  z-index: 2;
-  pointer-events: none;
+  margin: 0 0 14px;
 }
 
 .heroLineSegment {
   flex: 1;
   height: 1px;
   min-width: 12px;
-  background: #8d6b1f;
-  align-self: center;
+  background: linear-gradient(90deg, transparent, var(--ri-gold-dark), transparent);
 }
 
 .heroTagline {
   flex-shrink: 0;
   margin: 0;
-  padding: 0 8px;
-  color: #f2f2f2;
-  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  padding: 0 10px;
+  color: var(--ri-text);
+  font-size: clamp(1.35rem, 2.5vw, 2rem);
   font-weight: 600;
-  font-style: normal;
   text-align: center;
-  opacity: 0.95;
+  line-height: 1.2;
   white-space: nowrap;
-  letter-spacing: 0.01em;
-  text-rendering: geometricPrecision;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  /* Metade de cima = card do logo; metade de baixo = fundo da página */
-  background: linear-gradient(180deg, #2b2b2b 50%, #3a3a3a 50%);
-  line-height: 1.15;
-  position: relative;
-  z-index: 1;
 }
 
 .heroTaglineStar {
   flex-shrink: 0;
-  color: #c89b3c;
-  font-size: clamp(1.25rem, 2vw, 1.65rem);
+  color: var(--ri-gold);
+  font-size: clamp(1.15rem, 2vw, 1.55rem);
   line-height: 1;
-  background: linear-gradient(180deg, #2b2b2b 50%, #3a3a3a 50%);
-  position: relative;
-  z-index: 1;
   padding: 0 4px;
 }
 
-/* Cards Profissional / Empresa — sobem o vão da frase e colam mais no banner */
-.actionCards {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: flex-start;
-  gap: clamp(24px, 4vw, 56px);
-  padding: clamp(4px, 0.8vh, 10px) clamp(10px, 2vw, 24px) clamp(2px, 0.4vh, 6px);
-  flex: 0 0 auto;
-  max-width: 1180px;
-  margin: auto auto 0;
-  /* Sobe um pouco em relação ao card do topo */
-  translate: 0 clamp(-32px, -3.5vh, -16px);
-  width: 100%;
-  box-sizing: border-box;
-  overflow: visible;
+.heroSupport {
+  margin: 0;
+  max-width: 34rem;
+  color: rgba(242, 242, 242, 0.82);
+  font-size: clamp(0.92rem, 1.35vw, 1.05rem);
+  line-height: 1.5;
+  font-weight: 500;
 }
 
-.cardContent {
-  flex: 1 1 auto;
-  min-height: 0;
-  padding-top: 3px;
-  padding-bottom: 4px;
+.actionCards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(18px, 3vw, 36px);
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto clamp(18px, 3vh, 28px);
+  animation: homeFadeIn 0.85s ease 0.08s both;
+}
+
+.actionCard {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 3px;
-  flex-shrink: 0;
+  min-width: 0;
+  text-decoration: none;
+  color: var(--ri-text);
+  background: rgba(43, 43, 43, 0.88);
+  border: 1px solid rgba(200, 155, 60, 0.55);
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.cardContent p {
-  margin: 0 0 2mm;
-}
-
-.cardCta {
-  font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
-  padding: 7px 18px;
-  border-radius: 7px;
-  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
-  color: #000000;
-  font-weight: 700;
-  font-size: clamp(0.66rem, 0.9vw, 0.8rem);
-  text-transform: uppercase;
-  border: 1px solid #6b5218;
-  margin-top: auto;
-  flex-shrink: 0;
-  letter-spacing: normal;
-  box-shadow: var(--ri-btn-3d-gold-shadow);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-
-.cardCta:active {
-  transform: translateY(2px);
-  box-shadow: var(--ri-btn-3d-gold-active);
-}
-
-.cardCtaText {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: auto;
+.actionCard:hover {
+  transform: translateY(-3px);
+  border-color: var(--ri-gold);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
 }
 
 .cardImageWrap {
-  flex: 0 0 52%;
-  max-height: 175px;
-  min-height: 0;
   overflow: hidden;
+  border-radius: 10px;
+  aspect-ratio: 16 / 10;
   line-height: 0;
-  border-radius: 7px;
 }
 
 .cardImage {
@@ -216,32 +175,74 @@
   object-fit: cover;
   object-position: center;
   display: block;
-  image-rendering: auto;
+  transition: transform 0.35s ease;
+}
+
+.actionCard:hover .cardImage {
+  transform: scale(1.03);
 }
 
 .cardImageEmpresa {
   object-position: center 42%;
 }
 
-.footerTag {
-  border: 1px solid #8d6b1f;
-  padding: 2px 6px;
-  font-size: 0.56rem;
-  color: #f2f2f2;
-  font-weight: 500;
-  white-space: nowrap;
-  opacity: 0.85;
-  flex-shrink: 0;
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 8px 10px;
+  flex: 1;
+}
+
+.cardTitle {
+  margin: 0;
+  color: var(--ri-gold);
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.cardText {
+  margin: 0;
+  text-align: center;
+  color: rgba(242, 242, 242, 0.88);
+  font-size: clamp(0.84rem, 1.1vw, 0.95rem);
+  line-height: 1.45;
+  max-width: 28rem;
+}
+
+.cardCta {
+  margin-top: auto;
+  font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
+  padding: 9px 20px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
+  color: #000;
+  font-weight: 700;
+  font-size: clamp(0.72rem, 0.95vw, 0.85rem);
+  text-transform: uppercase;
+  border: 1px solid #6b5218;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.actionCard:active .cardCta {
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
 }
 
 .bannerSection {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr minmax(0, 640px) 1fr;
   align-items: stretch;
   overflow: hidden;
-  background: #2b2b2b;
-  flex-shrink: 0;
-  min-height: clamp(100px, 11vw, 130px);
+  border-radius: 12px;
+  border: 1px solid rgba(141, 107, 31, 0.65);
+  background: rgba(43, 43, 43, 0.75);
+  min-height: clamp(88px, 10vw, 120px);
+  margin-bottom: 10px;
 }
 
 .bannerSideLeft,
@@ -249,9 +250,8 @@
   min-height: 100%;
   background-size: cover;
   background-repeat: no-repeat;
+  opacity: 0.34;
   filter: brightness(1.05) contrast(1.08);
-  opacity: 0.28;
-  pointer-events: none;
 }
 
 .bannerSideLeft {
@@ -265,99 +265,49 @@
 }
 
 .bannerTextColumn {
-  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  width: fit-content;
-  max-width: min(96vw, 920px);
-  padding: clamp(14px, 2vw, 24px) clamp(14px, 2vw, 22px);
+  padding: clamp(16px, 2.2vw, 28px) clamp(14px, 2vw, 22px);
   text-align: center;
-  box-sizing: border-box;
-  background: #2b2b2b;
-  z-index: 1;
-}
-
-.bannerTextVLine {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: #8d6b1f;
-  pointer-events: none;
-}
-
-.bannerTextVLineLeft {
-  left: 0;
-}
-
-.bannerTextVLineRight {
-  right: 0;
-}
-
-.bannerTextTitle {
-  color: #c89b3c;
-  font-size: clamp(0.78rem, 1.8vw, 1.45rem);
-  font-weight: 700;
-  margin: 0;
-  line-height: 1.1;
-  white-space: nowrap;
+  background: rgba(43, 43, 43, 0.92);
+  border-left: 1px solid var(--ri-gold-dark);
+  border-right: 1px solid var(--ri-gold-dark);
 }
 
 .bannerTextSubtitle {
-  color: #c89b3c;
-  font-size: clamp(1rem, 1.8vw, 1.45rem);
-  font-weight: 600;
   margin: 0;
-  opacity: 1;
-  line-height: 1.35;
+  color: var(--ri-gold);
+  font-size: clamp(1rem, 1.8vw, 1.35rem);
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .homeContactsWrap {
   width: 100%;
-  flex-shrink: 0;
-}
-
-.homeContactsRow {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  width: 100%;
-  padding: 8px 12px 6px;
-  box-sizing: border-box;
+  margin-top: 4px;
 }
 
 .homeContacts {
-  grid-column: 2;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 6px 10px;
-  text-align: center;
-}
-
-.homeInstallBtn {
-  grid-column: 3;
-  justify-self: end;
-  align-self: center;
+  padding: 10px 8px 8px;
 }
 
 .homeContactLine {
   width: 100%;
   height: 1px;
-  background: #8d6b1f;
-  box-shadow: 0 0 0 0.5px rgba(200, 155, 60, 0.35);
+  background: linear-gradient(90deg, transparent, var(--ri-gold-dark), transparent);
 }
 
 .homeContactLink {
-  color: #c89b3c;
-  font-size: clamp(0.68rem, 1.1vw, 0.82rem);
+  color: var(--ri-gold);
+  font-size: clamp(0.72rem, 1.1vw, 0.86rem);
   font-weight: 500;
   text-decoration: none;
-  letter-spacing: normal;
 }
 
 .homeContactLink:hover {
@@ -365,36 +315,49 @@
 }
 
 .homeContactSep {
-  color: #8d6b1f;
-  font-size: clamp(0.68rem, 1.1vw, 0.82rem);
+  color: var(--ri-gold-dark);
   opacity: 0.9;
 }
 
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 8px 8px;
+  text-align: center;
+}
+
+.footerTrust {
+  margin: 0;
+  color: rgba(200, 155, 60, 0.9);
+  font-size: clamp(0.7rem, 1vw, 0.8rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.footerCopy {
+  margin: 0;
+  color: rgba(242, 242, 242, 0.72);
+  font-size: 0.68rem;
+}
+
 @media (max-width: 768px) {
-  .homePage {
-    height: auto;
-    max-height: none;
-    min-height: 100vh;
-    overflow: auto;
-    border-radius: 0;
+  .homeShell {
+    padding: 10px 14px 16px;
   }
 
   .heroTagline {
     white-space: normal;
     font-size: 1.2rem;
-    padding: 0 12px;
   }
 
   .actionCards {
-    flex-direction: column;
-    align-items: stretch;
-    translate: none;
-    padding: 12px 16px 20px;
+    grid-template-columns: 1fr;
   }
 
   .bannerSection {
     grid-template-columns: 1fr;
-    min-height: 0;
   }
 
   .bannerSideLeft,
@@ -402,20 +365,8 @@
     display: none;
   }
 
-  .bannerTextTitle,
-  .bannerTextSubtitle {
-    white-space: normal;
-  }
-
-  .homeContactsRow {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    justify-items: center;
-  }
-
-  .homeContacts,
-  .homeInstallBtn {
-    grid-column: auto;
-    justify-self: center;
+  .bannerTextColumn {
+    border-left: none;
+    border-right: none;
   }
 }

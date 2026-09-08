@@ -199,6 +199,8 @@ function LoginContent() {
 
   return (
     <div className={styles.page}>
+      <div className={styles.atmosphere} aria-hidden />
+      <div className={styles.atmosphereGlow} aria-hidden />
       {loading && <PageLoader message="Entrando..." mode="overlay" />}
 
       <div className={styles.card}>
@@ -215,6 +217,13 @@ function LoginContent() {
                   ? 'Acesso Empresa'
                   : 'Acesso Profissional'}
             </span>
+          </p>
+          <p className={styles.supportLine}>
+            {isAdminRedirect
+              ? 'Entre com o e-mail autorizado do painel.'
+              : tipoLogin === 'company'
+                ? 'Acesse o painel da sua indústria.'
+                : 'Acesse seu perfil profissional.'}
           </p>
         </div>
 
