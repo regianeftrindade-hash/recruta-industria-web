@@ -29,15 +29,37 @@ export type AsaasPaymentResult = {
   checkoutUrl?: string;
 };
 
+/**
+ * Normaliza ASAAS_API_URL. Erros comuns na Vercel:
+ * - https://www.asaas.com/api/v3 (site, não API)
+ * - https://api.asaas.com/v3 (o código já acrescenta /v3/...)
+ * Resultado: 404 e planos desabilitados.
+ */
+export function normalizeAsaasApiUrl(raw: string, isProduction: boolean): string {
+  let url = (raw || '').trim().replace(/\/+$/, '');
+  if (!url) {
+    return isProduction ? 'https://api.asaas.com' : 'https://api-sandbox.asaas.com';
+  }
+
+  url = url
+    .replace(/^https?:\/\/(www\.)?asaas\.com\/api(\/v3)?$/i, 'https://api.asaas.com')
+    .replace(/^https?:\/\/api\.asaas\.com\/api(\/v3)?$/i, 'https://api.asaas.com')
+    .replace(/^https?:\/\/api-sandbox\.asaas\.com\/api(\/v3)?$/i, 'https://api-sandbox.asaas.com');
+
+  // Base correta é sem /v3 — asaasRequest usa caminhos /v3/...
+  url = url.replace(/\/v3$/i, '').replace(/\/+$/, '');
+
+  if (/^https?:\/\/(www\.)?asaas\.com$/i.test(url)) {
+    return 'https://api.asaas.com';
+  }
+
+  return url || (isProduction ? 'https://api.asaas.com' : 'https://api-sandbox.asaas.com');
+}
+
 export function getAsaasConfig() {
   const apiKey = (process.env.ASAAS_API_KEY || '').trim();
-  const defaultApiUrl =
-    process.env.NODE_ENV === 'production'
-      ? 'https://api.asaas.com'
-      : 'https://api-sandbox.asaas.com';
-  const apiUrl = (process.env.ASAAS_API_URL || defaultApiUrl)
-    .trim()
-    .replace(/\/$/, '');
+  const isProduction = process.env.NODE_ENV === 'production';
+  const apiUrl = normalizeAsaasApiUrl(process.env.ASAAS_API_URL || '', isProduction);
   const baseAppUrl = (process.env.NEXTAUTH_URL || 'http://localhost:3000').trim();
   const webhookUrl = (
     process.env.ASAAS_WEBHOOK_URL || `${baseAppUrl}/api/asaas/webhook`
@@ -124,7 +146,17 @@ export async function verifyAsaasCredentials(): Promise<{
         ok: false,
         status: 401,
         message:
-          'API Key rejeitada pelo Asaas. Gere uma nova em Integrações > API (sandbox: https://sandbox.asaas.com).',
+          'API Key rejeitada pelo Asaas. Em produção use chave $aact_prod_… e ASAAS_API_URL=https://api.asaas.com (Integrações > API).',
+      };
+    }
+
+    if (result.status === 404) {
+      const { apiUrl } = getAsaasConfig();
+      return {
+        ok: false,
+        status: 404,
+        message:
+          `Asaas 404 em ${apiUrl}. Na Vercel defina ASAAS_API_URL=https://api.asaas.com (sem /v3) e chave de produção.`,
       };
     }
 
