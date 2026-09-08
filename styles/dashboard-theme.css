@@ -7,7 +7,7 @@
   -moz-osx-font-smoothing: auto;
 }
 
-/* Modo escuro — alinhado à home polida (atmosfera, cards com ouro suave) */
+/* Modo escuro — alinhado à home polida */
 .ri-dashboard[data-theme="dark"] {
   --dash-bg: #3a3a3a;
   --dash-sidebar: #2b2b2b;
@@ -22,9 +22,11 @@
   --dash-compat-low: #444444;
   --dash-compat-low-text: #f5f5f5;
   --dash-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+  background-image:
+    radial-gradient(ellipse 80% 40% at 50% -10%, rgba(200, 155, 60, 0.1), transparent 55%);
+  background-attachment: fixed;
 }
 
-/* Dashboard profissional — cards sólidos como o perfil da empresa (sem miolo lavado) */
 .ri-dashboard.ri-dash-prof[data-theme="dark"] {
   --dash-card: #2b2b2b;
   --dash-sidebar: #2b2b2b;
@@ -34,7 +36,6 @@
   --dash-compat-low: #1a1a1a;
 }
 
-/* Modo claro */
 .ri-dashboard[data-theme="light"] {
   --dash-bg: #f5f5f5;
   --dash-sidebar: #ffffff;
@@ -55,17 +56,29 @@
   background: transparent;
   color: var(--dash-text);
   border: 1px solid var(--dash-border);
-  border-radius: 6px;
-  padding: 6px 12px;
+  border-radius: 8px;
+  padding: 7px 12px;
   font-size: 11px;
   cursor: pointer;
   font-weight: 600;
   white-space: nowrap;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 
 .ri-dashboard .dash-theme-toggle:hover {
-  border-color: var(--dash-border);
-  background: var(--dash-inner);
+  border-color: var(--dash-gold);
+  background: var(--dash-gold-soft);
+  color: var(--dash-gold);
+}
+
+.ri-dashboard header,
+.ri-company-dash header {
+  box-shadow: 0 1px 0 rgba(200, 155, 60, 0.28);
+}
+
+.ri-dashboard aside,
+.ri-company-dash-grid > aside {
+  box-shadow: inset -1px 0 0 rgba(200, 155, 60, 0.18);
 }
 
 .ri-dashboard,
@@ -106,8 +119,6 @@
   align-self: start;
 }
 
-/* Uma única moldura dourada por card externo (1px).
-   Cards aninhados não repetem a borda — a do pai serve para os dois. */
 .ri-dashboard .dash-card,
 .ri-dashboard [data-card="1"],
 .ri-dashboard [data-perfil-card="1"] {
@@ -115,12 +126,13 @@
   border-radius: 16px !important;
   overflow: hidden;
   box-shadow: var(--dash-shadow);
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 .ri-dashboard .dash-card:hover,
 .ri-dashboard [data-card="1"]:hover {
   border-color: var(--dash-gold) !important;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42);
 }
 
 .ri-dashboard .dash-card .dash-card,
@@ -130,6 +142,7 @@
 .ri-dashboard [data-perfil-card="1"] .dash-card,
 .ri-dashboard [data-perfil-card="1"] [data-card="1"] {
   border: none !important;
+  box-shadow: none !important;
 }
 
 @media (max-width: 900px) {
@@ -148,6 +161,7 @@
     border-bottom: 1px solid var(--dash-border);
     max-height: none;
     overflow: visible;
+    box-shadow: none;
   }
 
   .ri-company-dash-grid > [data-company-main] {
@@ -214,5 +228,3 @@
     overflow-x: hidden;
   }
 }
-
-

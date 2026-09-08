@@ -53,8 +53,8 @@ export const dashPage: CSSProperties = {
 
 export const dashHeader: CSSProperties = {
   background: DASH.sidebar,
-  borderBottom: `1px solid ${DASH.border}`,
-  padding: "8px 20px",
+  borderBottom: `1px solid rgba(200, 155, 60, 0.28)`,
+  padding: "10px 20px",
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
@@ -73,7 +73,7 @@ export const dashCard: CSSProperties = {
 
 export const dashAside: CSSProperties = {
   background: DASH.sidebar,
-  borderRight: `1px solid ${DASH.border}`,
+  borderRight: `1px solid rgba(200, 155, 60, 0.18)`,
   padding: 16,
   overflowY: "auto",
 };
