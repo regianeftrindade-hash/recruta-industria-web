@@ -10,11 +10,16 @@ import type {
   NotificationChannel,
   NotificationEvent,
 } from "@/lib/notifications/types";
+import { isRuntimeDdlEnabled } from "@/lib/infra/ensure-db-schema";
 
 let deliveryTableReady = false;
 
 export async function ensureNotificationDeliveryTable(): Promise<void> {
   if (deliveryTableReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    deliveryTableReady = true;
+    return;
+  }
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS "notification_deliveries" (
       "id" TEXT NOT NULL,

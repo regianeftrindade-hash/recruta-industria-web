@@ -9,6 +9,7 @@ import { prisma } from "@/lib/db";
 import { currentPeriodKey, ensureAssistantUsageTable } from "@/lib/ai/usage";
 import { estimateCostCents } from "@/lib/ai/limits";
 import type { AiResource } from "@/lib/ai/resources";
+import { isRuntimeDdlEnabled } from "@/lib/infra/ensure-db-schema";
 
 export type AiUsageEventStatus = "ok" | "denied" | "limit" | "error" | "disabled";
 
@@ -16,6 +17,10 @@ let eventsReady = false;
 
 export async function ensureAiUsageEventsTable(): Promise<void> {
   if (eventsReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    eventsReady = true;
+    return;
+  }
   await ensureAssistantUsageTable();
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS "ai_usage_events" (

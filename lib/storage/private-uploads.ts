@@ -95,3 +95,49 @@ export function extractStoragePath(urlOrPath: string): string | null {
     return null;
   }
 }
+
+/** Prefixo de dono usado em `app/api/upload` (e-mail sanitizado). */
+export function sanitizeUploadOwnerPrefix(email: string): string {
+  return email.replace(/[^a-z0-9@._-]/gi, "_").slice(0, 80);
+}
+
+/**
+ * ACL de mídia assinada (puro, testável).
+ * - Pastas públicas: ok sem login
+ * - professional-videos/{userId}/: só dono ou admin
+ * - {pasta}/{emailSanitizado}/: dono, empresa autenticada ou admin
+ * - demais privadas: só admin
+ */
+export function canSignMediaPath(input: {
+  path: string;
+  email?: string | null;
+  userId?: string | null;
+  role?: string | null;
+  isAdmin?: boolean;
+}): boolean {
+  const path = String(input.path || "").replace(/^\/+/, "");
+  if (!path || path.includes("..")) return false;
+  if (isPublicMediaFolder(path)) return true;
+
+  if (input.isAdmin) return true;
+  if (!input.email) return false;
+
+  const parts = path.split("/").filter(Boolean);
+  const folder = (parts[0] || "").toLowerCase();
+  const ownerSeg = parts[1] || "";
+
+  if (folder === "professional-videos") {
+    return Boolean(input.userId && ownerSeg === input.userId);
+  }
+
+  if (input.email) {
+    const mine = sanitizeUploadOwnerPrefix(input.email);
+    if (ownerSeg && ownerSeg.toLowerCase() === mine.toLowerCase()) return true;
+  }
+
+  const role = String(input.role || "").toUpperCase();
+  if (role === "COMPANY" || role === "ADMIN") return true;
+
+  return false;
+}
+

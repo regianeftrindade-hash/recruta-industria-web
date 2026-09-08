@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 import { resolveAuthEmail } from "@/lib/auth/api-auth";
+import { hasAdminAccess } from "@/lib/auth/admin-auth";
 import { enforceApiRateLimit, getClientIp } from "@/lib/security/api-guard";
 import {
+  canSignMediaPath,
   createSignedMediaUrl,
   extractStoragePath,
   isPublicMediaFolder,
@@ -10,7 +13,7 @@ import {
 /**
  * Renova URL assinada de um arquivo no storage.
  * Pastas públicas (avatars/logos) não exigem login.
- * Documentos exigem sessão.
+ * Documentos/vídeos exigem sessão + ownership (ou empresa/admin).
  */
 export async function GET(request: NextRequest) {
   try {
@@ -28,10 +31,30 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Path inválido" }, { status: 400 });
     }
 
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+    const auth = await resolveAuthEmail(request);
+    const isAdmin = hasAdminAccess({
+      isAdmin: token?.isAdmin === true,
+      email: auth?.email || (typeof token?.email === "string" ? token.email : null),
+      role: typeof token?.userType === "string" ? token.userType : null,
+    });
+
     if (!isPublicMediaFolder(path)) {
-      const auth = await resolveAuthEmail(request);
       if (!auth) {
         return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      }
+      const allowed = canSignMediaPath({
+        path,
+        email: auth.email,
+        userId: typeof token?.sub === "string" ? token.sub : null,
+        role: typeof token?.userType === "string" ? token.userType : null,
+        isAdmin,
+      });
+      if (!allowed) {
+        return NextResponse.json({ error: "Sem permissão para este arquivo" }, { status: 403 });
       }
     }
 

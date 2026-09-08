@@ -1,9 +1,14 @@
 import { prisma } from "@/lib/db";
+import { isRuntimeDdlEnabled } from "@/lib/infra/ensure-db-schema";
 
 let prefTableReady = false;
 
 export async function ensureCompanyPreferenceTable(): Promise<void> {
   if (prefTableReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    prefTableReady = true;
+    return;
+  }
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS "CompanyPreference" (
       "companyUserId" TEXT NOT NULL,

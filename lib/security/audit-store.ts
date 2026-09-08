@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { randomBytes } from "crypto";
+import { isRuntimeDdlEnabled } from "@/lib/infra/ensure-db-schema";
 
 export type AuditResult = "success" | "failure";
 
@@ -19,6 +20,10 @@ let tableReady = false;
 
 export async function ensureSecurityAuditTable(): Promise<void> {
   if (tableReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    tableReady = true;
+    return;
+  }
   try {
     await prisma.$executeRawUnsafe(`
       CREATE TABLE IF NOT EXISTS "SecurityAuditLog" (

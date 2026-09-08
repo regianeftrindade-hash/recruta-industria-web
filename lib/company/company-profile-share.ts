@@ -5,6 +5,7 @@ import {
   listActiveTeamPeers,
   resolveCompanyActor,
 } from "@/lib/company/company-team";
+import { isRuntimeDdlEnabled } from "@/lib/infra/ensure-db-schema";
 
 export type ProfileShareDTO = {
   id: string;
@@ -34,6 +35,10 @@ let shareTableReady = false;
 
 export async function ensureCompanyProfileShareTable(): Promise<void> {
   if (shareTableReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    shareTableReady = true;
+    return;
+  }
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS "CompanyProfileShare" (
       "id" TEXT NOT NULL,
@@ -57,6 +62,7 @@ export async function ensureCompanyProfileShareTable(): Promise<void> {
 }
 
 async function ensureChatTable() {
+  if (!isRuntimeDdlEnabled()) return;
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS "CompanyChatMessage" (
       "id" TEXT NOT NULL,

@@ -1,5 +1,7 @@
 // Validações de segurança e sanitização de dados
 
+import { validatePasswordStrength as scorePasswordStrength } from "./password-strength";
+
 // CORS e Headers de Segurança
 function buildContentSecurityPolicy(): string {
   if (process.env.NODE_ENV === 'development') {
@@ -66,26 +68,34 @@ export function isValidEmail(email: string): boolean {
 // Validar força da senha
 export function validatePasswordStrength(password: string): {
   isStrong: boolean;
-  strength: 'weak' | 'medium' | 'strong';
+  strength: "weak" | "medium" | "strong";
   requirements: {
     minLength: boolean;
     hasUppercase: boolean;
     hasNumber: boolean;
     hasSymbol: boolean;
   };
+  feedback: string[];
 } {
+  // Política única com o cadastro (`password-strength.ts`).
+  const core = scorePasswordStrength(password);
+
   const requirements = {
     minLength: password.length >= 8,
     hasUppercase: /[A-Z]/.test(password),
     hasNumber: /[0-9]/.test(password),
-    hasSymbol: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    hasSymbol: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password),
   };
 
-  const fulfilledRequirements = Object.values(requirements).filter(Boolean).length;
-  const strength = fulfilledRequirements <= 2 ? 'weak' : fulfilledRequirements === 3 ? 'medium' : 'strong';
-  const isStrong = fulfilledRequirements >= 3;
+  const strength: "weak" | "medium" | "strong" =
+    core.score <= 1 ? "weak" : core.score === 2 ? "medium" : "strong";
 
-  return { isStrong, strength, requirements };
+  return {
+    isStrong: core.isStrong,
+    strength,
+    requirements,
+    feedback: core.feedback,
+  };
 }
 
 // Sanitizar entrada de texto (remover caracteres perigosos)

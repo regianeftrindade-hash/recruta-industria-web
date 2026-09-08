@@ -1,21 +1,11 @@
 import { prisma } from "@/lib/db";
+import { ensureUserLastSeenColumn } from "@/lib/infra/ensure-db-schema";
 
 /** Considera online se o heartbeat chegou nos últimos 2 minutos. */
 export const ONLINE_THRESHOLD_MS = 2 * 60 * 1000;
 
-let lastSeenColumnReady = false;
-
 export async function ensureLastSeenColumn(): Promise<void> {
-  if (lastSeenColumnReady) return;
-  try {
-    await prisma.$executeRawUnsafe(`
-      ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "lastSeenAt" TIMESTAMP(3)
-    `);
-    lastSeenColumnReady = true;
-  } catch (error) {
-    console.error("[presence] Falha ao garantir coluna lastSeenAt:", error);
-    throw error;
-  }
+  await ensureUserLastSeenColumn();
 }
 
 export function isOnlineFromLastSeen(lastSeenAt: Date | string | null | undefined): boolean {

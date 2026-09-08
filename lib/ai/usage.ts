@@ -1,11 +1,16 @@
 import { prisma } from "@/lib/db";
 import { AI_MONTHLY_LIMITS, AI_RATE_LIMIT } from "@/lib/ai/config";
 import type { AiCapabilityTier, AiUsageSnapshot } from "@/lib/ai/types";
+import { isRuntimeDdlEnabled } from "@/lib/infra/ensure-db-schema";
 
 let usageTableReady = false;
 
 export async function ensureAssistantUsageTable(): Promise<void> {
   if (usageTableReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    usageTableReady = true;
+    return;
+  }
   try {
     await prisma.$executeRawUnsafe(`
       CREATE TABLE IF NOT EXISTS "assistant_usage" (

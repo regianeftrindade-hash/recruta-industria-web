@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/db";
+import { isRuntimeDdlEnabled } from "@/lib/infra/ensure-db-schema";
 
 export type InterviewRatingDTO = {
   id: string;
@@ -25,6 +26,10 @@ let ratingTableReady = false;
 
 export async function ensureInterviewRatingTable(): Promise<void> {
   if (ratingTableReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    ratingTableReady = true;
+    return;
+  }
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS "InterviewRating" (
       "id" TEXT NOT NULL,

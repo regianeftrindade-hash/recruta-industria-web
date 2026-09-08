@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { prisma } from '@/lib/db';
 import { isEmailConfigured, sendEmail } from '@/lib/email';
 import { isValidEmail } from '@/lib/security';
+import { enforceApiRateLimit, getClientIp } from '@/lib/security/api-guard';
 
 const CODE_TTL_MS = 10 * 60 * 1000;
 const RESEND_COOLDOWN_MS = 60 * 1000;
@@ -58,6 +59,11 @@ async function sendVerificationEmail(email: string, code: string): Promise<boole
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    if (!(await enforceApiRateLimit(`send-verify:${ip}`, 8, 10 * 60 * 1000))) {
+      return NextResponse.json({ error: 'Muitas tentativas. Aguarde alguns minutos.' }, { status: 429 });
+    }
+
     const { email: rawEmail } = await req.json();
 
     if (!rawEmail || typeof rawEmail !== 'string') {

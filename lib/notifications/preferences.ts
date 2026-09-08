@@ -6,6 +6,7 @@
 
 import { prisma } from "@/lib/db";
 import { normalizePhoneE164 } from "@/lib/notifications/sanitize";
+import { isRuntimeDdlEnabled } from "@/lib/infra/ensure-db-schema";
 
 export type UserNotificationPreferences = {
   userId: string;
@@ -24,6 +25,10 @@ let prefTableReady = false;
 
 export async function ensureNotificationPreferenceTable(): Promise<void> {
   if (prefTableReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    prefTableReady = true;
+    return;
+  }
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS "user_notification_preferences" (
       "userId" TEXT NOT NULL,

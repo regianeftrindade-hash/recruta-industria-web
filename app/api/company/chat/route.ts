@@ -6,6 +6,7 @@ import {
   getCompanySubscriptionKey,
   resolveCompanyActor,
 } from "@/lib/company/company-team";
+import { isRuntimeDdlEnabled } from "@/lib/infra/ensure-db-schema";
 
 type ChatRow = {
   id: string;
@@ -20,6 +21,10 @@ let chatTableReady = false;
 
 async function ensureChatTable() {
   if (chatTableReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    chatTableReady = true;
+    return;
+  }
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS "CompanyChatMessage" (
       "id" TEXT NOT NULL,
