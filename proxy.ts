@@ -125,6 +125,24 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url, { status: 308 });
   }
 
+  // URLs antigas /company/profissional/... → sempre /company/professional/[id]
+  // Evita a página que chama /api/.../resolve ("Erro ao resolver perfil").
+  if (pathname.startsWith('/company/profissional/')) {
+    const rest = pathname.slice('/company/profissional/'.length).split('/')[0] || '';
+    const qid = request.nextUrl.searchParams.get('id') || '';
+    const cuidRe = /^c[a-z0-9]{20,}$/i;
+    const targetId = cuidRe.test(qid) ? qid : cuidRe.test(rest) ? rest : '';
+    const url = request.nextUrl.clone();
+    if (targetId) {
+      url.pathname = `/company/professional/${encodeURIComponent(targetId)}`;
+      url.search = '';
+      return NextResponse.redirect(url);
+    }
+    url.pathname = '/company/dashboard-empresa';
+    url.search = '';
+    return NextResponse.redirect(url);
+  }
+
   const protectedRoutes = [
     '/company/dashboard-empresa',
     '/professional/dashboard',

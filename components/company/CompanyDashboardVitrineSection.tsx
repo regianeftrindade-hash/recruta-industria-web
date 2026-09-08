@@ -17,7 +17,7 @@ import {
 
 export interface ProfissionalResumo {
   id: string;
-  /** Slug legível para URL (/company/profissional/...) */
+  /** Slug legível (exibição); abertura do perfil usa o id */
   slug?: string;
   nome: string;
   cargo: string;
@@ -534,7 +534,7 @@ export type CompanyDashboardVitrineSectionProps = {
   slotsRestantes: number | null;
   canExportProfiles?: boolean;
   unlockingId: string | null;
-  openProfile: (profileId: string, slug?: string) => void;
+  openProfile: (profileId: string) => void;
   handleUnlock: (profileId: string) => void;
   handleExportProfile: (profileId: string) => void;
   irParaPagina: (page: number) => void;

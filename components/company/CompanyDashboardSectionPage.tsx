@@ -13,7 +13,6 @@ import CompanyDashboardTabPanel, {
 import CompanyEntrevistasBoard from "@/components/company/CompanyEntrevistasBoard";
 import { useCompanyDashboardData } from "@/components/company/CompanyDashboardDataContext";
 import { useCompanyDashboardTab } from "@/components/company/CompanyDashboardTabContext";
-import { companyProfessionalPath } from "@/lib/profile/public-slug";
 
 /**
  * Conteúdo de uma aba (página inteira). Usa cache do layout — troca rápida.
@@ -118,8 +117,8 @@ export default function CompanyDashboardSectionPage({ tab }: { tab: CompanyDashb
     setActiveTab("inicio");
   };
 
-  const openProfile = (profileId: string, slug?: string) => {
-    router.push(companyProfessionalPath(slug || profileId, profileId));
+  const openProfile = (profileId: string) => {
+    router.push(`/company/professional/${encodeURIComponent(profileId)}`);
   };
 
   const bypass = matchesCompanyTestBypass({

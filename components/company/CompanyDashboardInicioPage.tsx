@@ -22,7 +22,6 @@ import {
 import type { CompanyPlanTier } from "@/lib/company-premium-plans";
 import type { CompanyVerificationStatus } from "@/lib/company/company-verification";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
-import { companyProfessionalPath } from "@/lib/profile/public-slug";
 import "@/app/dashboard/dashboard-theme.css";
 import {
   DASH,
@@ -276,8 +275,8 @@ export default function CompanyDashboardInicioPage() {
     }
   };
 
-  const openProfile = (profileId: string, slug?: string) => {
-    router.push(companyProfessionalPath(slug || profileId, profileId));
+  const openProfile = (profileId: string) => {
+    router.push(`/company/professional/${encodeURIComponent(profileId)}`);
   };
 
   const advancedFilterDisabled = planLoaded && !planFeatures.canUseAdvancedFilters;

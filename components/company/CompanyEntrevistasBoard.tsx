@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DASH, dashCard, dashInnerBox, dashSectionTitle } from "@/lib/dashboard-theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
-import { companyProfessionalPath } from "@/lib/profile/public-slug";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
 import { AVISO_RETENCAO_PROPOSTAS } from "@/lib/profile/inbox-retention";
 import { formatReaisDisplay, turnoPropostaLabel } from "@/lib/format-reais";
@@ -326,7 +325,7 @@ export default function CompanyEntrevistasBoard() {
         <div style={{ display: "flex", gap: 6, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
           <button
             type="button"
-            onClick={() => router.push(companyProfessionalPath(p.profileId, p.profileId))}
+            onClick={() => router.push(`/company/professional/${encodeURIComponent(p.profileId)}`)}
             style={{ ...btnGold, padding: "5px 8px", fontSize: 10 }}
           >
             Perfil
@@ -411,7 +410,7 @@ export default function CompanyEntrevistasBoard() {
         </div>
         <button
           type="button"
-          onClick={() => router.push(companyProfessionalPath(p.profileId, p.profileId))}
+          onClick={() => router.push(`/company/professional/${encodeURIComponent(p.profileId)}`)}
           style={{ ...btnGhost, flexShrink: 0 }}
         >
           Perfil
@@ -480,7 +479,7 @@ export default function CompanyEntrevistasBoard() {
                     onSetRescheduleForm={setRescheduleForm}
                     onCancelarComJustificativa={() => void cancelarComJustificativa(p.id)}
                     onReagendar={() => void reagendar(p.id)}
-                    onPerfil={() => router.push(companyProfessionalPath(p.profileId, p.profileId))}
+                    onPerfil={() => router.push(`/company/professional/${encodeURIComponent(p.profileId)}`)}
                   />
                 ))}
               </div>

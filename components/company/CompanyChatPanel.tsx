@@ -4,7 +4,6 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import { DASH, dashInnerBox } from "@/lib/dashboard-theme";
-import { companyProfessionalPath } from "@/lib/profile/public-slug";
 
 type RhMember = {
   id: string;
@@ -81,7 +80,7 @@ export function CompanyChatPanel() {
         body: JSON.stringify({ shareId: share.id }),
       }).then(() => void loadShares());
     }
-    router.push(companyProfessionalPath(share.profileId, share.profileId));
+    router.push(`/company/professional/${encodeURIComponent(share.profileId)}`);
   };
 
   const postChatMessage = async (text: string) => {
