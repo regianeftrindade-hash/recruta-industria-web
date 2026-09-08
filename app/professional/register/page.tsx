@@ -36,6 +36,7 @@ import { SOBRE_MIM_VAZIO, truncarSobreMim, type SobreMimData } from '@/lib/sobre
 import { validarCamposObrigatoriosCadastro, type CampoObrigatorioFalta, type ValidacaoCadastroInput } from '@/lib/professional/cadastro-obrigatorios';
 import { useCampoObrigatorioErro } from './useCampoObrigatorioErro';
 import RegisterExtendedSections from './RegisterExtendedSections';
+import RegisterWizardChrome, { REGISTER_WIZARD_STEPS } from './RegisterWizardChrome';
 import RegisterCollapsibleSection from '@/components/ui/RegisterCollapsibleSection';
 import PageLoader from '@/app/components/PageLoader';
 import {
@@ -439,6 +440,10 @@ export default function CadastroProfissional() {
     { nome: '', cargo: '', segmento: '', dataInicio: '', dataFim: '', descricao: '' }
   ]);
   const [sobreMim, setSobreMim] = useState<SobreMimData>(SOBRE_MIM_VAZIO);
+  const [wizardStep, setWizardStep] = useState(0);
+  const useWizard = !isEditMode;
+  const showWizardStep = (n: number) => !useWizard || wizardStep === n;
+  const lastWizardStep = REGISTER_WIZARD_STEPS.length - 1;
 
   const [formData, setFormData] = useState({
     nome: '', dataNascimento: '', idade: '', sexoBiologico: '', identidadeGenero: '', orientacaoSexual: '', estadoCivil: '', religiao: '', antecedentes: '',
@@ -1287,14 +1292,20 @@ export default function CadastroProfissional() {
         </div>
         {!isEditMode && (
           <p className={styles.formHint}>
-            Comece pelos campos com marcador <strong>obrigatório</strong>. Seções
-            recomendadas (máquinas, qualidade, informática) e Filhos ficam
-            recolhidas — abra quando quiser completar o perfil.
+            Cadastro em 4 etapas. Comece pelos campos com marcador{" "}
+            <strong>obrigatório</strong>. Seções recomendadas ficam recolhidas —
+            abra quando quiser completar o perfil.
           </p>
+        )}
+
+        {useWizard && (
+          <RegisterWizardChrome step={wizardStep} onStepChange={setWizardStep} />
         )}
 
         <form onSubmit={handleSubmit} className={styles.form} noValidate>
 
+          {showWizardStep(0) && (
+          <>
           <CampoFotoPerfil
             centered
             value={formData.fotoPerfil}
@@ -1960,7 +1971,11 @@ export default function CadastroProfissional() {
               </div>
             </div>
           </section>
+          </>
+          )}
 
+          {showWizardStep(1) && (
+          <>
           <section className={styles.sectionCard}>
             <RegisterSectionHeader emoji="🎓" title="Formação" />
 
@@ -2679,7 +2694,11 @@ export default function CadastroProfissional() {
               </>
             )}
           </section>
+          </>
+          )}
 
+          {showWizardStep(2) && (
+          <>
           <RegisterExtendedSections
             formData={formData}
             setFormData={setFormData as React.Dispatch<React.SetStateAction<import('./RegisterExtendedSections').ExtendedFormFields & Record<string, unknown>>>}
@@ -2708,7 +2727,11 @@ export default function CadastroProfissional() {
               <RegisterSobreMimFields value={sobreMim} onChange={atualizarSobreMim} />
             </div>
           </section>
+          </>
+          )}
 
+          {showWizardStep(3) && (
+          <>
           <section className={styles.sectionCard}>
             <RegisterSectionHeader emoji="📄" title="Currículo" />
 
@@ -2794,7 +2817,7 @@ export default function CadastroProfissional() {
             </div>
           </section>
 
-          {camposObrigatoriosFaltando.length > 0 && (
+          {(!useWizard || wizardStep === lastWizardStep) && camposObrigatoriosFaltando.length > 0 && (
             <div id="aviso-obrigatorios" className={styles.avisoObrigatoriosCard} role="alert" aria-live="polite">
               <p className={styles.avisoObrigatoriosTitulo}>
                 Preencha todos os campos obrigatórios antes de salvar:
@@ -2807,11 +2830,15 @@ export default function CadastroProfissional() {
             </div>
           )}
 
+          {(!useWizard || wizardStep === lastWizardStep) && (
           <div className={styles.submitBtnRow}>
             <button type="submit" className={styles.submitBtn}>
               {isEditMode ? 'Salvar alterações' : 'Finalizar meu cadastro'}
             </button>
           </div>
+          )}
+          </>
+          )}
         </form>
       </div>
     </div>

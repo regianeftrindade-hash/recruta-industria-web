@@ -117,9 +117,8 @@ export const dashInnerBox: CSSProperties = {
 export const dashSectionTitle: CSSProperties = {
   color: DASH.title,
   fontWeight: 700,
-  textDecoration: "underline",
-  textUnderlineOffset: 3,
-  textDecorationThickness: "1px",
+  textDecoration: "none",
+  letterSpacing: "0.01em",
 };
 
 export const dashLabel: CSSProperties = {

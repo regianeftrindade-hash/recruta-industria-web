@@ -11,6 +11,7 @@ import styles from '@/app/professional/register/register.module.css';
 import { matchesCompanyTestBypass } from '@/lib/company/company-test-bypass-shared';
 import { AuthAtmosphere } from '@/components/shared/AuthAtmosphere';
 import LogoRecruta from '@/app/components/LogoRecruta';
+import RegisterCollapsibleSection from '@/components/ui/RegisterCollapsibleSection';
 
 const twoCols = { '--fields-per-row': '2' } as React.CSSProperties;
 
@@ -776,6 +777,7 @@ function CadastroEmpresaContent() {
             </div>
           )}
 
+          <RegisterCollapsibleSection emoji="🏭" title="Dados da empresa" defaultOpen>
           <div className={styles.fieldsRow} style={twoCols}>
             <div>
               <label className={styles.label}>CNPJ {isTestBypass ? '' : '*'}</label>
@@ -813,7 +815,11 @@ function CadastroEmpresaContent() {
               {cpfError && <small style={{ color: '#dc3545' }}>{cpfError}</small>}
               {cpfValidado && !cpfError && <small style={{ color: '#C89B3C' }}>✓ CPF válido</small>}
             </div>
+          </div>
+          </RegisterCollapsibleSection>
 
+          <RegisterCollapsibleSection emoji="📞" title="Contato e acesso" defaultOpen>
+          <div className={styles.fieldsRow} style={twoCols}>
             {usuarioLogado ? (
               <div>
                 <label className={styles.label}>E-MAIL DE LOGIN</label>
@@ -925,7 +931,10 @@ function CadastroEmpresaContent() {
                 required={!isTestBypass}
               />
             </div>
+          </div>
+          </RegisterCollapsibleSection>
 
+          <RegisterCollapsibleSection emoji="📄" title="Documentos" marcador="recomendado" defaultOpen={false}>
             <div>
               <label className={styles.label}>CARTÃO CNPJ (opcional)</label>
               <div className={styles.anexoCampoInline}>
@@ -962,9 +971,11 @@ function CadastroEmpresaContent() {
                 </small>
               )}
             </div>
+          </RegisterCollapsibleSection>
 
-            {!usuarioLogado && (
-              <>
+          {!usuarioLogado && (
+            <RegisterCollapsibleSection emoji="🔐" title="Senha de acesso" defaultOpen>
+              <div className={styles.fieldsRow} style={twoCols}>
                 <div>
                   <label className={styles.label}>SENHA {isTestBypass ? '' : '*'}</label>
                   <input type="password" className={styles.input} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} required={!isTestBypass} minLength={isTestBypass ? undefined : 8} />
@@ -976,9 +987,9 @@ function CadastroEmpresaContent() {
                   <label className={styles.label}>CONFIRMAR SENHA {isTestBypass ? '' : '*'}</label>
                   <input type="password" className={styles.input} value={formData.confirmPassword} onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} required={!isTestBypass} minLength={isTestBypass ? undefined : 8} />
                 </div>
-              </>
-            )}
-          </div>
+              </div>
+            </RegisterCollapsibleSection>
+          )}
 
           <div className={styles.submitBtnRow}>
             <button

@@ -1301,16 +1301,16 @@ export default function CompanyDashboardInicioPage() {
             </div>
           )}
 
-          <div style={{ padding: "20px 24px", minWidth: 0 }}>
+          <div style={{ padding: "4px 2px 8px", minWidth: 0 }}>
           {planFeatures.canViewDashboardStats && dashboardStats && (
             <>
-              <h3 style={{ ...dashSectionTitle, margin: "0 0 10px", fontSize: 14 }}>📊 Dashboard de recrutamento</h3>
+              <h3 style={{ ...dashSectionTitle, margin: "0 0 8px", fontSize: 14 }}>Dashboard de recrutamento</h3>
               <DashboardStatsBar stats={dashboardStats} />
             </>
           )}
 
-          <section style={{ marginBottom: 20 }}>
-            <h3 style={{ ...dashSectionTitle, margin: "0 0 10px", fontSize: 14 }}>🔍 Busca rápida</h3>
+          <section style={{ marginBottom: 16 }}>
+            <h3 style={{ ...dashSectionTitle, margin: "0 0 8px", fontSize: 14 }}>Busca rápida</h3>
             <div data-card="1" className="dash-card" style={{ padding: 12, ...dashCard }}>
               <div style={filtersGridStyle}>
                 <div style={filterFieldStyle}>
@@ -1611,10 +1611,10 @@ export default function CompanyDashboardInicioPage() {
           )}
 
           <section ref={vitrinePerfisRef} style={{ marginBottom: 16 }}>
-            <h2 style={{ ...dashSectionTitle, margin: "0 0 10px", fontSize: 16, color: DASH.gold }}>
+            <h2 style={{ ...dashSectionTitle, margin: "0 0 10px", fontSize: 16 }}>
               {vitrineListaNome
-                ? `📁 Banco de talentos — ${vitrineListaNome}`
-                : "👥 Profissionais na vitrine"}
+                ? `Banco de talentos — ${vitrineListaNome}`
+                : "Profissionais na vitrine"}
               {buscaRealizada ? ` (${paginacao.total || totalEncontrados})` : ""}
             </h2>
 
@@ -1646,8 +1646,8 @@ export default function CompanyDashboardInicioPage() {
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-                    gap: 14,
+                    gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+                    gap: 10,
                     alignContent: "start",
                   }}
                 >
