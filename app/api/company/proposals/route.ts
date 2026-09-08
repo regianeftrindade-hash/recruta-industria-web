@@ -100,10 +100,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Perfil não encontrado" }, { status: 404 });
     }
 
+    const ownerUserId = plan.ownerUserId || companyUser.id;
+
     const unlocked = await prisma.accessRecord.findFirst({
       where: {
         profileId,
-        companyUserId: companyUser.id,
+        companyUserId: ownerUserId,
         status: "ACTIVE",
         expiresAt: { gt: new Date() },
       },
@@ -118,7 +120,7 @@ export async function POST(request: NextRequest) {
     const companyName = companyUser.company?.name || companyUser.name || "Empresa";
     const proposal = await createJobProposal({
       profileId,
-      companyUserId: companyUser.id,
+      companyUserId: ownerUserId,
       companyName,
       cargo,
       salario,

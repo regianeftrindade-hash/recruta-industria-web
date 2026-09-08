@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { DASH, dashCard, dashSectionTitle } from "@/lib/dashboard-theme";
 import type { JobProposalDTO, InterviewLocationType } from "@/lib/company/job-proposals-shared";
 import { formatInterviewComprovante } from "@/lib/company/job-proposals-shared";
@@ -39,6 +39,14 @@ export default function PropostasEntrevistasEmpresa({
 }: Props) {
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+
+  // Se há entrevista aguardando, atualiza para ver confirmação do profissional
+  useEffect(() => {
+    const pending = proposals.some((p) => p.status === "INTERVIEW_PENDING");
+    if (!pending) return;
+    const id = window.setInterval(() => onChanged(), 20_000);
+    return () => window.clearInterval(id);
+  }, [proposals, onChanged]);
 
   const [schedulingId, setSchedulingId] = useState<string | null>(null);
   const [interviewForm, setInterviewForm] = useState({

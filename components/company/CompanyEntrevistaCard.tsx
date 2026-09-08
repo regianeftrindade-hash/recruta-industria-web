@@ -164,8 +164,26 @@ export default function CompanyEntrevistaCard({
             <strong style={{ color: DASH.gold }}>Observação:</strong> {p.interview.observacoes.trim()}
           </p>
         ) : null}
-        <p style={{ margin: "4px 0 0", fontSize: 9, color: DASH.muted }}>
-          {p.status === "INTERVIEW_CONFIRMED" ? "Confirmada pelo profissional" : "Aguardando confirmação"}
+        <p
+          style={{
+            margin: "6px 0 0",
+            fontSize: 11,
+            fontWeight: 800,
+            display: "inline-block",
+            padding: "3px 8px",
+            borderRadius: 6,
+            color: p.status === "INTERVIEW_CONFIRMED" ? "#1b3d1b" : DASH.muted,
+            background:
+              p.status === "INTERVIEW_CONFIRMED" ? "rgba(139,195,74,0.35)" : "rgba(255,255,255,0.06)",
+            border:
+              p.status === "INTERVIEW_CONFIRMED"
+                ? "1px solid rgba(139,195,74,0.65)"
+                : `1px solid ${DASH.border}`,
+          }}
+        >
+          {p.status === "INTERVIEW_CONFIRMED"
+            ? "✓ Confirmada pelo profissional"
+            : "Aguardando confirmação do profissional"}
         </p>
       </div>
       <div

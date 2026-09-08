@@ -454,7 +454,15 @@ export async function listScheduledInterviewsForCompany(
     INNER JOIN "JobInterview" i ON i."proposalId" = p.id
     INNER JOIN "Profile" pr ON pr.id = p."profileId"
     LEFT JOIN "User" u ON u.id = pr."userId"
-    WHERE p."companyUserId" = $1
+    WHERE (
+      p."companyUserId" = $1
+      OR p."companyUserId" IN (
+        SELECT "memberUserId" FROM "CompanyTeamMember"
+        WHERE "companyOwnerUserId" = $1
+          AND status = 'ACTIVE'
+          AND "memberUserId" IS NOT NULL
+      )
+    )
       AND p.status IN ('INTERVIEW_PENDING', 'INTERVIEW_CONFIRMED')
       AND i.status IN ('PENDING', 'CONFIRMED')
     ORDER BY i."scheduledAt" ASC`,

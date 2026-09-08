@@ -375,22 +375,55 @@ export async function notifyCompanyInterviewResponse(params: {
   professionalName: string;
   confirmed: boolean;
   comprovanteText: string;
+  profileId?: string;
+  proposalId?: string;
 }): Promise<void> {
-  const user = await prisma.user.findUnique({
-    where: { id: params.companyUserId },
-    select: { email: true, name: true },
-  });
-  if (!user?.email) return;
+  const { resolveCompanyOwnerUserId } = await import("@/lib/company/company-team");
+  const ownerId =
+    (await resolveCompanyOwnerUserId(params.companyUserId)) || params.companyUserId;
+  const recipientIds = [...new Set([params.companyUserId, ownerId].filter(Boolean))];
 
-  const companyDash = `${appBaseUrl()}/company/dashboard-empresa`;
   const title = params.confirmed
     ? "Profissional confirmou a entrevista"
     : "Profissional recusou a entrevista";
+  const body = params.confirmed
+    ? `${params.professionalName} confirmou a entrevista. Veja em Entrevistas.`
+    : `${params.professionalName} recusou a entrevista.`;
+  const href = "/company/dashboard-empresa?tab=entrevistas";
+  const companyDash = `${appBaseUrl()}${href}`;
 
-  await sendEmail({
-    to: user.email,
-    subject: `${title} — Recruta Indústria`,
-    html: `
+  for (const userId of recipientIds) {
+    try {
+      await prisma.notification.create({
+        data: {
+          userId,
+          type: params.confirmed
+            ? "interview_confirmed_by_professional"
+            : "interview_declined_by_professional",
+          title,
+          body,
+          href,
+          metadata: JSON.stringify({
+            profileId: params.profileId || null,
+            proposalId: params.proposalId || null,
+            confirmed: params.confirmed,
+          }),
+        },
+      });
+    } catch (err) {
+      console.warn("[notifyCompanyInterviewResponse] in-app", err);
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, name: true },
+    });
+    if (!user?.email) continue;
+
+    await sendEmail({
+      to: user.email,
+      subject: `${title} — Recruta Indústria`,
+      html: `
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head><meta charset="utf-8"></head>
@@ -398,11 +431,12 @@ export async function notifyCompanyInterviewResponse(params: {
   <h2 style="color: #b8860b; margin-top: 0;">${escapeHtml(title)}</h2>
   <p><strong>${escapeHtml(params.professionalName)}</strong> ${params.confirmed ? "confirmou" : "recusou"} a entrevista.</p>
   <pre style="white-space:pre-wrap;background:#fafafa;padding:12px;border-radius:6px;">${escapeHtml(params.comprovanteText)}</pre>
-  <p><a href="${companyDash}" style="display:inline-block;background:#b8860b;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;">Abrir painel da empresa</a></p>
+  <p><a href="${companyDash}" style="display:inline-block;background:#b8860b;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;">Abrir entrevistas no painel</a></p>
 </body>
 </html>`,
-    text: `${title}. ${params.professionalName}.\n\n${params.comprovanteText}\n\n${companyDash}`,
-  });
+      text: `${title}. ${params.professionalName}.\n\n${params.comprovanteText}\n\n${companyDash}`,
+    });
+  }
 }
 
 export async function notifyCompanyInterviewCancelledByProfessional(params: {

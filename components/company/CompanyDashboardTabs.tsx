@@ -315,8 +315,18 @@ export default function CompanyDashboardTabPanel({
                 <p style={{ margin: "0 0 2px", fontSize: 13, fontWeight: 700, color: DASH.gold }}>
                   {dataLabel} · {horaLabel}
                 </p>
-                <p style={{ margin: "8px 0 0", fontSize: 10, color: DASH.muted }}>
-                  {ev.interviewStatus === "CONFIRMED" ? "Confirmada" : "Aguardando confirmação"} · clique para abrir o perfil
+                <p
+                  style={{
+                    margin: "8px 0 0",
+                    fontSize: 11,
+                    fontWeight: 800,
+                    color: ev.interviewStatus === "CONFIRMED" ? "#8bc34a" : DASH.muted,
+                  }}
+                >
+                  {ev.interviewStatus === "CONFIRMED"
+                    ? "✓ Confirmada pelo profissional"
+                    : "Aguardando confirmação"}{" "}
+                  · clique para abrir o perfil
                 </p>
               </button>
             );

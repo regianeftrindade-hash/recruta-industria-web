@@ -74,6 +74,8 @@ export async function POST(
         professionalName: user.name || "Profissional",
         confirmed: action === "CONFIRM",
         comprovanteText: comprovante.text,
+        profileId: proposal.profileId,
+        proposalId: proposal.id,
       }),
     );
 

@@ -13,8 +13,12 @@ import {
   CompanyDashboardDataProvider,
   useCompanyDashboardData,
 } from "@/components/company/CompanyDashboardDataContext";
-import { CompanyDashboardTabProvider } from "@/components/company/CompanyDashboardTabContext";
+import {
+  CompanyDashboardTabProvider,
+  useCompanyDashboardTab,
+} from "@/components/company/CompanyDashboardTabContext";
 import CompanyDashboardTabContent from "@/components/company/CompanyDashboardTabContent";
+import CompanyInterviewConfirmBanner from "@/components/company/CompanyInterviewConfirmBanner";
 import { matchesCompanyTestBypass } from "@/lib/company/company-test-bypass-shared";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import {
@@ -43,7 +47,8 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
   const router = useRouter();
   const { data: session, status } = useSession();
   const dash = useCompanyDashboardData();
-  const { refreshChrome, planReady, planTier, ensureChrome } = dash;
+  const { setActiveTab } = useCompanyDashboardTab();
+  const { refreshChrome, planReady, planTier, ensureChrome, refreshTabData } = dash;
   const [mounted, setMounted] = useState(false);
   const [anonymousMode, setAnonymousMode] = useState(false);
   const [savingAnonMode, setSavingAnonMode] = useState(false);
@@ -189,6 +194,13 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
           <CompanyDashboardNav badges={navBadges} />
         </div>
       </header>
+
+      <CompanyInterviewConfirmBanner
+        onOpenEntrevistas={() => {
+          setActiveTab("entrevistas");
+          void refreshTabData("entrevistas");
+        }}
+      />
 
       <CompanyDashboardTabContent />
     </DashboardThemeShell>

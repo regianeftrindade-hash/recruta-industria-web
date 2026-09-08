@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { CompanyAlert, TalentList } from "@/app/components/CompanyDashboardTools";
 import type {
   CompanyDashboardTabId,
@@ -73,7 +73,7 @@ type Ctx = DashData & {
   hasTabData: (tab: CompanyDashboardTabId) => boolean;
   ensureChrome: () => Promise<void>;
   refreshChrome: () => Promise<void>;
-  getBadges: () => { entrevistas: number; alertas: number };
+  getBadges: () => { entrevistas: number; alertas: number; confirmadas: number };
 };
 
 const EMPTY: DashData = {
@@ -306,11 +306,23 @@ export function CompanyDashboardDataProvider({ children }: { children: React.Rea
   }, [ensureSlices]);
 
   const getBadges = useCallback(() => {
+    const confirmadas = data.entrevistas.filter((e) => e.interviewStatus === "CONFIRMED").length;
     return {
       entrevistas: data.entrevistas.length,
       alertas: data.alerts.reduce((acc, a) => acc + (a.newMatches?.length || 0), 0),
+      confirmadas,
     };
-  }, [data.alerts, data.entrevistas.length]);
+  }, [data.alerts, data.entrevistas]);
+
+  // Atualiza entrevistas periodicamente para a empresa ver confirmação sem F5
+  useEffect(() => {
+    const tick = () => {
+      loadedRef.current.delete("entrevistas");
+      void mergeSlice("entrevistas", true);
+    };
+    const id = window.setInterval(tick, 30_000);
+    return () => window.clearInterval(id);
+  }, [mergeSlice]);
 
   const value = useMemo<Ctx>(
     () => ({
