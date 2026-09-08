@@ -69,4 +69,20 @@ describe("mergeProposalFunnel / parseProposalFunnelPatch", () => {
       parseProposalFunnelPatch({ contatado: true, entrevistaCancelada: false, extra: null }),
     ).toEqual({ contatado: true, entrevistaCancelada: false });
   });
+
+  it("no mesmo patch com ambos true, exclusão mútua zera os dois", () => {
+    // contratado true limpa naoContratado; depois naoContratado true limpa contratado
+    const next = mergeProposalFunnel(EMPTY_PROPOSAL_TRACKING, {
+      contratado: true,
+      naoContratado: true,
+    });
+    expect(next.contratado).toBe(false);
+    expect(next.naoContratado).toBe(false);
+  });
+
+  it("parse trata corpo não-objeto como patch vazio", () => {
+    expect(parseProposalFunnelPatch("contratado")).toEqual({});
+    expect(parseProposalFunnelPatch([true])).toEqual({});
+    expect(parseProposalFunnelPatch(undefined)).toEqual({});
+  });
 });

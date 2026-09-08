@@ -232,4 +232,161 @@ describe("fluxo proposta → entrevista", () => {
     expect(() => assertInterviewRespondRules("CONFIRMED")).toThrow("INTERVIEW_NOT_PENDING");
     expect(() => assertInterviewRespondRules("CANCELLED")).toThrow("INTERVIEW_NOT_PENDING");
   });
+
+  it("INTERVIEW_PENDING sem interview não entra em entrevistas; INTERESTED ignora flags de funil", () => {
+    const pendenteSemInterview = proposta({ status: "INTERVIEW_PENDING", interview: null });
+    expect(isEntrevista(pendenteSemInterview)).toBe(false);
+    expect(isArquivada(pendenteSemInterview)).toBe(false);
+    expect(isPropostaAtiva(pendenteSemInterview)).toBe(false);
+
+    const interessada = proposta({
+      status: "INTERESTED",
+      tracking: {
+        ...EMPTY_PROPOSAL_TRACKING,
+        contratado: true,
+        naoContratado: true,
+        entrevistaCancelada: true,
+      },
+    });
+    expect(isArquivada(interessada)).toBe(false);
+    expect(isPropostaAtiva(interessada)).toBe(true);
+    expect(isEntrevista(interessada)).toBe(false);
+  });
+
+  it("arquiva por interview CANCELLED, naoContratado ou entrevistaCancelada; tracking ausente não quebra", () => {
+    const canceladaNoInterview = proposta({
+      status: "INTERVIEW_CONFIRMED",
+      interview: {
+        id: "i1",
+        scheduledAt: "2026-09-15T14:00:00.000Z",
+        locationType: "PLATFORM",
+        address: null,
+        meetingUrl: null,
+        observacoes: "",
+        status: "CANCELLED",
+      },
+    });
+    expect(isArquivada(canceladaNoInterview)).toBe(true);
+    expect(isEntrevista(canceladaNoInterview)).toBe(false);
+
+    expect(
+      isArquivada(
+        proposta({
+          status: "INTERVIEW_CONFIRMED",
+          interview: {
+            id: "i2",
+            scheduledAt: "2026-09-15T14:00:00.000Z",
+            locationType: "PLATFORM",
+            address: null,
+            meetingUrl: null,
+            observacoes: "",
+            status: "CONFIRMED",
+          },
+          tracking: { ...EMPTY_PROPOSAL_TRACKING, naoContratado: true },
+        }),
+      ),
+    ).toBe(true);
+
+    expect(
+      isArquivada(
+        proposta({
+          status: "INTERVIEW_PENDING",
+          interview: {
+            id: "i3",
+            scheduledAt: "2026-09-15T14:00:00.000Z",
+            locationType: "ONLINE",
+            address: null,
+            meetingUrl: "https://meet.example.com/x",
+            observacoes: "",
+            status: "PENDING",
+          },
+          tracking: { ...EMPTY_PROPOSAL_TRACKING, entrevistaCancelada: true },
+        }),
+      ),
+    ).toBe(true);
+
+    const semTracking = {
+      ...proposta({ status: "INTERVIEW_CONFIRMED" }),
+      tracking: undefined,
+    } as unknown as JobProposalDTO;
+    expect(isArquivada(semTracking)).toBe(false);
+  });
+
+  it("reagendamento: trim em URL/endereço ok; locationType vazio; ONLINE/PRESENTIAL sem campo falha", () => {
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "INTERVIEW_CANCELLED",
+        locationType: "ONLINE",
+        meetingUrl: "  https://meet.example.com/sala  ",
+      }),
+    ).not.toThrow();
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "INTERVIEW_PENDING",
+        locationType: "PRESENTIAL",
+        address: "  Rua B, 2  ",
+      }),
+    ).not.toThrow();
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "INTERESTED",
+        locationType: "PLATFORM",
+        meetingUrl: undefined,
+        address: undefined,
+      }),
+    ).not.toThrow();
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "INTERESTED",
+        locationType: "",
+      }),
+    ).toThrow("INVALID_LOCATION_TYPE");
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "INTERESTED",
+        locationType: "ONLINE",
+      }),
+    ).toThrow("MEETING_URL_REQUIRED");
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "INTERESTED",
+        locationType: "PRESENTIAL",
+      }),
+    ).toThrow("ADDRESS_REQUIRED");
+  });
+
+  it("comprovante: PLATFORM, fallbacks, escape HTML, Date e obs vazia", () => {
+    const platform = formatInterviewComprovante({
+      companyName: "Metalúrgica X",
+      scheduledAt: new Date("2026-09-15T14:00:00.000Z"),
+      locationType: "PLATFORM",
+      address: null,
+      meetingUrl: null,
+      observacoes: "   ",
+    });
+    expect(platform.localLabel).toMatch(/plataforma/i);
+    expect(platform.text).not.toContain("Observações:");
+    expect(platform.html).not.toContain("Observações:");
+
+    const onlineSemLink = formatInterviewComprovante({
+      companyName: "A & B <Corp>",
+      scheduledAt: "2026-09-15T14:00:00.000Z",
+      locationType: "ONLINE",
+      meetingUrl: "  ",
+      observacoes: 'Cuidado com "aspas"',
+    });
+    expect(onlineSemLink.localLabel).toContain("link a confirmar");
+    expect(onlineSemLink.html).toContain("A &amp; B &lt;Corp&gt;");
+    expect(onlineSemLink.html).toContain("&quot;aspas&quot;");
+    expect(onlineSemLink.text).toContain("Observações:");
+
+    const presencialSemEndereco = formatInterviewComprovante({
+      companyName: "Metalúrgica X",
+      scheduledAt: "2026-09-15T14:00:00.000Z",
+      locationType: "PRESENTIAL",
+      address: null,
+      observacoes: "",
+    });
+    expect(presencialSemEndereco.localLabel).toContain("endereço a confirmar");
+  });
 });

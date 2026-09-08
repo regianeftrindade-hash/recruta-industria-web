@@ -15,13 +15,18 @@ test.describe("smoke público", () => {
     await expect(page.getByText(/acesso empresa|empresa/i).first()).toBeVisible();
   });
 
-  test("cadastro profissional mostra etapas", async ({ page }) => {
+  test("cadastro profissional mostra etapas e valida antes de avançar", async ({ page }) => {
     await page.goto("/professional/register");
     await expect(page.getByRole("heading", { name: /cadastro do profissional/i })).toBeVisible();
     await expect(page.getByLabel(/etapas do cadastro/i)).toBeVisible();
     await expect(page.getByRole("button", { name: /continuar/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /voltar/i })).toBeDisabled();
     await page.getByRole("button", { name: /continuar/i }).click();
-    await expect(page.getByRole("button", { name: /voltar/i })).toBeEnabled();
+    // Sem preencher a etapa, Continuar não avança — mostra o aviso e Voltar segue desabilitado.
+    await expect(page.getByText(/complete os obrigatórios|obrigatórios desta etapa/i).first()).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(page.getByRole("button", { name: /voltar/i })).toBeDisabled();
   });
 
   test("cadastro empresa tem seções recolhíveis", async ({ page }) => {
