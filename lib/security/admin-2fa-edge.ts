@@ -8,11 +8,11 @@ function secret(): string {
 }
 
 /** Em produção, 2FA admin liga por padrão. Desligue com ENABLE_ADMIN_2FA=false. */
-export function isAdmin2faRequired(): boolean {
-  const flag = process.env.ENABLE_ADMIN_2FA?.trim().toLowerCase();
+export function isAdmin2faRequired(env: NodeJS.ProcessEnv = process.env): boolean {
+  const flag = env.ENABLE_ADMIN_2FA?.trim().toLowerCase();
   if (flag === "false" || flag === "0") return false;
   if (flag === "true" || flag === "1") return true;
-  return process.env.NODE_ENV === "production";
+  return env.NODE_ENV === "production";
 }
 
 export function createAdmin2faToken(email: string): string {

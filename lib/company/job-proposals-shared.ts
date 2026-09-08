@@ -11,6 +11,45 @@ export type ProposalStatus =
 export type InterviewLocationType = "PRESENTIAL" | "ONLINE" | "PLATFORM";
 export type InterviewStatus = "PENDING" | "CONFIRMED" | "DECLINED" | "CANCELLED";
 
+const SCHEDULABLE_STATUSES: ProposalStatus[] = [
+  "INTERESTED",
+  "INTERVIEW_PENDING",
+  "INTERVIEW_CONFIRMED",
+  "INTERVIEW_CANCELLED",
+];
+
+/** Valida regras de agendamento sem tocar no banco. */
+export function assertInterviewScheduleRules(input: {
+  proposalStatus: ProposalStatus;
+  locationType: string;
+  meetingUrl?: string;
+  address?: string;
+}): void {
+  if (!SCHEDULABLE_STATUSES.includes(input.proposalStatus)) {
+    throw new Error("PROPOSAL_NOT_SCHEDULABLE");
+  }
+  if (input.locationType === "ONLINE" && !String(input.meetingUrl || "").trim()) {
+    throw new Error("MEETING_URL_REQUIRED");
+  }
+  if (input.locationType === "PRESENTIAL" && !String(input.address || "").trim()) {
+    throw new Error("ADDRESS_REQUIRED");
+  }
+  if (
+    input.locationType !== "ONLINE"
+    && input.locationType !== "PRESENTIAL"
+    && input.locationType !== "PLATFORM"
+  ) {
+    throw new Error("INVALID_LOCATION_TYPE");
+  }
+}
+
+/** Resposta do profissional à entrevista pendente. */
+export function assertInterviewRespondRules(interviewStatus: InterviewStatus): void {
+  if (interviewStatus !== "PENDING") {
+    throw new Error("INTERVIEW_NOT_PENDING");
+  }
+}
+
 export type JobInterviewDTO = {
   id: string;
   scheduledAt: string;

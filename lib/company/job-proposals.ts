@@ -20,7 +20,9 @@ export type {
   JobProposalDTO,
   InterviewComprovanteInput,
 } from "@/lib/company/job-proposals-shared";
-export { formatInterviewComprovante } from "@/lib/company/job-proposals-shared";
+export { formatInterviewComprovante, assertInterviewScheduleRules, assertInterviewRespondRules } from "@/lib/company/job-proposals-shared";
+
+import { assertInterviewScheduleRules } from "@/lib/company/job-proposals-shared";
 
 export type ScheduledInterviewDTO = {
   proposalId: string;
@@ -550,27 +552,12 @@ export async function scheduleInterview(input: {
   if (!proposal || proposal.companyUserId !== input.companyUserId) {
     throw new Error("PROPOSAL_NOT_FOUND");
   }
-  if (
-    proposal.status !== "INTERESTED" &&
-    proposal.status !== "INTERVIEW_PENDING" &&
-    proposal.status !== "INTERVIEW_CONFIRMED" &&
-    proposal.status !== "INTERVIEW_CANCELLED"
-  ) {
-    throw new Error("PROPOSAL_NOT_SCHEDULABLE");
-  }
-  if (input.locationType === "ONLINE" && !String(input.meetingUrl || "").trim()) {
-    throw new Error("MEETING_URL_REQUIRED");
-  }
-  if (input.locationType === "PRESENTIAL" && !String(input.address || "").trim()) {
-    throw new Error("ADDRESS_REQUIRED");
-  }
-  if (
-    input.locationType !== "ONLINE" &&
-    input.locationType !== "PRESENTIAL" &&
-    input.locationType !== "PLATFORM"
-  ) {
-    throw new Error("INVALID_LOCATION_TYPE");
-  }
+  assertInterviewScheduleRules({
+    proposalStatus: proposal.status,
+    locationType: input.locationType,
+    meetingUrl: input.meetingUrl,
+    address: input.address,
+  });
 
   const interviewId = proposal.interview?.id || randomUUID();
   const addressVal = input.locationType === "PRESENTIAL" ? input.address || null : null;

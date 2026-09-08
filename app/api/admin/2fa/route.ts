@@ -52,8 +52,6 @@ export async function POST(request: NextRequest) {
     }
 
     const code = generateSecureOtpCode();
-    await persistAdmin2faCode(email, code);
-    logAudit("admin_2fa_sent", email, ip, userAgent, "success", "Código 2FA admin gerado");
 
     if (!isEmailConfigured()) {
       return NextResponse.json(
@@ -80,6 +78,10 @@ export async function POST(request: NextRequest) {
         { status: 502 },
       );
     }
+
+    // Só persiste o OTP depois do envio — evita código órfão se o SMTP falhar.
+    await persistAdmin2faCode(email, code);
+    logAudit("admin_2fa_sent", email, ip, userAgent, "success", "Código 2FA admin enviado");
 
     return NextResponse.json({
       success: true,

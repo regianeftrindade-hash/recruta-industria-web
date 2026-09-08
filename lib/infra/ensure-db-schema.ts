@@ -3,6 +3,13 @@ import { prisma } from "@/lib/db";
 let coreSchemaReady = false;
 let lastSeenReady = false;
 
+/** Em produção, após `prisma migrate deploy`, use DISABLE_RUNTIME_DDL=true para cortar DDL no request path. */
+export function isRuntimeDdlEnabled(): boolean {
+  const flag = process.env.DISABLE_RUNTIME_DDL?.trim().toLowerCase();
+  if (flag === "true" || flag === "1") return false;
+  return true;
+}
+
 /**
  * DDL do núcleo (propostas, funil, billing, vídeo).
  * Espelha prisma/migrations/20260907180000_unify_core_schema.
@@ -10,6 +17,10 @@ let lastSeenReady = false;
  */
 export async function applyCoreSchema(): Promise<void> {
   if (coreSchemaReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    coreSchemaReady = true;
+    return;
+  }
 
   try {
     await prisma.$executeRawUnsafe(
@@ -231,6 +242,10 @@ export async function ensureVideoApresentacaoColumn(): Promise<void> {
 
 export async function ensureUserLastSeenColumn(): Promise<void> {
   if (lastSeenReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    lastSeenReady = true;
+    return;
+  }
   try {
     await prisma.$executeRawUnsafe(
       `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "lastSeenAt" TIMESTAMP(3)`,
@@ -249,6 +264,10 @@ let collaborationSchemaReady = false;
  */
 export async function applyCollaborationSchema(): Promise<void> {
   if (collaborationSchemaReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    collaborationSchemaReady = true;
+    return;
+  }
   try {
   await prisma.$executeRawUnsafe(
     `ALTER TABLE "Company" ADD COLUMN IF NOT EXISTS "extraSeats" INTEGER NOT NULL DEFAULT 0`,

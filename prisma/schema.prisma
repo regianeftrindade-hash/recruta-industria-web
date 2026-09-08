@@ -96,6 +96,11 @@ model Company {
   rejectionReason      String?
   planTier        String   @default("FREE")
   subscriptionExpiresAt DateTime?
+  /// Espelho legado de billing (também em Subscription)
+  billingPeriod   String   @default("monthly")
+  billingMode     String   @default("one_time")
+  autoRenew       Boolean  @default(false)
+  gatewaySubscriptionId String?
   /// Usuários RH extras comprados acima do limite do plano
   extraSeats      Int      @default(0)
   createdAt       DateTime @default(now())
@@ -329,10 +334,15 @@ model Profile {
   profileCompletion Int @default(0)
   disponivelContratacao String?
 
-  // Plano profissional (FREE | PREMIUM)
+  /// Plano profissional (FREE | PREMIUM)
   planTier              String    @default("FREE")
   subscriptionExpiresAt DateTime?
-  
+  /// Espelho legado de billing (também em Subscription)
+  billingPeriod         String    @default("monthly")
+  billingMode           String    @default("one_time")
+  autoRenew             Boolean   @default(false)
+  gatewaySubscriptionId String?
+
   // Timestamps
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -521,6 +531,8 @@ model CompanyProfileTracking {
   emTeste       Boolean  @default(false)
   contratado    Boolean  @default(false)
   naoContratado Boolean  @default(false)
+  /// Legado: cancelamento no tracking por perfil (funil novo usa JobProposalTracking)
+  entrevistaCancelada Boolean @default(false)
   notes         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -543,6 +555,59 @@ model SiteVisit {
   @@index([createdAt])
   @@index([path])
   @@index([sessionId])
+}
+
+/// Preferências da empresa (modo anônimo na vitrine, etc.)
+model CompanyPreference {
+  companyUserId String   @id
+  anonymousMode Boolean  @default(false)
+  updatedAt     DateTime @updatedAt
+}
+
+/// Avaliação pós-entrevista (confidencial da empresa)
+model InterviewRating {
+  id            String   @id @default(cuid())
+  callId        String?  @unique
+  companyUserId String
+  profileId     String
+  rating        Int
+  reason        String   @default("")
+  createdAt     DateTime @default(now())
+
+  @@index([companyUserId])
+}
+
+/// Chat interno RH da assinatura
+model CompanyChatMessage {
+  id           String   @id @default(cuid())
+  companyKey   String
+  authorUserId String
+  authorName   String
+  body         String
+  createdAt    DateTime @default(now())
+
+  @@index([companyKey, createdAt])
+}
+
+/// Eventos detalhados de uso da IA (telemetria)
+model AiUsageEvent {
+  id                  String   @id @default(cuid())
+  userId              String
+  companyOwnerUserId  String?
+  resource            String
+  model               String?
+  tokensIn            Int      @default(0)
+  tokensOut           Int      @default(0)
+  estimatedCostCents  Float    @default(0)
+  status              String
+  errorCode           String?
+  periodKey           String
+  createdAt           DateTime @default(now())
+
+  @@index([userId, periodKey])
+  @@index([resource, periodKey])
+  @@index([companyOwnerUserId, periodKey])
+  @@map("ai_usage_events")
 }
 
 /// Auditoria de segurança (login, reset, admin, etc.)

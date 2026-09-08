@@ -12,6 +12,15 @@ export type InterviewRatingDTO = {
   createdAt: string;
 };
 
+/** Rating inteiro 1–5; rejeita 0/6/NaN. */
+export function parseInterviewRating(value: unknown): number {
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isInteger(n) || n < 1 || n > 5) {
+    throw new Error("INVALID_RATING");
+  }
+  return n;
+}
+
 let ratingTableReady = false;
 
 export async function ensureInterviewRatingTable(): Promise<void> {
@@ -45,6 +54,7 @@ export async function createInterviewRating(input: {
   reason: string;
 }): Promise<string> {
   await ensureInterviewRatingTable();
+  const rating = parseInterviewRating(input.rating);
 
   if (input.callId) {
     const existing = await prisma.$queryRaw<Array<{ id: string }>>`
@@ -59,7 +69,7 @@ export async function createInterviewRating(input: {
       id, "callId", "companyUserId", "profileId", rating, reason, "createdAt"
     ) VALUES (
       ${id}, ${input.callId}, ${input.companyUserId}, ${input.profileId},
-      ${input.rating}, ${input.reason}, NOW()
+      ${rating}, ${input.reason}, NOW()
     )
   `;
   return id;
