@@ -5,12 +5,13 @@ import { DASH, dashCard, dashInput, dashLabel, dashSectionTitle } from "@/lib/da
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import type { JobProposalDTO, InterviewLocationType } from "@/lib/company/job-proposals-shared";
 import { formatInterviewComprovante } from "@/lib/company/job-proposals-shared";
-import { formatReaisDisplay, maskReaisInput, TURNOS_PROPOSTA, turnoPropostaLabel } from "@/lib/format-reais";
+import { formatReaisDisplay, maskReaisInput, TURNOS_PROPOSTA } from "@/lib/format-reais";
 import {
   isArquivada,
   isEntrevista,
   isPropostaAtiva,
 } from "@/components/professional/ProfessionalOpportunityBoard";
+import CompanyPropostaCard from "@/components/company/CompanyPropostaCard";
 
 const STATUS_LABEL: Record<string, string> = {
   SENT: "Aguardando resposta",
@@ -432,217 +433,21 @@ export default function PropostasEntrevistasEmpresa({
               <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Nenhuma proposta ativa.</p>
             ) : (
               <div style={{ display: "grid", gap: 12 }}>
-          {listas.propostas.map((p) => {
-            const comprovante =
-              p.interview &&
-              formatInterviewComprovante({
-                companyName: p.companyName,
-                scheduledAt: p.interview.scheduledAt,
-                locationType: p.interview.locationType,
-                address: p.interview.address,
-                meetingUrl: p.interview.meetingUrl,
-                observacoes: p.interview.observacoes,
-              });
-
-            return (
-              <div
-                key={p.id}
-                style={{
-                  border: `1px solid ${DASH.gold}`,
-                  borderRadius: 10,
-                  padding: 12,
-                  background: DASH.inner,
-                }}
-              >
-                <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: DASH.text }}>
-                  {`${p.cargo} · ${formatReaisDisplay(p.salario)}`}
-                </p>
-                <p style={{ margin: "0 0 2px", fontSize: 11, color: DASH.muted }}>
-                  <strong style={{ color: DASH.text }}>Turno:</strong> {turnoPropostaLabel(p.turno)}
-                </p>
-                {p.cidade?.trim() ? (
-                  <p style={{ margin: "0 0 2px", fontSize: 11, color: DASH.muted }}>
-                    <strong style={{ color: DASH.text }}>Cidade:</strong> {p.cidade}
-                  </p>
-                ) : null}
-                {p.beneficios?.trim() ? (
-                  <p style={{ margin: "0 0 6px", fontSize: 11, color: DASH.muted, whiteSpace: "pre-wrap" }}>
-                    <strong style={{ color: DASH.text }}>Benefícios:</strong> {p.beneficios}
-                  </p>
-                ) : null}
-                <p style={{ margin: "0 0 8px", fontSize: 11, color: DASH.gold, fontWeight: 700 }}>
-                  {STATUS_LABEL[p.status] || p.status}
-                </p>
-                {botaoExcluir(p.id)}
-                {comprovante && (
-                  <div
-                    style={{
-                      margin: "8px 0 12px",
-                      padding: 12,
-                      borderRadius: 10,
-                      border: `1px solid ${DASH.gold}`,
-                      background: "rgba(200,155,60,0.08)",
-                    }}
-                  >
-                    <p
-                      style={{
-                        margin: "0 0 8px",
-                        fontSize: 11,
-                        fontWeight: 800,
-                        color: DASH.gold,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.04em",
-                      }}
-                    >
-                      Comprovante de agendamento
-                    </p>
-                    <p style={{ margin: "0 0 4px", fontSize: 12, color: DASH.text }}>
-                      <strong>Empresa:</strong> {p.companyName}
-                    </p>
-                    <p style={{ margin: "0 0 4px", fontSize: 12, color: DASH.text }}>
-                      <strong>Data:</strong> {comprovante.dataLabel}
-                    </p>
-                    <p style={{ margin: "0 0 4px", fontSize: 12, color: DASH.text }}>
-                      <strong>Horário:</strong> {comprovante.horaLabel}
-                    </p>
-                    <p style={{ margin: "0 0 4px", fontSize: 12, color: DASH.text }}>
-                      <strong>Local:</strong> {comprovante.localLabel}
-                    </p>
-                    {p.interview?.observacoes?.trim() ? (
-                      <p style={{ margin: 0, fontSize: 12, color: DASH.text, whiteSpace: "pre-wrap" }}>
-                        <strong>Observações:</strong> {p.interview.observacoes}
-                      </p>
-                    ) : null}
-                  </div>
-                )}
-
-                {(p.status === "INTERESTED" ||
-                  (p.status === "INTERVIEW_PENDING" && schedulingId === p.id)) && (
-                  <div style={{ marginTop: 8 }}>
-                    {schedulingId !== p.id ? (
-                      <button
-                        type="button"
-                        onClick={() => setSchedulingId(p.id)}
-                        style={{ ...btnGold, padding: "8px 12px", fontSize: 12 }}
-                      >
-                        Agendar Entrevista
-                      </button>
-                    ) : (
-                      <div style={{ display: "grid", gap: 8 }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                          <div>
-                            <p style={dashLabel}>Data</p>
-                            <input
-                              type="date"
-                              value={interviewForm.date}
-                              onChange={(e) =>
-                                setInterviewForm((f) => ({ ...f, date: e.target.value }))
-                              }
-                              style={dashInput}
-                            />
-                          </div>
-                          <div>
-                            <p style={dashLabel}>Horário</p>
-                            <input
-                              type="time"
-                              value={interviewForm.time}
-                              onChange={(e) =>
-                                setInterviewForm((f) => ({ ...f, time: e.target.value }))
-                              }
-                              style={dashInput}
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <p style={dashLabel}>Modalidade</p>
-                          <select
-                            value={interviewForm.locationType}
-                            onChange={(e) =>
-                              setInterviewForm((f) => ({
-                                ...f,
-                                locationType: e.target.value as InterviewLocationType,
-                              }))
-                            }
-                            style={dashInput}
-                          >
-                            <option value="ONLINE">Online (Meet / Teams)</option>
-                            <option value="PRESENTIAL">Presencial</option>
-                            <option value="PLATFORM">Pela plataforma (vídeo Recruta)</option>
-                          </select>
-                        </div>
-                        {interviewForm.locationType === "ONLINE" ? (
-                          <div>
-                            <p style={dashLabel}>Link (Google Meet ou Teams)</p>
-                            <input
-                              value={interviewForm.meetingUrl}
-                              placeholder="https://meet.google.com/..."
-                              onChange={(e) =>
-                                setInterviewForm((f) => ({ ...f, meetingUrl: e.target.value }))
-                              }
-                              style={dashInput}
-                            />
-                          </div>
-                        ) : interviewForm.locationType === "PRESENTIAL" ? (
-                          <div>
-                            <p style={dashLabel}>Endereço</p>
-                            <input
-                              value={interviewForm.address}
-                              placeholder="Rua, número, cidade"
-                              onChange={(e) =>
-                                setInterviewForm((f) => ({ ...f, address: e.target.value }))
-                              }
-                              style={dashInput}
-                            />
-                          </div>
-                        ) : (
-                          <p style={{ margin: 0, fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
-                            A entrevista será pela chamada de vídeo da plataforma. Não é necessário link externo.
-                          </p>
-                        )}
-                        <div>
-                          <p style={dashLabel}>Observações (opcional)</p>
-                          <textarea
-                            value={interviewForm.observacoes}
-                            rows={3}
-                            placeholder="Ex.: trazer RG, entrar pelo portão 2..."
-                            onChange={(e) =>
-                              setInterviewForm((f) => ({ ...f, observacoes: e.target.value }))
-                            }
-                            style={{ ...dashInput, resize: "vertical" }}
-                          />
-                        </div>
-                        <div style={{ display: "flex", gap: 8 }}>
-                          <button
-                            type="button"
-                            disabled={saving}
-                            onClick={() => void agendar(p.id)}
-                            style={{ ...btnGold, padding: "8px 12px", fontSize: 12, flex: 1 }}
-                          >
-                            {saving ? "Enviando..." : "Enviar convite"}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setSchedulingId(null)}
-                            style={{
-                              background: "transparent",
-                              border: `1px solid ${DASH.border}`,
-                              color: DASH.muted,
-                              borderRadius: 8,
-                              padding: "8px 12px",
-                              fontSize: 12,
-                              cursor: "pointer",
-                            }}
-                          >
-                            Cancelar
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                {listas.propostas.map((p) => (
+                  <CompanyPropostaCard
+                    key={p.id}
+                    proposal={p}
+                    busy={busyId === p.id}
+                    saving={saving}
+                    isScheduling={schedulingId === p.id}
+                    interviewForm={interviewForm}
+                    onExcluir={() => void excluir(p.id)}
+                    onStartScheduling={() => setSchedulingId(p.id)}
+                    onCancelScheduling={() => setSchedulingId(null)}
+                    onSetInterviewForm={setInterviewForm}
+                    onAgendar={() => void agendar(p.id)}
+                  />
+                ))}
               </div>
             )}
           </div>
