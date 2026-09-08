@@ -205,6 +205,42 @@ async function createAsaasCustomer(customer: AsaasCustomer, taxId: string): Prom
   return String(result.data.id);
 }
 
+async function sleep(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** O Asaas às vezes demora um instante para liberar o QR depois de criar a cobrança. */
+async function fetchAsaasPixQrCode(paymentId: string): Promise<{
+  payload?: string;
+  encodedImage?: string;
+  expirationDate?: string;
+} | null> {
+  let lastStatus = 0;
+  let lastText = '';
+
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (attempt > 0) {
+      await sleep(700 * attempt);
+    }
+
+    const pixResult = await asaasRequest<{
+      payload?: string;
+      encodedImage?: string;
+      expirationDate?: string;
+      errors?: Array<{ description?: string }>;
+    }>(`/v3/payments/${encodeURIComponent(paymentId)}/pixQrCode`);
+
+    lastStatus = pixResult.status;
+    lastText = pixResult.text.slice(0, 180);
+    if (pixResult.ok && pixResult.data?.payload) {
+      return pixResult.data;
+    }
+  }
+
+  console.error('[asaas] pixQrCode falhou', { paymentId, lastStatus, lastText });
+  return null;
+}
+
 async function findOrCreateAsaasCustomer(customer: AsaasCustomer): Promise<string> {
   const isSandbox = getAsaasConfig().apiUrl.includes('sandbox');
   const taxId =
@@ -274,25 +310,26 @@ export async function createAsaasPayment(
   };
 
   if (input.method === 'pix') {
-    const pixResult = await asaasRequest<{
-      payload?: string;
-      encodedImage?: string;
-      expirationDate?: string;
-    }>(`/v3/payments/${encodeURIComponent(paymentId)}/pixQrCode`);
-
-    if (!pixResult.ok || !pixResult.data?.payload) {
-      throw new Error('Asaas não retornou o QR Code Pix');
+    const pixData = await fetchAsaasPixQrCode(paymentId);
+    if (!pixData?.payload) {
+      // Cobrança existe; deixa o usuário abrir a fatura no Asaas se o QR não vier.
+      if (base.checkoutUrl) {
+        return base;
+      }
+      throw new Error(
+        'Asaas não retornou o QR Code Pix. Cadastre uma chave Pix em Conta > Pix no painel Asaas e tente de novo.',
+      );
     }
 
-    const qrCodeDataUrl = pixResult.data.encodedImage
-      ? `data:image/png;base64,${pixResult.data.encodedImage}`
-      : await buildPixQrCodeDataUrl(pixResult.data.payload);
+    const qrCodeDataUrl = pixData.encodedImage
+      ? `data:image/png;base64,${pixData.encodedImage}`
+      : await buildPixQrCodeDataUrl(pixData.payload);
 
     return {
       ...base,
-      copyPasteKey: pixResult.data.payload,
+      copyPasteKey: pixData.payload,
       qrCodeDataUrl,
-      expiresAt: pixResult.data.expirationDate,
+      expiresAt: pixData.expirationDate,
     };
   }
 

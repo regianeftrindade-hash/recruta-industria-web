@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
       companyPlansEnabled: plansEnabled,
       professionalPlansEnabled: plansEnabled,
       provider,
+      recurringSupported: provider === 'pagseguro',
     });
   }
 

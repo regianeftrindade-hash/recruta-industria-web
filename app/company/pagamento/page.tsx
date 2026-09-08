@@ -46,12 +46,13 @@ function PagamentoEmpresa() {
   const planDef = COMPANY_PLAN_TIERS.find((p) => p.id === planParam) ?? COMPANY_PLAN_TIERS[1];
 
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("monthly");
-  const [billingMode, setBillingMode] = useState<BillingMode>("recurring");
+  const [billingMode, setBillingMode] = useState<BillingMode>("one_time");
   const [method, setMethod] = useState<"pix" | "boleto">("pix");
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
   const [processing, setProcessing] = useState(false);
   const [gatewayReady, setGatewayReady] = useState<boolean | null>(null);
+  const [recurringSupported, setRecurringSupported] = useState(false);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
 
   const priceLabel = useMemo(
@@ -64,9 +65,15 @@ function PagamentoEmpresa() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         const configured = Boolean(data?.configured);
-        const valid = Boolean(data?.tokenValid);
-        setGatewayReady(configured && valid);
-        if (configured && !valid && data?.tokenMessage) {
+        const plansOk = Boolean(data?.companyPlansEnabled ?? data?.tokenValid);
+        const valid = Boolean(data?.tokenValid ?? data?.companyPlansEnabled);
+        setGatewayReady(configured && (valid || plansOk));
+        const recurring = Boolean(data?.recurringSupported);
+        setRecurringSupported(recurring);
+        if (!recurring) {
+          setBillingMode("one_time");
+        }
+        if (configured && data?.tokenValid === false && data?.tokenMessage) {
           setStatusMessage(data.tokenMessage);
         }
       })
@@ -143,8 +150,8 @@ function PagamentoEmpresa() {
         body: JSON.stringify({
           planTier: planDef.id,
           billingPeriod,
-          billingMode,
-          method: billingMode === "one_time" ? method : "boleto",
+          billingMode: recurringSupported ? billingMode : "one_time",
+          method: (recurringSupported && billingMode === "recurring") ? "boleto" : method,
         }),
       });
 
@@ -194,8 +201,8 @@ function PagamentoEmpresa() {
 
         {gatewayReady === false && (
           <div style={{ background: "#1a1508", border: "1px solid #8D6B1F", borderRadius: 8, padding: 14, marginBottom: 20, fontSize: 13, lineHeight: 1.5 }}>
-            <strong style={{ color: "#C89B3C" }}>Pagamentos em modo sandbox.</strong>{" "}
-            Configure <code style={{ color: "#F2F2F2" }}>PAGSEGURO_TOKEN</code> no <code style={{ color: "#F2F2F2" }}>.env.local</code>.
+            <strong style={{ color: "#C89B3C" }}>Pagamento indisponível no momento.</strong>{" "}
+            Confira ASAAS_API_KEY e ASAAS_API_URL na Vercel.
           </div>
         )}
 
@@ -231,50 +238,66 @@ function PagamentoEmpresa() {
                   billingMode={billingMode}
                   onPeriodChange={setBillingPeriod}
                   onModeChange={setBillingMode}
+                  recurringSupported={recurringSupported}
                 />
 
-                {billingMode === "one_time" && (
-                  <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-                    {(["pix", "boleto"] as const).map((m) => (
-                      <button
-                        key={m}
-                        type="button"
-                        onClick={() => setMethod(m)}
-                        style={{
-                          ...btnGold,
-                          flex: 1,
-                          padding: 10,
-                          borderRadius: 6,
-                          fontSize: 11,
-                          textTransform: "uppercase",
-                          ...(method !== m
-                            ? {
-                                background: "linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8D6B1F 100%)",
-                                color: "#F2F2F2",
-                              }
-                            : {}),
-                        }}
-                      >
-                        {m}
-                      </button>
-                    ))}
+                {(billingMode === "one_time" || !recurringSupported) && (
+                  <div style={{ marginBottom: 16 }}>
+                    <p style={{ color: "#aaa", fontSize: 12, margin: "0 0 8px", fontWeight: 600 }}>
+                      {recurringSupported ? "3. Forma de pagamento" : "2. Forma de pagamento"}
+                    </p>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      {(
+                        [
+                          { id: "pix" as const, label: "Pix" },
+                          { id: "boleto" as const, label: "Boleto" },
+                        ]
+                      ).map((m) => {
+                        const active = method === m.id;
+                        return (
+                          <button
+                            key={m.id}
+                            type="button"
+                            onClick={() => setMethod(m.id)}
+                            aria-pressed={active}
+                            style={{
+                              flex: 1,
+                              padding: "12px 10px",
+                              borderRadius: 8,
+                              fontSize: 14,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              border: active ? "2px solid #C89B3C" : "1px solid #5a4512",
+                              background: active
+                                ? "linear-gradient(180deg, #E8C36A 0%, #C89B3C 55%, #8D6B1F 100%)"
+                                : "linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8D6B1F 100%)",
+                              color: active ? "#1a1508" : "#F2F2F2",
+                            }}
+                          >
+                            {m.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
 
                 <button
                   type="button"
                   onClick={handleCheckout}
-                  disabled={processing}
-                  style={{ ...btnGold, width: "100%", padding: 14, fontSize: 14, opacity: processing ? 0.7 : 1 }}
+                  disabled={processing || gatewayReady === false}
+                  style={{ ...btnGold, width: "100%", padding: 14, fontSize: 15, fontWeight: 700, opacity: processing ? 0.7 : 1 }}
                 >
                   {processing
-                    ? "Processando..."
-                    : billingMode === "recurring"
+                    ? "Gerando cobrança..."
+                    : billingMode === "recurring" && recurringSupported
                       ? `Assinar ${priceLabel.price}${priceLabel.period}`
-                      : `Pagar ${priceLabel.price}`}
+                      : method === "pix"
+                        ? `Gerar Pix · ${priceLabel.price}`
+                        : `Gerar boleto · ${priceLabel.price}`}
                 </button>
                 {statusMessage && (
-                  <p style={{ color: "#C89B3C", fontSize: 12, marginTop: 12 }}>{statusMessage}</p>
+                  <p style={{ color: "#C89B3C", fontSize: 12, marginTop: 12, lineHeight: 1.45 }}>{statusMessage}</p>
                 )}
               </>
             ) : (
@@ -282,23 +305,39 @@ function PagamentoEmpresa() {
                 <h2 style={{ color: "#C89B3C", fontSize: 16, marginBottom: 16 }}>
                   {paymentData.recurring ? "Finalize sua assinatura" : "Finalize o pagamento"}
                 </h2>
-                {paymentData.copyPasteKey && (
+                {paymentData.copyPasteKey ? (
                   <PixQrCode
                     copyPasteKey={paymentData.copyPasteKey}
                     qrCodeDataUrl={paymentData.qrCodeDataUrl}
                     expiresAt={paymentData.expiresAt}
                   />
+                ) : (
+                  <p style={{ color: "#aaa", fontSize: 13, lineHeight: 1.5, marginBottom: 12 }}>
+                    O QR Code Pix não veio do Asaas. Use o link da fatura abaixo ou tente Boleto.
+                    Confira se há chave Pix cadastrada na conta Asaas.
+                  </p>
                 )}
                 {paymentData.boletoUrl && (
-                  <a href={paymentData.boletoUrl} target="_blank" rel="noreferrer" style={{ color: "#C89B3C", display: "block", marginTop: 12 }}>
+                  <a href={paymentData.boletoUrl} target="_blank" rel="noreferrer" style={{ color: "#C89B3C", display: "block", marginTop: 12, fontWeight: 700 }}>
                     Abrir boleto {paymentData.recurring ? "da assinatura" : ""}
                   </a>
                 )}
-                {paymentData.checkoutUrl && !paymentData.boletoUrl && (
-                  <a href={paymentData.checkoutUrl} target="_blank" rel="noreferrer" style={{ color: "#C89B3C", display: "block", marginTop: 12 }}>
-                    Abrir checkout
+                {paymentData.checkoutUrl && (
+                  <a href={paymentData.checkoutUrl} target="_blank" rel="noreferrer" style={{ color: "#C89B3C", display: "block", marginTop: 12, fontWeight: 700 }}>
+                    Abrir fatura no Asaas
                   </a>
                 )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPaymentData(null);
+                    setProcessing(false);
+                    setStatusMessage("");
+                  }}
+                  style={{ ...btnGold, width: "100%", padding: 12, fontSize: 13, marginTop: 16 }}
+                >
+                  Voltar e escolher outra forma
+                </button>
                 {statusMessage && <p style={{ fontSize: 12, marginTop: 12, color: "#C89B3C" }}>{statusMessage}</p>}
               </div>
             )}
