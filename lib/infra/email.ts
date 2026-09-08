@@ -1,41 +1,66 @@
 import nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
 
-let transporter: Transporter | null = null;
+function unquoteEnv(value: string | undefined): string {
+  const raw = (value || "").trim();
+  if (
+    (raw.startsWith('"') && raw.endsWith('"'))
+    || (raw.startsWith("'") && raw.endsWith("'"))
+  ) {
+    return raw.slice(1, -1).trim();
+  }
+  return raw;
+}
 
-function getTransporter(): Transporter | null {
-  const host = process.env.SMTP_HOST?.trim();
-  const user = process.env.SMTP_USER?.trim();
-  const pass = process.env.SMTP_PASS?.trim();
+function smtpConfig() {
+  const hostRaw = unquoteEnv(process.env.SMTP_HOST);
+  const user = unquoteEnv(process.env.SMTP_USER);
+  const pass = unquoteEnv(process.env.SMTP_PASS);
 
+  const host = hostRaw
+    .replace(/^mail\.hostinger\.com$/i, "smtp.hostinger.com")
+    .replace(/^smtp\.hostinger\.com\.br$/i, "smtp.hostinger.com");
+
+  const parsedPort = Number(unquoteEnv(process.env.SMTP_PORT) || "465");
+  // Vercel bloqueia a porta 25; Hostinger usa 465 (SSL) ou 587 (STARTTLS).
+  const port = parsedPort === 25 || !Number.isFinite(parsedPort) ? 465 : parsedPort;
+  const secureFlag = unquoteEnv(process.env.SMTP_SECURE).toLowerCase();
+  const secure =
+    port === 465
+    || secureFlag === "true"
+    || secureFlag === "1";
+  const useStartTls = port === 587 || (!secure && port !== 465);
+
+  return { host, user, pass, port, secure: port === 465 ? true : !useStartTls && secure, useStartTls };
+}
+
+function createTransporter(): Transporter | null {
+  const { host, user, pass, port, secure, useStartTls } = smtpConfig();
   if (!host || !user || !pass) {
     return null;
   }
 
-  if (!transporter) {
-    const port = Number(process.env.SMTP_PORT || 465);
-    // Hostinger SSL/TLS: porta 465 com secure=true
-    const secure =
-      process.env.SMTP_SECURE === "true"
-      || process.env.SMTP_SECURE === "1"
-      || port === 465;
-
-    transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure,
-      auth: { user, pass },
-      tls: {
-        minVersion: "TLSv1.2",
-      },
-    });
-  }
-
-  return transporter;
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    requireTLS: useStartTls,
+    auth: { user, pass },
+    // Funções na Vercel costumam sair por IPv6; o SMTP da Hostinger responde melhor em IPv4.
+    family: 4,
+    connectionTimeout: 12_000,
+    greetingTimeout: 12_000,
+    socketTimeout: 20_000,
+    tls: {
+      minVersion: "TLSv1.2",
+      servername: host,
+    },
+  });
 }
 
 export function isEmailConfigured(): boolean {
-  return getTransporter() !== null;
+  const { host, user, pass } = smtpConfig();
+  return Boolean(host && user && pass);
 }
 
 export interface SendEmailOptions {
@@ -50,8 +75,8 @@ export interface SendEmailOptions {
 }
 
 function smtpFromHeader(): string {
-  const user = (process.env.SMTP_USER || "").trim();
-  const configured = (process.env.SMTP_FROM || process.env.EMAIL_FROM || "").trim();
+  const user = unquoteEnv(process.env.SMTP_USER);
+  const configured = unquoteEnv(process.env.SMTP_FROM || process.env.EMAIL_FROM);
   const extracted =
     configured.match(/<([^>]+)>/)?.[1]?.trim() ||
     (configured.includes("@") ? configured : "");
@@ -65,20 +90,49 @@ function smtpFromHeader(): string {
 }
 
 function smtpFailureHint(error: unknown): string {
-  const raw = error instanceof Error ? `${error.message} ${error}` : String(error);
-  const lower = raw.toLowerCase();
+  const err = error as {
+    message?: string;
+    code?: string;
+    command?: string;
+    response?: string;
+    responseCode?: number;
+  };
+  const blob = [err.message, err.code, err.command, err.response, err.responseCode]
+    .filter((part) => part != null && String(part).trim())
+    .join(" ");
+  const lower = blob.toLowerCase();
+  const snippet = String(err.response || err.message || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+
   if (
     lower.includes("invalid login")
     || lower.includes("authentication")
     || lower.includes("eauth")
     || lower.includes("535")
   ) {
-    return "A Hostinger recusou o login SMTP. SMTP_USER tem que ser a caixa completa e SMTP_PASS a senha dessa caixa (não a do Gmail e sem aspas na Vercel).";
+    return "A Hostinger recusou o login SMTP. SMTP_USER = contato@recrutaindustria.com e SMTP_PASS = senha dessa caixa (símbolo ok, sem aspas na Vercel).";
   }
-  if (lower.includes("econnection") || lower.includes("etimedout") || lower.includes("enotfound")) {
-    return "Não conectou no SMTP_HOST. Use smtp.hostinger.com e porta 465 (SMTP_SECURE=true).";
+  if (
+    lower.includes("econnection")
+    || lower.includes("etimedout")
+    || lower.includes("enotfound")
+    || lower.includes("esocket")
+    || lower.includes("etls")
+    || lower.includes("wrong version number")
+  ) {
+    return "Não conectou no SMTP. Na Vercel use SMTP_HOST=smtp.hostinger.com, SMTP_PORT=465 e SMTP_SECURE=true (alternativa: porta 587 e SMTP_SECURE=false).";
   }
-  return "O servidor de e-mail recusou o envio. Confira SMTP_HOST, SMTP_USER e SMTP_PASS na Vercel.";
+  if (lower.includes("550") || lower.includes("553") || lower.includes("relay") || lower.includes("spf")) {
+    return snippet
+      ? `A Hostinger bloqueou o destinatário/remetente: ${snippet}`
+      : "A Hostinger bloqueou o envio (remetente ou destino). SMTP_FROM deve ser o mesmo que SMTP_USER.";
+  }
+  if (snippet) {
+    return `A Hostinger recusou o envio: ${snippet}`;
+  }
+  return "O servidor de e-mail recusou o envio. Confira SMTP_HOST=smtp.hostinger.com, SMTP_USER=contato@recrutaindustria.com e a senha da caixa.";
 }
 
 export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
@@ -89,7 +143,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
 export async function sendEmailDetailed(
   options: SendEmailOptions,
 ): Promise<{ ok: boolean; error?: string }> {
-  const transport = getTransporter();
+  const transport = createTransporter();
   const from = smtpFromHeader();
 
   if (!transport) {
@@ -105,8 +159,10 @@ export async function sendEmailDetailed(
   }
 
   try {
+    const user = unquoteEnv(process.env.SMTP_USER);
     await transport.sendMail({
       from,
+      envelope: user ? { from: user, to: options.to } : undefined,
       to: options.to,
       subject: options.subject,
       html: options.html,
@@ -126,9 +182,9 @@ export async function sendEmailDetailed(
 /** Caixa de contato Recruta Indústria (mensagens de empresas pagas). */
 export function getRecrutaSupportEmail(): string {
   return (
-    process.env.SUPPORT_EMAIL?.trim()
-    || process.env.CONTACT_EMAIL?.trim()
-    || process.env.SMTP_USER?.trim()
+    unquoteEnv(process.env.SUPPORT_EMAIL)
+    || unquoteEnv(process.env.CONTACT_EMAIL)
+    || unquoteEnv(process.env.SMTP_USER)
     || "contato@recrutaindustria.com"
   );
 }
