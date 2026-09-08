@@ -40,6 +40,11 @@ function CadastroEmpresaContent() {
   const [checkingRegistration, setCheckingRegistration] = useState(false);
   const [sessionWaitTimedOut, setSessionWaitTimedOut] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [faltandoCampos, setFaltandoCampos] = useState<string[]>([]);
+  const [openDadosEmpresa, setOpenDadosEmpresa] = useState(true);
+  const [openContato, setOpenContato] = useState(true);
+  const [openDocumentos, setOpenDocumentos] = useState(false);
+  const [openSenha, setOpenSenha] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
   const [usuarioLogado, setUsuarioLogado] = useState(false);
   const [contaProfissional, setContaProfissional] = useState(false);
@@ -474,6 +479,7 @@ function CadastroEmpresaContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
+    setFaltandoCampos([]);
     setSuccessMessage('');
 
     const cnpjLimpo = cnpjValue.replace(/\D/g, '');
@@ -487,55 +493,72 @@ function CadastroEmpresaContent() {
       });
 
     if (!bypass) {
+      const faltando: string[] = [];
+      let precisaEmpresa = false;
+      let precisaContato = false;
+      let precisaSenha = false;
+
       if (!cnpjLimpo || cnpjLimpo.length !== 14) {
-        setErrorMessage('Informe um CNPJ válido (14 dígitos).');
-        return;
+        faltando.push('CNPJ válido (14 dígitos)');
+        precisaEmpresa = true;
       }
-
       if (!formData.nome.trim()) {
-        setErrorMessage('Informe a razão social da empresa.');
-        return;
+        faltando.push('Razão social');
+        precisaEmpresa = true;
       }
-
       if (!formData.responsavelNome.trim()) {
-        setErrorMessage('Informe o nome da pessoa responsável.');
-        return;
+        faltando.push('Nome do responsável');
+        precisaEmpresa = true;
       }
-
       if (!cpfLimpo || cpfLimpo.length !== 11 || !isValidCPF(cpfLimpo)) {
-        setErrorMessage('Informe um CPF válido.');
-        return;
+        faltando.push('CPF do responsável válido');
+        precisaEmpresa = true;
       }
-
       if (!formData.email.trim() && !usuarioLogado) {
-        setErrorMessage('Informe o e-mail de acesso da conta.');
-        return;
+        faltando.push('E-mail de acesso');
+        precisaContato = true;
       }
-
       if (!telefoneValue.trim()) {
-        setErrorMessage('Informe o telefone da empresa.');
-        return;
+        faltando.push('Telefone da empresa');
+        precisaContato = true;
+      } else if (!isValidPhoneBR(telefoneValue)) {
+        faltando.push('Telefone válido com DDD');
+        precisaContato = true;
       }
-
-      if (!isValidPhoneBR(telefoneValue)) {
-        setErrorMessage('Informe um telefone válido com DDD.');
-        return;
-      }
-
       if (!formData.endereco.trim() || formData.endereco.trim().length < 5) {
-        setErrorMessage('Informe o endereço da empresa.');
-        return;
+        faltando.push('Endereço da empresa');
+        precisaContato = true;
       }
-
       if (!usuarioLogado) {
         if (!formData.password) {
-          setErrorMessage('Informe uma senha.');
-          return;
+          faltando.push('Senha');
+          precisaSenha = true;
+        } else if (formData.password.length < 8) {
+          faltando.push('Senha com no mínimo 8 caracteres');
+          precisaSenha = true;
         }
-        if (formData.password !== formData.confirmPassword) {
-          setErrorMessage('As senhas não conferem.');
-          return;
+        if (!formData.confirmPassword) {
+          faltando.push('Confirmar senha');
+          precisaSenha = true;
+        } else if (formData.password && formData.password !== formData.confirmPassword) {
+          faltando.push('Senha e confirmação iguais');
+          precisaSenha = true;
         }
+      }
+
+      if (faltando.length > 0) {
+        if (precisaEmpresa) setOpenDadosEmpresa(true);
+        if (precisaContato) setOpenContato(true);
+        if (precisaSenha) setOpenSenha(true);
+        setFaltandoCampos(faltando);
+        setErrorMessage('Complete os campos obrigatórios abaixo.');
+        window.setTimeout(() => {
+          document.getElementById('aviso-empresa-obrigatorios')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+          });
+        }, 80);
+        return;
       }
     }
 
@@ -792,13 +815,31 @@ function CadastroEmpresaContent() {
               {errorMessage}
             </div>
           )}
+          {faltandoCampos.length > 0 && (
+            <div id="aviso-empresa-obrigatorios" className={styles.avisoObrigatoriosCard} role="alert" aria-live="polite">
+              <p className={styles.avisoObrigatoriosTitulo}>
+                Complete os campos obrigatórios:
+              </p>
+              <ul className={styles.avisoObrigatoriosLista}>
+                {faltandoCampos.map((campo) => (
+                  <li key={campo}>{campo}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           {successMessage && (
             <div style={{ background: '#1a1508', color: '#F2F2F2', padding: '10px', borderRadius: '8px', fontWeight: 'bold', border: '1px solid #8D6B1F' }}>
               {successMessage}
             </div>
           )}
 
-          <RegisterCollapsibleSection emoji="🏭" title="Dados da empresa" defaultOpen>
+          <RegisterCollapsibleSection
+            emoji="🏭"
+            title="Dados da empresa"
+            defaultOpen
+            open={openDadosEmpresa}
+            onOpenChange={setOpenDadosEmpresa}
+          >
           <div className={styles.fieldsRow} style={twoCols}>
             <div>
               <label className={styles.label}>CNPJ {isTestBypass ? '' : '*'}</label>
@@ -839,7 +880,13 @@ function CadastroEmpresaContent() {
           </div>
           </RegisterCollapsibleSection>
 
-          <RegisterCollapsibleSection emoji="📞" title="Contato e acesso" defaultOpen>
+          <RegisterCollapsibleSection
+            emoji="📞"
+            title="Contato e acesso"
+            defaultOpen
+            open={openContato}
+            onOpenChange={setOpenContato}
+          >
           <div className={styles.fieldsRow} style={twoCols}>
             {usuarioLogado ? (
               <div>
@@ -955,7 +1002,14 @@ function CadastroEmpresaContent() {
           </div>
           </RegisterCollapsibleSection>
 
-          <RegisterCollapsibleSection emoji="📄" title="Documentos" marcador="recomendado" defaultOpen={false}>
+          <RegisterCollapsibleSection
+            emoji="📄"
+            title="Documentos"
+            marcador="recomendado"
+            defaultOpen={false}
+            open={openDocumentos}
+            onOpenChange={setOpenDocumentos}
+          >
             <div>
               <label className={styles.label}>CARTÃO CNPJ (opcional)</label>
               <div className={styles.anexoCampoInline}>
@@ -995,7 +1049,13 @@ function CadastroEmpresaContent() {
           </RegisterCollapsibleSection>
 
           {!usuarioLogado && (
-            <RegisterCollapsibleSection emoji="🔐" title="Senha de acesso" defaultOpen>
+            <RegisterCollapsibleSection
+              emoji="🔐"
+              title="Senha de acesso"
+              defaultOpen
+              open={openSenha}
+              onOpenChange={setOpenSenha}
+            >
               <div className={styles.fieldsRow} style={twoCols}>
                 <div>
                   <label className={styles.label}>SENHA {isTestBypass ? '' : '*'}</label>

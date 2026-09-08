@@ -11,6 +11,9 @@ type Props = {
   marcador?: MarcadorPreenchimento;
   /** Seções opcionais começam fechadas para reduzir cansaço. */
   defaultOpen?: boolean;
+  /** Controle externo (ex.: abrir seção com erro de validação). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   children: React.ReactNode;
 };
 
@@ -20,10 +23,19 @@ export default function RegisterCollapsibleSection({
   title,
   marcador,
   defaultOpen = false,
+  open: openProp,
+  onOpenChange,
   children,
 }: Props) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const panelId = useId();
+  const controlled = typeof openProp === "boolean";
+  const open = controlled ? openProp : internalOpen;
+
+  const setOpen = (next: boolean) => {
+    if (!controlled) setInternalOpen(next);
+    onOpenChange?.(next);
+  };
 
   return (
     <section className={`${styles.sectionCard} ${styles.sectionCollapsible}`}>
@@ -32,7 +44,7 @@ export default function RegisterCollapsibleSection({
         className={styles.sectionToggle}
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(!open)}
       >
         <RegisterSectionHeader emoji={emoji} title={title} marcador={marcador} />
         <span className={styles.sectionChevron} aria-hidden>
