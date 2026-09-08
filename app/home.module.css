@@ -140,15 +140,16 @@
 }
 
 .actionCards {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(12px, 2vw, 28px);
+  gap: clamp(16px, 2.5vw, 32px);
   width: 100%;
-  max-width: 880px;
-  margin: 0 auto;
-  align-content: stretch;
+  max-width: 720px;
+  margin: auto auto 0;
+  align-content: center;
+  justify-content: center;
   animation: homeFadeIn 0.85s ease 0.08s both;
 }
 
@@ -157,14 +158,13 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  height: 100%;
-  max-height: 100%;
+  max-height: clamp(200px, 34vh, 280px);
   text-decoration: none;
   color: var(--ri-text);
   background: rgba(43, 43, 43, 0.88);
   border: 1px solid rgba(200, 155, 60, 0.55);
   border-radius: 12px;
-  padding: clamp(6px, 0.9vh, 10px);
+  padding: 8px;
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -176,8 +176,8 @@
 }
 
 .cardImageWrap {
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 0 0 auto;
+  height: clamp(88px, 14vh, 130px);
   overflow: hidden;
   border-radius: 8px;
   line-height: 0;
@@ -394,6 +394,8 @@
     flex: none;
     grid-template-columns: 1fr;
     gap: 14px;
+    max-width: 420px;
+    margin: 12px auto;
   }
 
   .actionCard {
@@ -403,8 +405,9 @@
 
   .cardImageWrap {
     flex: none;
+    height: auto;
     aspect-ratio: 16 / 9;
-    max-height: 180px;
+    max-height: 160px;
   }
 
   .cardText {
