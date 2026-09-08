@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import PageLoader from "@/app/components/PageLoader";
+import { AuthAtmosphere } from "@/components/shared/AuthAtmosphere";
 import styles from "@/app/login/login.module.css";
 
 function EsqueciSenhaContent() {
@@ -66,6 +67,7 @@ function EsqueciSenhaContent() {
 
   return (
     <div className={styles.page}>
+      <AuthAtmosphere />
       {loading && <PageLoader message="Enviando..." mode="overlay" />}
 
       <div className={styles.card}>
@@ -76,13 +78,12 @@ function EsqueciSenhaContent() {
           <p className={styles.subtitle}>
             <span className={styles.accessTag}>Esqueci a senha</span>
           </p>
+          <p className={styles.supportLine}>
+            Digite o e-mail da sua conta. Enviaremos um link para criar uma nova senha.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
-          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: "#f2f2f2" }}>
-            Digite o e-mail da sua conta. Enviaremos um link para criar uma nova senha.
-          </p>
-
           {errorMessage && <p className={styles.error}>{errorMessage}</p>}
           {successMessage && (
             <p className={styles.error} style={{ color: "#86efac", borderColor: "#166534" }}>

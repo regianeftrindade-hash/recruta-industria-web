@@ -150,6 +150,7 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
             <LogoRecruta size="xs" as="h1" depth />
+            <span className="ri-dash-access-tag">Acesso Empresa</span>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <span style={{ fontSize: 10, ...dashPlanAccent }}>

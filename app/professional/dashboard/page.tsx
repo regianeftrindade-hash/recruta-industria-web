@@ -489,7 +489,10 @@ export default function DashboardProfissional() {
             paddingBottom: 6,
           }}
         >
-          <LogoRecruta size="xs" as="span" depth />
+          <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+            <LogoRecruta size="xs" as="span" depth />
+            <span className="ri-dash-access-tag">Acesso Profissional</span>
+          </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <DashboardThemeToggle />
             <InstallAppPrompt variant="inline" />

@@ -15,6 +15,7 @@ import {
 import { btnGoldStyle as btnGold, BUTTON_3D_GOLD_SHADOW, BUTTON_3D_GOLD_SHADOW_ACTIVE, goldButton3DStyle } from "@/lib/button-3d";
 import { PixQrCode } from "@/app/components/PixQrCode";
 import { BillingOptions } from "@/app/components/BillingOptions";
+import { AuthAtmosphere } from "@/components/shared/AuthAtmosphere";
 
 type PaymentData = {
   chargeId: string;
@@ -184,8 +185,9 @@ function PagamentoEmpresa() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#3A3A3A", color: "#F2F2F2", padding: "32px 20px" }}>
-      <div style={{ maxWidth: 900, margin: "0 auto" }}>
+    <div style={{ position: "relative", minHeight: "100vh", background: "#3A3A3A", color: "#F2F2F2", padding: "32px 20px", overflow: "hidden" }}>
+      <AuthAtmosphere />
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 900, margin: "0 auto" }}>
         <button
           type="button"
           onClick={() => router.push("/company/dashboard-empresa")}
@@ -197,7 +199,7 @@ function PagamentoEmpresa() {
         <h1 style={{ color: "#C89B3C", margin: "0 0 8px" }}>
           {planDef.emoji} Assinar plano {planDef.nome}
         </h1>
-        <p style={{ color: "#aaa", margin: "0 0 24px" }}>{planDef.descricao}</p>
+        <p style={{ color: "rgba(242,242,242,0.82)", margin: "0 0 24px", lineHeight: 1.5 }}>{planDef.descricao}</p>
 
         {gatewayReady === false && (
           <div style={{ background: "#1a1508", border: "1px solid #8D6B1F", borderRadius: 8, padding: 14, marginBottom: 20, fontSize: 13, lineHeight: 1.5 }}>
@@ -207,7 +209,7 @@ function PagamentoEmpresa() {
         )}
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
-          <div style={{ background: "#111", border: "1px solid #8D6B1F", borderRadius: 12, padding: 20 }}>
+          <div style={{ background: "rgba(43,43,43,0.94)", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
             <p style={{ color: "#C89B3C", fontWeight: "bold", fontSize: 28, margin: "0 0 4px" }}>
               {priceLabel.price}<span style={{ fontSize: 14, color: "#aaa" }}>{priceLabel.period}</span>
             </p>
@@ -228,7 +230,7 @@ function PagamentoEmpresa() {
             )}
           </div>
 
-          <div style={{ background: "#111", border: "1px solid #8D6B1F", borderRadius: 12, padding: 20 }}>
+          <div style={{ background: "rgba(43,43,43,0.94)", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
             {!paymentData ? (
               <>
                 <h2 style={{ color: "#C89B3C", margin: "0 0 16px", fontSize: 16 }}>Pagamento</h2>

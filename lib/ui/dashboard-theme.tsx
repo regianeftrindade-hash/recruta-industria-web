@@ -52,8 +52,11 @@ export const dashPage: CSSProperties = {
 };
 
 export const dashHeader: CSSProperties = {
-  background: DASH.sidebar,
-  borderBottom: `1px solid rgba(200, 155, 60, 0.28)`,
+  background: "color-mix(in srgb, var(--dash-sidebar) 92%, transparent)",
+  backdropFilter: "blur(10px)",
+  WebkitBackdropFilter: "blur(10px)",
+  borderBottom: `1px solid rgba(200, 155, 60, 0.34)`,
+  boxShadow: "0 8px 24px rgba(0, 0, 0, 0.22)",
   padding: "10px 20px",
   display: "flex",
   justifyContent: "space-between",
@@ -61,6 +64,9 @@ export const dashHeader: CSSProperties = {
   flexWrap: "wrap",
   gap: 8,
   rowGap: 6,
+  position: "sticky",
+  top: 0,
+  zIndex: 20,
 };
 
 export const dashCard: CSSProperties = {

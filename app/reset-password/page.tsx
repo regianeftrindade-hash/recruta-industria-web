@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import PageLoader from "@/app/components/PageLoader";
+import { AuthAtmosphere } from "@/components/shared/AuthAtmosphere";
 import styles from "@/app/login/login.module.css";
 
 function ResetPasswordContent() {
@@ -105,6 +106,7 @@ function ResetPasswordContent() {
 
   return (
     <div className={styles.page}>
+      <AuthAtmosphere />
       {loading && <PageLoader message="Salvando..." mode="overlay" />}
 
       <div className={styles.card}>
@@ -115,6 +117,9 @@ function ResetPasswordContent() {
           <p className={styles.subtitle}>
             <span className={styles.accessTag}>Nova senha</span>
           </p>
+          {tokenValid && (
+            <p className={styles.supportLine}>Escolha uma senha forte para sua conta.</p>
+          )}
         </div>
 
         {!tokenValid ? (

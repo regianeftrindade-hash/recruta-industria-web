@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PixQrCode } from "@/app/components/PixQrCode";
+import { AuthAtmosphere } from "@/components/shared/AuthAtmosphere";
 
 type PaymentData = {
   chargeId: string;
@@ -130,47 +131,48 @@ export default function Pagamento() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: COLORS.preto, padding: '30px', color: COLORS.branco }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px' }}>
-        <div style={{ background: COLORS.cardBg, borderRadius: '16px', padding: '28px', boxShadow: '0 15px 45px rgba(0,0,0,0.5)', border: `2px solid ${COLORS.dourado}` }}>
-          <span style={{ display: 'inline-block', fontWeight: 900, color: COLORS.dourado, background: 'rgba(200, 155, 60, 0.15)', padding: '8px 14px', borderRadius: '999px', marginBottom: '12px', fontSize: '12px', border: `1px solid ${COLORS.douradoEscuro}` }}>PREMIUM PROFISSIONAL</span>
-          <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', color: COLORS.dourado }}>Plano completo do profissional</h1>
-          <p style={{ margin: '0 0 18px 0', color: COLORS.textoSuave, lineHeight: 1.6 }}>Acesse todas as funcionalidades do site, desbloqueie dicas premium, histórico de visitas e visibilidade ampliada para empresas.</p>
+    <div style={{ position: "relative", minHeight: "100vh", background: COLORS.preto, padding: "30px", color: COLORS.branco, overflow: "hidden" }}>
+      <AuthAtmosphere />
+      <div style={{ position: "relative", zIndex: 1, maxWidth: "1100px", margin: "0 auto", display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "24px" }}>
+        <div style={{ background: "rgba(43,43,43,0.94)", borderRadius: "16px", padding: "28px", boxShadow: "0 16px 40px rgba(0,0,0,0.45)", border: "1px solid rgba(200,155,60,0.7)" }}>
+          <span style={{ display: "inline-block", fontWeight: 900, color: COLORS.dourado, background: "rgba(200, 155, 60, 0.15)", padding: "8px 14px", borderRadius: "999px", marginBottom: "12px", fontSize: "12px", border: `1px solid ${COLORS.douradoEscuro}` }}>PREMIUM PROFISSIONAL</span>
+          <h1 style={{ margin: "0 0 8px 0", fontSize: "28px", color: COLORS.dourado }}>Plano completo do profissional</h1>
+          <p style={{ margin: "0 0 18px 0", color: "rgba(242,242,242,0.82)", lineHeight: 1.6 }}>Acesse todas as funcionalidades do site, desbloqueie dicas premium, histórico de visitas e visibilidade ampliada para empresas.</p>
 
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '16px' }}>
-            <span style={{ fontSize: '18px', color: COLORS.textoSuave }}>R$</span>
-            <span style={{ fontSize: '48px', fontWeight: 900, color: COLORS.branco }}>19,90</span>
-            <span style={{ fontSize: '16px', color: COLORS.textoSuave }}>/mês</span>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "16px" }}>
+            <span style={{ fontSize: "18px", color: COLORS.textoSuave }}>R$</span>
+            <span style={{ fontSize: "48px", fontWeight: 900, color: COLORS.branco }}>19,90</span>
+            <span style={{ fontSize: "16px", color: COLORS.textoSuave }}>/mês</span>
           </div>
 
-          <div style={{ display: 'grid', gap: '10px', marginBottom: '22px' }}>
+          <div style={{ display: "grid", gap: "10px", marginBottom: "22px" }}>
             {[
-              'Todas as funcionalidades do site liberadas',
-              'Veja quais empresas viram seu perfil e todas as duicas para o teu perfil',
-              'Dicas premium sem bloqueio',
-              'Histórico de visitas detalhado',
-              'Perfil em destaque para empresas',
-              'Suporte prioritário'
+              "Todas as funcionalidades do site liberadas",
+              "Veja quais empresas viram seu perfil e todas as dicas para o teu perfil",
+              "Dicas premium sem bloqueio",
+              "Histórico de visitas detalhado",
+              "Perfil em destaque para empresas",
+              "Suporte prioritário"
             ].map((item) => (
-              <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(200, 155, 60, 0.08)', padding: '10px 12px', borderRadius: '10px', border: `1px solid ${COLORS.douradoEscuro}` }}>
-                <span style={{ color: COLORS.branco, fontWeight: 'bold' }}>✓</span>
+              <div key={item} style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(200, 155, 60, 0.08)", padding: "10px 12px", borderRadius: "10px", border: `1px solid ${COLORS.douradoEscuro}` }}>
+                <span style={{ color: COLORS.branco, fontWeight: "bold" }}>✓</span>
                 <span style={{ color: COLORS.branco, fontWeight: 600 }}>{item}</span>
               </div>
             ))}
           </div>
 
-          <div style={{ ...BTN_GOLD, borderRadius: '12px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 8px 20px rgba(200, 155, 60, 0.25)' }}>
+          <div style={{ ...BTN_GOLD, borderRadius: "12px", padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 8px 20px rgba(200, 155, 60, 0.25)" }}>
             <div>
-              <div style={{ fontWeight: 900, fontSize: '16px' }}>Garantia de 7 dias</div>
-              <div style={{ fontSize: '13px', opacity: 0.85 }}>Cancele dentro de 7 dias e tenha reembolso integral.</div>
+              <div style={{ fontWeight: 900, fontSize: "16px" }}>Garantia de 7 dias</div>
+              <div style={{ fontSize: "13px", opacity: 0.85 }}>Cancele dentro de 7 dias e tenha reembolso integral.</div>
             </div>
-            <div style={{ fontWeight: 900, fontSize: '14px' }}>🔒 Checkout seguro</div>
+            <div style={{ fontWeight: 900, fontSize: "14px" }}>🔒 Checkout seguro</div>
           </div>
         </div>
 
-        <div style={{ background: COLORS.cardBg, borderRadius: '16px', padding: '24px', boxShadow: '0 15px 45px rgba(0,0,0,0.5)', border: `2px solid ${COLORS.douradoEscuro}` }}>
-          <h2 style={{ margin: '0 0 12px 0', color: COLORS.dourado, fontSize: '20px' }}>Pagamento</h2>
-          <p style={{ margin: '0 0 18px 0', color: COLORS.textoSuave, fontSize: '14px' }}>Escolha o método e conclua a assinatura Premium.</p>
+        <div style={{ background: "rgba(43,43,43,0.94)", borderRadius: "16px", padding: "24px", boxShadow: "0 16px 40px rgba(0,0,0,0.45)", border: "1px solid rgba(200,155,60,0.7)" }}>
+          <h2 style={{ margin: "0 0 12px 0", color: COLORS.dourado, fontSize: "20px" }}>Pagamento</h2>
+          <p style={{ margin: "0 0 18px 0", color: "rgba(242,242,242,0.82)", fontSize: "14px" }}>Escolha o método e conclua a assinatura Premium.</p>
 
           <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
             <button

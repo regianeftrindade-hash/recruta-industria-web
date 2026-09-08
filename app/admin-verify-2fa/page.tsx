@@ -4,6 +4,7 @@ import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import PageLoader from "@/app/components/PageLoader";
+import { AuthAtmosphere } from "@/components/shared/AuthAtmosphere";
 import styles from "@/app/login/login.module.css";
 
 function AdminVerify2faContent() {
@@ -86,6 +87,7 @@ function AdminVerify2faContent() {
 
   return (
     <div className={styles.page}>
+      <AuthAtmosphere />
       <div className={styles.card}>
         <div className={styles.loginHeader}>
           <div className={styles.logoWrap}>
@@ -94,13 +96,12 @@ function AdminVerify2faContent() {
           <p className={styles.subtitle}>
             <span className={styles.accessTag}>Verificação Admin 2FA</span>
           </p>
+          <p className={styles.supportLine}>
+            Digite o código enviado ao e-mail do administrador.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
-          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5 }}>
-            Enviamos um código para o e-mail do administrador. Digite-o para continuar.
-          </p>
-
           {error && <p className={styles.error}>{error}</p>}
           {info && (
             <p className={styles.error} style={{ color: "#86efac" }}>
