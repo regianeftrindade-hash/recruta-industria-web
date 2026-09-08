@@ -20,10 +20,13 @@ test.describe("smoke público", () => {
     await expect(page.getByRole("heading", { name: /cadastro do profissional/i })).toBeVisible();
     await expect(page.getByLabel(/etapas do cadastro/i)).toBeVisible();
     await expect(page.getByRole("button", { name: /continuar/i })).toBeVisible();
+    await page.getByRole("button", { name: /continuar/i }).click();
+    await expect(page.getByRole("button", { name: /voltar/i })).toBeEnabled();
   });
 
-  test("cadastro empresa abre", async ({ page }) => {
+  test("cadastro empresa tem seções recolhíveis", async ({ page }) => {
     await page.goto("/company/register");
     await expect(page.getByRole("heading", { name: /cadastro empresa/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /dados da empresa/i })).toBeVisible();
   });
 });

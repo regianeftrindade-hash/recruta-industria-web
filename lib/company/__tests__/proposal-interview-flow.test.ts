@@ -86,4 +86,39 @@ describe("fluxo proposta → entrevista", () => {
     expect(c.text).toContain("Trazer EPI");
     expect(c.html).toContain("Metalúrgica X");
   });
+
+  it("agenda ONLINE sem URL falha; PRESENCIAL sem endereço falha", () => {
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "INTERESTED",
+        locationType: "ONLINE",
+        meetingUrl: "",
+      }),
+    ).toThrow("MEETING_URL_REQUIRED");
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "INTERESTED",
+        locationType: "PRESENTIAL",
+        address: "",
+      }),
+    ).toThrow("ADDRESS_REQUIRED");
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "SENT",
+        locationType: "PLATFORM",
+      }),
+    ).toThrow("PROPOSAL_NOT_SCHEDULABLE");
+  });
+
+  it("comprovante presencial usa endereço", () => {
+    const c = formatInterviewComprovante({
+      companyName: "Metalúrgica X",
+      scheduledAt: "2026-09-15T14:00:00.000Z",
+      locationType: "PRESENTIAL",
+      address: "Av. Industrial, 100",
+      meetingUrl: null,
+      observacoes: "",
+    });
+    expect(c.localLabel).toContain("Av. Industrial");
+  });
 });

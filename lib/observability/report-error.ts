@@ -1,10 +1,17 @@
 /**
  * Observabilidade opcional (Sentry).
- * Sem SENTRY_DSN: só loga no console — não quebra o app.
- * Com DSN: depois de `npm i @sentry/nextjs`, conecte o SDK aqui.
+ * Sem DSN: só loga no console.
+ * Com SENTRY_DSN / NEXT_PUBLIC_SENTRY_DSN: envia para o Sentry.
  */
 
 type ReportContext = Record<string, unknown>;
+
+export function isSentryConfigured(): boolean {
+  return Boolean(
+    (typeof process !== "undefined" && process.env.SENTRY_DSN) ||
+      (typeof process !== "undefined" && process.env.NEXT_PUBLIC_SENTRY_DSN),
+  );
+}
 
 export function reportError(error: unknown, context?: ReportContext): void {
   const payload = {
@@ -18,12 +25,14 @@ export function reportError(error: unknown, context?: ReportContext): void {
     console.error("[observability]", payload);
   }
 
-  // Hook futuro: Sentry.captureException(error, { extra: context })
-}
+  if (!isSentryConfigured()) return;
 
-export function isSentryConfigured(): boolean {
-  return Boolean(
-    (typeof process !== "undefined" && process.env.SENTRY_DSN) ||
-      (typeof process !== "undefined" && process.env.NEXT_PUBLIC_SENTRY_DSN),
-  );
+  try {
+    // Import dinâmico evita custo quando DSN não existe no cliente bundlado sem env.
+    void import("@sentry/nextjs").then((Sentry) => {
+      Sentry.captureException(error, { extra: context });
+    });
+  } catch {
+    /* ignore */
+  }
 }
