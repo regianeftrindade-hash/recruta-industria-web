@@ -40,10 +40,6 @@ export default function Home() {
             </span>
             <span className={styles.heroLineSegment} aria-hidden />
           </div>
-
-          <p className={styles.heroSupport}>
-            Conectamos indústrias e profissionais técnicos com segurança e foco em resultado.
-          </p>
         </header>
 
         <section className={styles.actionCards} aria-label="Escolha seu acesso">
