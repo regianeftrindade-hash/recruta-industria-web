@@ -37,7 +37,8 @@ function CadastroEmpresaContent() {
   const [cpfError, setCpfError] = useState('');
   const [cpfValidado, setCpfValidado] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [checkingRegistration, setCheckingRegistration] = useState(true);
+  const [checkingRegistration, setCheckingRegistration] = useState(false);
+  const [sessionWaitTimedOut, setSessionWaitTimedOut] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [usuarioLogado, setUsuarioLogado] = useState(false);
@@ -145,10 +146,15 @@ function CadastroEmpresaContent() {
 
     setCheckingRegistration(true);
     let redirecting = false;
+    let cancelled = false;
+    const timeoutId = window.setTimeout(() => {
+      if (!cancelled && !redirecting) setCheckingRegistration(false);
+    }, 8000);
     const user = session.user;
     void fetch('/api/company/check-registration', { credentials: 'include' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
+        if (cancelled) return;
         const testBypass = data?.testBypass === true || bypassByEmail;
         setIsTestBypass(testBypass);
 
@@ -211,6 +217,7 @@ function CadastroEmpresaContent() {
         }
       })
       .catch(() => {
+        if (cancelled) return;
         if (bypassByEmail) {
           redirecting = true;
           router.replace('/company/dashboard-empresa');
@@ -224,10 +231,24 @@ function CadastroEmpresaContent() {
         }));
       })
       .finally(() => {
-        if (!redirecting) setCheckingRegistration(false);
+        window.clearTimeout(timeoutId);
+        if (!cancelled && !redirecting) setCheckingRegistration(false);
       });
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
   }, [status, session, router, isEditMode]);
 
+  useEffect(() => {
+    if (status !== 'loading') {
+      setSessionWaitTimedOut(false);
+      return;
+    }
+    const t = window.setTimeout(() => setSessionWaitTimedOut(true), 5000);
+    return () => window.clearTimeout(t);
+  }, [status]);
   const formatarCNPJ = (valor: string) => {
     return valor
       .replace(/\D/g, '')
@@ -620,7 +641,7 @@ function CadastroEmpresaContent() {
     }
   };
 
-  if (status === 'loading' || checkingRegistration) {
+  if ((status === 'loading' && !sessionWaitTimedOut) || (status === 'authenticated' && checkingRegistration)) {
     return (
       <PageLoader
         message={checkingRegistration ? 'Verificando cadastro...' : 'Carregando...'}

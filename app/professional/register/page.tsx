@@ -416,7 +416,9 @@ export default function CadastroProfissional() {
   const { data: session, status: sessionStatus } = useSession();
   const isEditMode = searchParams.get('edit') === '1';
   const [profileLoaded, setProfileLoaded] = useState(!isEditMode);
-  const [checkingRegistration, setCheckingRegistration] = useState(!isEditMode);
+  /** Só bloqueia a tela quando há sessão autenticada para checar. Visitante vê o form na hora. */
+  const [checkingRegistration, setCheckingRegistration] = useState(false);
+  const [sessionWaitTimedOut, setSessionWaitTimedOut] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [camposObrigatoriosFaltando, setCamposObrigatoriosFaltando] = useState<CampoObrigatorioFalta[]>([]);
   const { fg, blocoErro, termoErro } = useCampoObrigatorioErro(camposObrigatoriosFaltando);
@@ -832,9 +834,15 @@ export default function CadastroProfissional() {
     setCheckingRegistration(true);
 
     let redirecting = false;
+    let cancelled = false;
+    const timeoutId = window.setTimeout(() => {
+      if (!cancelled && !redirecting) setCheckingRegistration(false);
+    }, 8000);
+
     fetch('/api/professional/profile', { credentials: 'include' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
+        if (cancelled) return;
         if (data?.registrationComplete) {
           redirecting = true;
           router.replace('/professional/dashboard');
@@ -854,10 +862,24 @@ export default function CadastroProfissional() {
       })
       .catch(() => {})
       .finally(() => {
-        if (!redirecting) setCheckingRegistration(false);
+        window.clearTimeout(timeoutId);
+        if (!cancelled && !redirecting) setCheckingRegistration(false);
       });
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
   }, [isEditMode, sessionStatus, session, router]);
 
+  useEffect(() => {
+    if (sessionStatus !== 'loading') {
+      setSessionWaitTimedOut(false);
+      return;
+    }
+    const t = window.setTimeout(() => setSessionWaitTimedOut(true), 5000);
+    return () => window.clearTimeout(t);
+  }, [sessionStatus]);
   // Salvar dados do formulário no localStorage (somente cadastro novo)
   useEffect(() => {
     if (!profileLoaded || isEditMode || typeof window === 'undefined') return;
@@ -1259,7 +1281,10 @@ export default function CadastroProfissional() {
     }
   };
 
-  const paginaCarregando = sessionStatus === 'loading' || !profileLoaded || checkingRegistration;
+  const paginaCarregando =
+    (sessionStatus === 'loading' && !sessionWaitTimedOut) ||
+    (isEditMode && !profileLoaded) ||
+    (sessionStatus === 'authenticated' && checkingRegistration);
   const mensagemCarregamento = !profileLoaded
     ? 'Carregando seus dados...'
     : checkingRegistration
