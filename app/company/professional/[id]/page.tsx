@@ -1,75 +1,47 @@
 "use client";
 
-import React from "react";
+import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import CompanyCandidateProfilePanel from "@/app/components/CompanyCandidateProfilePanel";
-import DashboardThemeToggle from "@/app/components/DashboardThemeToggle";
-import LogoRecruta from "@/app/components/LogoRecruta";
-import { btnGoldStyle as btnGold } from "@/lib/button-3d";
-import "@/app/dashboard/dashboard-theme.css";
-import { DASH, DashboardThemeShell, dashHeader } from "@/lib/dashboard-theme";
+import { companyProfessionalPath } from "@/lib/profile/public-slug";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
+import { DASH, DashboardThemeShell } from "@/lib/dashboard-theme";
 
-export default function CompanyProfessionalPage() {
+/** Redireciona URLs antigas /company/professional/[id] → /company/profissional/[slug]. */
+export default function CompanyProfessionalLegacyRedirect() {
   const router = useRouter();
   const params = useParams();
-  const { status } = useSession();
-  const profileId = typeof params.id === "string" ? params.id : "";
+  const id = typeof params.id === "string" ? params.id : "";
 
-  if (status === "loading") {
-    return (
-      <DashboardThemeShell>
-        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <AmpulhetaLoading label="Carregando perfil..." size={42} color={DASH.gold} />
-        </div>
-      </DashboardThemeShell>
-    );
-  }
-
-  if (!profileId) {
-    return (
-      <DashboardThemeShell>
-        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <p style={{ color: DASH.muted }}>Perfil inválido.</p>
-        </div>
-      </DashboardThemeShell>
-    );
-  }
+  useEffect(() => {
+    if (!id) {
+      router.replace("/company/dashboard-empresa");
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/company/professionals/resolve?ref=${encodeURIComponent(id)}`,
+          { credentials: "include" },
+        );
+        const data = (await res.json().catch(() => ({}))) as { slug?: string; profileId?: string };
+        if (cancelled) return;
+        const target = data.slug || data.profileId || id;
+        router.replace(companyProfessionalPath(target));
+      } catch {
+        if (!cancelled) router.replace(companyProfessionalPath(id));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, router]);
 
   return (
-    <DashboardThemeShell style={{ width: "100%", maxWidth: "none" }}>
-      <header style={{ ...dashHeader, padding: "14px 20px" }}>
-        <LogoRecruta size="xs" as="span" depth />
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <DashboardThemeToggle />
-          <button
-            type="button"
-            onClick={() => router.push("/company/dashboard-empresa")}
-            style={{ ...btnGold, padding: "8px 14px", fontSize: 12 }}
-          >
-            Voltar à vitrine
-          </button>
-        </div>
-      </header>
-
-      <main
-        style={{
-          padding: "16px 12px 32px",
-          maxWidth: 1200,
-          margin: "0 auto",
-          minWidth: 0,
-          width: "100%",
-          boxSizing: "border-box",
-          overflowX: "hidden",
-        }}
-      >
-        <CompanyCandidateProfilePanel
-          profileId={profileId}
-          onBack={() => router.push("/company/dashboard-empresa")}
-          onUnlocked={() => router.refresh()}
-        />
-      </main>
+    <DashboardThemeShell>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <AmpulhetaLoading label="Abrindo perfil..." size={36} color={DASH.gold} />
+      </div>
     </DashboardThemeShell>
   );
 }

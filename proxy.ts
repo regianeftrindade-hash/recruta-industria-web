@@ -129,6 +129,7 @@ export async function proxy(request: NextRequest) {
     '/company/dashboard-empresa',
     '/professional/dashboard',
     '/company/professional',
+    '/company/profissional',
     '/company/pagamento',
     '/professional/pagamento',
   ];

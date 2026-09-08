@@ -44,6 +44,12 @@ export async function applyCoreSchema(): Promise<void> {
     await prisma.$executeRawUnsafe(
       `ALTER TABLE "Profile" ADD COLUMN IF NOT EXISTS "videoApresentacaoPath" TEXT`,
     );
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "Profile" ADD COLUMN IF NOT EXISTS "publicSlug" TEXT`,
+    );
+    await prisma.$executeRawUnsafe(
+      `CREATE UNIQUE INDEX IF NOT EXISTS "Profile_publicSlug_key" ON "Profile"("publicSlug")`,
+    );
 
     await prisma.$executeRawUnsafe(
       `ALTER TABLE "Company" ADD COLUMN IF NOT EXISTS "billingPeriod" TEXT NOT NULL DEFAULT 'monthly'`,

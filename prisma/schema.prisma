@@ -256,6 +256,8 @@ model Profile {
   // Campos originais (mantidos para compatibilidade)
   id              String   @id @default(cuid())
   userId          String   @unique
+  /// URL pública legível: soldador-sao-paulo-sp-ok51e (único)
+  publicSlug      String?  @unique
   title           String   // Cargo/Profissão
   bio             String?  // Descrição resumida
   fullDescription String?  // Descrição completa

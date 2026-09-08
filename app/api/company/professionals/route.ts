@@ -23,6 +23,7 @@ import { readSnapshotDisplay } from '@/lib/professional-profile-map'
 import { listarPerfisVisualizados } from '@/lib/profile-messages'
 import { notifyProfessionalAsync, notifyProfileViewed } from '@/lib/professional-notifications'
 import { listActivePremiumProfileIds } from '@/lib/professional-storage'
+import { profilePublicSlugOrBuild } from '@/lib/profile/resolve-profile-ref'
 
 function salarySearchTerms(input: string): string[] {
   const trimmed = input.trim()
@@ -58,6 +59,7 @@ function parseSkills(skills: string | null): string[] {
 
 type ProfileRow = {
   id: string
+  publicSlug?: string | null
   title: string | null
   bio: string | null
   mensagemEmpresas: string | null
@@ -118,6 +120,7 @@ function buildSummary(profile: ProfileRow, industrial: ProfileIndustrialData, co
     const snap = readSnapshotDisplay(profile.formDataJSON)
     return {
     id: profile.id,
+    slug: profilePublicSlugOrBuild(profile),
     nome: maskName(profile.user.name || snap.nome),
     cargo: profile.cargoDesejado || profile.title || snap.cargo || '—',
     area: profile.areaInteresse || '—',
@@ -145,6 +148,7 @@ function buildFull(profile: ProfileRow, industrial: ProfileIndustrialData, compa
 
   const base = {
     id: profile.id,
+    slug: profilePublicSlugOrBuild(profile),
     nome: profile.user.name || snap.nome || '—',
     cargo: profile.cargoDesejado || profile.title || snap.cargo || '—',
     area: profile.areaInteresse || '—',

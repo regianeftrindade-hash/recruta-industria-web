@@ -6,6 +6,8 @@ import {
   resolveCompanyActor,
 } from "@/lib/company/company-team";
 import { isRuntimeDdlEnabled } from "@/lib/infra/ensure-db-schema";
+import { companyProfessionalPath } from "@/lib/profile/public-slug";
+import { profilePublicSlugOrBuild } from "@/lib/profile/resolve-profile-ref";
 
 export type ProfileShareDTO = {
   id: string;
@@ -114,7 +116,15 @@ export async function shareProfileWithTeam(input: {
   const professionalName = profile.user?.name || "Profissional";
   const cargo =
     (profile as { cargoDesejado?: string | null }).cargoDesejado || profile.title || "";
-  const profileUrl = `${input.origin.replace(/\/$/, "")}/company/professional/${profile.id}`;
+  const slug = profilePublicSlugOrBuild({
+    id: profile.id,
+    publicSlug: (profile as { publicSlug?: string | null }).publicSlug,
+    title: profile.title,
+    cargoDesejado: (profile as { cargoDesejado?: string | null }).cargoDesejado,
+    cidade: (profile as { cidade?: string | null }).cidade,
+    estado: (profile as { estado?: string | null }).estado,
+  });
+  const profileUrl = `${input.origin.replace(/\/$/, "")}${companyProfessionalPath(slug)}`;
 
   await ensureChatTable();
   const companyKey = getCompanySubscriptionKey(actor.ownerUserId);

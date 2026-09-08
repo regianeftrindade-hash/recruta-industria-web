@@ -17,6 +17,8 @@ import {
 
 export interface ProfissionalResumo {
   id: string;
+  /** Slug legível para URL (/company/profissional/...) */
+  slug?: string;
   nome: string;
   cargo: string;
   area: string;
@@ -597,7 +599,7 @@ export default function CompanyDashboardVitrineSection({
               <CardPerfil
                 key={p.id}
                 p={p}
-                onOpen={() => openProfile(p.id)}
+                onOpen={() => openProfile(p.slug || p.id)}
                 canUnlock={p.bloqueado && canUnlock && (slotsRestantes === null || slotsRestantes > 0)}
                 canExport={canExportProfiles && !p.bloqueado}
                 onUnlock={() => handleUnlock(p.id)}
