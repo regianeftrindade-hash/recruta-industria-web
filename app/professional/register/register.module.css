@@ -32,11 +32,11 @@
   width: 100%;
   max-width: min(1320px, 100%);
   margin: 0 auto;
-  background: rgba(43, 43, 43, 0.94);
+  background: rgba(43, 43, 43, 0.92);
   padding: clamp(20px, 3vw, 36px) clamp(20px, 4vw, 40px);
   border-radius: 16px;
-  border: 1px solid rgba(200, 155, 60, 0.7);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(200, 155, 60, 0.85);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(200, 155, 60, 0.12);
   box-sizing: border-box;
 }
 

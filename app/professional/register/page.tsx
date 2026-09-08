@@ -62,6 +62,7 @@ import { isArquivoAnexado, isArquivoNoServidor, nomeArquivoAnexado } from '@/lib
 import CertificadoCursoUpload from '@/components/professional/CertificadoCursoUpload';
 import VideoApresentacaoCadastro from '@/components/professional/VideoApresentacaoCadastro';
 import { AuthAtmosphere } from '@/components/shared/AuthAtmosphere';
+import LogoRecruta from '@/app/components/LogoRecruta';
 
 const BACKUP_STORAGE_KEY = 'dadosFormularioBackup';
 const FORM_STORAGE_KEY = 'dadosFormularioCompleto';
@@ -1265,9 +1266,12 @@ export default function CadastroProfissional() {
 
   return (
     <div className={`${styles.container} ri-readable`}>
-      <AuthAtmosphere />
+      <AuthAtmosphere intensity="strong" />
       {submitting && <PageLoader message="Salvando cadastro..." mode="overlay" />}
       <div className={styles.card} role="main" aria-labelledby="register-title">
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+          <LogoRecruta size="sm" as="div" depth />
+        </div>
         <h1 id="register-title" className={styles.title}>
           {isEditMode ? 'Atualizar cadastro' : 'Cadastro do profissional'}
         </h1>

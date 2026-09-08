@@ -72,7 +72,7 @@ export default function BoasVindasProfissionalPage() {
 
   return (
     <div className={styles.container}>
-      <AuthAtmosphere />
+      <AuthAtmosphere intensity="strong" />
       <div className={styles.inner}>
         <section className={styles.heroCard} aria-labelledby="boas-vindas-titulo">
           <div className={styles.logoWrap}>

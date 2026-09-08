@@ -87,7 +87,7 @@ function BoasVindasEmpresaContent() {
 
   return (
     <div className={styles.container}>
-      <AuthAtmosphere />
+      <AuthAtmosphere intensity="strong" />
       <div className={styles.inner}>
         <section
           className={styles.heroCard}
