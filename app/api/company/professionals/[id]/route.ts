@@ -21,12 +21,14 @@ import { lerCampoJsonDoPerfil } from '@/lib/profile-json-fields';
 import { getVideoApresentacaoPathByProfileId } from '@/lib/professional/professional-video-db';
 import { notifyProfessionalAsync, notifyProfileViewed } from '@/lib/professional-notifications';
 import { getCompanyAnonymousMode } from '@/lib/company/company-preferences';
-import { applyCoreSchema } from '@/lib/infra/ensure-db-schema';
 import {
-  ensureProfilePublicSlug,
   resolveProfileIdFromParam,
 } from '@/lib/profile/resolve-profile-ref';
-import { companyProfessionalPath } from '@/lib/profile/public-slug';
+import {
+  buildProfilePublicSlug,
+  companyProfessionalPath,
+  looksLikeProfileCuid,
+} from '@/lib/profile/public-slug';
 
 function parseSkills(skills: string | null): string[] {
   if (!skills) return [];
@@ -101,13 +103,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await applyCoreSchema();
     const companyUser = await getCompanyUser(request);    if (!companyUser) {
       return NextResponse.json({ error: 'Acesso restrito a empresas' }, { status: 403 });
     }
 
     const { id: rawId } = await params;
-    const profileId = await resolveProfileIdFromParam(rawId);
+    const profileId = looksLikeProfileCuid(rawId)
+      ? rawId
+      : (await resolveProfileIdFromParam(rawId));
     if (!profileId) {
       return NextResponse.json({ error: 'Perfil não encontrado' }, { status: 404 });
     }
@@ -120,7 +123,13 @@ export async function GET(
       return NextResponse.json({ error: 'Perfil não encontrado' }, { status: 404 });
     }
 
-    const publicSlug = await ensureProfilePublicSlug(profile);
+    const publicSlug = buildProfilePublicSlug({
+      id: profile.id,
+      title: profile.title,
+      cargo: profile.cargoDesejado,
+      city: profile.cidade,
+      state: profile.estado,
+    });
 
     const planContext = await getCompanyPlanContext(companyUser.id);
     const dataUserId = planContext.ownerUserId || companyUser.id;
@@ -181,7 +190,7 @@ export async function GET(
     const resumo = {
       id: profile.id,
       slug: publicSlug,
-      path: companyProfessionalPath(publicSlug),
+      path: companyProfessionalPath(publicSlug, profile.id),
       nome: bloqueado ? maskName(profile.user.name || snap.nome) : profile.user.name || snap.nome || '—',
       cargo: profile.cargoDesejado || profile.title || snap.cargo || '—',
       area: profile.areaInteresse || '—',
@@ -281,13 +290,14 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await applyCoreSchema();
     const companyUser = await getCompanyUser(request);    if (!companyUser) {
       return NextResponse.json({ error: 'Acesso restrito a empresas' }, { status: 403 });
     }
 
     const { id: rawId } = await params;
-    const profileId = await resolveProfileIdFromParam(rawId);
+    const profileId = looksLikeProfileCuid(rawId)
+      ? rawId
+      : (await resolveProfileIdFromParam(rawId));
     if (!profileId) {
       return NextResponse.json({ error: 'Perfil não encontrado' }, { status: 404 });
     }

@@ -599,7 +599,7 @@ export default function CompanyDashboardVitrineSection({
               <CardPerfil
                 key={p.id}
                 p={p}
-                onOpen={() => openProfile(p.id, p.slug)}
+                onOpen={() => openProfile(p.id)}
                 canUnlock={p.bloqueado && canUnlock && (slotsRestantes === null || slotsRestantes > 0)}
                 canExport={canExportProfiles && !p.bloqueado}
                 onUnlock={() => handleUnlock(p.id)}

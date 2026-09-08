@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveAuthEmail } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
-import {
-  ensureProfilePublicSlug,
-  ensurePublicSlugColumn,
-  resolveProfileIdFromParam,
-} from "@/lib/profile/resolve-profile-ref";
+import { looksLikeProfileCuid } from "@/lib/profile/public-slug";
 import { buildProfilePublicSlug } from "@/lib/profile/public-slug";
 
-/** Resolve slug ou id antigo → { profileId, slug }. */
+/** Resolve id (cuid) → { profileId, slug }. Sem depender de coluna no banco. */
 export async function GET(request: NextRequest) {
   try {
-    await ensurePublicSlugColumn();
     const auth = await resolveAuthEmail(request);
     if (!auth) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
@@ -25,42 +20,36 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
     }
 
-    const ref = request.nextUrl.searchParams.get("ref") || "";
-    const profileId = await resolveProfileIdFromParam(ref);
-    if (!profileId) {
+    const ref = (request.nextUrl.searchParams.get("ref") || "").trim();
+    if (!looksLikeProfileCuid(ref)) {
       return NextResponse.json({ error: "Perfil não encontrado" }, { status: 404 });
     }
 
-    let slug = buildProfilePublicSlug({ id: profileId });
-    try {
-      const profile = await prisma.profile.findUnique({
-        where: { id: profileId },
-        select: {
-          id: true,
-          publicSlug: true,
-          title: true,
-          cargoDesejado: true,
-          cidade: true,
-          estado: true,
-        },
-      });
-      if (profile) {
-        slug = await ensureProfilePublicSlug(profile);
-      }
-    } catch (err) {
-      console.warn("[professionals/resolve] slug", err);
+    const profile = await prisma.profile.findUnique({
+      where: { id: ref },
+      select: {
+        id: true,
+        title: true,
+        cargoDesejado: true,
+        cidade: true,
+        estado: true,
+      },
+    });
+    if (!profile) {
+      return NextResponse.json({ error: "Perfil não encontrado" }, { status: 404 });
     }
 
-    return NextResponse.json({ profileId, slug });
+    const slug = buildProfilePublicSlug({
+      id: profile.id,
+      title: profile.title,
+      cargo: profile.cargoDesejado,
+      city: profile.cidade,
+      state: profile.estado,
+    });
+
+    return NextResponse.json({ profileId: profile.id, slug });
   } catch (err) {
     console.error("[professionals/resolve]", err);
-    const detail = err instanceof Error ? err.message : "erro desconhecido";
-    return NextResponse.json(
-      {
-        error: "Erro ao resolver perfil",
-        detail: process.env.NODE_ENV === "development" ? detail : undefined,
-      },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Erro ao resolver perfil" }, { status: 500 });
   }
 }

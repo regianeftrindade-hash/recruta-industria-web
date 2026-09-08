@@ -1,4 +1,4 @@
-/** Slug público legível para URLs de perfil (sem CUID inteiro). */
+/** Slug público legível (opcional). Abertura do perfil usa sempre o id interno. */
 
 export function slugifyPart(input: string): string {
   return String(input || "")
@@ -10,11 +10,6 @@ export function slugifyPart(input: string): string {
     .slice(0, 40);
 }
 
-/**
- * Ex.: soldador-sao-paulo-sp-ok51e
- * Usa cargo + local + 6 últimos chars do id (estável e único).
- * Não inclui nome completo (evita vazar identidade em perfis ainda bloqueados).
- */
 export function buildProfilePublicSlug(input: {
   id: string;
   title?: string | null;
@@ -38,22 +33,15 @@ export function buildProfilePublicSlug(input: {
 }
 
 /**
- * Caminho do perfil (empresa).
- * Sempre passe o `profileId` quando tiver — a página abre por ele e não depende do resolve.
- * Ex.: /company/profissional/soldador-sp-ok51e?id=cmr8...
+ * URL de abertura do perfil — SEMPRE pelo id (confiável).
+ * O slug amigável fica para depois; não bloqueia mais a navegação.
  */
-export function companyProfessionalPath(slugOrId: string, profileId?: string | null): string {
-  const ref = String(slugOrId || "").trim();
-  if (!ref) return "/company/dashboard-empresa";
-  const path = `/company/profissional/${encodeURIComponent(ref)}`;
-  const id = String(profileId || "").trim();
-  if (id && id !== ref) {
-    return `${path}?id=${encodeURIComponent(id)}`;
-  }
-  return path;
+export function companyProfessionalPath(_slugOrId: string, profileId?: string | null): string {
+  const id = String(profileId || _slugOrId || "").trim();
+  if (!id) return "/company/dashboard-empresa";
+  return `/company/professional/${encodeURIComponent(id)}`;
 }
 
-/** Parece cuid do Prisma (id interno). */
 export function looksLikeProfileCuid(value: string): boolean {
   return /^c[a-z0-9]{20,}$/i.test(String(value || "").trim());
 }
