@@ -68,7 +68,10 @@ export function resolveSmtpConfig(env: NodeJS.ProcessEnv = process.env): SmtpRes
   };
 }
 
-function createTransporterFor(cfg: SmtpResolvedConfig): Transporter | null {
+function createTransporterFor(
+  cfg: SmtpResolvedConfig,
+  authMethod?: "LOGIN" | "PLAIN",
+): Transporter | null {
   if (!cfg.host || !cfg.user || !cfg.pass) return null;
   if (!isPlausibleSmtpHost(cfg.host)) return null;
 
@@ -80,7 +83,7 @@ function createTransporterFor(cfg: SmtpResolvedConfig): Transporter | null {
     auth: {
       user: cfg.user,
       pass: cfg.pass,
-      method: "LOGIN",
+      ...(authMethod ? { method: authMethod } : {}),
     },
     family: 4,
     connectionTimeout: 12_000,
@@ -99,6 +102,21 @@ function alternatePortConfig(cfg: SmtpResolvedConfig): SmtpResolvedConfig {
     return { ...cfg, port: 587, secure: false, useStartTls: true };
   }
   return { ...cfg, port: 465, secure: true, useStartTls: false };
+}
+
+function isAuthSmtpError(error: unknown): boolean {
+  const err = error as { message?: string; code?: string; response?: string; responseCode?: number };
+  const blob = [err.message, err.code, err.response, err.responseCode]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  return (
+    blob.includes("invalid login")
+    || blob.includes("authentication")
+    || blob.includes("eauth")
+    || blob.includes("535")
+    || err.responseCode === 535
+  );
 }
 
 function isTransientSmtpError(error: unknown): boolean {
@@ -178,7 +196,7 @@ export function smtpFailureHint(error: unknown): string {
     || lower.includes("eauth")
     || lower.includes("535")
   ) {
-    return "A Hostinger recusou o login SMTP. SMTP_USER = contato@recrutaindustria.com e SMTP_PASS = senha dessa caixa (símbolo ok, sem aspas na Vercel).";
+    return "A Hostinger recusou o login SMTP (535). Use a senha da caixa contato@ (não a senha da conta Hostinger). Em E-mails → contato@ → altere/redefina a senha, cole em SMTP_PASS na Vercel sem aspas e faça Redeploy.";
   }
   if (
     lower.includes("getaddrinfo")
@@ -264,24 +282,31 @@ export async function sendEmailDetailed(
     await sendWithTransport(transport, options, from, primary.user);
     return { ok: true };
   } catch (firstError) {
-    if (isTransientSmtpError(firstError)) {
-      const alt = alternatePortConfig(primary);
-      const altTransport = createTransporterFor(alt);
-      if (altTransport) {
-        try {
-          console.warn(
-            `[email] Tentativa na porta ${primary.port} falhou; retry na ${alt.port}…`,
-          );
-          await sendWithTransport(altTransport, options, from, alt.user);
-          return { ok: true };
-        } catch (secondError) {
-          console.error("[email] Falha ao enviar (retry):", secondError);
-          return { ok: false, error: smtpFailureHint(secondError) };
-        }
+    const attempts: Array<{ cfg: SmtpResolvedConfig; method?: "LOGIN" | "PLAIN"; label: string }> = [];
+    if (isAuthSmtpError(firstError) || isTransientSmtpError(firstError)) {
+      attempts.push(
+        { cfg: primary, method: "PLAIN", label: "PLAIN na porta atual" },
+        { cfg: primary, method: "LOGIN", label: "LOGIN na porta atual" },
+        { cfg: alternatePortConfig(primary), method: undefined, label: "porta alternativa" },
+        { cfg: alternatePortConfig(primary), method: "PLAIN", label: "PLAIN na porta alternativa" },
+      );
+    }
+
+    let lastError: unknown = firstError;
+    for (const attempt of attempts) {
+      const t = createTransporterFor(attempt.cfg, attempt.method);
+      if (!t) continue;
+      try {
+        console.warn(`[email] Retry: ${attempt.label}…`);
+        await sendWithTransport(t, options, from, attempt.cfg.user);
+        return { ok: true };
+      } catch (err) {
+        lastError = err;
       }
     }
-    console.error("[email] Falha ao enviar:", firstError);
-    return { ok: false, error: smtpFailureHint(firstError) };
+
+    console.error("[email] Falha ao enviar:", lastError);
+    return { ok: false, error: smtpFailureHint(lastError) };
   }
 }
 
