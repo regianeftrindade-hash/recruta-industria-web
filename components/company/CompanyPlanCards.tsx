@@ -43,7 +43,7 @@ export default function CompanyPlanCards({ currentTier, onSelectFree }: CompanyP
       >
         {COMPANY_PLAN_TIERS.map((plano) => {
           const isCurrent = currentTier != null && plano.id === currentTier;
-          const isPaid = plano.id !== "FREE";
+          const isPaid = plano.precoCentavos > 0;
 
           return (
             <div
@@ -126,7 +126,7 @@ export default function CompanyPlanCards({ currentTier, onSelectFree }: CompanyP
                 </>
               )}
 
-              {plano.id === "FREE" && !isCurrent && onSelectFree && (
+              {plano.id === "FREE" && !isPaid && !isCurrent && onSelectFree && (
                 <button onClick={onSelectFree} style={{ ...btnGold, padding: "7px 8px", fontSize: 9, width: "100%" }}>
                   Usar plano Free
                 </button>
@@ -141,7 +141,7 @@ export default function CompanyPlanCards({ currentTier, onSelectFree }: CompanyP
                 </button>
               )}
 
-              {isCurrent && plano.id === "FREE" && (
+              {isCurrent && plano.id === "FREE" && !isPaid && (
                 <p style={{ color: DASH.muted, fontSize: 9, margin: 0, textAlign: "center" }}>Plano gratuito ativo</p>
               )}
 
