@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
+import type SMTPTransport from "nodemailer/lib/smtp-transport";
 
 function unquoteEnv(value: string | undefined): string {
   const raw = (value || "").trim();
@@ -40,7 +41,8 @@ function createTransporter(): Transporter | null {
     return null;
   }
 
-  return nodemailer.createTransport({
+  // `family` existe no runtime do nodemailer, mas falta nos tipos oficiais.
+  const options: SMTPTransport.Options & { family?: 4 | 6 } = {
     host,
     port,
     secure,
@@ -55,7 +57,8 @@ function createTransporter(): Transporter | null {
       minVersion: "TLSv1.2",
       servername: host,
     },
-  });
+  };
+  return nodemailer.createTransport(options);
 }
 
 export function isEmailConfigured(): boolean {
