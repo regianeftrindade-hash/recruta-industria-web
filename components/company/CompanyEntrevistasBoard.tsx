@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { DASH, dashCard, dashInnerBox, dashSectionTitle } from "@/lib/dashboard-theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
-import { formatInterviewComprovante } from "@/lib/company/job-proposals-shared";
 import { AVISO_RETENCAO_PROPOSTAS } from "@/lib/profile/inbox-retention";
 import { formatReaisDisplay, turnoPropostaLabel } from "@/lib/format-reais";
 import ProfessionalRecruitmentHistory, {
@@ -17,6 +16,7 @@ import {
   isEntrevista,
   isPropostaAtiva,
 } from "@/components/professional/ProfessionalOpportunityBoard";
+import CompanyEntrevistaCard from "@/components/company/CompanyEntrevistaCard";
 
 const rowStyle: React.CSSProperties = {
   display: "flex",
@@ -263,20 +263,6 @@ export default function CompanyEntrevistasBoard() {
     }
   };
 
-  const chip = (active: boolean): React.CSSProperties => ({
-    padding: "5px 8px",
-    fontSize: 10,
-    fontWeight: 700,
-    borderRadius: 8,
-    cursor: "pointer",
-    whiteSpace: "nowrap",
-    flexShrink: 0,
-    border: `1px solid ${active ? DASH.gold : DASH.border}`,
-    background: active ? "rgba(200,155,60,0.22)" : "transparent",
-    color: active ? DASH.gold : DASH.muted,
-    fontFamily: "inherit",
-  });
-
   const btnGhost: React.CSSProperties = {
     background: "transparent",
     border: `1px solid ${DASH.border}`,
@@ -345,320 +331,6 @@ export default function CompanyEntrevistasBoard() {
             Perfil
           </button>
         </div>
-      </article>
-    );
-  };
-
-  const renderEntrevista = (p: JobProposalDTO) => {
-    if (!p.interview) return null;
-    const busy = busyId === p.id;
-    const t = trackingOf(p);
-    const comprovante = formatInterviewComprovante({
-      companyName: p.companyName,
-      scheduledAt: p.interview.scheduledAt,
-      locationType: p.interview.locationType,
-      address: p.interview.address,
-      meetingUrl: p.interview.meetingUrl,
-      observacoes: p.interview.observacoes,
-    });
-    const cancelOpen = cancelMenuId === p.id;
-
-    return (
-      <article key={p.id} style={{ ...rowStyle, flexWrap: "wrap", alignItems: "flex-start" }}>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => void excluir(p.id)}
-          style={{ ...btnGhost, color: "#e57373", borderColor: "rgba(229,115,115,0.55)" }}
-        >
-          Excluir
-        </button>
-        <div style={{ flex: "1 1 180px", minWidth: 0 }}>
-          <p
-            style={{
-              margin: 0,
-              fontSize: 11,
-              fontWeight: 800,
-              color: DASH.gold,
-              textTransform: "uppercase",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {nomeProf(p)} · {p.cargo}
-          </p>
-          <p style={{ margin: "2px 0 0", fontSize: 10, color: DASH.muted }}>
-            {comprovante.dataLabel} · {comprovante.horaLabel}
-          </p>
-          <p style={{ margin: "2px 0 0", fontSize: 10, color: DASH.text }}>{comprovante.localLabel}</p>
-          {p.interview.observacoes?.trim() ? (
-            <p style={{ margin: "6px 0 0", fontSize: 11, color: DASH.text, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
-              <strong style={{ color: DASH.gold }}>Observação:</strong> {p.interview.observacoes.trim()}
-            </p>
-          ) : null}
-          <p style={{ margin: "4px 0 0", fontSize: 9, color: DASH.muted }}>
-            {p.status === "INTERVIEW_CONFIRMED" ? "Confirmada pelo profissional" : "Aguardando confirmação"}
-          </p>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            gap: 6,
-            flexShrink: 0,
-            flexWrap: "wrap",
-            justifyContent: "flex-end",
-            alignItems: "center",
-          }}
-        >
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => void toggleFunil(p, "entrevistado", t.entrevistado)}
-            style={chip(t.entrevistado)}
-          >
-            Entrevistado
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => void toggleFunil(p, "emTeste", t.emTeste)}
-            style={chip(t.emTeste)}
-          >
-            Em teste
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => void toggleFunil(p, "contratado", t.contratado)}
-            style={chip(t.contratado)}
-          >
-            Contratado
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => void toggleFunil(p, "naoContratado", t.naoContratado)}
-            style={chip(t.naoContratado)}
-          >
-            Não contratado
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => (cancelOpen ? fecharCancelar() : abrirCancelar(p.id))}
-            style={{ ...btnGhost, color: "#e57373", borderColor: "rgba(229,115,115,0.55)" }}
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push(`/company/professional/${p.profileId}`)}
-            style={{ ...btnGold, padding: "5px 8px", fontSize: 10 }}
-          >
-            Perfil
-          </button>
-        </div>
-
-        {cancelOpen && cancelMode === "menu" && (
-          <div style={{ width: "100%", marginTop: 8, ...nestedCard }}>
-            <p style={{ margin: "0 0 8px", fontSize: 12, color: DASH.text, fontWeight: 700 }}>
-              Cancelar entrevista — escolha uma opção:
-            </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => setCancelMode("reschedule")}
-                style={{ ...btnGold, padding: "8px 12px", fontSize: 12 }}
-              >
-                Reagendar
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => setCancelMode("justify")}
-                style={{ ...btnGhost, padding: "8px 12px", fontSize: 12 }}
-              >
-                Informar justificativa
-              </button>
-              <button type="button" disabled={busy} onClick={fecharCancelar} style={btnGhost}>
-                Fechar
-              </button>
-            </div>
-          </div>
-        )}
-
-        {cancelOpen && cancelMode === "justify" && (
-          <div style={{ width: "100%", marginTop: 8, ...nestedCard }}>
-            <p style={{ margin: "0 0 6px", fontSize: 12, fontWeight: 700, color: DASH.text }}>
-              Justificativa do cancelamento
-            </p>
-            <textarea
-              value={justification}
-              onChange={(e) => setJustification(e.target.value)}
-              rows={3}
-              placeholder="Explique o motivo do cancelamento para o profissional…"
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                borderRadius: 8,
-                border: `1px solid ${DASH.border}`,
-                background: DASH.card,
-                color: DASH.text,
-                padding: 8,
-                fontSize: 12,
-                fontFamily: "inherit",
-                resize: "vertical",
-              }}
-            />
-            <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => void cancelarComJustificativa(p.id)}
-                style={{ ...btnGold, padding: "8px 12px", fontSize: 12 }}
-              >
-                Confirmar cancelamento
-              </button>
-              <button type="button" disabled={busy} onClick={() => setCancelMode("menu")} style={btnGhost}>
-                Voltar
-              </button>
-            </div>
-          </div>
-        )}
-
-        {cancelOpen && cancelMode === "reschedule" && (
-          <div style={{ width: "100%", marginTop: 8, ...nestedCard, display: "grid", gap: 8 }}>
-            <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: DASH.text }}>
-              Reagendar entrevista
-            </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              <div>
-                <p style={{ margin: "0 0 4px", fontSize: 10, color: DASH.muted }}>Data</p>
-                <input
-                  type="date"
-                  value={rescheduleForm.date}
-                  onChange={(e) => setRescheduleForm((f) => ({ ...f, date: e.target.value }))}
-                  style={{
-                    width: "100%",
-                    boxSizing: "border-box",
-                    padding: 8,
-                    borderRadius: 8,
-                    border: `1px solid ${DASH.border}`,
-                    background: DASH.card,
-                    color: DASH.text,
-                  }}
-                />
-              </div>
-              <div>
-                <p style={{ margin: "0 0 4px", fontSize: 10, color: DASH.muted }}>Horário</p>
-                <input
-                  type="time"
-                  value={rescheduleForm.time}
-                  onChange={(e) => setRescheduleForm((f) => ({ ...f, time: e.target.value }))}
-                  style={{
-                    width: "100%",
-                    boxSizing: "border-box",
-                    padding: 8,
-                    borderRadius: 8,
-                    border: `1px solid ${DASH.border}`,
-                    background: DASH.card,
-                    color: DASH.text,
-                  }}
-                />
-              </div>
-            </div>
-            <div>
-              <p style={{ margin: "0 0 4px", fontSize: 10, color: DASH.muted }}>Local</p>
-              <select
-                value={rescheduleForm.locationType}
-                onChange={(e) =>
-                  setRescheduleForm((f) => ({
-                    ...f,
-                    locationType: e.target.value as "PRESENTIAL" | "ONLINE" | "PLATFORM",
-                  }))
-                }
-                style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  padding: 8,
-                  borderRadius: 8,
-                  border: `1px solid ${DASH.border}`,
-                  background: DASH.card,
-                  color: DASH.text,
-                }}
-              >
-                <option value="PLATFORM">Pela plataforma</option>
-                <option value="ONLINE">Online (Meet/Teams)</option>
-                <option value="PRESENTIAL">Presencial</option>
-              </select>
-            </div>
-            {rescheduleForm.locationType === "ONLINE" && (
-              <input
-                type="url"
-                placeholder="Link Meet/Teams"
-                value={rescheduleForm.meetingUrl}
-                onChange={(e) => setRescheduleForm((f) => ({ ...f, meetingUrl: e.target.value }))}
-                style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  padding: 8,
-                  borderRadius: 8,
-                  border: `1px solid ${DASH.border}`,
-                  background: DASH.card,
-                  color: DASH.text,
-                }}
-              />
-            )}
-            {rescheduleForm.locationType === "PRESENTIAL" && (
-              <input
-                type="text"
-                placeholder="Endereço"
-                value={rescheduleForm.address}
-                onChange={(e) => setRescheduleForm((f) => ({ ...f, address: e.target.value }))}
-                style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  padding: 8,
-                  borderRadius: 8,
-                  border: `1px solid ${DASH.border}`,
-                  background: DASH.card,
-                  color: DASH.text,
-                }}
-              />
-            )}
-            <textarea
-              rows={2}
-              placeholder="Observações (opcional)"
-              value={rescheduleForm.observacoes}
-              onChange={(e) => setRescheduleForm((f) => ({ ...f, observacoes: e.target.value }))}
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                padding: 8,
-                borderRadius: 8,
-                border: `1px solid ${DASH.border}`,
-                background: DASH.card,
-                color: DASH.text,
-                fontFamily: "inherit",
-              }}
-            />
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => void reagendar(p.id)}
-                style={{ ...btnGold, padding: "8px 12px", fontSize: 12 }}
-              >
-                Confirmar reagendamento
-              </button>
-              <button type="button" disabled={busy} onClick={() => setCancelMode("menu")} style={btnGhost}>
-                Voltar
-              </button>
-            </div>
-          </div>
-        )}
       </article>
     );
   };
@@ -789,7 +461,27 @@ export default function CompanyEntrevistasBoard() {
               </p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {listas.entrevistas.map(renderEntrevista)}
+                {listas.entrevistas.map((p) => (
+                  <CompanyEntrevistaCard
+                    key={p.id}
+                    proposal={p}
+                    busy={busyId === p.id}
+                    cancelOpen={cancelMenuId === p.id}
+                    cancelMode={cancelMode}
+                    justification={justification}
+                    rescheduleForm={rescheduleForm}
+                    onExcluir={() => void excluir(p.id)}
+                    onToggleFunil={(campo, atual) => void toggleFunil(p, campo, atual)}
+                    onAbrirCancelar={() => abrirCancelar(p.id)}
+                    onFecharCancelar={fecharCancelar}
+                    onSetCancelMode={setCancelMode}
+                    onSetJustification={setJustification}
+                    onSetRescheduleForm={setRescheduleForm}
+                    onCancelarComJustificativa={() => void cancelarComJustificativa(p.id)}
+                    onReagendar={() => void reagendar(p.id)}
+                    onPerfil={() => router.push(`/company/professional/${p.profileId}`)}
+                  />
+                ))}
               </div>
             )}
           </div>

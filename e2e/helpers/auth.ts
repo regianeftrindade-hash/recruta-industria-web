@@ -1,11 +1,12 @@
 import type { APIRequestContext, Page } from "@playwright/test";
 
-/** Login empresa via NextAuth credentials (sem mexer na UI do login). */
-export async function loginCompanyViaApi(
+/** Login via NextAuth credentials (sem mexer na UI do login). */
+export async function loginViaApi(
   request: APIRequestContext,
   page: Page,
   email: string,
   password: string,
+  callbackUrl: string,
 ): Promise<void> {
   const csrfRes = await request.get("/api/auth/csrf");
   const csrfJson = (await csrfRes.json()) as { csrfToken?: string };
@@ -21,7 +22,7 @@ export async function loginCompanyViaApi(
       password,
       redirect: "false",
       json: "true",
-      callbackUrl: "/company/dashboard-empresa",
+      callbackUrl,
     },
   });
 
@@ -29,14 +30,38 @@ export async function loginCompanyViaApi(
     throw new Error(`Login API falhou: HTTP ${loginRes.status()}`);
   }
 
-  // Propaga cookies da API para o contexto do browser.
   const state = await request.storageState();
   await page.context().addCookies(state.cookies);
+}
+
+export async function loginCompanyViaApi(
+  request: APIRequestContext,
+  page: Page,
+  email: string,
+  password: string,
+): Promise<void> {
+  await loginViaApi(request, page, email, password, "/company/dashboard-empresa");
+}
+
+export async function loginProfessionalViaApi(
+  request: APIRequestContext,
+  page: Page,
+  email: string,
+  password: string,
+): Promise<void> {
+  await loginViaApi(request, page, email, password, "/professional/dashboard");
 }
 
 export function companyE2eCredentials(): { email: string; password: string } | null {
   const email = (process.env.E2E_COMPANY_EMAIL || "").trim();
   const password = (process.env.E2E_COMPANY_PASSWORD || "").trim();
+  if (!email || !password) return null;
+  return { email, password };
+}
+
+export function professionalE2eCredentials(): { email: string; password: string } | null {
+  const email = (process.env.E2E_PROFESSIONAL_EMAIL || "").trim();
+  const password = (process.env.E2E_PROFESSIONAL_PASSWORD || "").trim();
   if (!email || !password) return null;
   return { email, password };
 }
