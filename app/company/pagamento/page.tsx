@@ -12,7 +12,7 @@ import {
   type BillingMode,
   type BillingPeriod,
 } from "@/lib/billing";
-import { btnGoldStyle as btnGold } from "@/lib/button-3d";
+import { btnGoldStyle as btnGold, BUTTON_3D_GOLD_SHADOW, BUTTON_3D_GOLD_SHADOW_ACTIVE, goldButton3DStyle } from "@/lib/button-3d";
 import { PixQrCode } from "@/app/components/PixQrCode";
 import { BillingOptions } from "@/app/components/BillingOptions";
 
@@ -261,17 +261,20 @@ function PagamentoEmpresa() {
                             onClick={() => setMethod(m.id)}
                             aria-pressed={active}
                             style={{
+                              ...goldButton3DStyle,
                               flex: 1,
                               padding: "12px 10px",
                               borderRadius: 8,
                               fontSize: 14,
                               fontWeight: 700,
                               cursor: "pointer",
-                              border: active ? "2px solid #C89B3C" : "1px solid #5a4512",
+                              color: active ? "#F2F2F2" : "#1a1508",
+                              border: active ? "1px solid #3a2a08" : "1px solid #6b5218",
                               background: active
-                                ? "linear-gradient(180deg, #E8C36A 0%, #C89B3C 55%, #8D6B1F 100%)"
-                                : "linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8D6B1F 100%)",
-                              color: active ? "#1a1508" : "#F2F2F2",
+                                ? "linear-gradient(180deg, #5a4512 0%, #4a3810 45%, #3a2a08 100%)"
+                                : goldButton3DStyle.background,
+                              boxShadow: active ? BUTTON_3D_GOLD_SHADOW_ACTIVE : BUTTON_3D_GOLD_SHADOW,
+                              transform: active ? "translateY(1px)" : "none",
                             }}
                           >
                             {m.label}

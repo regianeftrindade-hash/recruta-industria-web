@@ -3,7 +3,7 @@
 import React from "react";
 import type { BillingMode, BillingPeriod } from "@/lib/billing";
 import { billingModeLabel, billingPeriodLabel } from "@/lib/billing";
-import { goldButton3DMutedStyle, goldButton3DStyle } from "@/lib/button-3d";
+import { BUTTON_3D_GOLD_SHADOW, BUTTON_3D_GOLD_SHADOW_ACTIVE, goldButton3DStyle } from "@/lib/button-3d";
 
 type BillingOptionsProps = {
   billingPeriod: BillingPeriod;
@@ -14,18 +14,25 @@ type BillingOptionsProps = {
   recurringSupported?: boolean;
 };
 
+/** Selecionado = afundado/escuro; não selecionado = relevo claro. */
 const optionStyle = (active: boolean): React.CSSProperties => ({
-  ...(active ? goldButton3DStyle : goldButton3DMutedStyle),
+  ...goldButton3DStyle,
   flex: 1,
   padding: "12px 10px",
   borderRadius: 8,
   fontSize: 13,
-  fontWeight: active ? 700 : 600,
+  fontWeight: 700,
   textAlign: "center",
   lineHeight: 1.35,
-  border: active ? "2px solid #C89B3C" : "1px solid #5a4512",
   outline: "none",
   cursor: "pointer",
+  color: active ? "#F2F2F2" : "#1a1508",
+  border: active ? "1px solid #3a2a08" : "1px solid #6b5218",
+  background: active
+    ? "linear-gradient(180deg, #5a4512 0%, #4a3810 45%, #3a2a08 100%)"
+    : goldButton3DStyle.background,
+  boxShadow: active ? BUTTON_3D_GOLD_SHADOW_ACTIVE : BUTTON_3D_GOLD_SHADOW,
+  transform: active ? "translateY(1px)" : "none",
 });
 
 export function BillingOptions({
