@@ -21,12 +21,11 @@ export const COMPANY_PLAN_TIERS: CompanyPlanDefinition[] = [
     id: 'FREE',
     emoji: '🥉',
     nome: 'FREE',
-    // TEMP teste Asaas: mínimo R$ 5,00 — voltar para R$ 0 / precoCentavos: 0 depois do teste
-    preco: 'R$ 5,00',
+    preco: 'R$ 0',
     periodo: '/mês',
     descricao:
       'Ideal para conhecer a plataforma e explorar o banco de talentos. O plano Free permite que a empresa visualize o potencial da plataforma antes de investir em uma assinatura.',
-    precoCentavos: 500,
+    precoCentavos: 0,
     inclui: [
       'Pesquisa de profissionais da indústria',
       'Visualização resumida dos perfis',
@@ -139,6 +138,5 @@ export function getPlanDefinition(tier: string): CompanyPlanDefinition {
 }
 
 export function getPaidPlanTiers(): CompanyPlanTier[] {
-  // Qualquer plano com preço > 0 (inclui FREE a R$ 2,00 no teste Asaas).
   return COMPANY_PLAN_TIERS.filter((p) => p.precoCentavos > 0).map((p) => p.id);
 }
