@@ -1027,10 +1027,11 @@ export default function CadastroProfissional() {
     setCamposObrigatoriosFaltando(faltando);
     if (faltando.length > 0) {
       window.setTimeout(() => {
-        document.getElementById('aviso-obrigatorios')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 50);
+        document.getElementById('aviso-obrigatorios')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 120);
       return false;
     }
+    setCamposObrigatoriosFaltando([]);
     return true;
   };
   const uploadFile = async (file: File, type: string): Promise<string | null> => {
@@ -1342,6 +1343,19 @@ export default function CadastroProfissional() {
             onStepChange={setWizardStep}
             onContinue={tentarAvancarWizard}
           />
+        )}
+
+        {useWizard && camposObrigatoriosFaltando.length > 0 && wizardStep < lastWizardStep && (
+          <div id="aviso-obrigatorios" className={styles.avisoObrigatoriosCard} role="alert" aria-live="polite">
+            <p className={styles.avisoObrigatoriosTitulo}>
+              Complete os obrigatórios desta etapa para continuar:
+            </p>
+            <ul className={styles.avisoObrigatoriosLista}>
+              {camposObrigatoriosFaltando.map((campo) => (
+                <li key={`${campo.id}-${campo.label}`}>{campo.label}</li>
+              ))}
+            </ul>
+          </div>
         )}
 
         <form onSubmit={handleSubmit} className={styles.form} noValidate>
@@ -2861,12 +2875,10 @@ export default function CadastroProfissional() {
           </>
           )}
 
-          {camposObrigatoriosFaltando.length > 0 && (
-            <div id="aviso-obrigatorios" className={styles.avisoObrigatoriosCard} role="alert" aria-live="polite">
+          {camposObrigatoriosFaltando.length > 0 && (!useWizard || wizardStep === lastWizardStep) && (
+            <div id={useWizard ? 'aviso-obrigatorios-final' : 'aviso-obrigatorios'} className={styles.avisoObrigatoriosCard} role="alert" aria-live="polite">
               <p className={styles.avisoObrigatoriosTitulo}>
-                {useWizard && wizardStep < lastWizardStep
-                  ? 'Complete os obrigatórios desta etapa para continuar:'
-                  : 'Preencha todos os campos obrigatórios antes de salvar:'}
+                Preencha todos os campos obrigatórios antes de salvar:
               </p>
               <ul className={styles.avisoObrigatoriosLista}>
                 {camposObrigatoriosFaltando.map((campo) => (
@@ -2875,7 +2887,6 @@ export default function CadastroProfissional() {
               </ul>
             </div>
           )}
-
           {(!useWizard || wizardStep === lastWizardStep) && (
           <div className={styles.submitBtnRow}>
             <button type="submit" className={styles.submitBtn}>
