@@ -2,26 +2,19 @@
 
 import React, { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { FormEditPayload } from "@/lib/professional-profile-map";
-import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import type { SobreMimData } from "@/lib/sobre-mim";
 import type { ResultadoTesteComportamental } from "@/lib/teste-comportamental";
 import { GOLD_GRADIENT_STOPS } from "@/lib/decorative-gold-line";
 import {
   DASH,
-  dashCard,
   dashGhostBtn,
-  dashInput,
 } from "@/lib/dashboard-theme";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
-import PropostasEntrevistasEmpresa from "@/components/company/PropostasEntrevistasEmpresa";
-import CompanyCandidateNotesCard from "@/components/company/CompanyCandidateNotesCard";
-import CompanyCandidateFeedbackCard from "@/components/company/CompanyCandidateFeedbackCard";
-import CompanyCandidateMessagesCard from "@/components/company/CompanyCandidateMessagesCard";
-import CompanyCandidateTipsCard, { type TipItem } from "@/components/company/CompanyCandidateTipsCard";
 import CompanyCandidateProfileHeader from "@/components/company/CompanyCandidateProfileHeader";
 import CompanyCandidateProfileDetails from "@/components/company/CompanyCandidateProfileDetails";
 import CompanyCandidateProfileMediaShare from "@/components/company/CompanyCandidateProfileMediaShare";
-import { goldTitle } from "@/components/company/candidate-profile-bits";
+import CompanyCandidateProfileSideColumn from "@/components/company/CompanyCandidateProfileSideColumn";
+import type { TipItem } from "@/components/company/CompanyCandidateTipsCard";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
 import type {
   CompanyCandidateProfilePanelProps,
@@ -56,7 +49,6 @@ export default function CompanyCandidateProfilePanel({
   const [canUseTalentBank, setCanUseTalentBank] = useState(false);
   const [talentLists, setTalentLists] = useState<Array<{ id: string; name: string }>>([]);
   const [talentListIdsSelecionados, setTalentListIdsSelecionados] = useState<string[]>([]);
-  const [salvandoTalent, setSalvandoTalent] = useState(false);
   const [proposals, setProposals] = useState<JobProposalDTO[]>([]);
   const [favoriting, setFavoriting] = useState(false);
   const [unlocking, setUnlocking] = useState(false);
@@ -559,190 +551,26 @@ export default function CompanyCandidateProfilePanel({
             onShare={handleShareProfile}
           />
 
-          <aside
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 16,
-              marginTop: 0,
-              alignItems: "stretch",
-              minWidth: 0,
-              maxWidth: "100%",
-              width: "100%",
-            }}
-          >
-            {!resumo.bloqueado && (
-              <PropostasEntrevistasEmpresa
-                profileId={profileId}
-                canSend={canSendProposals}
-                proposals={proposals}
-                onChanged={() => void recarregarPropostas()}
-              />
-            )}
-
-            <CompanyCandidateFeedbackCard profileId={profileId} />
-
-            <CompanyCandidateMessagesCard
-              profileId={profileId}
-              bloqueado={resumo.bloqueado}
-              conversa={conversa}
-              onConversaChange={setConversa}
-              onReload={carregar}
-            />
-
-            {canUseTalentBank && (
-              <section style={{ ...dashCard, padding: 18 }}>
-                <h3 style={{ ...goldTitle, margin: "0 0 12px", fontSize: 16 }}>
-                  📁 Adicionar ao banco de talentos
-                </h3>
-                {resumo.bloqueado ? (
-                  <p style={{ margin: 0, fontSize: 13, color: DASH.muted, lineHeight: 1.45 }}>
-                    Libere o contato para adicionar este profissional às suas listas.
-                  </p>
-                ) : (
-                  <>
-                    <p style={{ margin: "0 0 8px", fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>
-                      Selecione uma ou mais listas (Ctrl/Cmd + clique) e salve.
-                    </p>
-                    <select
-                      multiple
-                      size={Math.min(6, Math.max(3, talentLists.length || 3))}
-                      value={talentListIdsSelecionados}
-                      onChange={(e) => {
-                        const opts = Array.from(e.target.selectedOptions).map((o) => o.value);
-                        setTalentListIdsSelecionados(opts);
-                      }}
-                      style={{
-                        ...dashInput,
-                        width: "100%",
-                        minHeight: 96,
-                        padding: 8,
-                        marginBottom: 10,
-                      }}
-                    >
-                      {talentLists.length === 0 ? (
-                        <option value="" disabled>
-                          Nenhuma lista criada ainda
-                        </option>
-                      ) : (
-                        talentLists.map((l) => (
-                          <option key={l.id} value={l.id}>
-                            {l.name}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                      <button
-                        type="button"
-                        disabled={salvandoTalent}
-                        onClick={async () => {
-                          setSalvandoTalent(true);
-                          try {
-                            const res = await fetch("/api/company/talent-lists", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              credentials: "include",
-                              body: JSON.stringify({
-                                action: "syncProfileLists",
-                                profileId,
-                                listIds: talentListIdsSelecionados,
-                              }),
-                            });
-                            const data = await res.json();
-                            if (!res.ok) {
-                              alert(data.error || "Erro ao salvar no banco de talentos");
-                              return;
-                            }
-                            if (Array.isArray(data.membershipListIds)) {
-                              setTalentListIdsSelecionados(data.membershipListIds.map(String));
-                            }
-                            alert("Listas do banco de talentos atualizadas.");
-                          } catch {
-                            alert("Erro ao salvar no banco de talentos");
-                          } finally {
-                            setSalvandoTalent(false);
-                          }
-                        }}
-                        style={{ ...btnGold, padding: "8px 14px", fontSize: 12, opacity: salvandoTalent ? 0.7 : 1 }}
-                      >
-                        {salvandoTalent ? "Salvando..." : "Salvar"}
-                      </button>
-                      <button
-                        type="button"
-                        disabled={salvandoTalent}
-                        onClick={async () => {
-                          const name = window.prompt("Nome da nova lista:");
-                          if (!name?.trim()) return;
-                          try {
-                            const res = await fetch("/api/company/talent-lists", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              credentials: "include",
-                              body: JSON.stringify({ action: "createList", name: name.trim() }),
-                            });
-                            const data = await res.json();
-                            if (!res.ok) {
-                              alert(data.error || "Erro ao criar lista");
-                              return;
-                            }
-                            const tlRes = await fetch(
-                              `/api/company/talent-lists?profileId=${encodeURIComponent(profileId)}`,
-                              { credentials: "include" },
-                            );
-                            if (tlRes.ok) {
-                              const tlData = await tlRes.json();
-                              setTalentLists(
-                                Array.isArray(tlData.lists)
-                                  ? tlData.lists.map((l: { id: string; name: string }) => ({
-                                      id: l.id,
-                                      name: l.name,
-                                    }))
-                                  : [],
-                              );
-                              setTalentListIdsSelecionados((prev) =>
-                                data.id && !prev.includes(data.id) ? [...prev, data.id] : prev,
-                              );
-                            }
-                          } catch {
-                            alert("Erro ao criar lista");
-                          }
-                        }}
-                        style={{
-                          background: "transparent",
-                          border: `1px solid ${DASH.gold}`,
-                          color: DASH.gold,
-                          borderRadius: 8,
-                          padding: "8px 12px",
-                          fontSize: 12,
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          fontFamily: "inherit",
-                        }}
-                      >
-                        + Nova lista
-                      </button>
-                    </div>
-                  </>
-                )}
-              </section>
-            )}
-
-            <CompanyCandidateTipsCard
-              profileId={profileId}
-              bloqueado={resumo.bloqueado}
-              canSendTips={canSendTips}
-              tips={tips}
-              onTipsChange={setTips}
-              onReload={carregar}
-            />
-
-            <CompanyCandidateNotesCard
-              profileId={profileId}
-              notes={tracking.notes}
-              onNotesChange={(notes) => setTracking((t) => ({ ...t, notes }))}
-            />
-          </aside>
+          <CompanyCandidateProfileSideColumn
+            profileId={profileId}
+            bloqueado={resumo.bloqueado}
+            canSendProposals={canSendProposals}
+            proposals={proposals}
+            onProposalsChanged={() => void recarregarPropostas()}
+            canUseTalentBank={canUseTalentBank}
+            talentLists={talentLists}
+            talentListIdsSelecionados={talentListIdsSelecionados}
+            onTalentListIdsChange={setTalentListIdsSelecionados}
+            onTalentListsChange={setTalentLists}
+            conversa={conversa}
+            onConversaChange={setConversa}
+            canSendTips={canSendTips}
+            tips={tips}
+            onTipsChange={setTips}
+            notes={tracking.notes}
+            onNotesChange={(notes) => setTracking((t) => ({ ...t, notes }))}
+            onReload={carregar}
+          />
         </div>
       </div>
     </div>
