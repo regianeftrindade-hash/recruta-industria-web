@@ -36,6 +36,7 @@ import { SOBRE_MIM_VAZIO, truncarSobreMim, type SobreMimData } from '@/lib/sobre
 import { validarCamposObrigatoriosCadastro, validarCamposObrigatoriosEtapa, type CampoObrigatorioFalta, type ValidacaoCadastroInput } from '@/lib/professional/cadastro-obrigatorios';
 import { useCampoObrigatorioErro } from './useCampoObrigatorioErro';
 import RegisterExtendedSections from './RegisterExtendedSections';
+import { focarCampoCadastro } from '@/lib/ui/focar-campo-cadastro';
 import RegisterWizardChrome, { REGISTER_WIZARD_STEPS } from './RegisterWizardChrome';
 import RegisterCollapsibleSection from '@/components/ui/RegisterCollapsibleSection';
 import PageLoader from '@/app/components/PageLoader';
@@ -1027,7 +1028,9 @@ export default function CadastroProfissional() {
     setCamposObrigatoriosFaltando(faltando);
     if (faltando.length > 0) {
       window.setTimeout(() => {
-        document.getElementById('aviso-obrigatorios')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const primeiro = faltando[0]?.id;
+        if (primeiro) focarCampoCadastro(primeiro);
+        else document.getElementById('aviso-obrigatorios')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }, 120);
       return false;
     }
@@ -1074,7 +1077,10 @@ export default function CadastroProfissional() {
         setEmailError('Email é obrigatório e deve ser válido');
       }
       requestAnimationFrame(() => {
-        document.getElementById('aviso-obrigatorios')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        focarCampoCadastro(faltando[0]?.id);
+        if (!faltando[0]?.id || !document.getElementById(faltando[0].id)) {
+          document.getElementById('aviso-obrigatorios')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       });
       return;
     }
@@ -2634,6 +2640,7 @@ export default function CadastroProfissional() {
                         <div className={index === 0 ? fg('experiencias') : styles.fieldGroup}>
                           <label className={styles.label}>Nome da empresa</label>
                           <input
+                            id={index === 0 ? 'experiencias' : undefined}
                             type="text"
                             className={styles.input}
                             placeholder="Nome da empresa"

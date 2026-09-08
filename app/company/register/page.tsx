@@ -10,6 +10,7 @@ import { READABLE_TEXT_STYLE } from '@/lib/theme';
 import styles from '@/app/professional/register/register.module.css';
 import { matchesCompanyTestBypass } from '@/lib/company/company-test-bypass-shared';
 import { AuthAtmosphere } from '@/components/shared/AuthAtmosphere';
+import { focarCampoCadastro } from '@/lib/ui/focar-campo-cadastro';
 import LogoRecruta from '@/app/components/LogoRecruta';
 import RegisterCollapsibleSection from '@/components/ui/RegisterCollapsibleSection';
 
@@ -40,7 +41,7 @@ function CadastroEmpresaContent() {
   const [checkingRegistration, setCheckingRegistration] = useState(false);
   const [sessionWaitTimedOut, setSessionWaitTimedOut] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [faltandoCampos, setFaltandoCampos] = useState<string[]>([]);
+  const [faltandoCampos, setFaltandoCampos] = useState<{ id: string; label: string }[]>([]);
   const [openDadosEmpresa, setOpenDadosEmpresa] = useState(true);
   const [openContato, setOpenContato] = useState(true);
   const [openDocumentos, setOpenDocumentos] = useState(false);
@@ -493,55 +494,55 @@ function CadastroEmpresaContent() {
       });
 
     if (!bypass) {
-      const faltando: string[] = [];
+      const faltando: { id: string; label: string }[] = [];
       let precisaEmpresa = false;
       let precisaContato = false;
       let precisaSenha = false;
 
       if (!cnpjLimpo || cnpjLimpo.length !== 14) {
-        faltando.push('CNPJ válido (14 dígitos)');
+        faltando.push({ id: 'empresa-cnpj', label: 'CNPJ válido (14 dígitos)' });
         precisaEmpresa = true;
       }
       if (!formData.nome.trim()) {
-        faltando.push('Razão social');
+        faltando.push({ id: 'empresa-razao', label: 'Razão social' });
         precisaEmpresa = true;
       }
       if (!formData.responsavelNome.trim()) {
-        faltando.push('Nome do responsável');
+        faltando.push({ id: 'empresa-responsavel', label: 'Nome do responsável' });
         precisaEmpresa = true;
       }
       if (!cpfLimpo || cpfLimpo.length !== 11 || !isValidCPF(cpfLimpo)) {
-        faltando.push('CPF do responsável válido');
+        faltando.push({ id: 'empresa-cpf', label: 'CPF do responsável válido' });
         precisaEmpresa = true;
       }
       if (!formData.email.trim() && !usuarioLogado) {
-        faltando.push('E-mail de acesso');
+        faltando.push({ id: 'empresa-email', label: 'E-mail de acesso' });
         precisaContato = true;
       }
       if (!telefoneValue.trim()) {
-        faltando.push('Telefone da empresa');
+        faltando.push({ id: 'empresa-telefone', label: 'Telefone da empresa' });
         precisaContato = true;
       } else if (!isValidPhoneBR(telefoneValue)) {
-        faltando.push('Telefone válido com DDD');
+        faltando.push({ id: 'empresa-telefone', label: 'Telefone válido com DDD' });
         precisaContato = true;
       }
       if (!formData.endereco.trim() || formData.endereco.trim().length < 5) {
-        faltando.push('Endereço da empresa');
+        faltando.push({ id: 'empresa-endereco', label: 'Endereço da empresa' });
         precisaContato = true;
       }
       if (!usuarioLogado) {
         if (!formData.password) {
-          faltando.push('Senha');
+          faltando.push({ id: 'empresa-senha', label: 'Senha' });
           precisaSenha = true;
         } else if (formData.password.length < 8) {
-          faltando.push('Senha com no mínimo 8 caracteres');
+          faltando.push({ id: 'empresa-senha', label: 'Senha com no mínimo 8 caracteres' });
           precisaSenha = true;
         }
         if (!formData.confirmPassword) {
-          faltando.push('Confirmar senha');
+          faltando.push({ id: 'empresa-senha-confirma', label: 'Confirmar senha' });
           precisaSenha = true;
         } else if (formData.password && formData.password !== formData.confirmPassword) {
-          faltando.push('Senha e confirmação iguais');
+          faltando.push({ id: 'empresa-senha-confirma', label: 'Senha e confirmação iguais' });
           precisaSenha = true;
         }
       }
@@ -553,11 +554,8 @@ function CadastroEmpresaContent() {
         setFaltandoCampos(faltando);
         setErrorMessage('Complete os campos obrigatórios abaixo.');
         window.setTimeout(() => {
-          document.getElementById('aviso-empresa-obrigatorios')?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'nearest',
-          });
-        }, 80);
+          focarCampoCadastro(faltando[0]?.id);
+        }, 120);
         return;
       }
     }
@@ -822,7 +820,7 @@ function CadastroEmpresaContent() {
               </p>
               <ul className={styles.avisoObrigatoriosLista}>
                 {faltandoCampos.map((campo) => (
-                  <li key={campo}>{campo}</li>
+                  <li key={`${campo.id}-${campo.label}`}>{campo.label}</li>
                 ))}
               </ul>
             </div>
@@ -843,17 +841,18 @@ function CadastroEmpresaContent() {
           <div className={styles.fieldsRow} style={twoCols}>
             <div>
               <label className={styles.label}>CNPJ {isTestBypass ? '' : '*'}</label>
-              <input type="text" className={styles.input} placeholder="00.000.000/0000-00" value={cnpjValue} onChange={handleCnpjChange} required={!isTestBypass} />
+              <input id="empresa-cnpj" type="text" className={styles.input} placeholder="00.000.000/0000-00" value={cnpjValue} onChange={handleCnpjChange} required={!isTestBypass} />
             </div>
 
             <div>
               <label className={styles.label}>RAZÃO SOCIAL {isTestBypass ? '' : '*'}</label>
-              <input type="text" className={styles.input} value={formData.nome} onChange={(e) => setFormData({ ...formData, nome: e.target.value })} required={!isTestBypass} />
+              <input id="empresa-razao" type="text" className={styles.input} value={formData.nome} onChange={(e) => setFormData({ ...formData, nome: e.target.value })} required={!isTestBypass} />
             </div>
 
             <div>
               <label className={styles.label}>NOME DO RESPONSÁVEL {isTestBypass ? '' : '*'}</label>
               <input
+                id="empresa-responsavel"
                 type="text"
                 className={styles.input}
                 placeholder="Pessoa que utiliza a plataforma"
@@ -866,6 +865,7 @@ function CadastroEmpresaContent() {
             <div>
               <label className={styles.label}>CPF DO RESPONSÁVEL {isTestBypass ? '' : '*'}</label>
               <input
+                id="empresa-cpf"
                 type="text"
                 className={styles.input}
                 placeholder="000.000.000-00"
@@ -903,6 +903,7 @@ function CadastroEmpresaContent() {
               <div className={styles.anexoCampoInline}>
                 <div className={styles.anexoCampoInput}>
                   <input
+                    id="empresa-email"
                     type="email"
                     placeholder="contato@suaempresa.com.br"
                     value={usuarioLogado ? emailCorporativo : formData.email}
@@ -964,6 +965,7 @@ function CadastroEmpresaContent() {
               <div>
                 <label className={styles.label}>TELEFONE (DDD) {isTestBypass ? '' : '*'}</label>
                 <input
+                  id="empresa-telefone"
                   type="tel"
                   className={styles.input}
                   placeholder="(00) 00000-0000"
@@ -978,6 +980,7 @@ function CadastroEmpresaContent() {
               <div>
                 <label className={styles.label}>TELEFONE (DDD) {isTestBypass ? '' : '*'}</label>
                 <input
+                  id="empresa-telefone"
                   type="tel"
                   className={styles.input}
                   placeholder="(00) 00000-0000"
@@ -991,6 +994,7 @@ function CadastroEmpresaContent() {
             <div>
               <label className={styles.label}>ENDEREÇO {isTestBypass ? '' : '*'}</label>
               <textarea
+                id="empresa-endereco"
                 className={styles.input}
                 placeholder="Rua, número, bairro, cidade — UF"
                 value={formData.endereco}
@@ -1059,14 +1063,14 @@ function CadastroEmpresaContent() {
               <div className={styles.fieldsRow} style={twoCols}>
                 <div>
                   <label className={styles.label}>SENHA {isTestBypass ? '' : '*'}</label>
-                  <input type="password" className={styles.input} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} required={!isTestBypass} minLength={isTestBypass ? undefined : 8} />
+                  <input id="empresa-senha" type="password" className={styles.input} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} required={!isTestBypass} minLength={isTestBypass ? undefined : 8} />
                   {!isTestBypass && (
                     <small style={{ color: '#F2F2F2' }}>Mínimo 8 caracteres, com letras maiúsculas, minúsculas, números e símbolo.</small>
                   )}
                 </div>
                 <div>
                   <label className={styles.label}>CONFIRMAR SENHA {isTestBypass ? '' : '*'}</label>
-                  <input type="password" className={styles.input} value={formData.confirmPassword} onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} required={!isTestBypass} minLength={isTestBypass ? undefined : 8} />
+                  <input id="empresa-senha-confirma" type="password" className={styles.input} value={formData.confirmPassword} onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} required={!isTestBypass} minLength={isTestBypass ? undefined : 8} />
                 </div>
               </div>
             </RegisterCollapsibleSection>
