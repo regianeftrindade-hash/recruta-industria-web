@@ -16,6 +16,18 @@ describe('e-mail corporativo', () => {
     expect(isCorporateEmail('a@gmail.com')).toBe(false);
     expect(corporateEmailError('a@gmail.com')).toMatch(/corporativo/i);
   });
+
+  it('libera Gmail com ALLOW_FREE_CORPORATE_EMAIL', () => {
+    const prev = process.env.ALLOW_FREE_CORPORATE_EMAIL;
+    process.env.ALLOW_FREE_CORPORATE_EMAIL = 'true';
+    expect(corporateEmailError('a@gmail.com')).toBeNull();
+    if (prev === undefined) delete process.env.ALLOW_FREE_CORPORATE_EMAIL;
+    else process.env.ALLOW_FREE_CORPORATE_EMAIL = prev;
+  });
+
+  it('libera Gmail na conta bypass paizaonacozinha', () => {
+    expect(corporateEmailError('paizaonacozinha@gmail.com')).toBeNull();
+  });
 });
 
 describe('assentos extras', () => {

@@ -209,7 +209,16 @@ export async function POST(request: NextRequest) {
       }
 
       incrementRegisterAttempts(ip)
-      return NextResponse.json({ error: 'Email já cadastrado' }, { status: 409 })
+      return NextResponse.json(
+        {
+          error:
+            userType === 'company'
+              ? 'Este e-mail já é login no site. Use outro (ex.: contato+teste@suaempresa.com.br) ou entre com essa conta e complete o cadastro.'
+              : 'Email já cadastrado',
+          code: 'EMAIL_ALREADY_REGISTERED',
+        },
+        { status: 409 },
+      )
     }
 
     if (userType === 'professional' && cpf) {

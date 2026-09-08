@@ -1,4 +1,5 @@
 import { isValidEmail } from '@/lib/security';
+import { matchesCompanyTestBypass } from '@/lib/company/company-test-bypass-shared';
 
 const FREE_EMAIL_DOMAINS = new Set([
   'gmail.com',
@@ -50,12 +51,20 @@ export function isCorporateEmail(email: string): boolean {
   return !FREE_EMAIL_DOMAINS.has(domain);
 }
 
+/** Libera Gmail/Hotmail só para teste (env ou conta bypass). */
+export function allowFreeEmailAsCorporate(email?: string | null): boolean {
+  const flag = (process.env.ALLOW_FREE_CORPORATE_EMAIL || '').trim().toLowerCase();
+  if (flag === 'true' || flag === '1') return true;
+  if (email && matchesCompanyTestBypass({ email })) return true;
+  return false;
+}
+
 export function corporateEmailError(email: string): string | null {
   const normalized = normalizeCorporateEmail(email);
   if (!normalized) return 'Informe o e-mail corporativo da empresa.';
   if (!isValidEmail(normalized)) return 'E-mail inválido.';
-  if (!isCorporateEmail(normalized)) {
-    return 'Use um e-mail corporativo da empresa (não use Gmail, Hotmail, Outlook, Yahoo etc.).';
+  if (!isCorporateEmail(normalized) && !allowFreeEmailAsCorporate(normalized)) {
+    return 'Use um e-mail corporativo da empresa (não use Gmail, Hotmail, Outlook, Yahoo etc.). Para testar: use rh+teste@suaempresa.com.br ou um domínio próprio.';
   }
   return null;
 }

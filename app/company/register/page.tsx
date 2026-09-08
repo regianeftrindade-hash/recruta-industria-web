@@ -948,7 +948,7 @@ function CadastroEmpresaContent() {
               <small style={{ color: '#ccc', display: 'block', marginTop: 6 }}>
                 {usuarioLogado
                   ? 'Opcional no cadastro. Contatos só liberam após confirmar este e-mail.'
-                  : 'E-mail de acesso da conta. Para liberar contatos, confirme também um e-mail corporativo.'}
+                  : 'E-mail de acesso da conta. Tem que ser corporativo (não Gmail/Hotmail). Se já usa esse e-mail no site, teste com alias: nome+teste@suaempresa.com.br'}
               </small>
               {emailMensagem && (
                 <div style={{ marginTop: 10, background: '#1a1508', color: '#F2F2F2', padding: 10, borderRadius: 8, border: '1px solid #8D6B1F', fontSize: 13, lineHeight: 1.5 }}>
