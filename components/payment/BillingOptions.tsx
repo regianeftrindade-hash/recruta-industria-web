@@ -87,7 +87,7 @@ export function BillingOptions({
         </>
       ) : (
         <p style={{ color: "#8D6B1F", fontSize: 11, margin: "0 0 4px", lineHeight: 1.5 }}>
-          Pagamento único via Pix ou Boleto (Asaas).
+          Pagamento único via Pix ou Boleto.
         </p>
       )}
 

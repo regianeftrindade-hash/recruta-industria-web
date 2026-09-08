@@ -316,18 +316,12 @@ function PagamentoEmpresa() {
                   />
                 ) : (
                   <p style={{ color: "#aaa", fontSize: 13, lineHeight: 1.5, marginBottom: 12 }}>
-                    O QR Code Pix não veio do Asaas. Use o link da fatura abaixo ou tente Boleto.
-                    Confira se há chave Pix cadastrada na conta Asaas.
+                    O QR Code Pix não ficou disponível. Tente de novo ou use Boleto.
                   </p>
                 )}
                 {paymentData.boletoUrl && (
                   <a href={paymentData.boletoUrl} target="_blank" rel="noreferrer" style={{ color: "#C89B3C", display: "block", marginTop: 12, fontWeight: 700 }}>
                     Abrir boleto {paymentData.recurring ? "da assinatura" : ""}
-                  </a>
-                )}
-                {paymentData.checkoutUrl && (
-                  <a href={paymentData.checkoutUrl} target="_blank" rel="noreferrer" style={{ color: "#C89B3C", display: "block", marginTop: 12, fontWeight: 700 }}>
-                    Abrir fatura no Asaas
                   </a>
                 )}
                 <button
