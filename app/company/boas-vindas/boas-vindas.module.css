@@ -10,14 +10,18 @@
 }
 
 .container {
+  position: relative;
   background-color: var(--background);
   min-height: 100vh;
   padding: clamp(20px, 3vw, 40px) clamp(14px, 3vw, 28px);
   font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
   color: var(--text-primary);
+  overflow-x: hidden;
 }
 
 .inner {
+  position: relative;
+  z-index: 1;
   max-width: 720px;
   margin: 0 auto;
 }
@@ -29,12 +33,12 @@
 }
 
 .heroCard {
-  background-color: var(--card-bg);
-  border: 2px solid var(--border-color);
+  background: rgba(43, 43, 43, 0.94);
+  border: 1px solid rgba(200, 155, 60, 0.7);
   border-radius: 16px;
   padding: clamp(20px, 4vw, 32px) clamp(16px, 3vw, 28px);
   text-align: center;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
   margin-bottom: 16px;
 }
 

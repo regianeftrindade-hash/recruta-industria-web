@@ -61,6 +61,7 @@ import {
 import { isArquivoAnexado, isArquivoNoServidor, nomeArquivoAnexado } from '@/lib/arquivo-anexo';
 import CertificadoCursoUpload from '@/components/professional/CertificadoCursoUpload';
 import VideoApresentacaoCadastro from '@/components/professional/VideoApresentacaoCadastro';
+import { AuthAtmosphere } from '@/components/shared/AuthAtmosphere';
 
 const BACKUP_STORAGE_KEY = 'dadosFormularioBackup';
 const FORM_STORAGE_KEY = 'dadosFormularioCompleto';
@@ -1264,6 +1265,7 @@ export default function CadastroProfissional() {
 
   return (
     <div className={`${styles.container} ri-readable`}>
+      <AuthAtmosphere />
       {submitting && <PageLoader message="Salvando cadastro..." mode="overlay" />}
       <div className={styles.card} role="main" aria-labelledby="register-title">
         <h1 id="register-title" className={styles.title}>

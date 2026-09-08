@@ -4,6 +4,7 @@ import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import PageLoader from "@/app/components/PageLoader";
+import { AuthAtmosphere } from "@/components/shared/AuthAtmosphere";
 import styles from "./boas-vindas.module.css";
 
 function BoasVindasEmpresaContent() {
@@ -86,6 +87,7 @@ function BoasVindasEmpresaContent() {
 
   return (
     <div className={styles.container}>
+      <AuthAtmosphere />
       <div className={styles.inner}>
         <section
           className={styles.heroCard}

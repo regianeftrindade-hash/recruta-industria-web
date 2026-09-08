@@ -2,94 +2,39 @@
 
 import React, { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { FormEditPayload } from "@/lib/professional-profile-map";
-import {
-  parseCursosDetalhados,
-  parseCertificacoesDetalhadas,
-  type CursoDetalhado,
-} from "@/lib/professional-form-config";
-import { isArquivoAnexado, nomeArquivoAnexado } from "@/lib/arquivo-anexo";
-import { avatarImageStyle } from "@/lib/theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import type { SobreMimData } from "@/lib/sobre-mim";
-import { PERFIL_INFO, type ResultadoTesteComportamental } from "@/lib/teste-comportamental";
-import SecureVideoPlayer from "@/components/shared/SecureVideoPlayer";
+import type { ResultadoTesteComportamental } from "@/lib/teste-comportamental";
 import { GOLD_GRADIENT_STOPS } from "@/lib/decorative-gold-line";
 import {
   DASH,
   dashCard,
   dashGhostBtn,
-  dashInnerBox,
   dashInput,
-  dashLabel,
-  dashPlanAccent,
-  dashTag,
 } from "@/lib/dashboard-theme";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
-import CarreiraTimeline from "@/components/professional/CarreiraTimeline";
-import BandeiraFavoritoIcon from "@/components/company/BandeiraFavoritoIcon";
 import PropostasEntrevistasEmpresa from "@/components/company/PropostasEntrevistasEmpresa";
 import CompanyCandidateNotesCard from "@/components/company/CompanyCandidateNotesCard";
 import CompanyCandidateFeedbackCard from "@/components/company/CompanyCandidateFeedbackCard";
 import CompanyCandidateMessagesCard from "@/components/company/CompanyCandidateMessagesCard";
 import CompanyCandidateTipsCard, { type TipItem } from "@/components/company/CompanyCandidateTipsCard";
-import {
-  CAMPOS_SOBRE_MIM,
-  CardSecaoPerfil,
-  CertificacaoDetalheItem,
-  CursoDetalheItem,
-  PerfilTextoCorrido,
-  TagList,
-  goldTitle,
-  labelStyle,
-  listaDeStrings,
-  valueStyle,
-} from "@/components/company/candidate-profile-bits";
-import OnlineStatusDot from "@/components/shared/OnlineStatusDot";
-import PlatformVideoCall from "@/components/shared/PlatformVideoCall";
-import { buildCareerTimeline } from "@/lib/professional/career-timeline";
+import CompanyCandidateProfileHeader from "@/components/company/CompanyCandidateProfileHeader";
+import CompanyCandidateProfileDetails from "@/components/company/CompanyCandidateProfileDetails";
+import CompanyCandidateProfileMediaShare from "@/components/company/CompanyCandidateProfileMediaShare";
+import { goldTitle } from "@/components/company/candidate-profile-bits";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
-import { formatReaisDisplay, turnoPropostaLabel } from "@/lib/format-reais";
+import type {
+  CompanyCandidateProfilePanelProps,
+  DocumentoAnexo,
+  Resumo,
+  Tracking,
+} from "@/components/company/company-candidate-profile-types";
 
-type Tracking = {
-  contatado: boolean;
-  entrevistado: boolean;
-  emTeste: boolean;
-  contratado: boolean;
-  naoContratado: boolean;
-  notes: string;
-};
-
-type Resumo = {
-  id: string;
-  nome: string;
-  cargo?: string;
-  area?: string;
-  local?: string;
-  escolaridade?: string;
-  turno?: string;
-  experiencia?: string;
-  bloqueado: boolean;
-  favorito?: boolean;
-  compatibilidade?: number;
-  profileCompletion?: number;
-  avatar?: string | null;
-  curriculoURL?: string | null;
-  segmentosIndustria?: string[];
-  maquinasEquipamentos?: string[];
-};
-
-type DocumentoAnexo = {
-  label: string;
-  url: string;
-};
-
-type Props = {
-  profileId: string;
-  onBack: () => void;
-  onUnlocked?: () => void;
-};
-
-export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlocked }: Props) {
+export default function CompanyCandidateProfilePanel({
+  profileId,
+  onBack,
+  onUnlocked,
+}: CompanyCandidateProfilePanelProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [resumo, setResumo] = useState<Resumo | null>(null);
@@ -496,28 +441,6 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
     );
   }
 
-  const fd = formEdit?.formData ?? {};
-  const valor = (chave: string, alt?: unknown): string => {
-    const v = fd[chave];
-    if (v !== undefined && v !== null && v !== "") {
-      return typeof v === "string" || typeof v === "number" || typeof v === "boolean" ? String(v) : "—";
-    }
-    if (alt !== undefined && alt !== null && alt !== "") {
-      return typeof alt === "string" || typeof alt === "number" || typeof alt === "boolean" ? String(alt) : "—";
-    }
-    return "—";
-  };
-  const cursosDetalhados: CursoDetalhado[] =
-    formEdit?.cursosDetalhados && formEdit.cursosDetalhados.length > 0
-      ? formEdit.cursosDetalhados
-      : parseCursosDetalhados(fd.cursosDetalhados ?? formEdit?.cursos ?? fd.cursosCertificacoes);
-  const cursos = cursosDetalhados.length > 0
-    ? cursosDetalhados.map((c) => c.nome)
-    : (formEdit?.cursos?.filter(Boolean) ?? listaDeStrings(fd.cursosCertificacoes));
-  const certificacoesDetalhadas = parseCertificacoesDetalhadas(fd.certificacoesDetalhadas ?? fd.certificacoes);
-  const empresas = formEdit?.empresas?.filter((e) => e.nome?.trim() || e.cargo?.trim()) ?? [];
-  const carreiraTimeline = buildCareerTimeline(empresas);
-
   return (
     <div style={{ width: "100%", maxWidth: "100%", minWidth: 0, overflowX: "hidden", boxSizing: "border-box" }}>
       <div
@@ -579,469 +502,27 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
             minWidth: 0,
           }}
         >
-        <div
-          style={{
-            display: "flex",
-            gap: 16,
-            alignItems: "flex-start",
-            minWidth: 0,
-          }}
-        >
-          {resumo.avatar ? (
-            <img
-              src={resumo.avatar}
-              alt=""
-              style={{
-                ...avatarImageStyle(88),
-                flexShrink: 0,
-                filter: resumo.bloqueado ? "blur(4px)" : "none",
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                width: 88,
-                height: 88,
-                flexShrink: 0,
-                borderRadius: "50%",
-                background: DASH.inner,
-                border: `1px solid ${DASH.gold}`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 32,
-              }}
-            >
-              👤
-            </div>
-          )}
-
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div ref={infoRef}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 10, justifyContent: "space-between" }}>
-                <h2 style={{ color: DASH.gold, margin: "0 0 6px", fontSize: 24, fontWeight: 700, flex: 1, minWidth: 0 }}>
-                  {resumo.nome}
-                </h2>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: 4,
-                    }}
-                  >
-                    <OnlineStatusDot online={profissionalOnline} size={14} />
-                    <span
-                      style={{
-                        fontSize: 9,
-                        fontWeight: 700,
-                        color: profissionalOnline ? "#22c55e" : DASH.muted,
-                        lineHeight: 1,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.02em",
-                      }}
-                    >
-                      {profissionalOnline ? "Online" : "Offline"}
-                    </span>
-                  </div>
-                  {canFavorite && (
-                    <button
-                      type="button"
-                      onClick={() => void handleFavorite()}
-                      disabled={favoriting}
-                      title={resumo.favorito ? "Remover dos favoritos" : "Marcar como favorito"}
-                      aria-label={resumo.favorito ? "Remover dos favoritos" : "Marcar como favorito"}
-                      aria-pressed={!!resumo.favorito}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        outline: "none",
-                        padding: 4,
-                        margin: 0,
-                        cursor: favoriting ? "wait" : "pointer",
-                        lineHeight: 0,
-                        color: resumo.favorito ? "#e53935" : DASH.muted,
-                        flexShrink: 0,
-                        opacity: favoriting ? 0.7 : 1,
-                      }}
-                    >
-                      <BandeiraFavoritoIcon ativo={!!resumo.favorito} size={28} />
-                    </button>
-                  )}
-                </div>
-              </div>
-              <p style={{ margin: 0, fontSize: 15, color: DASH.text }}>
-                {resumo.cargo || "—"} · {resumo.area || "—"}
-              </p>
-              {resumo.local && (
-                <p style={{ margin: "4px 0 0", fontSize: 13, color: DASH.muted }}>{resumo.local}</p>
-              )}
-              <p style={{ margin: "6px 0 0", fontSize: 13, color: DASH.muted }}>
-                {typeof resumo.compatibilidade === "number" && (
-                  <span style={dashPlanAccent}>Compatibilidade: {resumo.compatibilidade}% · </span>
-                )}
-                Completude: {resumo.profileCompletion ?? 0}%
-              </p>
-            </div>
-            {resumo.bloqueado && (
-              <div style={{ marginTop: 14 }}>
-                <p style={{ fontSize: 13, color: DASH.muted, margin: "0 0 10px" }}>
-                  {!companyVerified
-                    ? "Para ver dados sensíveis, confirme o e-mail corporativo e aguarde a aprovação do cartão CNPJ — mesmo com plano pago."
-                    : "Perfil bloqueado — libere o contato para ver o cadastro completo."}
-                </p>
-                {canUnlock && companyVerified && (
-                  <button
-                    type="button"
-                    onClick={handleUnlock}
-                    disabled={unlocking}
-                    style={{
-                      ...btnGold,
-                      padding: "10px 18px",
-                      fontSize: 13,
-                      opacity: unlocking ? 0.7 : 1,
-                    }}
-                  >
-                    {unlocking ? "Desbloqueando..." : "🔓 Liberar contato"}
-                  </button>
-                )}
-              </div>
-            )}
-
-          </div>
-        </div>
-
-        {!resumo.bloqueado && formEdit ? (
-          <CardSecaoPerfil
-            emoji="📞"
-            titulo="Contato"
-            pares={[
-              { label: "E-mail", value: valor("email") !== "—" ? valor("email") : undefined },
-              { label: "Telefone", value: formEdit.telefone || fd.telefone },
-              { label: "Telefone 2", value: formEdit.telefone2 || fd.telefone2 },
-              { label: "WhatsApp", value: fd.whatsapp },
-            ]}
+          <CompanyCandidateProfileHeader
+            resumo={resumo}
+            infoRef={infoRef}
+            profissionalOnline={profissionalOnline}
+            canFavorite={canFavorite}
+            favoriting={favoriting}
+            onFavorite={handleFavorite}
+            companyVerified={companyVerified}
+            canUnlock={canUnlock}
+            unlocking={unlocking}
+            onUnlock={handleUnlock}
           />
-        ) : null}
 
-          {!resumo.bloqueado && formEdit ? (
-            <>
-              <CardSecaoPerfil
-                emoji="🏭"
-                titulo="Dados pessoais"
-                pares={[
-                  { label: "Nome", value: valor("nome") !== "—" ? valor("nome") : resumo.nome },
-                  { label: "CPF", value: formEdit.cpf || fd.cpf },
-                  { label: "Nascimento", value: formEdit.dataNascimentoDisplay || fd.dataNascimento },
-                  { label: "Idade", value: fd.idade },
-                  { label: "Sexo biológico", value: fd.sexoBiologico },
-                  { label: "Identidade de gênero", value: fd.identidadeGenero },
-                  { label: "Orientação sexual", value: fd.orientacaoSexual },
-                  { label: "Estado civil", value: fd.estadoCivil },
-                  { label: "Religião", value: fd.religiao },
-                  { label: "Antecedentes", value: fd.antecedentes },
-                  { label: "CNH", value: fd.possuiCNH },
-                  { label: "Categoria CNH", value: fd.categoriaCNH },
-                ]}
-              />
-
-              <CardSecaoPerfil
-                emoji="👨‍👩‍👧‍👦"
-                titulo="Filhos"
-                pares={[
-                  { label: "Possui filhos", value: fd.possuiFilhos },
-                  { label: "Quantidade de filhos", value: fd.quantidadeFilhos },
-                  { label: "Faixa etária dos filhos", value: listaDeStrings(fd.faixaEtariaFilhos) },
-                ]}
-              />
-
-              <CardSecaoPerfil
-                emoji="📍"
-                titulo="Localização"
-                pares={[
-                  { label: "Estado", value: fd.estado },
-                  { label: "Cidade", value: fd.cidade },
-                  { label: "Mudança de cidade", value: fd.disponibilidadeMudanca },
-                  { label: "Aceita viagens", value: fd.aceitaViagens },
-                ]}
-              />
-
-              <CardSecaoPerfil
-                emoji="🎓"
-                titulo="Formação"
-                pares={[
-                  { label: "Escolaridade", value: fd.escolaridade },
-                  { label: "Curso", value: fd.cursoFormacao },
-                  { label: "Instituição", value: fd.instituicaoFormacao },
-                  { label: "Ano de conclusão", value: fd.anoConclusaoFormacao },
-                  {
-                    label: "Cursos",
-                    value: cursosDetalhados.length > 0
-                      ? cursosDetalhados.map((c) => c.nome)
-                      : cursos,
-                  },
-                  {
-                    label: "Certificações",
-                    value: certificacoesDetalhadas.length > 0
-                      ? certificacoesDetalhadas.map((c) => c.nome)
-                      : listaDeStrings(fd.certificacoes),
-                  },
-                  { label: "Idiomas", value: listaDeStrings(fd.idiomas) },
-                ]}
-              />
-
-              <CardSecaoPerfil
-                emoji="💼"
-                titulo="Perfil profissional"
-                pares={[
-                  { label: "Situação profissional", value: fd.situacaoProfissional },
-                  { label: "Área de interesse", value: fd.areaInteresse || resumo.area },
-                  { label: "Cargo desejado", value: valor("cargoDesejado") !== "—" ? valor("cargoDesejado") : resumo.cargo },
-                  { label: "Nível operacional", value: valor("nivelOperacional") !== "—" ? valor("nivelOperacional") : undefined },
-                  { label: "Área do nível", value: valor("areaNivel") !== "—" ? valor("areaNivel") : undefined },
-                  { label: "Detalhe do nível", value: valor("detalheNivel") !== "—" ? valor("detalheNivel") : undefined },
-                  { label: "Turno", value: (() => {
-                    const t = String(fd.turnoDisponivel || resumo.turno || "").trim();
-                    return t ? turnoPropostaLabel(t) : undefined;
-                  })() },
-                  { label: "Pretensão salarial", value: (() => {
-                    const v = String(formEdit.pretensaoSalarial || fd.pretensaoSalarial || "").trim();
-                    return v ? formatReaisDisplay(v) : undefined;
-                  })() },
-                  { label: "Recolocação", value: fd.recolocacao },
-                  { label: "Disponibilidade", value: fd.disponibilidadeInicio },
-                ]}
-              />
-
-              {carreiraTimeline.length > 0 && (
-                <div style={{ ...dashCard, padding: 18 }}>
-                  <h4
-                    style={{
-                      ...goldTitle,
-                      margin: "0 0 14px",
-                      fontSize: 15,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                    }}
-                  >
-                    <span aria-hidden>📅</span>
-                    Linha do tempo profissional
-                  </h4>
-                  <CarreiraTimeline experiencias={empresas} showDescricao />
-                </div>
-              )}
-
-              <CardSecaoPerfil
-                emoji="🏭"
-                titulo="Experiência na indústria"
-                pares={[
-                  { label: "Trabalhou na indústria", value: fd.trabalhouIndustria },
-                  { label: "Tempo de experiência", value: fd.tempoExperiencia || resumo.experiencia },
-                  { label: "Segmentos", value: listaDeStrings(fd.segmentosIndustria) },
-                ]}
-              />
-
-              <CardSecaoPerfil
-                emoji="⚙️"
-                titulo="Máquinas e equipamentos"
-                pares={[
-                  { label: "Equipamentos", value: listaDeStrings(fd.maquinasEquipamentos) },
-                ]}
-              />
-
-              <CardSecaoPerfil
-                emoji="📋"
-                titulo="Qualidade e processos"
-                pares={[
-                  { label: "Qualidade", value: listaDeStrings(fd.qualidadeProcessos) },
-                ]}
-              />
-
-              <CardSecaoPerfil
-                emoji="💻"
-                titulo="Informática"
-                pares={[
-                  { label: "Informática", value: listaDeStrings(fd.informatica) },
-                ]}
-              />
-
-              <CardSecaoPerfil
-                emoji="✍️"
-                titulo="Apresentação profissional"
-                pares={[
-                  {
-                    label: "Mensagem para empresas",
-                    value: valor("mensagemEmpresas") !== "—" ? valor("mensagemEmpresas") : undefined,
-                  },
-                ]}
-              />
-            </>
-          ) : (
-            <>
-              <CardSecaoPerfil
-                emoji="🏭"
-                titulo="Dados pessoais"
-                pares={[
-                  { label: "Nome", value: resumo.nome },
-                  { label: "Local", value: resumo.local },
-                  { label: "Escolaridade", value: resumo.escolaridade },
-                ]}
-              />
-              <CardSecaoPerfil
-                emoji="💼"
-                titulo="Perfil profissional"
-                pares={[
-                  { label: "Cargo", value: resumo.cargo },
-                  { label: "Área", value: resumo.area },
-                  { label: "Turno", value: turnoPropostaLabel(String(resumo.turno || "")) },
-                  { label: "Experiência", value: resumo.experiencia },
-                ]}
-              />
-              <CardSecaoPerfil
-                emoji="🏭"
-                titulo="Experiência na indústria"
-                pares={[
-                  { label: "Segmentos", value: resumo.segmentosIndustria },
-                  { label: "Equipamentos", value: resumo.maquinasEquipamentos },
-                ]}
-              />
-            </>
-          )}
-
-          <section style={{ ...dashCard, padding: 18 }}>
-            <h4
-              style={{
-                ...goldTitle,
-                margin: "0 0 14px",
-                fontSize: 15,
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
-              <span aria-hidden>🧍</span>
-              Sobre mim
-            </h4>
-            {resumo.bloqueado ? (
-              <p style={{ margin: 0, fontSize: 13, color: DASH.muted }}>
-                Libere o contato para ver as informações pessoais do candidato.
-              </p>
-            ) : sobreMimPreenchido && sobreMim ? (
-              <PerfilTextoCorrido
-                pares={CAMPOS_SOBRE_MIM.map(({ key, label }) => ({
-                  label,
-                  value: sobreMim[key] || undefined,
-                }))}
-              />
-            ) : (
-              <p style={{ margin: 0, fontSize: 13, color: DASH.muted }}>
-                O candidato ainda não preencheu esta seção.
-              </p>
-            )}
-          </section>
-
-          <section style={{ ...dashCard, padding: 18 }}>
-            <h4
-              style={{
-                ...goldTitle,
-                margin: "0 0 14px",
-                fontSize: 15,
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
-              <span aria-hidden>🧠</span>
-              Perfil pessoal
-            </h4>
-            {testeComportamental ? (
-              (() => {
-                const info = PERFIL_INFO[testeComportamental.perfilPrincipal];
-                return (
-                  <div>
-                    <p style={{ margin: "0 0 12px", fontSize: 15, fontWeight: 800, color: DASH.gold }}>
-                      {info.emoji} Perfil predominante: {info.titulo}
-                    </p>
-                    <div>
-                      <p style={{ ...labelStyle, marginBottom: 4 }}>Visão do recrutador</p>
-                      <p style={{ ...valueStyle, fontSize: 13 }}>{info.visaoRecrutador}</p>
-                    </div>
-                  </div>
-                );
-              })()
-            ) : (
-              <p style={{ margin: 0, fontSize: 13, color: DASH.muted }}>
-                O candidato ainda não realizou o teste de perfil pessoal.
-              </p>
-            )}
-          </section>
-
-          <section style={{ ...dashCard, padding: 18 }}>
-            <h4
-              style={{
-                ...goldTitle,
-                margin: "0 0 14px",
-                fontSize: 15,
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
-              <span aria-hidden>📎</span>
-              Currículo e anexos
-            </h4>
-            {resumo.bloqueado ? (
-              <p style={{ margin: 0, fontSize: 13, color: DASH.muted }}>
-                Libere o contato para acessar currículo, atestados e demais anexos.
-              </p>
-            ) : (
-              (() => {
-                const docEscolar =
-                  formEdit && isArquivoAnexado(fd.documentoFormacao)
-                    ? String(fd.documentoFormacao)
-                    : "";
-                const lista = [...documentos];
-                if (docEscolar && !lista.some((d) => d.url === docEscolar)) {
-                  lista.unshift({ label: "Documento escolar", url: docEscolar });
-                }
-                if (lista.length === 0) {
-                  return (
-                    <p style={{ margin: 0, fontSize: 13, color: DASH.muted }}>
-                      Nenhum arquivo anexado pelo candidato.
-                    </p>
-                  );
-                }
-                return (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {lista.map((doc) => (
-                      <a
-                        key={`${doc.label}-${doc.url}`}
-                        href={doc.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 12,
-                          padding: "10px 12px",
-                          ...dashInnerBox,
-                          borderRadius: 8,
-                          textDecoration: "none",
-                          color: DASH.text,
-                        }}
-                      >
-                        <span style={{ fontSize: 13, fontWeight: 600 }}>📄 {doc.label}</span>
-                        <span style={{ fontSize: 11, color: DASH.muted }}>{nomeArquivoAnexado(doc.url)}</span>
-                      </a>
-                    ))}
-                  </div>
-                );
-              })()
-            )}
-          </section>
+          <CompanyCandidateProfileDetails
+            resumo={resumo}
+            formEdit={formEdit}
+            sobreMim={sobreMim}
+            sobreMimPreenchido={sobreMimPreenchido}
+            testeComportamental={testeComportamental}
+            documentos={documentos}
+          />
         </div>
 
         {/* Vídeo de apresentação + chamada + compartilhar */}
@@ -1059,401 +540,211 @@ export default function CompanyCandidateProfilePanel({ profileId, onBack, onUnlo
             zIndex: 1,
           }}
         >
-          <div
+          <CompanyCandidateProfileMediaShare
+            profileId={profileId}
+            bloqueado={resumo.bloqueado}
+            nome={resumo.nome}
+            videoApresentacaoUrl={videoApresentacaoUrl}
+            videoRef={videoRef}
+            showShare={showShare}
+            shareMembers={shareMembers}
+            shareSelected={shareSelected}
+            shareNote={shareNote}
+            loadingShareMembers={loadingShareMembers}
+            sharing={sharing}
+            shareMsg={shareMsg}
+            onToggleShare={loadShareMembers}
+            onToggleMember={toggleShareMember}
+            onShareNoteChange={setShareNote}
+            onShare={handleShareProfile}
+          />
+
+          <aside
             style={{
-              width: "100%",
               display: "flex",
-              flexDirection: "row",
-              flexWrap: "wrap",
-              alignItems: "flex-start",
-              justifyContent: "center",
+              flexDirection: "column",
               gap: 16,
+              marginTop: 0,
+              alignItems: "stretch",
+              minWidth: 0,
+              maxWidth: "100%",
+              width: "100%",
             }}
           >
-            {!resumo.bloqueado && videoApresentacaoUrl ? (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 6,
-                }}
-              >
-                <div
-                  ref={videoRef}
-                  style={{
-                    width: 128,
-                    height: 228,
-                    borderRadius: 12,
-                    overflow: "hidden",
-                    border: `1px solid ${DASH.gold}`,
-                    background: "#000",
-                    boxShadow: `0 0 0 1px rgba(200,155,60,0.25)`,
-                  }}
-                >
-                  <SecureVideoPlayer
-                    src={videoApresentacaoUrl}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      maxHeight: "none",
-                      borderRadius: 0,
-                      objectFit: "cover",
-                    }}
-                  />
-                </div>
-                <p
-                  style={{
-                    ...dashTag,
-                    margin: 0,
-                    display: "inline-block",
-                    fontSize: 10,
-                    textAlign: "center",
-                  }}
-                >
-                  Vídeo de apresentação
-                </p>
-              </div>
-            ) : !resumo.bloqueado ? (
-              <div
-                style={{
-                  width: 128,
-                  height: 228,
-                  borderRadius: 12,
-                  border: `1px dashed ${DASH.border}`,
-                  background: DASH.inner,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: 10,
-                  textAlign: "center",
-                }}
-              >
-                <p style={{ margin: 0, fontSize: 11, color: DASH.muted, lineHeight: 1.4 }}>
-                  Sem vídeo de apresentação
-                </p>
-              </div>
-            ) : null}
-
             {!resumo.bloqueado && (
-              <PlatformVideoCall
-                role="company"
+              <PropostasEntrevistasEmpresa
                 profileId={profileId}
-                title="Chamada de vídeo"
-                compact
-                peerLabel={resumo.nome.split(" ")[0] || "candidato"}
+                canSend={canSendProposals}
+                proposals={proposals}
+                onChanged={() => void recarregarPropostas()}
               />
             )}
-          </div>
 
-          {!resumo.bloqueado && (
-            <div style={{ width: "100%", maxWidth: 420, display: "grid", gap: 10 }}>
-              <button
-                type="button"
-                onClick={() => void loadShareMembers()}
-                title="Compartilhar com a equipe do mesmo plano"
-                style={{
-                  ...btnGold,
-                  padding: "8px 12px",
-                  fontSize: 12,
-                  width: "100%",
-                }}
-              >
-                Compartilhar
-              </button>
+            <CompanyCandidateFeedbackCard profileId={profileId} />
 
-              {showShare && (
-                <div
-                  style={{
-                    ...dashInnerBox,
-                    padding: 12,
-                    border: `1px solid ${DASH.gold}`,
-                    display: "grid",
-                    gap: 10,
-                  }}
-                >
-                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: DASH.gold }}>
-                    Compartilhar com a equipe (mesmo plano)
-                  </p>
-                  <p style={{ margin: 0, fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
-                    Só aparecem pessoas da mesma assinatura. Elas recebem o link no chat e em
-                    compartilhados.
-                  </p>
-                  {loadingShareMembers ? (
-                    <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Buscando equipe...</p>
-                  ) : shareMembers.length === 0 ? (
-                    <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
-                      Nenhuma outra pessoa no mesmo plano. Cadastre usuários na aba Equipe.
-                    </p>
-                  ) : (
-                    <div style={{ display: "grid", gap: 6 }}>
-                      {shareMembers.map((member) => {
-                        const selected = shareSelected.includes(member.id);
-                        return (
-                          <button
-                            key={member.id}
-                            type="button"
-                            onClick={() => toggleShareMember(member.id)}
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              gap: 8,
-                              alignItems: "center",
-                              padding: "8px 10px",
-                              border: `1px solid ${DASH.gold}`,
-                              borderRadius: 10,
-                              background: selected ? "rgba(200,155,60,0.18)" : DASH.inner,
-                              color: DASH.text,
-                              cursor: "pointer",
-                              fontFamily: "inherit",
-                              textAlign: "left",
-                            }}
-                          >
-                            <span>
-                              <strong style={{ color: DASH.gold }}>{member.name}</strong>
-                              <span style={{ display: "block", fontSize: 10, color: DASH.muted }}>
-                                {member.department} · {member.email}
-                              </span>
-                            </span>
-                            <span style={{ fontSize: 11, color: selected ? DASH.gold : DASH.muted }}>
-                              {selected ? "Selecionado" : "Selecionar"}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                  <label>
-                    <span style={{ ...dashLabel, display: "block", marginBottom: 4 }}>
-                      Nota (opcional)
-                    </span>
-                    <input
-                      value={shareNote}
-                      onChange={(e) => setShareNote(e.target.value)}
-                      placeholder="Ex.: candidato forte para a vaga de solda"
-                      maxLength={280}
-                      style={dashInput}
-                    />
-                  </label>
-                  {shareMsg ? (
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: 12,
-                        color: shareMsg.includes("compartilhado") ? "#4ade80" : "#f87171",
-                      }}
-                    >
-                      {shareMsg}
-                    </p>
-                  ) : null}
-                  {shareMembers.length > 0 ? (
-                    <button
-                      type="button"
-                      disabled={sharing || shareSelected.length === 0}
-                      onClick={() => void handleShareProfile()}
-                      style={{
-                        ...btnGold,
-                        padding: "8px 12px",
-                        fontSize: 12,
-                        width: "fit-content",
-                        opacity: sharing || shareSelected.length === 0 ? 0.7 : 1,
-                      }}
-                    >
-                      {sharing ? "Compartilhando..." : "Enviar para selecionados"}
-                    </button>
-                  ) : null}
-                </div>
-              )}
-            </div>
-          )}
-
-        <aside
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 16,
-            marginTop: 0,
-            alignItems: "stretch",
-            minWidth: 0,
-            maxWidth: "100%",
-            width: "100%",
-          }}
-        >
-          {!resumo.bloqueado && (
-            <PropostasEntrevistasEmpresa
+            <CompanyCandidateMessagesCard
               profileId={profileId}
-              canSend={canSendProposals}
-              proposals={proposals}
-              onChanged={() => void recarregarPropostas()}
+              bloqueado={resumo.bloqueado}
+              conversa={conversa}
+              onConversaChange={setConversa}
+              onReload={carregar}
             />
-          )}
 
-          <CompanyCandidateFeedbackCard profileId={profileId} />
-
-          <CompanyCandidateMessagesCard
-            profileId={profileId}
-            bloqueado={resumo.bloqueado}
-            conversa={conversa}
-            onConversaChange={setConversa}
-            onReload={carregar}
-          />
-
-          {canUseTalentBank && (
-            <section style={{ ...dashCard, padding: 18 }}>
-              <h3 style={{ ...goldTitle, margin: "0 0 12px", fontSize: 16 }}>
-                📁 Adicionar ao banco de talentos
-              </h3>
-              {resumo.bloqueado ? (
-                <p style={{ margin: 0, fontSize: 13, color: DASH.muted, lineHeight: 1.45 }}>
-                  Libere o contato para adicionar este profissional às suas listas.
-                </p>
-              ) : (
-                <>
-                  <p style={{ margin: "0 0 8px", fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>
-                    Selecione uma ou mais listas (Ctrl/Cmd + clique) e salve.
+            {canUseTalentBank && (
+              <section style={{ ...dashCard, padding: 18 }}>
+                <h3 style={{ ...goldTitle, margin: "0 0 12px", fontSize: 16 }}>
+                  📁 Adicionar ao banco de talentos
+                </h3>
+                {resumo.bloqueado ? (
+                  <p style={{ margin: 0, fontSize: 13, color: DASH.muted, lineHeight: 1.45 }}>
+                    Libere o contato para adicionar este profissional às suas listas.
                   </p>
-                  <select
-                    multiple
-                    size={Math.min(6, Math.max(3, talentLists.length || 3))}
-                    value={talentListIdsSelecionados}
-                    onChange={(e) => {
-                      const opts = Array.from(e.target.selectedOptions).map((o) => o.value);
-                      setTalentListIdsSelecionados(opts);
-                    }}
-                    style={{
-                      ...dashInput,
-                      width: "100%",
-                      minHeight: 96,
-                      padding: 8,
-                      marginBottom: 10,
-                    }}
-                  >
-                    {talentLists.length === 0 ? (
-                      <option value="" disabled>
-                        Nenhuma lista criada ainda
-                      </option>
-                    ) : (
-                      talentLists.map((l) => (
-                        <option key={l.id} value={l.id}>
-                          {l.name}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                    <button
-                      type="button"
-                      disabled={salvandoTalent}
-                      onClick={async () => {
-                        setSalvandoTalent(true);
-                        try {
-                          const res = await fetch("/api/company/talent-lists", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            credentials: "include",
-                            body: JSON.stringify({
-                              action: "syncProfileLists",
-                              profileId,
-                              listIds: talentListIdsSelecionados,
-                            }),
-                          });
-                          const data = await res.json();
-                          if (!res.ok) {
-                            alert(data.error || "Erro ao salvar no banco de talentos");
-                            return;
-                          }
-                          if (Array.isArray(data.membershipListIds)) {
-                            setTalentListIdsSelecionados(data.membershipListIds.map(String));
-                          }
-                          alert("Listas do banco de talentos atualizadas.");
-                        } catch {
-                          alert("Erro ao salvar no banco de talentos");
-                        } finally {
-                          setSalvandoTalent(false);
-                        }
-                      }}
-                      style={{ ...btnGold, padding: "8px 14px", fontSize: 12, opacity: salvandoTalent ? 0.7 : 1 }}
-                    >
-                      {salvandoTalent ? "Salvando..." : "Salvar"}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={salvandoTalent}
-                      onClick={async () => {
-                        const name = window.prompt("Nome da nova lista:");
-                        if (!name?.trim()) return;
-                        try {
-                          const res = await fetch("/api/company/talent-lists", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            credentials: "include",
-                            body: JSON.stringify({ action: "createList", name: name.trim() }),
-                          });
-                          const data = await res.json();
-                          if (!res.ok) {
-                            alert(data.error || "Erro ao criar lista");
-                            return;
-                          }
-                          const tlRes = await fetch(
-                            `/api/company/talent-lists?profileId=${encodeURIComponent(profileId)}`,
-                            { credentials: "include" },
-                          );
-                          if (tlRes.ok) {
-                            const tlData = await tlRes.json();
-                            setTalentLists(
-                              Array.isArray(tlData.lists)
-                                ? tlData.lists.map((l: { id: string; name: string }) => ({
-                                    id: l.id,
-                                    name: l.name,
-                                  }))
-                                : [],
-                            );
-                            setTalentListIdsSelecionados((prev) =>
-                              data.id && !prev.includes(data.id) ? [...prev, data.id] : prev,
-                            );
-                          }
-                        } catch {
-                          alert("Erro ao criar lista");
-                        }
+                ) : (
+                  <>
+                    <p style={{ margin: "0 0 8px", fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>
+                      Selecione uma ou mais listas (Ctrl/Cmd + clique) e salve.
+                    </p>
+                    <select
+                      multiple
+                      size={Math.min(6, Math.max(3, talentLists.length || 3))}
+                      value={talentListIdsSelecionados}
+                      onChange={(e) => {
+                        const opts = Array.from(e.target.selectedOptions).map((o) => o.value);
+                        setTalentListIdsSelecionados(opts);
                       }}
                       style={{
-                        background: "transparent",
-                        border: `1px solid ${DASH.gold}`,
-                        color: DASH.gold,
-                        borderRadius: 8,
-                        padding: "8px 12px",
-                        fontSize: 12,
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        fontFamily: "inherit",
+                        ...dashInput,
+                        width: "100%",
+                        minHeight: 96,
+                        padding: 8,
+                        marginBottom: 10,
                       }}
                     >
-                      + Nova lista
-                    </button>
-                  </div>
-                </>
-              )}
-            </section>
-          )}
+                      {talentLists.length === 0 ? (
+                        <option value="" disabled>
+                          Nenhuma lista criada ainda
+                        </option>
+                      ) : (
+                        talentLists.map((l) => (
+                          <option key={l.id} value={l.id}>
+                            {l.name}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      <button
+                        type="button"
+                        disabled={salvandoTalent}
+                        onClick={async () => {
+                          setSalvandoTalent(true);
+                          try {
+                            const res = await fetch("/api/company/talent-lists", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              credentials: "include",
+                              body: JSON.stringify({
+                                action: "syncProfileLists",
+                                profileId,
+                                listIds: talentListIdsSelecionados,
+                              }),
+                            });
+                            const data = await res.json();
+                            if (!res.ok) {
+                              alert(data.error || "Erro ao salvar no banco de talentos");
+                              return;
+                            }
+                            if (Array.isArray(data.membershipListIds)) {
+                              setTalentListIdsSelecionados(data.membershipListIds.map(String));
+                            }
+                            alert("Listas do banco de talentos atualizadas.");
+                          } catch {
+                            alert("Erro ao salvar no banco de talentos");
+                          } finally {
+                            setSalvandoTalent(false);
+                          }
+                        }}
+                        style={{ ...btnGold, padding: "8px 14px", fontSize: 12, opacity: salvandoTalent ? 0.7 : 1 }}
+                      >
+                        {salvandoTalent ? "Salvando..." : "Salvar"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={salvandoTalent}
+                        onClick={async () => {
+                          const name = window.prompt("Nome da nova lista:");
+                          if (!name?.trim()) return;
+                          try {
+                            const res = await fetch("/api/company/talent-lists", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              credentials: "include",
+                              body: JSON.stringify({ action: "createList", name: name.trim() }),
+                            });
+                            const data = await res.json();
+                            if (!res.ok) {
+                              alert(data.error || "Erro ao criar lista");
+                              return;
+                            }
+                            const tlRes = await fetch(
+                              `/api/company/talent-lists?profileId=${encodeURIComponent(profileId)}`,
+                              { credentials: "include" },
+                            );
+                            if (tlRes.ok) {
+                              const tlData = await tlRes.json();
+                              setTalentLists(
+                                Array.isArray(tlData.lists)
+                                  ? tlData.lists.map((l: { id: string; name: string }) => ({
+                                      id: l.id,
+                                      name: l.name,
+                                    }))
+                                  : [],
+                              );
+                              setTalentListIdsSelecionados((prev) =>
+                                data.id && !prev.includes(data.id) ? [...prev, data.id] : prev,
+                              );
+                            }
+                          } catch {
+                            alert("Erro ao criar lista");
+                          }
+                        }}
+                        style={{
+                          background: "transparent",
+                          border: `1px solid ${DASH.gold}`,
+                          color: DASH.gold,
+                          borderRadius: 8,
+                          padding: "8px 12px",
+                          fontSize: 12,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          fontFamily: "inherit",
+                        }}
+                      >
+                        + Nova lista
+                      </button>
+                    </div>
+                  </>
+                )}
+              </section>
+            )}
 
-          <CompanyCandidateTipsCard
-            profileId={profileId}
-            bloqueado={resumo.bloqueado}
-            canSendTips={canSendTips}
-            tips={tips}
-            onTipsChange={setTips}
-            onReload={carregar}
-          />
+            <CompanyCandidateTipsCard
+              profileId={profileId}
+              bloqueado={resumo.bloqueado}
+              canSendTips={canSendTips}
+              tips={tips}
+              onTipsChange={setTips}
+              onReload={carregar}
+            />
 
-          <CompanyCandidateNotesCard
-            profileId={profileId}
-            notes={tracking.notes}
-            onNotesChange={(notes) => setTracking((t) => ({ ...t, notes }))}
-          />
-        </aside>
+            <CompanyCandidateNotesCard
+              profileId={profileId}
+              notes={tracking.notes}
+              onNotesChange={(notes) => setTracking((t) => ({ ...t, notes }))}
+            />
+          </aside>
         </div>
       </div>
-
     </div>
   );
 }

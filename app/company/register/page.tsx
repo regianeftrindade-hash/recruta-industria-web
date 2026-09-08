@@ -9,6 +9,7 @@ import PageLoader from '@/app/components/PageLoader';
 import { READABLE_TEXT_STYLE } from '@/lib/theme';
 import styles from '@/app/professional/register/register.module.css';
 import { matchesCompanyTestBypass } from '@/lib/company/company-test-bypass-shared';
+import { AuthAtmosphere } from '@/components/shared/AuthAtmosphere';
 
 const twoCols = { '--fields-per-row': '2' } as React.CSSProperties;
 
@@ -627,8 +628,9 @@ function CadastroEmpresaContent() {
 
   if (contaProfissional && session?.user) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#3A3A3A', padding: '40px 20px', color: '#F2F2F2', ...READABLE_TEXT_STYLE }} className="ri-readable">
-        <div style={{ maxWidth: '560px', margin: '0 auto', backgroundColor: '#2B2B2B', padding: '40px', borderRadius: '15px', border: '1px solid #8D6B1F', textAlign: 'center' }}>
+      <div style={{ position: 'relative', minHeight: '100vh', backgroundColor: '#3A3A3A', padding: '40px 20px', color: '#F2F2F2', overflow: 'hidden', ...READABLE_TEXT_STYLE }} className="ri-readable">
+        <AuthAtmosphere />
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '560px', margin: '0 auto', background: 'rgba(43,43,43,0.94)', padding: '40px', borderRadius: '16px', border: '1px solid rgba(200,155,60,0.7)', boxShadow: '0 16px 40px rgba(0,0,0,0.5)', textAlign: 'center' }}>
           <h1 style={{ color: '#C89B3C', marginTop: 0 }}>Conta profissional detectada</h1>
           <p style={{ lineHeight: 1.6 }}>
             O e-mail <strong>{session.user.email}</strong> já está cadastrado como <strong>profissional</strong>
@@ -660,6 +662,7 @@ function CadastroEmpresaContent() {
 
   return (
     <div className={`${styles.container} ri-readable`}>
+      <AuthAtmosphere />
       {loading && <PageLoader message="Enviando cadastro..." mode="overlay" />}
       <div className={styles.card} style={{ maxWidth: 1100 }}>
         <h1 className={styles.title}>
