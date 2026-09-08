@@ -12,11 +12,24 @@ export const REGISTER_WIZARD_STEPS = [
 type Props = {
   step: number;
   onStepChange: (step: number) => void;
+  /** Continuar / avançar — retorna false para bloquear (validação da etapa). */
+  onContinue?: () => boolean;
 };
 
 /** Indicador + navegação do cadastro em etapas (só no modo novo cadastro). */
-export default function RegisterWizardChrome({ step, onStepChange }: Props) {
+export default function RegisterWizardChrome({ step, onStepChange, onContinue }: Props) {
   const last = REGISTER_WIZARD_STEPS.length - 1;
+
+  const irPara = (target: number) => {
+    if (target === step) return;
+    if (target < step) {
+      onStepChange(target);
+      return;
+    }
+    if (target > step + 1) return;
+    if (onContinue && !onContinue()) return;
+    onStepChange(Math.min(last, step + 1));
+  };
 
   return (
     <div className={styles.wizardChrome}>
@@ -30,7 +43,7 @@ export default function RegisterWizardChrome({ step, onStepChange }: Props) {
                 type="button"
                 className={`${styles.wizardStepBtn}${active ? ` ${styles.wizardStepBtnActive}` : ""}${done ? ` ${styles.wizardStepBtnDone}` : ""}`}
                 aria-current={active ? "step" : undefined}
-                onClick={() => onStepChange(i)}
+                onClick={() => irPara(i)}
               >
                 <span className={styles.wizardStepNum}>{i + 1}</span>
                 <span className={styles.wizardStepLabel}>{s.label}</span>
@@ -52,7 +65,7 @@ export default function RegisterWizardChrome({ step, onStepChange }: Props) {
           type="button"
           className={styles.wizardNavBtnPrimary}
           disabled={step >= last}
-          onClick={() => onStepChange(Math.min(last, step + 1))}
+          onClick={() => irPara(step + 1)}
         >
           Continuar
         </button>

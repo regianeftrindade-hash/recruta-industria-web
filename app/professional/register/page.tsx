@@ -33,7 +33,7 @@ import { LabelMarcador, TextoMarcador } from './RegisterLabelMarcador';
 import RegisterTermoItem from './RegisterTermoItem';
 import RegisterSobreMimFields from './RegisterSobreMimFields';
 import { SOBRE_MIM_VAZIO, truncarSobreMim, type SobreMimData } from '@/lib/sobre-mim';
-import { validarCamposObrigatoriosCadastro, type CampoObrigatorioFalta, type ValidacaoCadastroInput } from '@/lib/professional/cadastro-obrigatorios';
+import { validarCamposObrigatoriosCadastro, validarCamposObrigatoriosEtapa, type CampoObrigatorioFalta, type ValidacaoCadastroInput } from '@/lib/professional/cadastro-obrigatorios';
 import { useCampoObrigatorioErro } from './useCampoObrigatorioErro';
 import RegisterExtendedSections from './RegisterExtendedSections';
 import RegisterWizardChrome, { REGISTER_WIZARD_STEPS } from './RegisterWizardChrome';
@@ -1012,14 +1012,27 @@ export default function CadastroProfissional() {
   useEffect(() => {
     if (camposObrigatoriosFaltando.length === 0) return;
 
-    const faltando = validarCamposObrigatoriosCadastro(montarInputValidacao());
+    const faltando = useWizard
+      ? validarCamposObrigatoriosEtapa(montarInputValidacao(), wizardStep)
+      : validarCamposObrigatoriosCadastro(montarInputValidacao());
     setCamposObrigatoriosFaltando(faltando);
 
     if (formData.email && isValidEmail(formData.email)) {
       setEmailError('');
     }
-  }, [montarInputValidacao, camposObrigatoriosFaltando.length]);
+  }, [montarInputValidacao, camposObrigatoriosFaltando.length, useWizard, wizardStep, formData.email]);
 
+  const tentarAvancarWizard = (): boolean => {
+    const faltando = validarCamposObrigatoriosEtapa(montarInputValidacao(), wizardStep);
+    setCamposObrigatoriosFaltando(faltando);
+    if (faltando.length > 0) {
+      window.setTimeout(() => {
+        document.getElementById('aviso-obrigatorios')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+      return false;
+    }
+    return true;
+  };
   const uploadFile = async (file: File, type: string): Promise<string | null> => {
     try {
       const fd = new FormData();
@@ -1324,7 +1337,11 @@ export default function CadastroProfissional() {
         )}
 
         {useWizard && (
-          <RegisterWizardChrome step={wizardStep} onStepChange={setWizardStep} />
+          <RegisterWizardChrome
+            step={wizardStep}
+            onStepChange={setWizardStep}
+            onContinue={tentarAvancarWizard}
+          />
         )}
 
         <form onSubmit={handleSubmit} className={styles.form} noValidate>
@@ -2841,11 +2858,15 @@ export default function CadastroProfissional() {
               />
             </div>
           </section>
+          </>
+          )}
 
-          {(!useWizard || wizardStep === lastWizardStep) && camposObrigatoriosFaltando.length > 0 && (
+          {camposObrigatoriosFaltando.length > 0 && (
             <div id="aviso-obrigatorios" className={styles.avisoObrigatoriosCard} role="alert" aria-live="polite">
               <p className={styles.avisoObrigatoriosTitulo}>
-                Preencha todos os campos obrigatórios antes de salvar:
+                {useWizard && wizardStep < lastWizardStep
+                  ? 'Complete os obrigatórios desta etapa para continuar:'
+                  : 'Preencha todos os campos obrigatórios antes de salvar:'}
               </p>
               <ul className={styles.avisoObrigatoriosLista}>
                 {camposObrigatoriosFaltando.map((campo) => (
@@ -2861,8 +2882,6 @@ export default function CadastroProfissional() {
               {isEditMode ? 'Salvar alterações' : 'Finalizar meu cadastro'}
             </button>
           </div>
-          )}
-          </>
           )}
         </form>
       </div>

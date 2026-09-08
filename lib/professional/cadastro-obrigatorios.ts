@@ -172,3 +172,53 @@ export function validarCamposObrigatoriosCadastro(input: ValidacaoCadastroInput)
 
   return faltando;
 }
+
+/** IDs obrigatórios por etapa do wizard (0=Essenciais … 3=Finalizar). */
+export const CAMPOS_OBRIGATORIOS_POR_ETAPA: readonly (readonly CampoObrigatorioId[])[] = [
+  [
+    'nome',
+    'cpf',
+    'dataNascimento',
+    'sexoBiologico',
+    'estadoCivil',
+    'possuiCNH',
+    'categoriaCNH',
+    'antecedentes',
+    'email',
+    'telefone',
+    'whatsapp',
+    'estado',
+    'cidade',
+    'disponibilidadeMudanca',
+    'aceitaViagens',
+    'password',
+    'confirmPassword',
+  ],
+  [
+    'escolaridade',
+    'cursoFormacao',
+    'anoConclusaoFormacao',
+    'situacaoProfissional',
+    'areaInteresse',
+    'nivelOperacional',
+    'cargoDesejado',
+    'areaNivel',
+    'turnoDisponivel',
+    'disponibilidadeInicio',
+    'pretensaoSalarial',
+    'trabalhouIndustria',
+    'experiencias',
+  ],
+  [],
+  ['autorizoDados', 'declaroVerdadeiro', 'aceitoLGPD'],
+] as const;
+
+/** Valida só os obrigatórios da etapa (para o Continuar do wizard). */
+export function validarCamposObrigatoriosEtapa(
+  input: ValidacaoCadastroInput,
+  etapa: number,
+): CampoObrigatorioFalta[] {
+  const ids = new Set(CAMPOS_OBRIGATORIOS_POR_ETAPA[etapa] || []);
+  if (ids.size === 0) return [];
+  return validarCamposObrigatoriosCadastro(input).filter((campo) => ids.has(campo.id));
+}
