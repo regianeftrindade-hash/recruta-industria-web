@@ -2,16 +2,18 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
-import { PixQrCode } from "@/app/components/PixQrCode";
 import {
   DASH,
   dashCard,
   dashInnerBox,
-  dashInput,
-  dashLabel,
   dashSectionTitle,
 } from "@/lib/dashboard-theme";
 import { CompanyChatPanel } from "@/components/company/CompanyChatPanel";
+import CompanyTeamInviteForm from "@/components/company/CompanyTeamInviteForm";
+import CompanyTeamExtraSeatsPanel, {
+  type ExtraSeatPackage,
+  type ExtraSeatPayment,
+} from "@/components/company/CompanyTeamExtraSeatsPanel";
 
 type TeamMember = {
   id: string;
@@ -21,26 +23,6 @@ type TeamMember = {
   name: string | null;
   inviteToken: string | null;
   memberUserId: string | null;
-};
-
-type ExtraSeatPackage = {
-  id: string;
-  quantity: number;
-  priceCentavos: number;
-  priceLabel: string;
-  title: string;
-  emoji: string;
-  period?: string;
-};
-
-type ExtraSeatPayment = {
-  chargeId: string;
-  copyPasteKey?: string;
-  qrCodeDataUrl?: string;
-  boletoUrl?: string;
-  amount: number;
-  quantity: number;
-  priceLabel: string;
 };
 
 /**
@@ -365,272 +347,49 @@ export default function CompanyTeamPage() {
             ) : null}
 
             {(showAddForm || replacingId) && isOwner ? (
-              <form
+              <CompanyTeamInviteForm
+                replacingId={replacingId}
+                name={name}
+                email={email}
+                role={role}
+                error={error}
+                atLimit={atLimit}
+                canInvite={canInvite}
+                saving={saving}
+                lastInviteUrl={lastInviteUrl}
+                onNameChange={setName}
+                onEmailChange={setEmail}
+                onRoleChange={setRole}
                 onSubmit={handleInvite}
-                style={{ ...dashInnerBox, padding: 14, display: "grid", gap: 10, marginBottom: 12 }}
-              >
-                <p style={{ margin: 0, fontSize: 13, color: DASH.gold, fontWeight: 800 }}>
-                  {replacingId ? "Trocar usuário" : "Adicionar novo usuário"}
-                </p>
-                {replacingId ? (
-                  <p style={{ margin: 0, fontSize: 11, color: DASH.muted }}>
-                    O usuário atual será removido e o assento fica com o novo e-mail. Não precisa
-                    comprar outro plano.
-                  </p>
-                ) : null}
-                <label>
-                  <span style={{ ...dashLabel, display: "block", marginBottom: 4 }}>Nome</span>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Nome completo"
-                    style={dashInput}
-                  />
-                </label>
-                <label>
-                  <span style={{ ...dashLabel, display: "block", marginBottom: 4 }}>E-mail</span>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="maria@empresa.com.br"
-                    style={dashInput}
-                  />
-                </label>
-                <label>
-                  <span style={{ ...dashLabel, display: "block", marginBottom: 4 }}>Função</span>
-                  <select value={role} onChange={(e) => setRole(e.target.value)} style={dashInput}>
-                    <option value="RH">RH</option>
-                    <option value="RECRUITER">Recrutador</option>
-                    <option value="ADMIN">Admin</option>
-                  </select>
-                </label>
-                {error ? <p style={{ margin: 0, color: "#f87171", fontSize: 12 }}>{error}</p> : null}
-
-                {atLimit && !replacingId ? (
-                  <p style={{ margin: 0, fontSize: 12, color: DASH.muted, lineHeight: 1.5 }}>
-                    Sua empresa atingiu o limite do plano. Escolha um pacote abaixo para liberar
-                    assentos e depois conclua o cadastro.
-                  </p>
-                ) : (
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <button
-                      type="submit"
-                      disabled={saving || (!canInvite && !replacingId)}
-                      style={{ ...btnGold, padding: "8px 12px", fontSize: 12 }}
-                    >
-                      {saving
-                        ? "Salvando..."
-                        : replacingId
-                          ? "Confirmar troca"
-                          : "Gerar convite"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowAddForm(false);
-                        setReplacingId(null);
-                        setEmail("");
-                        setName("");
-                        setError("");
-                      }}
-                      style={{
-                        background: "transparent",
-                        border: `1px solid ${DASH.muted}`,
-                        color: DASH.muted,
-                        borderRadius: 6,
-                        padding: "8px 12px",
-                        fontSize: 12,
-                        cursor: "pointer",
-                      }}
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                )}
-
-                {lastInviteUrl ? (
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: 11,
-                      color: DASH.muted,
-                      lineHeight: 1.45,
-                      wordBreak: "break-all",
-                    }}
-                  >
-                    Link do convite (copiado): {lastInviteUrl}
-                  </p>
-                ) : null}
-              </form>
+                onCancel={() => {
+                  setShowAddForm(false);
+                  setReplacingId(null);
+                  setEmail("");
+                  setName("");
+                  setError("");
+                }}
+              />
             ) : null}
 
             {showLimitPanel && atLimit && !replacingId ? (
-              <div
-                style={{
-                  ...dashInnerBox,
-                  padding: 16,
-                  display: "grid",
-                  gap: 12,
-                  border: `1px solid ${DASH.gold}`,
+              <CompanyTeamExtraSeatsPanel
+                packages={packages}
+                selectedPackageId={selectedPackageId}
+                selectedPack={selectedPack}
+                canBuyExtra={canBuyExtra}
+                buyingExtra={buyingExtra}
+                error={error}
+                atLimit={atLimit}
+                extraPayMsg={extraPayMsg}
+                extraPayment={extraPayment}
+                onSelectPackage={setSelectedPackageId}
+                onBuyPackage={() => void handleBuyPackage()}
+                onCancel={() => {
+                  setShowAddForm(false);
+                  setExtraPayment(null);
+                  setError("");
                 }}
-              >
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: DASH.gold }}>
-                  Sua empresa atingiu o limite do plano
-                </p>
-                <p style={{ margin: 0, fontSize: 12, color: DASH.text, lineHeight: 1.5 }}>
-                  Deseja adquirir usuários adicionais? Escolha um pacote:
-                </p>
-
-                {canBuyExtra ? (
-                  <>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-                        gap: 10,
-                      }}
-                    >
-                      {(packages.length > 0
-                        ? packages
-                        : [
-                            {
-                              id: "pack1",
-                              quantity: 1,
-                              priceCentavos: 2990,
-                              priceLabel: "R$ 29,90",
-                              title: "1 usuário extra",
-                              emoji: "👤",
-                            },
-                            {
-                              id: "pack3",
-                              quantity: 3,
-                              priceCentavos: 7990,
-                              priceLabel: "R$ 79,90",
-                              title: "3 usuários extras",
-                              emoji: "👥",
-                            },
-                            {
-                              id: "pack5",
-                              quantity: 5,
-                              priceCentavos: 11990,
-                              priceLabel: "R$ 119,90",
-                              title: "5 usuários extras",
-                              emoji: "👥👥",
-                            },
-                          ]
-                      ).map((pack) => {
-                        const selected = selectedPackageId === pack.id;
-                        return (
-                          <button
-                            key={pack.id}
-                            type="button"
-                            onClick={() => setSelectedPackageId(pack.id)}
-                            style={{
-                              textAlign: "left",
-                              padding: "12px 12px",
-                              borderRadius: 10,
-                              border: `1px solid ${DASH.gold}`,
-                              background: selected ? "rgba(200,155,60,0.2)" : DASH.inner,
-                              color: DASH.text,
-                              cursor: "pointer",
-                              fontFamily: "inherit",
-                            }}
-                          >
-                            <span style={{ display: "block", fontSize: 18, marginBottom: 4 }}>
-                              {pack.emoji}
-                            </span>
-                            <strong style={{ color: DASH.gold, fontSize: 12 }}>{pack.title}</strong>
-                            <span style={{ display: "block", fontSize: 14, fontWeight: 800, marginTop: 4 }}>
-                              {pack.priceLabel}
-                              <span style={{ fontSize: 11, fontWeight: 500, color: DASH.muted }}>
-                                /mês
-                              </span>
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                      <button
-                        type="button"
-                        disabled={buyingExtra || !selectedPack}
-                        onClick={() => void handleBuyPackage()}
-                        style={{
-                          ...btnGold,
-                          padding: "10px 14px",
-                          fontSize: 12,
-                          opacity: buyingExtra ? 0.7 : 1,
-                        }}
-                      >
-                        {buyingExtra
-                          ? "Gerando Pix..."
-                          : selectedPack
-                            ? `Comprar e adicionar (${selectedPack.priceLabel}/mês)`
-                            : "Comprar e adicionar usuário"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowAddForm(false);
-                          setExtraPayment(null);
-                          setError("");
-                        }}
-                        style={{
-                          background: "transparent",
-                          border: `1px solid ${DASH.muted}`,
-                          color: DASH.muted,
-                          borderRadius: 8,
-                          padding: "10px 14px",
-                          fontSize: 12,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
-                    Contrate um plano pago (Basic ou superior) para adicionar usuários extras.
-                  </p>
-                )}
-
-                {error && atLimit ? (
-                  <p style={{ margin: 0, color: "#f87171", fontSize: 12 }}>{error}</p>
-                ) : null}
-                {extraPayMsg ? (
-                  <p style={{ margin: 0, fontSize: 12, color: "#4ade80" }}>{extraPayMsg}</p>
-                ) : null}
-                {extraPayment ? (
-                  <div style={{ display: "grid", gap: 8 }}>
-                    <p style={{ margin: 0, fontSize: 11, color: DASH.muted }}>
-                      Pague o Pix de {extraPayment.priceLabel} ({extraPayment.quantity}{" "}
-                      usuário{extraPayment.quantity > 1 ? "s" : ""}). Assim que confirmar, o limite
-                      sobe automaticamente.
-                    </p>
-                    {extraPayment.copyPasteKey ? (
-                      <PixQrCode
-                        qrCodeDataUrl={extraPayment.qrCodeDataUrl}
-                        copyPasteKey={extraPayment.copyPasteKey}
-                      />
-                    ) : null}
-                    {extraPayment.boletoUrl ? (
-                      <a
-                        href={extraPayment.boletoUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{ color: DASH.gold, fontSize: 12 }}
-                      >
-                        Abrir boleto
-                      </a>
-                    ) : null}
-                  </div>
-                ) : null}
-              </div>
+              />
             ) : null}
 
             {!isOwner ? (
