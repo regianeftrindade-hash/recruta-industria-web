@@ -228,7 +228,6 @@ export default function CompanyCandidateProfilePanel({
             onTipsChange={setTips}
             notes={tracking.notes}
             onNotesChange={(notes) => setTracking((t) => ({ ...t, notes }))}
-            onReload={carregar}
           />
         </div>
       </div>

@@ -19,7 +19,6 @@ type Props = {
   bloqueado: boolean;
   conversa: ConversaItem[];
   onConversaChange: (next: ConversaItem[]) => void;
-  onReload: () => Promise<void>;
 };
 
 export default function CompanyCandidateMessagesCard({
@@ -27,10 +26,10 @@ export default function CompanyCandidateMessagesCard({
   bloqueado,
   conversa,
   onConversaChange,
-  onReload,
 }: Props) {
   const [mensagemTexto, setMensagemTexto] = useState("");
   const [enviandoMensagem, setEnviandoMensagem] = useState(false);
+  const [envioOk, setEnvioOk] = useState("");
 
   const handleExcluirMensagem = async (messageId: string) => {
     if (!window.confirm("Excluir esta mensagem? Itens com mais de 1 mês também são apagados automaticamente.")) {
@@ -56,6 +55,7 @@ export default function CompanyCandidateMessagesCard({
     const text = mensagemTexto.trim();
     if (!text) return;
     setEnviandoMensagem(true);
+    setEnvioOk("");
     try {
       const res = await fetch("/api/company/messages", {
         method: "POST",
@@ -68,9 +68,17 @@ export default function CompanyCandidateMessagesCard({
         alert(data.error || "Erro ao enviar mensagem");
         return;
       }
+      const created = data.message as Partial<ConversaItem> | undefined;
+      const nova: ConversaItem = {
+        id: String(created?.id || `local-${Date.now()}`),
+        from: String(created?.from || "Você"),
+        body: String(created?.body || text),
+        createdAt: String(created?.createdAt || new Date().toISOString()),
+        senderRole: "COMPANY",
+      };
+      onConversaChange([...conversa, nova]);
       setMensagemTexto("");
-      await onReload();
-      alert("Mensagem enviada! O candidato verá no painel dele e poderá responder.");
+      setEnvioOk("Mensagem enviada.");
     } catch {
       alert("Erro ao enviar mensagem");
     } finally {
@@ -193,7 +201,10 @@ export default function CompanyCandidateMessagesCard({
 
           <textarea
             value={mensagemTexto}
-            onChange={(e) => setMensagemTexto(e.target.value)}
+            onChange={(e) => {
+              setMensagemTexto(e.target.value);
+              if (envioOk) setEnvioOk("");
+            }}
             rows={4}
             maxLength={1000}
             placeholder="Escreva sua mensagem para o profissional..."
@@ -208,6 +219,9 @@ export default function CompanyCandidateMessagesCard({
               resize: "vertical",
             }}
           />
+          {envioOk ? (
+            <p style={{ margin: "8px 0 0", fontSize: 12, color: "#8bc34a", fontWeight: 700 }}>{envioOk}</p>
+          ) : null}
           <button
             type="button"
             onClick={() => void handleSendMessage()}

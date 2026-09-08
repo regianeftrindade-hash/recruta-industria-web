@@ -135,8 +135,10 @@ export async function POST(request: NextRequest) {
       success: true,
       message: {
         id: mensagem.id,
+        body: texto,
+        from: companyName,
         createdAt: mensagem.createdAt.toISOString(),
-        senderRole: "COMPANY",
+        senderRole: "COMPANY" as const,
       },
     });
   } catch (error) {

@@ -20,7 +20,6 @@ type Props = {
   canSendTips: boolean;
   tips: TipItem[];
   onTipsChange: (next: TipItem[]) => void;
-  onReload: () => Promise<void>;
 };
 
 export default function CompanyCandidateTipsCard({
@@ -29,14 +28,15 @@ export default function CompanyCandidateTipsCard({
   canSendTips,
   tips,
   onTipsChange,
-  onReload,
 }: Props) {
   const [tipText, setTipText] = useState("");
   const [sendingTip, setSendingTip] = useState(false);
+  const [envioOk, setEnvioOk] = useState("");
 
   const handleSendTip = async () => {
     if (!tipText.trim()) return;
     setSendingTip(true);
+    setEnvioOk("");
     try {
       const res = await fetch("/api/company/tips", {
         method: "POST",
@@ -49,8 +49,25 @@ export default function CompanyCandidateTipsCard({
         alert(data.error || "Erro ao enviar dica");
         return;
       }
+      const created = data.tip as TipItem | undefined;
+      const nova: TipItem = created?.id
+        ? {
+            id: created.id,
+            message: created.message,
+            isAnonymous: Boolean(created.isAnonymous),
+            rating: created.rating ?? null,
+            createdAt: created.createdAt,
+          }
+        : {
+            id: `local-${Date.now()}`,
+            message: tipText.trim(),
+            isAnonymous: true,
+            rating: null,
+            createdAt: new Date().toISOString(),
+          };
+      onTipsChange([nova, ...tips]);
       setTipText("");
-      await onReload();
+      setEnvioOk("Dica enviada.");
     } catch {
       alert("Erro ao enviar dica");
     } finally {
@@ -131,7 +148,10 @@ export default function CompanyCandidateTipsCard({
         <>
           <textarea
             value={tipText}
-            onChange={(e) => setTipText(e.target.value)}
+            onChange={(e) => {
+              setTipText(e.target.value);
+              if (envioOk) setEnvioOk("");
+            }}
             rows={3}
             maxLength={500}
             placeholder="Escreva uma dica anônima para o candidato..."
@@ -144,6 +164,9 @@ export default function CompanyCandidateTipsCard({
               fontSize: 13,
             }}
           />
+          {envioOk ? (
+            <p style={{ margin: "8px 0 0", fontSize: 12, color: "#8bc34a", fontWeight: 700 }}>{envioOk}</p>
+          ) : null}
           <button
             type="button"
             onClick={() => void handleSendTip()}

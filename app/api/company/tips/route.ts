@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Perfil não encontrado' }, { status: 404 })
     }
 
-    await prisma.tip.create({
+    const tip = await prisma.tip.create({
       data: {
         profileId,
         companyUserId: user.id,
@@ -95,7 +95,16 @@ export async function POST(request: NextRequest) {
       notifyTipReceived(profileId, message.trim())
     )
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({
+      success: true,
+      tip: {
+        id: tip.id,
+        message: tip.message,
+        isAnonymous: tip.isAnonymous,
+        rating: tip.rating ?? null,
+        createdAt: tip.createdAt.toISOString(),
+      },
+    })
   } catch (error) {
     console.error('Erro ao enviar dica:', error)
     return NextResponse.json({ error: 'Erro ao enviar dica' }, { status: 500 })

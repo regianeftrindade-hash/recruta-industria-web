@@ -33,7 +33,6 @@ type Props = {
   onTipsChange: (next: TipItem[]) => void;
   notes: string;
   onNotesChange: (notes: string) => void;
-  onReload: () => Promise<void>;
 };
 
 export default function CompanyCandidateProfileSideColumn({
@@ -54,7 +53,6 @@ export default function CompanyCandidateProfileSideColumn({
   onTipsChange,
   notes,
   onNotesChange,
-  onReload,
 }: Props) {
   return (
     <aside
@@ -85,7 +83,6 @@ export default function CompanyCandidateProfileSideColumn({
         bloqueado={bloqueado}
         conversa={conversa}
         onConversaChange={onConversaChange}
-        onReload={onReload}
       />
 
       {canUseTalentBank && (
@@ -105,7 +102,6 @@ export default function CompanyCandidateProfileSideColumn({
         canSendTips={canSendTips}
         tips={tips}
         onTipsChange={onTipsChange}
-        onReload={onReload}
       />
 
       <CompanyCandidateNotesCard
