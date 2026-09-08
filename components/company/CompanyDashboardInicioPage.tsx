@@ -8,23 +8,17 @@ import CompanyPlanCards from "@/app/components/CompanyPlanCards";
 import { matchesCompanyTestBypass } from "@/lib/company/company-test-bypass-shared";
 import {
   DashboardStatsBar,
-  type CompanyAlert,
   type DashboardStats,
-  type TalentList,
 } from "@/app/components/CompanyDashboardTools";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 import { useCompanyDashboardData } from "@/components/company/CompanyDashboardDataContext";
-import CompanyDashboardVitrineSearchFilters, {
-  EMPTY_FILTROS,
-  filtrosTemValor,
-  type Filtros,
-} from "@/components/company/CompanyDashboardVitrineSearchFilters";
-import CompanyDashboardVitrineSection, {
-  PAGINACAO_INICIAL,
-  PER_PAGE_PERFIS,
-  type PaginacaoInfo,
-  type ProfissionalResumo,
-} from "@/components/company/CompanyDashboardVitrineSection";
+import CompanyDashboardVitrineSearchFilters from "@/components/company/CompanyDashboardVitrineSearchFilters";
+import CompanyDashboardVitrineSection from "@/components/company/CompanyDashboardVitrineSection";
+import CompanyDashboardVerificationBanner from "@/components/company/CompanyDashboardVerificationBanner";
+import {
+  useCompanyDashboardInicioSearch,
+  type PlanFeatures,
+} from "@/components/company/useCompanyDashboardInicioSearch";
 import type { CompanyPlanTier } from "@/lib/company-premium-plans";
 import type { CompanyVerificationStatus } from "@/lib/company/company-verification";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
@@ -57,20 +51,6 @@ interface CompanyProfile {
   email: string;
 }
 
-interface PlanFeatures {
-  canUseAdvancedFilters: boolean;
-  canUnlockContacts: boolean;
-  canFavorite: boolean;
-  canSendTips: boolean;
-  canSendProposals?: boolean;
-  canViewContacts: boolean;
-  canUseAlerts?: boolean;
-  canUseTalentBank?: boolean;
-  canExportProfiles?: boolean;
-  canViewDashboardStats?: boolean;
-  canContactRecruta?: boolean;
-}
-
 export default function CompanyDashboardInicioPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -85,9 +65,6 @@ export default function CompanyDashboardInicioPage() {
   const [isCompanyAccount, setIsCompanyAccount] = useState(false);
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
   const [profileLoadError, setProfileLoadError] = useState("");
-  const [desbloqueados, setDesbloqueados] = useState<ProfissionalResumo[]>([]);
-  const [desbloqueadosTotal, setDesbloqueadosTotal] = useState(0);
-  const [profissionais, setProfissionais] = useState<ProfissionalResumo[]>([]);
   const [unlockedCount, setUnlockedCount] = useState(0);
   const [slotsRestantes, setSlotsRestantes] = useState<number | null>(0);
   const [planTier, setPlanTier] = useState<CompanyPlanTier>("FREE");
@@ -104,11 +81,6 @@ export default function CompanyDashboardInicioPage() {
     canViewDashboardStats: false,
     canContactRecruta: false,
   });
-  const [canUnlock, setCanUnlock] = useState(false);
-  const [loadingProfissionais, setLoadingProfissionais] = useState(false);
-  const [unlockingId, setUnlockingId] = useState<string | null>(null);
-  const [erroBusca, setErroBusca] = useState("");
-  const [totalEncontrados, setTotalEncontrados] = useState(0);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [entrevistasAgendadas, setEntrevistasAgendadas] = useState<
     Array<{
@@ -120,44 +92,51 @@ export default function CompanyDashboardInicioPage() {
       interviewStatus: string;
     }>
   >([]);
-  const [alerts, setAlerts] = useState<CompanyAlert[]>([]);
-  const [vitrineIds, setVitrineIds] = useState<string[] | null>(null);
-  const [vitrineListaNome, setVitrineListaNome] = useState("");
-  const [filtros, setFiltros] = useState<Filtros>(EMPTY_FILTROS);
-  const [cidadesOpcoes, setCidadesOpcoes] = useState<string[]>([]);
-  const [buscaAvancadaAberta, setBuscaAvancadaAberta] = useState(false);
-  const [buscaRealizada, setBuscaRealizada] = useState(false);
-  const [paginaPerfis, setPaginaPerfis] = useState(1);
-  const [paginacao, setPaginacao] = useState<PaginacaoInfo>(PAGINACAO_INICIAL);
-  const vitrinePerfisRef = React.useRef<HTMLElement | null>(null);
+
+  const carregarPerfilEmpresa = useCallback(async () => {
+    try {
+      setProfileLoadError("");
+      const res = await fetch("/api/company/profile", { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        setCompanyProfile(data.company);
+        if (data.verification) {
+          setVerificationStatus(data.verification.verificationStatus);
+          setVerificationReason(data.verification.rejectionReason || null);
+          setCanAccessSensitiveProfiles(data.verification.canAccessSensitiveProfiles === true);
+          setEmailCorporativoVerificado(data.verification.isEmailVerified === true);
+        }
+        setUnlockedCount(data.unlockedCount || 0);
+        setSlotsRestantes(data.slotsRestantes ?? null);
+        if (data.plan) {
+          setPlanTier(data.plan.tier || "FREE");
+          setPlanFeatures(data.plan.features || planFeatures);
+        }
+        setPlanLoaded(true);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setProfileLoadError(data.error || "Não foi possível carregar o perfil da empresa.");
+        setPlanLoaded(true);
+      }
+    } catch (e) {
+      console.error(e);
+      setProfileLoadError("Erro de rede ao carregar o perfil da empresa.");
+      setPlanLoaded(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mesmo contrato da versão monolítica (deps [])
+  }, []);
+
+  const search = useCompanyDashboardInicioSearch({
+    mounted,
+    status,
+    setPlanTier,
+    setPlanFeatures,
+    setUnlockedCount,
+    setSlotsRestantes,
+    carregarPerfilEmpresa,
+  });
 
   useEffect(() => { setMounted(true); }, []);
-
-  useEffect(() => {
-    if (!filtros.estado) {
-      setCidadesOpcoes([]);
-      return;
-    }
-
-    let ativo = true;
-    void fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${filtros.estado}/municipios`)
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data: { nome: string }[]) => {
-        if (!ativo) return;
-        setCidadesOpcoes(
-          data
-            .map((m) => m.nome)
-            .sort((a, b) => a.localeCompare(b, "pt-BR")),
-        );
-      })
-      .catch(() => {
-        if (ativo) setCidadesOpcoes([]);
-      });
-
-    return () => {
-      ativo = false;
-    };
-  }, [filtros.estado]);
 
   useEffect(() => {
     if (status === "unauthenticated" && mounted) {
@@ -220,163 +199,6 @@ export default function CompanyDashboardInicioPage() {
     }
   }, [session?.user?.email, session?.user?.name]);
 
-  const carregarPerfilEmpresa = useCallback(async () => {
-    try {
-      setProfileLoadError("");
-      const res = await fetch("/api/company/profile", { credentials: "include" });
-      if (res.ok) {
-        const data = await res.json();
-        setCompanyProfile(data.company);
-        if (data.verification) {
-          setVerificationStatus(data.verification.verificationStatus);
-          setVerificationReason(data.verification.rejectionReason || null);
-          setCanAccessSensitiveProfiles(data.verification.canAccessSensitiveProfiles === true);
-          setEmailCorporativoVerificado(data.verification.isEmailVerified === true);
-        }
-        setUnlockedCount(data.unlockedCount || 0);
-        setSlotsRestantes(data.slotsRestantes ?? null);
-        if (data.plan) {
-          setPlanTier(data.plan.tier || "FREE");
-          setPlanFeatures(data.plan.features || planFeatures);
-        }
-        setPlanLoaded(true);
-      } else {
-        const data = await res.json().catch(() => ({}));
-        setProfileLoadError(data.error || "Não foi possível carregar o perfil da empresa.");
-        setPlanLoaded(true);
-      }
-    } catch (e) {
-      console.error(e);
-      setProfileLoadError("Erro de rede ao carregar o perfil da empresa.");
-      setPlanLoaded(true);
-    }
-  }, []);
-
-  const buscarProfissionais = useCallback(async (page: number) => {
-    setVitrineIds(null);
-    setVitrineListaNome("");
-    setLoadingProfissionais(true);
-    setErroBusca("");
-    try {
-      const params = new URLSearchParams();
-      Object.entries(filtros).forEach(([k, v]) => { if (v) params.set(k, v); });
-      params.set("page", String(page));
-      params.set("perPage", String(PER_PAGE_PERFIS));
-      const res = await fetch(`/api/company/professionals?${params}`, { credentials: "include" });
-      const data = await res.json();
-      if (!res.ok) {
-        setErroBusca(data.error || "Erro ao buscar profissionais");
-        return;
-      }
-      setProfissionais(data.profissionais || data.bloqueados || []);
-      setDesbloqueados(data.desbloqueados || []);
-      setDesbloqueadosTotal(
-        typeof data.desbloqueadosTotal === "number"
-          ? data.desbloqueadosTotal
-          : (data.desbloqueados?.length ?? 0),
-      );
-      setUnlockedCount(data.unlockedCount || 0);
-      setSlotsRestantes(data.slotsRestantes ?? null);
-      setCanUnlock(data.canUnlock ?? false);
-      const total = data.totalEncontrados ?? (data.profissionais?.length ?? data.bloqueados?.length ?? 0);
-      setTotalEncontrados(total);
-      const perPage = data.pagination?.perPage ?? PER_PAGE_PERFIS;
-      const totalPages = data.pagination?.totalPages ?? Math.max(1, Math.ceil(total / perPage));
-      setPaginacao(
-        data.pagination ?? {
-          page,
-          perPage,
-          total,
-          totalPages,
-        }
-      );
-      setPaginaPerfis(data.pagination?.page ?? page);
-      if (data.planTier) setPlanTier(data.planTier);
-      if (data.features) setPlanFeatures(data.features);
-    } catch {
-      setErroBusca("Erro de rede ao buscar profissionais");
-    } finally {
-      setLoadingProfissionais(false);
-    }
-  }, [filtros]);
-
-  const abrirPerfisPorIds = useCallback(async (
-    ids: string[],
-    erroPadrao: string,
-    page = 1,
-    listaNome = "",
-  ) => {
-    setVitrineIds(ids);
-    setVitrineListaNome(listaNome);
-    if (ids.length === 0) {
-      setBuscaRealizada(true);
-      setProfissionais([]);
-      setDesbloqueados([]);
-      setDesbloqueadosTotal(0);
-      setTotalEncontrados(0);
-      setPaginacao({ page: 1, perPage: PER_PAGE_PERFIS, total: 0, totalPages: 1 });
-      setPaginaPerfis(1);
-      setErroBusca("");
-      vitrinePerfisRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
-    }
-
-    setBuscaRealizada(true);
-    setLoadingProfissionais(true);
-    setErroBusca("");
-    try {
-      const params = new URLSearchParams();
-      params.set("ids", ids.join(","));
-      params.set("page", String(page));
-      params.set("perPage", String(PER_PAGE_PERFIS));
-      const res = await fetch(`/api/company/professionals?${params}`, { credentials: "include" });
-      const data = await res.json();
-      if (!res.ok) {
-        setErroBusca(data.error || erroPadrao);
-        return;
-      }
-      setProfissionais(data.profissionais || data.bloqueados || []);
-      setDesbloqueados(data.desbloqueados || []);
-      setDesbloqueadosTotal(
-        typeof data.desbloqueadosTotal === "number"
-          ? data.desbloqueadosTotal
-          : (data.desbloqueados?.length ?? 0),
-      );
-      setUnlockedCount(data.unlockedCount || 0);
-      setSlotsRestantes(data.slotsRestantes ?? null);
-      setCanUnlock(data.canUnlock ?? false);
-      const total = data.totalEncontrados ?? ids.length;
-      setTotalEncontrados(total);
-      const perPage = data.pagination?.perPage ?? PER_PAGE_PERFIS;
-      const totalPages = data.pagination?.totalPages ?? Math.max(1, Math.ceil(total / perPage));
-      setPaginacao(
-        data.pagination ?? {
-          page,
-          perPage,
-          total,
-          totalPages,
-        },
-      );
-      setPaginaPerfis(data.pagination?.page ?? page);
-      if (data.planTier) setPlanTier(data.planTier);
-      if (data.features) setPlanFeatures(data.features);
-      vitrinePerfisRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    } catch {
-      setErroBusca(`Erro de rede: ${erroPadrao}`);
-    } finally {
-      setLoadingProfissionais(false);
-    }
-  }, []);
-
-  const irParaPagina = useCallback((page: number) => {
-    if (vitrineIds) {
-      void abrirPerfisPorIds(vitrineIds, "Erro ao abrir lista do banco de talentos", page, vitrineListaNome);
-    } else {
-      void buscarProfissionais(page);
-    }
-    vitrinePerfisRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [abrirPerfisPorIds, buscarProfissionais, vitrineIds, vitrineListaNome]);
-
   const carregarStats = useCallback(async () => {
     try {
       const res = await fetch("/api/company/dashboard-stats", { credentials: "include" });
@@ -393,16 +215,6 @@ export default function CompanyDashboardInicioPage() {
       if (res.ok) {
         const data = await res.json();
         setEntrevistasAgendadas(data.interviews || []);
-      }
-    } catch { /* opcional */ }
-  }, []);
-
-  const carregarAlertas = useCallback(async () => {
-    try {
-      const res = await fetch("/api/company/alerts?matches=1", { credentials: "include" });
-      if (res.ok) {
-        const data = await res.json();
-        setAlerts(data.alerts || []);
       }
     } catch { /* opcional */ }
   }, []);
@@ -446,172 +258,6 @@ export default function CompanyDashboardInicioPage() {
     }
   }, [registrationComplete, status, carregarPerfilEmpresa, carregarStats, session?.user?.email, session?.user?.name]);
 
-  const handleUnlock = async (profileId: string) => {
-    setUnlockingId(profileId);
-    try {
-      const res = await fetch("/api/company/professionals", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ profileId }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || "Erro ao desbloquear");
-        return;
-      }
-      await buscarProfissionais(paginaPerfis);
-      await carregarPerfilEmpresa();
-    } catch {
-      alert("Erro de rede ao desbloquear perfil");
-    } finally {
-      setUnlockingId(null);
-    }
-  };
-
-  const handleCreateAlert = async () => {
-    const temPreferencia = (Object.keys(EMPTY_FILTROS) as (keyof Filtros)[]).some((key) => Boolean(filtros[key]));
-    if (!temPreferencia) {
-      alert("Defina ao menos um filtro de preferência antes de criar o alerta.");
-      return;
-    }
-    const name = window.prompt("Nome do alerta (ex: Operadores CNC SP):");
-    if (!name?.trim()) return;
-    const filtersLimpos = Object.fromEntries(
-      (Object.keys(EMPTY_FILTROS) as (keyof Filtros)[])
-        .filter((key) => Boolean(filtros[key]))
-        .map((key) => [key, filtros[key]]),
-    );
-    const res = await fetch("/api/company/alerts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ name: name.trim(), filters: filtersLimpos }),
-    });
-    if (res.ok) await carregarAlertas();
-    else alert((await res.json()).error || "Erro ao criar alerta");
-  };
-
-  const handleToggleAlert = async (alertId: string, active: boolean) => {
-    await fetch("/api/company/alerts", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ alertId, active }),
-    });
-    await carregarAlertas();
-  };
-
-  const handleDeleteAlert = async (alertId: string) => {
-    await fetch(`/api/company/alerts?alertId=${alertId}`, { method: "DELETE", credentials: "include" });
-    await carregarAlertas();
-  };
-
-  const handleOpenAlertMatches = async (alert: CompanyAlert) => {
-    setVitrineIds(null);
-    setVitrineListaNome("");
-    const next: Filtros = { ...EMPTY_FILTROS };
-    if (alert.filters) {
-      (Object.keys(EMPTY_FILTROS) as (keyof Filtros)[]).forEach((key) => {
-        next[key] = String(alert.filters?.[key] ?? "");
-      });
-    }
-    setFiltros(next);
-
-    const temPreferencia = (Object.keys(EMPTY_FILTROS) as (keyof Filtros)[]).some((key) => Boolean(next[key]));
-    if (!temPreferencia) {
-      setErroBusca("Este alerta não tem preferências de filtro salvas.");
-      setBuscaRealizada(true);
-      return;
-    }
-
-    setBuscaRealizada(true);
-    setLoadingProfissionais(true);
-    setErroBusca("");
-    try {
-      const params = new URLSearchParams();
-      (Object.keys(EMPTY_FILTROS) as (keyof Filtros)[]).forEach((key) => {
-        if (next[key]) params.set(key, next[key]);
-      });
-      params.set("page", "1");
-      params.set("perPage", String(PER_PAGE_PERFIS));
-      const res = await fetch(`/api/company/professionals?${params}`, { credentials: "include" });
-      const data = await res.json();
-      if (!res.ok) {
-        setErroBusca(data.error || "Erro ao abrir perfis compatíveis");
-        return;
-      }
-      setProfissionais(data.profissionais || data.bloqueados || []);
-      setDesbloqueados(data.desbloqueados || []);
-      setDesbloqueadosTotal(
-        typeof data.desbloqueadosTotal === "number"
-          ? data.desbloqueadosTotal
-          : (data.desbloqueados?.length ?? 0),
-      );
-      setUnlockedCount(data.unlockedCount || 0);
-      setSlotsRestantes(data.slotsRestantes ?? null);
-      setCanUnlock(data.canUnlock ?? false);
-      const total = data.totalEncontrados ?? (data.profissionais?.length ?? data.bloqueados?.length ?? 0);
-      setTotalEncontrados(total);
-      const perPage = data.pagination?.perPage ?? PER_PAGE_PERFIS;
-      const totalPages = data.pagination?.totalPages ?? Math.max(1, Math.ceil(total / perPage));
-      setPaginacao(data.pagination ?? { page: 1, perPage, total, totalPages });
-      setPaginaPerfis(data.pagination?.page ?? 1);
-      if (data.planTier) setPlanTier(data.planTier);
-      if (data.features) setPlanFeatures(data.features);
-      vitrinePerfisRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    } catch {
-      setErroBusca("Erro de rede ao abrir perfis compatíveis");
-    } finally {
-      setLoadingProfissionais(false);
-    }
-  };
-
-  const handleOpenTalentList = async (list: TalentList) => {
-    try {
-      const res = await fetch(`/api/company/talent-lists?listId=${encodeURIComponent(list.id)}`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setErroBusca(data.error || "Erro ao abrir lista do banco de talentos");
-        setBuscaRealizada(true);
-        return;
-      }
-      const ids: string[] = Array.isArray(data.profileIds) ? data.profileIds : [];
-      await abrirPerfisPorIds(ids, "Erro ao abrir lista do banco de talentos", 1, list.name);
-    } catch {
-      setErroBusca("Erro de rede ao abrir lista do banco de talentos");
-      setBuscaRealizada(true);
-    }
-  };
-
-  // Ponte das páginas de aba → início (abrir lista / alerta na vitrine)
-  useEffect(() => {
-    if (!mounted || status !== "authenticated") return;
-    try {
-      const listRaw = window.sessionStorage.getItem("company-open-talent-list");
-      if (listRaw) {
-        window.sessionStorage.removeItem("company-open-talent-list");
-        const list = JSON.parse(listRaw) as TalentList;
-        if (list?.id) void handleOpenTalentList(list);
-      }
-      const alertRaw = window.sessionStorage.getItem("company-open-alert-filters");
-      if (alertRaw) {
-        window.sessionStorage.removeItem("company-open-alert-filters");
-        const filters = JSON.parse(alertRaw) as Record<string, string>;
-        void handleOpenAlertMatches({ id: "", name: "", active: true, filters, newMatches: [] });
-      }
-    } catch {
-      /* ignore */
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, status]);
-
-  const handleExportProfile = (profileId: string) => {
-    window.open(`/api/company/professionals/${profileId}/export`, "_blank");
-  };
-
   const handleSelectFreePlan = async () => {
     try {
       const res = await fetch("/api/company/subscription", {
@@ -622,7 +268,7 @@ export default function CompanyDashboardInicioPage() {
       });
       if (res.ok) {
         await carregarPerfilEmpresa();
-        await buscarProfissionais(paginaPerfis);
+        await search.buscarProfissionais(search.paginaPerfis);
       }
     } catch {
       alert("Erro ao alterar plano");
@@ -669,25 +315,11 @@ export default function CompanyDashboardInicioPage() {
   return (
         <>
           {!canAccessSensitiveProfiles && (
-            <div style={{
-              margin: "20px 24px 0",
-              padding: 12,
-              borderRadius: 16,
-              border: `1px solid ${verificationStatus === "REJECTED" ? "#dc3545" : DASH.gold}`,
-              background: verificationStatus === "REJECTED" ? "rgba(220,53,69,0.12)" : "rgba(200,155,60,0.12)",
-            }}>
-              <p style={{ margin: 0, fontSize: 13, color: DASH.text, lineHeight: 1.5 }}>
-                <strong>Liberação de contatos pendente</strong>
-                {' '}— Você pode buscar profissionais, mas dados sensíveis só aparecem quando:
-              </p>
-              <ul style={{ margin: "8px 0 0", paddingLeft: 18, fontSize: 12, color: DASH.muted, lineHeight: 1.6 }}>
-                <li>{emailCorporativoVerificado ? '✓' : '○'} E-mail corporativo confirmado por link</li>
-                <li>{verificationStatus === "VERIFIED" ? '✓' : '○'} Cartão CNPJ anexado e aprovado pelo admin</li>
-              </ul>
-              {verificationStatus === "REJECTED" && verificationReason && (
-                <p style={{ margin: "8px 0 0", fontSize: 12, color: "#f87171" }}>{verificationReason}</p>
-              )}
-            </div>
+            <CompanyDashboardVerificationBanner
+              verificationStatus={verificationStatus}
+              verificationReason={verificationReason}
+              emailCorporativoVerificado={emailCorporativoVerificado}
+            />
           )}
 
           <div style={{ padding: "2px 0 6px", minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
@@ -699,74 +331,48 @@ export default function CompanyDashboardInicioPage() {
           )}
 
           <CompanyDashboardVitrineSearchFilters
-            filtros={filtros}
-            cidadesOpcoes={cidadesOpcoes}
-            buscaAvancadaAberta={buscaAvancadaAberta}
-            loadingProfissionais={loadingProfissionais}
+            filtros={search.filtros}
+            cidadesOpcoes={search.cidadesOpcoes}
+            buscaAvancadaAberta={search.buscaAvancadaAberta}
+            loadingProfissionais={search.loadingProfissionais}
             advancedFilterDisabled={advancedFilterDisabled}
-            onFiltrosChange={setFiltros}
-            onToggleBuscaAvancada={() => setBuscaAvancadaAberta((v) => !v)}
-            onBuscar={() => {
-              if (!filtrosTemValor(filtros)) {
-                setErroBusca("Selecione ao menos um filtro para buscar profissionais.");
-                setBuscaRealizada(false);
-                setProfissionais([]);
-                setDesbloqueados([]);
-                setDesbloqueadosTotal(0);
-                setTotalEncontrados(0);
-                setPaginacao(PAGINACAO_INICIAL);
-                return;
-              }
-              setErroBusca("");
-              setPaginaPerfis(1);
-              setBuscaRealizada(true);
-              void buscarProfissionais(1);
-            }}
-            onLimpar={() => {
-              setFiltros(EMPTY_FILTROS);
-              setCidadesOpcoes([]);
-              setBuscaRealizada(false);
-              setProfissionais([]);
-              setDesbloqueados([]);
-              setDesbloqueadosTotal(0);
-              setTotalEncontrados(0);
-              setPaginacao(PAGINACAO_INICIAL);
-              setPaginaPerfis(1);
-              setErroBusca("");
-            }}
+            onFiltrosChange={search.setFiltros}
+            onToggleBuscaAvancada={search.onToggleBuscaAvancada}
+            onBuscar={search.onBuscar}
+            onLimpar={search.onLimpar}
           />
 
-          {erroBusca && (
+          {search.erroBusca && (
             <div style={{ background: "#fee2e2", color: "#b91c1c", padding: 10, borderRadius: 8, fontSize: 12 }}>
-              {erroBusca}
+              {search.erroBusca}
             </div>
           )}
 
-          {buscaRealizada && totalEncontrados > 0 && (
+          {search.buscaRealizada && search.totalEncontrados > 0 && (
             <p style={{ color: DASH.muted, fontSize: 11, margin: 0 }}>
-              {totalEncontrados} profissional(is) compatível(is)
-              {desbloqueadosTotal > 0 ? ` · ${desbloqueadosTotal} desbloqueado(s)` : ""}
-              {paginacao.totalPages > 1 ? ` · página ${paginacao.page} de ${paginacao.totalPages}` : ""}
+              {search.totalEncontrados} profissional(is) compatível(is)
+              {search.desbloqueadosTotal > 0 ? ` · ${search.desbloqueadosTotal} desbloqueado(s)` : ""}
+              {search.paginacao.totalPages > 1 ? ` · página ${search.paginacao.page} de ${search.paginacao.totalPages}` : ""}
               {" "}— ordenados por índice de compatibilidade.
             </p>
           )}
 
           <CompanyDashboardVitrineSection
-            sectionRef={vitrinePerfisRef}
-            vitrineListaNome={vitrineListaNome}
-            buscaRealizada={buscaRealizada}
-            paginacao={paginacao}
-            totalEncontrados={totalEncontrados}
-            loadingProfissionais={loadingProfissionais}
-            profissionais={profissionais}
-            canUnlock={canUnlock}
+            sectionRef={search.vitrinePerfisRef}
+            vitrineListaNome={search.vitrineListaNome}
+            buscaRealizada={search.buscaRealizada}
+            paginacao={search.paginacao}
+            totalEncontrados={search.totalEncontrados}
+            loadingProfissionais={search.loadingProfissionais}
+            profissionais={search.profissionais}
+            canUnlock={search.canUnlock}
             slotsRestantes={slotsRestantes}
             canExportProfiles={planFeatures.canExportProfiles}
-            unlockingId={unlockingId}
+            unlockingId={search.unlockingId}
             openProfile={openProfile}
-            handleUnlock={handleUnlock}
-            handleExportProfile={handleExportProfile}
-            irParaPagina={irParaPagina}
+            handleUnlock={search.handleUnlock}
+            handleExportProfile={search.handleExportProfile}
+            irParaPagina={search.irParaPagina}
           />
 
           <section style={{ marginTop: 2, marginBottom: 4 }}>
