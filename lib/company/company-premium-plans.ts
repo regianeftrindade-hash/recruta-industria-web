@@ -21,12 +21,12 @@ export const COMPANY_PLAN_TIERS: CompanyPlanDefinition[] = [
     id: 'FREE',
     emoji: '🥉',
     nome: 'FREE',
-    // TEMP teste Asaas: R$ 2,00 — voltar para R$ 0 / precoCentavos: 0 depois do teste
-    preco: 'R$ 2,00',
+    // TEMP teste Asaas: mínimo R$ 5,00 — voltar para R$ 0 / precoCentavos: 0 depois do teste
+    preco: 'R$ 5,00',
     periodo: '/mês',
     descricao:
       'Ideal para conhecer a plataforma e explorar o banco de talentos. O plano Free permite que a empresa visualize o potencial da plataforma antes de investir em uma assinatura.',
-    precoCentavos: 200,
+    precoCentavos: 500,
     inclui: [
       'Pesquisa de profissionais da indústria',
       'Visualização resumida dos perfis',
