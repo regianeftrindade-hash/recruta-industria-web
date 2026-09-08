@@ -1,5 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
+/** Alvo padrão: produção. Override com E2E_BASE_URL. Specs logados: docs/e2e-secrets.md */
 const baseURL = process.env.E2E_BASE_URL || "https://www.recrutaindustria.com";
 
 export default defineConfig({

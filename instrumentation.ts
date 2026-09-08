@@ -13,4 +13,5 @@ export async function register() {
   }
 }
 
+/** Hook do Next.js; sem DSN o SDK trata como no-op após register() pular o init. */
 export const onRequestError = Sentry.captureRequestError;

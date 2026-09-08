@@ -67,7 +67,7 @@ export default function ProfessionalProposalsPanel({ proposals, onChanged }: Pro
   const btnGhost: React.CSSProperties = {
     background: "transparent",
     border: `1px solid ${DASH.border}`,
-    color: DASH.text,
+    color: DASH.muted,
     borderRadius: 8,
     padding: "6px 8px",
     fontSize: 10,
@@ -79,17 +79,18 @@ export default function ProfessionalProposalsPanel({ proposals, onChanged }: Pro
 
   return (
     <section style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
-      <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 6px", fontSize: 14 }}>
-        🔔 Propostas recebidas ({lista.length})
+      <h3 style={{ ...dashSectionTitle, margin: "0 0 6px", fontSize: 14 }}>
+        Propostas recebidas ({lista.length})
       </h3>
       <p style={{ margin: "0 0 10px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
         {AVISO_RETENCAO_PROPOSTAS}
       </p>
 
       {lista.length === 0 ? (
-        <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
-          Quando uma empresa enviar proposta, ela aparecerá aqui.
-        </p>
+        <div className="ri-dash-empty">
+          <strong>Nenhuma proposta ainda</strong>
+          <span>Quando uma empresa enviar uma proposta de vaga, ela aparece aqui para você responder.</span>
+        </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {lista.map((p) => {
@@ -110,7 +111,7 @@ export default function ProfessionalProposalsPanel({ proposals, onChanged }: Pro
                       margin: 0,
                       fontSize: 11,
                       fontWeight: 800,
-                      color: DASH.gold,
+                      color: DASH.title,
                       textTransform: "uppercase",
                       whiteSpace: "nowrap",
                       overflow: "hidden",
@@ -162,6 +163,7 @@ export default function ProfessionalProposalsPanel({ proposals, onChanged }: Pro
                           type="button"
                           disabled={busy}
                           onClick={() => void responder(p.id, "MORE_INFO")}
+                          className="ri-dash-btn-secondary"
                           style={btnGhost}
                         >
                           + Info
@@ -178,7 +180,7 @@ export default function ProfessionalProposalsPanel({ proposals, onChanged }: Pro
                     </>
                   )}
                   {p.status === "INTERESTED" && (
-                    <span style={{ fontSize: 10, color: DASH.gold, fontWeight: 700, whiteSpace: "nowrap" }}>
+                    <span style={{ fontSize: 10, color: DASH.muted, fontWeight: 700, whiteSpace: "nowrap" }}>
                       Aguardando agenda
                     </span>
                   )}

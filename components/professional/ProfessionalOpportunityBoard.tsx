@@ -186,7 +186,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
   const btnGhost: React.CSSProperties = {
     background: "transparent",
     border: `1px solid ${DASH.border}`,
-    color: DASH.text,
+    color: DASH.muted,
     borderRadius: 8,
     padding: "5px 8px",
     fontSize: 10,
@@ -217,7 +217,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
             style={{
               fontSize: 11,
               fontWeight: 800,
-              color: DASH.gold,
+              color: DASH.title,
               textTransform: "uppercase",
             }}
           >
@@ -245,6 +245,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
                   type="button"
                   disabled={busy}
                   onClick={() => void responder(p.id, "MORE_INFO")}
+                  className="ri-dash-btn-secondary"
                   style={btnGhost}
                 >
                   + Info
@@ -273,11 +274,11 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
           <div className={css.detalhe} style={{ color: DASH.text }}>
             {p.beneficios?.trim() ? (
               <p style={{ margin: "0 0 8px" }}>
-                <strong style={{ color: DASH.gold }}>Benefícios:</strong> {p.beneficios}
+                <strong style={{ color: DASH.title }}>Benefícios:</strong> {p.beneficios}
               </p>
             ) : null}
             <p style={{ margin: 0 }}>
-              <strong style={{ color: DASH.gold }}>Mensagem:</strong> {p.mensagem || "Sem mensagem."}
+              <strong style={{ color: DASH.title }}>Mensagem:</strong> {p.mensagem || "Sem mensagem."}
             </p>
           </div>
         )}
@@ -306,7 +307,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
             style={{
               fontSize: 11,
               fontWeight: 800,
-              color: DASH.gold,
+              color: DASH.title,
               textTransform: "uppercase",
             }}
           >
@@ -317,7 +318,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
           </p>
           {p.interview.observacoes?.trim() ? (
             <p className={css.sub} style={{ marginTop: 6, fontSize: 11, color: DASH.text, whiteSpace: "pre-wrap" }}>
-              <strong style={{ color: DASH.gold }}>Observação:</strong> {p.interview.observacoes.trim()}
+              <strong style={{ color: DASH.title }}>Observação:</strong> {p.interview.observacoes.trim()}
             </p>
           ) : null}
         </div>
@@ -456,7 +457,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
               margin: 0,
               fontSize: 11,
               fontWeight: 800,
-              color: DASH.gold,
+              color: DASH.title,
               textTransform: "uppercase",
               whiteSpace: "nowrap",
               overflow: "hidden",
@@ -496,8 +497,8 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
 
   return (
     <section className={`dash-card ${css.board}`} style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
-      <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 6px", fontSize: 14 }}>
-        🔔 Oportunidades
+      <h3 style={{ ...dashSectionTitle, margin: "0 0 6px", fontSize: 14 }}>
+        Oportunidades
       </h3>
       <p style={{ margin: "0 0 12px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
         {AVISO_RETENCAO_PROPOSTAS}
@@ -505,11 +506,14 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <div style={nestedCard}>
-          <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 800, color: DASH.gold }}>
+          <h4 style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 600, color: DASH.muted }}>
             Propostas recebidas ({listas.propostas.length})
           </h4>
           {listas.propostas.length === 0 ? (
-            <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Nenhuma proposta ativa.</p>
+            <div className="ri-dash-empty">
+              <strong>Nenhuma proposta ativa</strong>
+              <span>Quando uma empresa enviar uma proposta de vaga, ela aparece aqui para você responder.</span>
+            </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {listas.propostas.map(renderProposta)}
@@ -518,11 +522,14 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
         </div>
 
         <div style={nestedCard}>
-          <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 800, color: DASH.gold }}>
+          <h4 style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 600, color: DASH.muted }}>
             Entrevistas agendadas ({listas.entrevistas.length})
           </h4>
           {listas.entrevistas.length === 0 ? (
-            <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Nenhuma entrevista agendada.</p>
+            <div className="ri-dash-empty">
+              <strong>Nenhuma entrevista agendada</strong>
+              <span>Após demonstrar interesse, a empresa pode marcar a entrevista — ela entra nesta lista.</span>
+            </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {listas.entrevistas.map(renderEntrevista)}
@@ -531,11 +538,14 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
         </div>
 
         <div style={nestedCard}>
-          <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 800, color: DASH.gold }}>
+          <h4 style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 600, color: DASH.muted }}>
             Arquivadas ({listas.arquivadas.length})
           </h4>
           {listas.arquivadas.length === 0 ? (
-            <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Nada arquivado ainda.</p>
+            <div className="ri-dash-empty">
+              <strong>Nada arquivado ainda</strong>
+              <span>Propostas recusadas, entrevistas encerradas ou canceladas ficam aqui por um tempo.</span>
+            </div>
           ) : (
             <div className={css.listaArquivadas}>
               {listas.arquivadas.map(renderArquivada)}

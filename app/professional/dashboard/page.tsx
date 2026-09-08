@@ -36,8 +36,8 @@ import { buildCareerTimeline } from "@/lib/professional/career-timeline";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
 
 const VAZIO = "—";
-/** Títulos de seção do dashboard profissional — dourado */
-const dashTitleProf = { ...dashSectionTitle, color: DASH.gold };
+/** Títulos de seção — quietos; ouro fica em h1, métricas e CTAs */
+const dashTitleProf = { ...dashSectionTitle };
 
 interface ProfileData {
   nome?: string;
@@ -639,7 +639,7 @@ export default function DashboardProfissional() {
                 )}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: DASH.gold }}>
+                <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: DASH.title }}>
                   {nomeExibicao}
                 </p>
                 <p style={{ margin: "0 0 3px", fontSize: 11, color: DASH.text }}>
@@ -660,7 +660,7 @@ export default function DashboardProfissional() {
             </div>
             {temLinhaTempo && (
               <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${DASH.border}` }}>
-                <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 700, color: DASH.gold, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 700, color: DASH.muted, textTransform: "uppercase", letterSpacing: "0.04em" }}>
                   Linha do tempo
                 </p>
                 <CarreiraTimeline experiencias={empresasTimeline} compact />
@@ -668,7 +668,7 @@ export default function DashboardProfissional() {
             )}
 
             <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${DASH.border}` }}>
-              <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 700, color: DASH.gold, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 700, color: DASH.muted, textTransform: "uppercase", letterSpacing: "0.04em" }}>
                 Perfil pessoal
               </p>
               {testeComportamental ? (
@@ -676,7 +676,7 @@ export default function DashboardProfissional() {
                   const info = PERFIL_INFO[testeComportamental.perfilPrincipal];
                   return (
                     <div>
-                      <p style={{ margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>
+                      <p style={{ margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: DASH.title, lineHeight: 1.35 }}>
                         {info.emoji} Perfil predominante: {info.titulo}
                       </p>
                       <p style={{ margin: 0, fontSize: 11, lineHeight: 1.5, color: DASH.text }}>
@@ -716,8 +716,8 @@ export default function DashboardProfissional() {
                 {lastViewCompany ? <> · <strong>{lastViewCompany}</strong></> : null}
               </p>
             ) : (
-              <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.muted }}>
-                Nenhuma empresa visualizou seu perfil nesta semana.
+              <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
+                Ainda sem visualizações — quando uma empresa abrir seu perfil, a data e o nome aparecem aqui.
               </p>
             )}
 
@@ -807,7 +807,10 @@ export default function DashboardProfissional() {
                 ))}
               </div>
             ) : (
-              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Nenhuma dica recebida ainda.</p>
+              <div className="ri-dash-empty">
+                <strong>Nenhuma dica recebida</strong>
+                <span>Quando uma empresa deixar uma dica no seu perfil, ela aparece aqui.</span>
+              </div>
             )}
           </section>
           )}
@@ -822,9 +825,10 @@ export default function DashboardProfissional() {
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: "calc(100vh - 220px)", overflowY: "auto" }}>
               {inboxMessages.length === 0 ? (
-                <p style={{ margin: 0, fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
-                  Quando uma empresa enviar mensagem, ela aparecerá aqui para você responder.
-                </p>
+                <div className="ri-dash-empty">
+                  <strong>Nenhuma mensagem ainda</strong>
+                  <span>Quando uma empresa enviar mensagem, ela aparece aqui para você ler e responder.</span>
+                </div>
               ) : (
                 inboxMessages.map((msg) => {
                   const aberta = mensagemAbertaId === msg.id;
@@ -905,11 +909,11 @@ export default function DashboardProfissional() {
                                   style={{
                                     padding: "8px 10px",
                                     borderRadius: 10,
-                                    background: "rgba(200,155,60,0.12)",
-                                    border: `1px solid ${DASH.gold}`,
+                                    background: "rgba(200,155,60,0.08)",
+                                    border: `1px solid ${DASH.border}`,
                                   }}
                                 >
-                                  <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: DASH.gold }}>
+                                  <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: DASH.muted }}>
                                     Sua resposta · {formatarDataHoraCurta(r.createdAt)}
                                   </p>
                                   <p style={{ margin: "4px 0 0", fontSize: 12, lineHeight: 1.45, color: DASH.text }}>

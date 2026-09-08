@@ -128,7 +128,7 @@ export default function ProfessionalInterviewsPanel({ proposals, onChanged }: Pr
   const btnGhost: React.CSSProperties = {
     background: "transparent",
     border: `1px solid ${DASH.border}`,
-    color: DASH.text,
+    color: DASH.muted,
     borderRadius: 8,
     padding: "5px 8px",
     fontSize: 10,
@@ -140,17 +140,18 @@ export default function ProfessionalInterviewsPanel({ proposals, onChanged }: Pr
 
   return (
     <section style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
-      <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 6px", fontSize: 14 }}>
-        📅 Entrevistas agendadas ({entrevistas.length})
+      <h3 style={{ ...dashSectionTitle, margin: "0 0 6px", fontSize: 14 }}>
+        Entrevistas agendadas ({entrevistas.length})
       </h3>
       <p style={{ margin: "0 0 10px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
         Use Contatado / Teste / Contratado no fim da linha para o histórico.
       </p>
 
       {entrevistas.length === 0 ? (
-        <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
-          Nenhuma entrevista agendada no momento.
-        </p>
+        <div className="ri-dash-empty">
+          <strong>Nenhuma entrevista agendada</strong>
+          <span>Quando uma empresa marcar entrevista após o seu interesse, ela aparece aqui.</span>
+        </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {entrevistas.map((p) => {
@@ -181,7 +182,7 @@ export default function ProfessionalInterviewsPanel({ proposals, onChanged }: Pr
                       margin: 0,
                       fontSize: 11,
                       fontWeight: 800,
-                      color: DASH.gold,
+                      color: DASH.title,
                       textTransform: "uppercase",
                       whiteSpace: "nowrap",
                       overflow: "hidden",

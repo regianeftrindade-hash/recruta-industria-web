@@ -1,3 +1,12 @@
+/**
+ * E2E profissional logado — dashboard / funil (soft-assert).
+ *
+ * Requer secrets/env: E2E_PROFESSIONAL_EMAIL + E2E_PROFESSIONAL_PASSWORD.
+ * Sem credenciais: skip (não falha o CI). Detalhes: docs/e2e-secrets.md
+ *
+ * No GitHub Actions o job `e2e-profissional` só é enfileirado se esses secrets existirem.
+ * Conta com cadastro incompleto: o 1º teste aceita redirect; o 2º soft-skipa a nav.
+ */
 import { expect, test } from "@playwright/test";
 import { loginProfessionalViaApi, professionalE2eCredentials } from "./helpers/auth";
 import { dashNavControl } from "./helpers/nav";
@@ -5,7 +14,10 @@ import { dashNavControl } from "./helpers/nav";
 const creds = professionalE2eCredentials();
 
 test.describe("profissional logado", () => {
-  test.skip(!creds, "Defina E2E_PROFESSIONAL_EMAIL e E2E_PROFESSIONAL_PASSWORD");
+  test.skip(
+    !creds,
+    "Skip: defina E2E_PROFESSIONAL_EMAIL e E2E_PROFESSIONAL_PASSWORD (local ou GitHub Secrets). Ver docs/e2e-secrets.md",
+  );
 
   test.beforeEach(async ({ page, request }) => {
     await loginProfessionalViaApi(request, page, creds!.email, creds!.password);
@@ -31,7 +43,7 @@ test.describe("profissional logado", () => {
       // Cadastro incompleto — soft skip sem falhar.
       test.info().annotations.push({
         type: "note",
-        description: "Fora do dashboard (cadastro/boas-vindas) — soft-assert de nav ignorado",
+        description: "Skip soft: fora do dashboard (cadastro/boas-vindas) — nav ignorada",
       });
       return;
     }
@@ -46,7 +58,7 @@ test.describe("profissional logado", () => {
     if (!visible) {
       test.info().annotations.push({
         type: "note",
-        description: "Nav de oportunidades/propostas/mensagens/entrevistas não encontrada — ok",
+        description: "Skip soft: nav oportunidades/propostas/mensagens/entrevistas ausente — ok",
       });
       return;
     }

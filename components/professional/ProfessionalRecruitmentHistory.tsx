@@ -26,8 +26,8 @@ const STEPS: Array<{ key: keyof RecruitmentHistoryCounts; label: string }> = [
 export default function ProfessionalRecruitmentHistory({ history }: Props) {
   return (
     <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
-      <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 12px", fontSize: 14 }}>
-        📈 Histórico
+      <h3 style={{ ...dashSectionTitle, margin: "0 0 12px", fontSize: 14 }}>
+        Histórico
       </h3>
       <div
         style={{

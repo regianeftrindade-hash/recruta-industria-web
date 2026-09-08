@@ -1,6 +1,9 @@
 import type { APIRequestContext, Page } from "@playwright/test";
 
-/** Login via NextAuth credentials (sem mexer na UI do login). */
+/**
+ * Login via NextAuth credentials (sem mexer na UI do login).
+ * Credenciais: E2E_COMPANY_* / E2E_PROFESSIONAL_* — ver docs/e2e-secrets.md
+ */
 export async function loginViaApi(
   request: APIRequestContext,
   page: Page,

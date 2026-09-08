@@ -223,6 +223,67 @@
   background: rgba(255, 255, 255, 0.04) !important;
 }
 
+/* Profissional: densidade + hierarquia (ouro só em h1/métricas/CTAs) */
+.ri-dash-prof .ri-dash-two-col > main,
+.ri-dash-prof .ri-dash-two-col > aside {
+  gap: 10px;
+}
+
+.ri-dash-prof h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--dash-title) !important;
+}
+
+.ri-dash-prof h4 {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: var(--dash-text-muted) !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ri-dash-prof .ri-dash-empty {
+  padding: 18px 16px;
+  border-radius: 12px;
+  border: 1px dashed var(--dash-border);
+  background: var(--dash-inner);
+  color: var(--dash-text-muted);
+  text-align: center;
+}
+
+.ri-dash-prof .ri-dash-empty strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--dash-title);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ri-dash-prof .ri-dash-empty span {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  opacity: 0.92;
+}
+
+.ri-dash-prof .ri-dash-btn-secondary {
+  background: transparent !important;
+  color: var(--dash-text-muted) !important;
+  border: 1px solid var(--dash-border) !important;
+  box-shadow: none !important;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.ri-dash-prof .ri-dash-btn-secondary:hover {
+  border-color: var(--dash-text-muted) !important;
+  color: var(--dash-text) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
 .ri-candidate-profile-side {
   display: flex;
   flex-direction: column;

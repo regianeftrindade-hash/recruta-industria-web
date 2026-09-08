@@ -7,10 +7,10 @@
 type ReportContext = Record<string, unknown>;
 
 export function isSentryConfigured(): boolean {
-  return Boolean(
-    (typeof process !== "undefined" && process.env.SENTRY_DSN) ||
-      (typeof process !== "undefined" && process.env.NEXT_PUBLIC_SENTRY_DSN),
-  );
+  if (typeof process === "undefined") return false;
+  const dsn =
+    process.env.SENTRY_DSN?.trim() || process.env.NEXT_PUBLIC_SENTRY_DSN?.trim();
+  return Boolean(dsn);
 }
 
 export function reportError(error: unknown, context?: ReportContext): void {

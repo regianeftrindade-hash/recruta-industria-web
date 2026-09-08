@@ -8,12 +8,17 @@ describe("observability scaffold", () => {
 
   it("isSentryConfigured reflete env", () => {
     const prev = process.env.SENTRY_DSN;
+    const prevPublic = process.env.NEXT_PUBLIC_SENTRY_DSN;
     delete process.env.SENTRY_DSN;
     delete process.env.NEXT_PUBLIC_SENTRY_DSN;
+    expect(isSentryConfigured()).toBe(false);
+    process.env.SENTRY_DSN = "   ";
     expect(isSentryConfigured()).toBe(false);
     process.env.SENTRY_DSN = "https://example@o0.ingest.sentry.io/0";
     expect(isSentryConfigured()).toBe(true);
     if (prev === undefined) delete process.env.SENTRY_DSN;
     else process.env.SENTRY_DSN = prev;
+    if (prevPublic === undefined) delete process.env.NEXT_PUBLIC_SENTRY_DSN;
+    else process.env.NEXT_PUBLIC_SENTRY_DSN = prevPublic;
   });
 });

@@ -1,3 +1,11 @@
+/**
+ * E2E empresa logada — funil/entrevistas no dashboard.
+ *
+ * Requer secrets/env: E2E_COMPANY_EMAIL + E2E_COMPANY_PASSWORD.
+ * Sem credenciais: skip (não falha o CI). Detalhes: docs/e2e-secrets.md
+ *
+ * No GitHub Actions o job `e2e-empresa` só é enfileirado se esses secrets existirem.
+ */
 import { expect, test } from "@playwright/test";
 import { companyE2eCredentials, loginCompanyViaApi } from "./helpers/auth";
 import { clickDashNav } from "./helpers/nav";
@@ -10,7 +18,10 @@ const FUNIL_BODY =
   /propostas ativas|entrevistas agendadas|nenhuma proposta|quando você agendar entrevistas|aguardando confirmação|confirmada|clique para abrir/i;
 
 test.describe("empresa logada — funil", () => {
-  test.skip(!creds, "Defina E2E_COMPANY_EMAIL e E2E_COMPANY_PASSWORD para rodar este fluxo");
+  test.skip(
+    !creds,
+    "Skip: defina E2E_COMPANY_EMAIL e E2E_COMPANY_PASSWORD (local ou GitHub Secrets). Ver docs/e2e-secrets.md",
+  );
 
   test.beforeEach(async ({ page, request }) => {
     await loginCompanyViaApi(request, page, creds!.email, creds!.password);
