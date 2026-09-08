@@ -10,6 +10,7 @@ import {
   resolveSmtpFromHeader,
   smtpFailureHint,
   unquoteEnv,
+  isPlausibleSmtpHost,
 } from "@/lib/infra/email";
 import {
   assertInterviewScheduleRules,
@@ -71,10 +72,13 @@ describe("SMTP resolve", () => {
     } as NodeJS.ProcessEnv);
     expect(from).toContain("contato@recrutaindustria.com");
     expect(unquoteEnv('"com aspas"')).toBe("com aspas");
+    expect(isPlausibleSmtpHost("smtp.hostinger.com")).toBe(true);
+    expect(isPlausibleSmtpHost("SMTP_HOST")).toBe(false);
   });
 
-  it("gera hint útil para 535", () => {
+  it("gera hint útil para 535 e DNS", () => {
     expect(smtpFailureHint({ responseCode: 535, message: "Invalid login" })).toMatch(/Hostinger recusou o login/i);
+    expect(smtpFailureHint({ code: "EBUSY", message: "getaddrinfo EBUSY SMTP_HOST" })).toMatch(/smtp\.hostinger\.com/i);
   });
 });
 

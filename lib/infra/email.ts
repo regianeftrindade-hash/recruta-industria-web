@@ -1,6 +1,14 @@
+import dns from "dns";
 import nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
 import type SMTPTransport from "nodemailer/lib/smtp-transport";
+
+// Vercel/Node às vezes tenta IPv6 primeiro; Hostinger responde melhor em IPv4.
+try {
+  dns.setDefaultResultOrder("ipv4first");
+} catch {
+  /* ignore em runtimes antigos */
+}
 
 export function unquoteEnv(value: string | undefined): string {
   const raw = (value || "").trim().replace(/[\r\n]+/g, "");
@@ -21,6 +29,15 @@ export type SmtpResolvedConfig = {
   secure: boolean;
   useStartTls: boolean;
 };
+
+/** Host plausível (não é nome de variável tipo SMTP_HOST). */
+export function isPlausibleSmtpHost(host: string): boolean {
+  const h = String(host || "").trim();
+  if (!h || !h.includes(".")) return false;
+  if (/^(SMTP_|IMAP_|EMAIL_)/i.test(h) && !h.includes(".")) return false;
+  if (/^[A-Z][A-Z0-9_]*$/.test(h)) return false;
+  return true;
+}
 
 /** Resolve host/porta Hostinger (alias mail.* → smtp.*, porta 25 → 465). */
 export function resolveSmtpConfig(env: NodeJS.ProcessEnv = process.env): SmtpResolvedConfig {
@@ -53,6 +70,7 @@ export function resolveSmtpConfig(env: NodeJS.ProcessEnv = process.env): SmtpRes
 
 function createTransporterFor(cfg: SmtpResolvedConfig): Transporter | null {
   if (!cfg.host || !cfg.user || !cfg.pass) return null;
+  if (!isPlausibleSmtpHost(cfg.host)) return null;
 
   const options: SMTPTransport.Options & { family?: 4 | 6 } = {
     host: cfg.host,
@@ -84,14 +102,20 @@ function alternatePortConfig(cfg: SmtpResolvedConfig): SmtpResolvedConfig {
 }
 
 function isTransientSmtpError(error: unknown): boolean {
-  const err = error as { message?: string; code?: string; responseCode?: number };
-  const blob = [err.message, err.code, err.responseCode].filter(Boolean).join(" ").toLowerCase();
+  const err = error as { message?: string; code?: string; responseCode?: number; syscall?: string };
+  const blob = [err.message, err.code, err.responseCode, err.syscall]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
   return (
     blob.includes("econnection")
     || blob.includes("etimedout")
     || blob.includes("esocket")
     || blob.includes("etls")
     || blob.includes("wrong version number")
+    || blob.includes("eai_again")
+    || blob.includes("ebusy")
+    || blob.includes("getaddrinfo")
     || blob.includes("421")
     || blob.includes("450")
     || err.responseCode === 421
@@ -157,9 +181,16 @@ export function smtpFailureHint(error: unknown): string {
     return "A Hostinger recusou o login SMTP. SMTP_USER = contato@recrutaindustria.com e SMTP_PASS = senha dessa caixa (símbolo ok, sem aspas na Vercel).";
   }
   if (
+    lower.includes("getaddrinfo")
+    || lower.includes("enotfound")
+    || lower.includes("eai_again")
+    || lower.includes("ebusy")
+  ) {
+    return "DNS do SMTP falhou. Em Environment Variables, SMTP_HOST deve ser exatamente smtp.hostinger.com (não o texto SMTP_HOST). Depois faça Redeploy.";
+  }
+  if (
     lower.includes("econnection")
     || lower.includes("etimedout")
-    || lower.includes("enotfound")
     || lower.includes("esocket")
     || lower.includes("etls")
     || lower.includes("wrong version number")
@@ -210,6 +241,14 @@ export async function sendEmailDetailed(
   const transport = createTransporterFor(primary);
 
   if (!transport) {
+    const cfg = resolveSmtpConfig();
+    if (cfg.host && !isPlausibleSmtpHost(cfg.host)) {
+      return {
+        ok: false,
+        error:
+          "SMTP_HOST inválido. O valor deve ser smtp.hostinger.com (não deixe o nome da variável como valor).",
+      };
+    }
     if (process.env.NODE_ENV === "development") {
       console.info("[email] SMTP não configurado — e-mail não enviado:", {
         to: options.to,
