@@ -118,8 +118,8 @@ export default function CompanyDashboardSectionPage({ tab }: { tab: CompanyDashb
     setActiveTab("inicio");
   };
 
-  const openProfile = (profileIdOrSlug: string) => {
-    router.push(companyProfessionalPath(profileIdOrSlug));
+  const openProfile = (profileId: string, slug?: string) => {
+    router.push(companyProfessionalPath(slug || profileId, profileId));
   };
 
   const bypass = matchesCompanyTestBypass({

@@ -276,8 +276,8 @@ export default function CompanyDashboardInicioPage() {
     }
   };
 
-  const openProfile = (profileIdOrSlug: string) => {
-    router.push(companyProfessionalPath(profileIdOrSlug));
+  const openProfile = (profileId: string, slug?: string) => {
+    router.push(companyProfessionalPath(slug || profileId, profileId));
   };
 
   const advancedFilterDisabled = planLoaded && !planFeatures.canUseAdvancedFilters;

@@ -81,7 +81,7 @@ export function CompanyChatPanel() {
         body: JSON.stringify({ shareId: share.id }),
       }).then(() => void loadShares());
     }
-    router.push(companyProfessionalPath(share.profileId));
+    router.push(companyProfessionalPath(share.profileId, share.profileId));
   };
 
   const postChatMessage = async (text: string) => {

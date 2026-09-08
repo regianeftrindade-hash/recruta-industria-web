@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState, Suspense } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import CompanyCandidateProfilePanel from "@/app/components/CompanyCandidateProfilePanel";
 import DashboardThemeToggle from "@/app/components/DashboardThemeToggle";
@@ -10,24 +10,50 @@ import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import "@/app/dashboard/dashboard-theme.css";
 import { DASH, DashboardThemeShell, dashHeader } from "@/lib/dashboard-theme";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
-import { companyProfessionalPath } from "@/lib/profile/public-slug";
+import { companyProfessionalPath, looksLikeProfileCuid } from "@/lib/profile/public-slug";
 
 /**
  * Perfil do candidato (empresa).
- * URL canônica: /company/profissional/soldador-sao-paulo-sp-ok51e
- * Aceita também o id antigo na mesma rota (resolve via API).
+ * Abre pelo ?id= (confiável). O slug na URL é só visual.
  */
-export default function CompanyProfissionalSlugPage() {
+function CompanyProfissionalSlugPageInner() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const { status } = useSession();
   const rawParam = typeof params.slug === "string" ? params.slug : "";
-  const [profileId, setProfileId] = useState("");
-  const [canonicalSlug, setCanonicalSlug] = useState("");
+  const idFromQuery = (searchParams.get("id") || "").trim();
+
+  const [profileId, setProfileId] = useState(() =>
+    idFromQuery && looksLikeProfileCuid(idFromQuery)
+      ? idFromQuery
+      : looksLikeProfileCuid(rawParam)
+        ? rawParam
+        : "",
+  );
   const [resolveError, setResolveError] = useState("");
 
   useEffect(() => {
-    if (!rawParam || status !== "authenticated") return;
+    if (status !== "authenticated") return;
+
+    // Caminho feliz: id veio na query ou o path já é o cuid.
+    if (idFromQuery && looksLikeProfileCuid(idFromQuery)) {
+      setProfileId(idFromQuery);
+      setResolveError("");
+      return;
+    }
+    if (looksLikeProfileCuid(rawParam)) {
+      setProfileId(rawParam);
+      setResolveError("");
+      return;
+    }
+
+    if (!rawParam) {
+      setResolveError("Perfil inválido.");
+      return;
+    }
+
+    // Só slug sem id: tenta resolve (não bloqueia se falhar e tiver fallback).
     let cancelled = false;
     (async () => {
       setResolveError("");
@@ -45,34 +71,21 @@ export default function CompanyProfissionalSlugPage() {
         if (res.ok && data.profileId) {
           setProfileId(data.profileId);
           if (data.slug) {
-            setCanonicalSlug(data.slug);
-            if (data.slug !== rawParam) {
-              router.replace(companyProfessionalPath(data.slug));
-            }
+            router.replace(companyProfessionalPath(data.slug, data.profileId));
           }
-          return;
-        }
-        // Fallback: URL ainda com id antigo (cuid) — abre direto.
-        if (/^c[a-z0-9]{20,}$/i.test(rawParam)) {
-          setProfileId(rawParam);
           return;
         }
         setResolveError(data.error || "Perfil não encontrado");
       } catch {
-        if (cancelled) return;
-        if (/^c[a-z0-9]{20,}$/i.test(rawParam)) {
-          setProfileId(rawParam);
-          return;
-        }
-        setResolveError("Erro ao abrir o perfil");
+        if (!cancelled) setResolveError("Erro ao abrir o perfil");
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [rawParam, status, router]);
+  }, [rawParam, idFromQuery, status, router]);
 
-  if (status === "loading" || (status === "authenticated" && rawParam && !profileId && !resolveError)) {
+  if (status === "loading" || (status === "authenticated" && !profileId && !resolveError)) {
     return (
       <DashboardThemeShell>
         <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -82,11 +95,11 @@ export default function CompanyProfissionalSlugPage() {
     );
   }
 
-  if (!rawParam || resolveError) {
+  if (resolveError && !profileId) {
     return (
       <DashboardThemeShell>
         <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
-          <p style={{ color: resolveError ? "#f88" : DASH.muted }}>{resolveError || "Perfil inválido."}</p>
+          <p style={{ color: "#f88" }}>{resolveError}</p>
           <button
             type="button"
             onClick={() => router.push("/company/dashboard-empresa")}
@@ -129,12 +142,25 @@ export default function CompanyProfissionalSlugPage() {
         <CompanyCandidateProfilePanel
           profileId={profileId}
           onBack={() => router.push("/company/dashboard-empresa")}
-          onUnlocked={() => {
-            if (canonicalSlug) router.replace(companyProfessionalPath(canonicalSlug));
-            else router.refresh();
-          }}
+          onUnlocked={() => router.refresh()}
         />
       </main>
     </DashboardThemeShell>
+  );
+}
+
+export default function CompanyProfissionalSlugPage() {
+  return (
+    <Suspense
+      fallback={
+        <DashboardThemeShell>
+          <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <AmpulhetaLoading label="Carregando perfil..." size={42} color={DASH.gold} />
+          </div>
+        </DashboardThemeShell>
+      }
+    >
+      <CompanyProfissionalSlugPageInner />
+    </Suspense>
   );
 }

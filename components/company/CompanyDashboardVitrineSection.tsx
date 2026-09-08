@@ -534,7 +534,7 @@ export type CompanyDashboardVitrineSectionProps = {
   slotsRestantes: number | null;
   canExportProfiles?: boolean;
   unlockingId: string | null;
-  openProfile: (profileId: string) => void;
+  openProfile: (profileId: string, slug?: string) => void;
   handleUnlock: (profileId: string) => void;
   handleExportProfile: (profileId: string) => void;
   irParaPagina: (page: number) => void;
@@ -599,7 +599,7 @@ export default function CompanyDashboardVitrineSection({
               <CardPerfil
                 key={p.id}
                 p={p}
-                onOpen={() => openProfile(p.slug || p.id)}
+                onOpen={() => openProfile(p.id, p.slug)}
                 canUnlock={p.bloqueado && canUnlock && (slotsRestantes === null || slotsRestantes > 0)}
                 canExport={canExportProfiles && !p.bloqueado}
                 onUnlock={() => handleUnlock(p.id)}

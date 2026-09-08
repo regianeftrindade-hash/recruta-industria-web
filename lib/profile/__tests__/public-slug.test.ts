@@ -18,9 +18,12 @@ describe("public-slug", () => {
     expect(slug.includes("cmr8emjil")).toBe(false);
   });
 
-  it("companyProfessionalPath usa rota em português", () => {
+  it("companyProfessionalPath usa rota em português e id na query", () => {
     expect(companyProfessionalPath("soldador-sp-ok51e")).toBe(
       "/company/profissional/soldador-sp-ok51e",
+    );
+    expect(companyProfessionalPath("soldador-sp-ok51e", "cmr8emjil0002zgih5rpok51e")).toBe(
+      "/company/profissional/soldador-sp-ok51e?id=cmr8emjil0002zgih5rpok51e",
     );
   });
 });

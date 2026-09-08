@@ -37,9 +37,23 @@ export function buildProfilePublicSlug(input: {
   return `${base}-${suffix}`;
 }
 
-/** Caminho canônico da página de perfil (empresa). */
-export function companyProfessionalPath(slugOrId: string): string {
+/**
+ * Caminho do perfil (empresa).
+ * Sempre passe o `profileId` quando tiver — a página abre por ele e não depende do resolve.
+ * Ex.: /company/profissional/soldador-sp-ok51e?id=cmr8...
+ */
+export function companyProfessionalPath(slugOrId: string, profileId?: string | null): string {
   const ref = String(slugOrId || "").trim();
   if (!ref) return "/company/dashboard-empresa";
-  return `/company/profissional/${encodeURIComponent(ref)}`;
+  const path = `/company/profissional/${encodeURIComponent(ref)}`;
+  const id = String(profileId || "").trim();
+  if (id && id !== ref) {
+    return `${path}?id=${encodeURIComponent(id)}`;
+  }
+  return path;
+}
+
+/** Parece cuid do Prisma (id interno). */
+export function looksLikeProfileCuid(value: string): boolean {
+  return /^c[a-z0-9]{20,}$/i.test(String(value || "").trim());
 }

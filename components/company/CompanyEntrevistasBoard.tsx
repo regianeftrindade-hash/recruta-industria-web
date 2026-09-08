@@ -326,7 +326,7 @@ export default function CompanyEntrevistasBoard() {
         <div style={{ display: "flex", gap: 6, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
           <button
             type="button"
-            onClick={() => router.push(companyProfessionalPath(p.profileId))}
+            onClick={() => router.push(companyProfessionalPath(p.profileId, p.profileId))}
             style={{ ...btnGold, padding: "5px 8px", fontSize: 10 }}
           >
             Perfil
@@ -480,7 +480,7 @@ export default function CompanyEntrevistasBoard() {
                     onSetRescheduleForm={setRescheduleForm}
                     onCancelarComJustificativa={() => void cancelarComJustificativa(p.id)}
                     onReagendar={() => void reagendar(p.id)}
-                    onPerfil={() => router.push(companyProfessionalPath(p.profileId))}
+                    onPerfil={() => router.push(companyProfessionalPath(p.profileId, p.profileId))}
                   />
                 ))}
               </div>
