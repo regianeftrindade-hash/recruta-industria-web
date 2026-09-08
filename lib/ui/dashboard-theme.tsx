@@ -65,9 +65,10 @@ export const dashHeader: CSSProperties = {
 
 export const dashCard: CSSProperties = {
   background: DASH.card,
-  border: `1px solid ${DASH.gold}`,
+  border: `1px solid rgba(200, 155, 60, 0.72)`,
   borderRadius: 16,
   overflow: "hidden",
+  boxShadow: DASH.shadow,
 };
 
 export const dashAside: CSSProperties = {
