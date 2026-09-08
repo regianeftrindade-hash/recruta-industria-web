@@ -36,6 +36,7 @@ import { SOBRE_MIM_VAZIO, truncarSobreMim, type SobreMimData } from '@/lib/sobre
 import { validarCamposObrigatoriosCadastro, type CampoObrigatorioFalta, type ValidacaoCadastroInput } from '@/lib/professional/cadastro-obrigatorios';
 import { useCampoObrigatorioErro } from './useCampoObrigatorioErro';
 import RegisterExtendedSections from './RegisterExtendedSections';
+import RegisterCollapsibleSection from '@/components/ui/RegisterCollapsibleSection';
 import PageLoader from '@/app/components/PageLoader';
 import {
   calculateProfileCompletion,
@@ -1281,7 +1282,16 @@ export default function CadastroProfissional() {
           </p>
         )}
 
-        <ProfileCompletionBar percent={completionPercent} />
+        <div className={styles.completionSticky}>
+          <ProfileCompletionBar percent={completionPercent} />
+        </div>
+        {!isEditMode && (
+          <p className={styles.formHint}>
+            Comece pelos campos com marcador <strong>obrigatório</strong>. Seções
+            recomendadas (máquinas, qualidade, informática) e Filhos ficam
+            recolhidas — abra quando quiser completar o perfil.
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className={styles.form} noValidate>
 
@@ -1661,8 +1671,12 @@ export default function CadastroProfissional() {
             </div>
           </section>
 
-          <section className={styles.sectionCard}>
-            <RegisterSectionHeader emoji="👨‍👩‍👧‍👦" title="Filhos" />
+          <RegisterCollapsibleSection
+            emoji="👨‍👩‍👧‍👦"
+            title="Filhos"
+            marcador="recomendado"
+            defaultOpen={formData.possuiFilhos === 'Sim'}
+          >
 
             <div className={styles.fieldsRow}>
               <div className={styles.fieldGroup}>
@@ -1727,7 +1741,7 @@ export default function CadastroProfissional() {
                 </>
               )}
             </div>
-          </section>
+          </RegisterCollapsibleSection>
 
           <section className={styles.sectionCard}>
             <RegisterSectionHeader emoji="📞" title="Contato" />

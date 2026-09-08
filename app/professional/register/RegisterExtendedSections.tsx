@@ -2,7 +2,8 @@
 
 import React from "react";
 import styles from "./register.module.css";
-import RegisterSectionHeader, { CheckboxGroup } from "@/app/components/RegisterSectionHeader";
+import RegisterCollapsibleSection from "@/components/ui/RegisterCollapsibleSection";
+import { CheckboxGroup } from "@/app/components/RegisterSectionHeader";
 import {
   MAQUINAS_EQUIPAMENTOS,
   QUALIDADE_PROCESSOS,
@@ -27,22 +28,53 @@ export default function RegisterExtendedSections({
   const patch = (partial: Partial<ExtendedFormFields>) =>
     setFormData((prev) => ({ ...prev, ...partial }));
 
+  const maquinasOpen = formData.maquinasEquipamentos.length > 0;
+  const qualidadeOpen = formData.qualidadeProcessos.length > 0;
+  const infoOpen = formData.informatica.length > 0;
+
   return (
     <>
-      <section className={styles.sectionCard}>
-        <RegisterSectionHeader emoji="⚙️" title="Máquinas e equipamentos" />
-        <CheckboxGroup legend="Equipamentos que você opera" options={MAQUINAS_EQUIPAMENTOS} selected={formData.maquinasEquipamentos} onChange={(maquinasEquipamentos) => patch({ maquinasEquipamentos })} />
-      </section>
+      <RegisterCollapsibleSection
+        emoji="⚙️"
+        title="Máquinas e equipamentos"
+        marcador="recomendado"
+        defaultOpen={maquinasOpen}
+      >
+        <CheckboxGroup
+          legend="Equipamentos que você opera"
+          options={MAQUINAS_EQUIPAMENTOS}
+          selected={formData.maquinasEquipamentos}
+          onChange={(maquinasEquipamentos) => patch({ maquinasEquipamentos })}
+        />
+      </RegisterCollapsibleSection>
 
-      <section className={styles.sectionCard}>
-        <RegisterSectionHeader emoji="📋" title="Qualidade e processos" />
-        <CheckboxGroup legend="Conhecimentos em qualidade" options={QUALIDADE_PROCESSOS} selected={formData.qualidadeProcessos} onChange={(qualidadeProcessos) => patch({ qualidadeProcessos })} />
-      </section>
+      <RegisterCollapsibleSection
+        emoji="📋"
+        title="Qualidade e processos"
+        marcador="recomendado"
+        defaultOpen={qualidadeOpen}
+      >
+        <CheckboxGroup
+          legend="Conhecimentos em qualidade"
+          options={QUALIDADE_PROCESSOS}
+          selected={formData.qualidadeProcessos}
+          onChange={(qualidadeProcessos) => patch({ qualidadeProcessos })}
+        />
+      </RegisterCollapsibleSection>
 
-      <section className={styles.sectionCard}>
-        <RegisterSectionHeader emoji="💻" title="Informática" />
-        <CheckboxGroup legend="Conhecimentos em informática" options={INFORMATICA_OPCOES} selected={formData.informatica} onChange={(informatica) => patch({ informatica })} />
-      </section>
+      <RegisterCollapsibleSection
+        emoji="💻"
+        title="Informática"
+        marcador="recomendado"
+        defaultOpen={infoOpen}
+      >
+        <CheckboxGroup
+          legend="Conhecimentos em informática"
+          options={INFORMATICA_OPCOES}
+          selected={formData.informatica}
+          onChange={(informatica) => patch({ informatica })}
+        />
+      </RegisterCollapsibleSection>
     </>
   );
 }

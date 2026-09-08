@@ -114,6 +114,32 @@
   -moz-osx-font-smoothing: auto;
 }
 
+.ri-dashboard .dash-card,
+.ri-dashboard [data-card="1"],
+.ri-dashboard [data-perfil-card="1"] {
+  border: 1px solid rgba(200, 155, 60, 0.42) !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.ri-dashboard .dash-card:hover,
+.ri-dashboard [data-card="1"]:hover {
+  border-color: rgba(200, 155, 60, 0.72) !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.34);
+  transform: none;
+}
+
+.ri-dashboard [data-company-main],
+.ri-dashboard .ri-dash-two-col {
+  gap: 14px;
+}
+
+.ri-dashboard [data-company-main] {
+  padding: 14px 16px 20px;
+}
+
 .ri-dashboard h1,
 .ri-dashboard h2,
 .ri-dashboard h3,
@@ -123,6 +149,13 @@
   color: var(--dash-gold) !important;
   font-weight: 700;
   text-decoration: none;
+  letter-spacing: 0.01em;
+}
+
+.ri-dashboard p,
+.ri-dashboard label,
+.ri-dashboard li {
+  line-height: 1.45;
 }
 
 .ri-candidate-profile-head > svg {
@@ -140,22 +173,6 @@
   min-width: 0;
   max-width: 100%;
   align-self: start;
-}
-
-.ri-dashboard .dash-card,
-.ri-dashboard [data-card="1"],
-.ri-dashboard [data-perfil-card="1"] {
-  border: 1px solid rgba(200, 155, 60, 0.72) !important;
-  border-radius: 16px !important;
-  overflow: hidden;
-  box-shadow: var(--dash-shadow);
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
-}
-
-.ri-dashboard .dash-card:hover,
-.ri-dashboard [data-card="1"]:hover {
-  border-color: var(--dash-gold) !important;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42);
 }
 
 .ri-dashboard .dash-card .dash-card,

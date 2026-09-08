@@ -65,6 +65,68 @@
   box-sizing: border-box;
 }
 
+.sectionCollapsible {
+  padding-top: clamp(10px, 2vw, 14px);
+  padding-bottom: clamp(10px, 2vw, 14px);
+}
+
+.sectionToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.sectionToggle .sectionTitle {
+  margin: 0;
+  flex: 1;
+}
+
+.sectionChevron {
+  flex-shrink: 0;
+  color: var(--primary-color);
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.sectionCollapsibleBody {
+  margin-top: 12px;
+}
+
+.completionSticky {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(200, 155, 60, 0.55);
+  background: rgba(43, 43, 43, 0.92);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.formHint {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(200, 155, 60, 0.35);
+  background: rgba(200, 155, 60, 0.08);
+  color: rgba(242, 242, 242, 0.88);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .sectionCard .sectionTitle {
   margin-top: 0;
 }
