@@ -411,7 +411,7 @@ export default function CompanyEntrevistasBoard() {
         </div>
         <button
           type="button"
-          onClick={() => router.push(companyProfessionalPath(p.profileId))}
+          onClick={() => router.push(companyProfessionalPath(p.profileId, p.profileId))}
           style={{ ...btnGhost, flexShrink: 0 }}
         >
           Perfil
