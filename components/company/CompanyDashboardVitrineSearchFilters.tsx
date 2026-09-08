@@ -30,7 +30,6 @@ import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import {
   DASH,
   dashCard,
-  dashGhostBtn,
   dashInput,
   dashLabel,
   dashPlanAccent,
@@ -146,8 +145,8 @@ export default function CompanyDashboardVitrineSearchFilters({
   onLimpar,
 }: CompanyDashboardVitrineSearchFiltersProps) {
   return (
-    <section style={{ marginBottom: 16 }}>
-      <h3 style={{ ...dashSectionTitle, margin: "0 0 8px", fontSize: 14 }}>Busca rápida</h3>
+    <section style={{ marginBottom: 12 }}>
+      <h3 style={{ ...dashSectionTitle, margin: "0 0 6px", fontSize: 13 }}>Busca rápida</h3>
       <div data-card="1" className="dash-card" style={{ padding: 12, ...dashCard }}>
         <div style={filtersGridStyle}>
           <div style={filterFieldStyle}>
@@ -216,22 +215,32 @@ export default function CompanyDashboardVitrineSearchFilters({
           <button
             type="button"
             onClick={onToggleBuscaAvancada}
+            className="ri-dash-btn-secondary"
             style={{
-              ...dashGhostBtn,
               padding: "8px 12px",
               fontSize: 12,
-              fontWeight: 700,
-              borderColor: buscaAvancadaAberta ? DASH.gold : undefined,
-              background: buscaAvancadaAberta ? "rgba(200,155,60,0.14)" : undefined,
+              fontWeight: 600,
+              borderRadius: 8,
+              cursor: "pointer",
+              borderColor: buscaAvancadaAberta ? "rgba(200,155,60,0.45)" : undefined,
+              color: buscaAvancadaAberta ? DASH.gold : undefined,
+              background: buscaAvancadaAberta ? "rgba(200,155,60,0.1)" : undefined,
             }}
           >
-            {buscaAvancadaAberta ? "▲ Ocultar avançada" : "🔍 Busca Avançada"}
+            {buscaAvancadaAberta ? "▲ Ocultar avançada" : "Busca avançada"}
           </button>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
             <button
               onClick={onBuscar}
               disabled={loadingProfissionais}
-              style={{ ...btnGold, padding: "8px 16px", fontSize: 12, opacity: loadingProfissionais ? 0.7 : 1 }}
+              className="ri-dash-btn-primary"
+              style={{
+                ...btnGold,
+                padding: "9px 20px",
+                fontSize: 13,
+                fontWeight: 800,
+                opacity: loadingProfissionais ? 0.7 : 1,
+              }}
             >
               {loadingProfissionais ? (
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
@@ -241,11 +250,14 @@ export default function CompanyDashboardVitrineSearchFilters({
               ) : "Buscar"}
             </button>
             <button
+              type="button"
               onClick={onLimpar}
+              className="ri-dash-btn-secondary"
               style={{
-                ...dashGhostBtn,
                 padding: "8px 12px",
                 fontSize: 11,
+                borderRadius: 8,
+                cursor: "pointer",
               }}
             >
               Limpar
@@ -255,8 +267,8 @@ export default function CompanyDashboardVitrineSearchFilters({
 
         {buscaAvancadaAberta && (
           <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${DASH.border}` }}>
-            <p style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 700, color: DASH.gold }}>
-              Busca avançada
+            <p style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 600, color: DASH.muted }}>
+              Filtros avançados
             </p>
             {advancedFilterDisabled && (
               <p style={{ margin: "0 0 10px", fontSize: 10, color: DASH.muted }}>

@@ -159,6 +159,70 @@
   letter-spacing: 0.01em;
 }
 
+/* Empresa: densidade + hierarquia sem competir com o ouro da marca */
+.ri-company-dash [data-company-main] {
+  padding: 8px 12px 14px;
+}
+
+.ri-company-dash [data-company-main] h2 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--dash-title) !important;
+}
+
+.ri-company-dash [data-company-main] h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 6px;
+  color: var(--dash-text-muted) !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ri-company-dash .ri-dash-vitrine-empty {
+  padding: 18px 16px;
+  border-radius: 12px;
+  border: 1px dashed var(--dash-border);
+  background: var(--dash-inner);
+  color: var(--dash-text-muted);
+  text-align: center;
+}
+
+.ri-company-dash .ri-dash-vitrine-empty strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--dash-title);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ri-company-dash .ri-dash-vitrine-empty span {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  opacity: 0.92;
+}
+
+.ri-company-dash .ri-dash-btn-primary {
+  min-width: 104px;
+}
+
+.ri-company-dash .ri-dash-btn-secondary {
+  background: transparent !important;
+  color: var(--dash-text-muted) !important;
+  border: 1px solid var(--dash-border) !important;
+  box-shadow: none !important;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.ri-company-dash .ri-dash-btn-secondary:hover {
+  border-color: var(--dash-text-muted) !important;
+  color: var(--dash-text) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
 .ri-candidate-profile-side {
   display: flex;
   flex-direction: column;
@@ -272,6 +336,7 @@
     -webkit-overflow-scrolling: touch;
     gap: 8px;
     max-width: 100%;
+    padding-bottom: 4px;
   }
 
   .ri-company-dash-grid > [data-company-main] {
@@ -279,8 +344,19 @@
   }
 
   .ri-company-dash header {
-    padding-left: 12px !important;
-    padding-right: 12px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .ri-company-dash header .ri-company-header-actions {
+    gap: 6px !important;
+    justify-content: flex-end;
+    max-width: 100%;
+  }
+
+  .ri-company-dash header .ri-company-header-meta {
+    font-size: 9px !important;
+    line-height: 1.25;
   }
 
   .ri-dashboard.ri-dash-prof,

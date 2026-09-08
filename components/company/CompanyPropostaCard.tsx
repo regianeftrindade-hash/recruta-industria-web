@@ -104,6 +104,11 @@ export default function CompanyPropostaCard({
       <p style={{ margin: "0 0 8px", fontSize: 11, color: DASH.gold, fontWeight: 700 }}>
         {STATUS_LABEL[p.status] || p.status}
       </p>
+      {(p.status === "SENT" || p.status === "MORE_INFO") && (
+        <p style={{ margin: "0 0 8px", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
+          O agendamento fica disponível depois que o profissional confirmar interesse.
+        </p>
+      )}
       <button
         type="button"
         disabled={busy || saving}

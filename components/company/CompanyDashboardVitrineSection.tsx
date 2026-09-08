@@ -557,7 +557,7 @@ export default function CompanyDashboardVitrineSection({
 }: CompanyDashboardVitrineSectionProps) {
   return (
     <section ref={sectionRef} style={{ marginBottom: 16 }}>
-      <h2 style={{ ...dashSectionTitle, margin: "0 0 10px", fontSize: 16 }}>
+      <h2 style={{ ...dashSectionTitle, margin: "0 0 8px", fontSize: 15 }}>
         {vitrineListaNome
           ? `Banco de talentos — ${vitrineListaNome}`
           : "Profissionais na vitrine"}
@@ -565,26 +565,22 @@ export default function CompanyDashboardVitrineSection({
       </h2>
 
       {!buscaRealizada || profissionais.length === 0 ? (
-        <div
-          style={{
-            padding: "10px 12px",
-            borderRadius: 12,
-            border: `1px dashed ${DASH.gold}`,
-            color: DASH.muted,
-            fontSize: 12,
-            fontWeight: 600,
-            opacity: 0.85,
-          }}
-        >
+        <div className="ri-dash-vitrine-empty">
           {loadingProfissionais ? (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
               <AmpulhetaLoading compact label="Buscando..." size={16} color={DASH.gold} />
-              Buscando...
+              Buscando profissionais…
             </span>
           ) : buscaRealizada ? (
-            "0 Resultados"
+            <>
+              <strong>Nenhum profissional encontrado</strong>
+              <span>Ajuste os filtros e clique em Buscar novamente.</span>
+            </>
           ) : (
-            "Use a busca rápida acima para encontrar profissionais."
+            <>
+              <strong>Nenhuma busca ainda</strong>
+              <span>Preencha ao menos um filtro acima e clique em Buscar para ver profissionais compatíveis.</span>
+            </>
           )}
         </div>
       ) : (

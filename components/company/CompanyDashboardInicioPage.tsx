@@ -690,12 +690,12 @@ export default function CompanyDashboardInicioPage() {
             </div>
           )}
 
-          <div style={{ padding: "4px 2px 8px", minWidth: 0 }}>
+          <div style={{ padding: "2px 0 6px", minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
           {planFeatures.canViewDashboardStats && dashboardStats && (
-            <>
-              <h3 style={{ ...dashSectionTitle, margin: "0 0 8px", fontSize: 14 }}>Dashboard de recrutamento</h3>
+            <div>
+              <h3 style={{ ...dashSectionTitle, margin: "0 0 6px", fontSize: 13 }}>Dashboard de recrutamento</h3>
               <DashboardStatsBar stats={dashboardStats} />
-            </>
+            </div>
           )}
 
           <CompanyDashboardVitrineSearchFilters
@@ -737,13 +737,13 @@ export default function CompanyDashboardInicioPage() {
           />
 
           {erroBusca && (
-            <div style={{ background: "#fee2e2", color: "#b91c1c", padding: 10, borderRadius: 8, marginBottom: 16, fontSize: 12 }}>
+            <div style={{ background: "#fee2e2", color: "#b91c1c", padding: 10, borderRadius: 8, fontSize: 12 }}>
               {erroBusca}
             </div>
           )}
 
           {buscaRealizada && totalEncontrados > 0 && (
-            <p style={{ color: DASH.muted, fontSize: 11, margin: "0 0 12px" }}>
+            <p style={{ color: DASH.muted, fontSize: 11, margin: 0 }}>
               {totalEncontrados} profissional(is) compatível(is)
               {desbloqueadosTotal > 0 ? ` · ${desbloqueadosTotal} desbloqueado(s)` : ""}
               {paginacao.totalPages > 1 ? ` · página ${paginacao.page} de ${paginacao.totalPages}` : ""}
@@ -769,7 +769,7 @@ export default function CompanyDashboardInicioPage() {
             irParaPagina={irParaPagina}
           />
 
-          <section style={{ marginTop: 4, marginBottom: 12 }}>
+          <section style={{ marginTop: 2, marginBottom: 4 }}>
             <CompanyPlanCards
               currentTier={planLoaded ? planTier : null}
               onSelectFree={handleSelectFreePlan}

@@ -457,7 +457,9 @@ export default function PropostasEntrevistasEmpresa({
               Entrevistas agendadas ({listas.entrevistas.length})
             </h4>
             {listas.entrevistas.length === 0 ? (
-              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Nenhuma entrevista agendada.</p>
+              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
+                Nenhuma entrevista agendada. Após o interesse do profissional, use Agendar entrevista na proposta.
+              </p>
             ) : (
               <div style={{ display: "grid", gap: 12 }}>
                 {listas.entrevistas.map((p) => {

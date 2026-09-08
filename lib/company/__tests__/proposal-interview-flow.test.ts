@@ -121,4 +121,115 @@ describe("fluxo proposta → entrevista", () => {
     });
     expect(c.localLabel).toContain("Av. Industrial");
   });
+
+  it("assertInterviewScheduleRules: PLATFORM ok; whitespace em URL/endereço falha; status inválidos", () => {
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "INTERESTED",
+        locationType: "PLATFORM",
+      }),
+    ).not.toThrow();
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "INTERVIEW_PENDING",
+        locationType: "PLATFORM",
+      }),
+    ).not.toThrow();
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "INTERVIEW_CONFIRMED",
+        locationType: "ONLINE",
+        meetingUrl: "https://teams.microsoft.com/l/meetup",
+      }),
+    ).not.toThrow();
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "INTERVIEW_CANCELLED",
+        locationType: "PRESENTIAL",
+        address: "Rua A, 1",
+      }),
+    ).not.toThrow();
+
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "INTERESTED",
+        locationType: "ONLINE",
+        meetingUrl: "   ",
+      }),
+    ).toThrow("MEETING_URL_REQUIRED");
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "INTERESTED",
+        locationType: "PRESENTIAL",
+        address: "\t  ",
+      }),
+    ).toThrow("ADDRESS_REQUIRED");
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "INTERESTED",
+        locationType: "HYBRID",
+      }),
+    ).toThrow("INVALID_LOCATION_TYPE");
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "MORE_INFO",
+        locationType: "PLATFORM",
+      }),
+    ).toThrow("PROPOSAL_NOT_SCHEDULABLE");
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "DECLINED",
+        locationType: "PLATFORM",
+      }),
+    ).toThrow("PROPOSAL_NOT_SCHEDULABLE");
+    expect(() =>
+      assertInterviewScheduleRules({
+        proposalStatus: "INTERVIEW_DECLINED",
+        locationType: "PLATFORM",
+      }),
+    ).toThrow("PROPOSAL_NOT_SCHEDULABLE");
+  });
+
+  it("transições de lista: MORE_INFO ativa; DECLINED arquiva; cancelada arquiva", () => {
+    expect(isPropostaAtiva(proposta({ status: "MORE_INFO" }))).toBe(true);
+    expect(isEntrevista(proposta({ status: "MORE_INFO" }))).toBe(false);
+
+    expect(isArquivada(proposta({ status: "DECLINED" }))).toBe(true);
+    expect(isPropostaAtiva(proposta({ status: "DECLINED" }))).toBe(false);
+
+    const cancelada = proposta({
+      status: "INTERVIEW_CANCELLED",
+      interview: {
+        id: "i1",
+        scheduledAt: "2026-09-15T14:00:00.000Z",
+        locationType: "PLATFORM",
+        address: null,
+        meetingUrl: null,
+        observacoes: "",
+        status: "CANCELLED",
+      },
+    });
+    expect(isArquivada(cancelada)).toBe(true);
+    expect(isEntrevista(cancelada)).toBe(false);
+
+    const recusada = proposta({
+      status: "INTERVIEW_DECLINED",
+      interview: {
+        id: "i2",
+        scheduledAt: "2026-09-15T14:00:00.000Z",
+        locationType: "ONLINE",
+        address: null,
+        meetingUrl: "https://meet.example.com/x",
+        observacoes: "",
+        status: "DECLINED",
+      },
+    });
+    expect(isArquivada(recusada)).toBe(true);
+    expect(isEntrevista(recusada)).toBe(false);
+  });
+
+  it("profissional não responde entrevista já confirmada ou cancelada", () => {
+    expect(() => assertInterviewRespondRules("CONFIRMED")).toThrow("INTERVIEW_NOT_PENDING");
+    expect(() => assertInterviewRespondRules("CANCELLED")).toThrow("INTERVIEW_NOT_PENDING");
+  });
 });

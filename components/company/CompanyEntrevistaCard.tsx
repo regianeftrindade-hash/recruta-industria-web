@@ -257,6 +257,9 @@ export default function CompanyEntrevistaCard({
           <p style={{ margin: "0 0 6px", fontSize: 12, fontWeight: 700, color: DASH.text }}>
             Justificativa do cancelamento
           </p>
+          <p style={{ margin: "0 0 6px", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
+            Obrigatório: o profissional recebe este motivo no painel e por e-mail.
+          </p>
           <textarea
             value={justification}
             onChange={(e) => onSetJustification(e.target.value)}
@@ -275,6 +278,11 @@ export default function CompanyEntrevistaCard({
               resize: "vertical",
             }}
           />
+          {!justification.trim() ? (
+            <p style={{ margin: "6px 0 0", fontSize: 11, color: DASH.muted }}>
+              Digite a justificativa para habilitar a confirmação.
+            </p>
+          ) : null}
           <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
             <button
               type="button"
@@ -295,6 +303,9 @@ export default function CompanyEntrevistaCard({
         <div style={{ width: "100%", marginTop: 8, ...nestedCard, display: "grid", gap: 8 }}>
           <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: DASH.text }}>
             Reagendar entrevista
+          </p>
+          <p style={{ margin: 0, fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
+            Preencha data e horário. Online exige link; presencial exige endereço.
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <div>
@@ -360,7 +371,7 @@ export default function CompanyEntrevistaCard({
           {rescheduleForm.locationType === "ONLINE" && (
             <input
               type="url"
-              placeholder="Link Meet/Teams"
+              placeholder="https://meet.google.com/… (obrigatório)"
               value={rescheduleForm.meetingUrl}
               onChange={(e) => onSetRescheduleForm((f) => ({ ...f, meetingUrl: e.target.value }))}
               style={{
@@ -377,7 +388,7 @@ export default function CompanyEntrevistaCard({
           {rescheduleForm.locationType === "PRESENTIAL" && (
             <input
               type="text"
-              placeholder="Endereço"
+              placeholder="Rua, número, cidade (obrigatório)"
               value={rescheduleForm.address}
               onChange={(e) => onSetRescheduleForm((f) => ({ ...f, address: e.target.value }))}
               style={{
@@ -391,6 +402,11 @@ export default function CompanyEntrevistaCard({
               }}
             />
           )}
+          {rescheduleForm.locationType === "PLATFORM" ? (
+            <p style={{ margin: 0, fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
+              A entrevista será pela vídeo chamada da plataforma. Não é necessário link externo.
+            </p>
+          ) : null}
           <textarea
             rows={2}
             placeholder="Observações (opcional)"

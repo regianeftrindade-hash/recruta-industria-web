@@ -35,4 +35,38 @@ describe("mergeProposalFunnel / parseProposalFunnelPatch", () => {
     });
     expect(patch).toEqual({ contratado: true, emTeste: false });
   });
+
+  it("false explícito sobrescreve true atual", () => {
+    const current = {
+      ...EMPTY_PROPOSAL_TRACKING,
+      contatado: true,
+      entrevistado: true,
+      emTeste: true,
+      entrevistaCancelada: true,
+    };
+    const next = mergeProposalFunnel(current, {
+      contatado: false,
+      entrevistado: false,
+      emTeste: false,
+      entrevistaCancelada: false,
+    });
+    expect(next).toEqual({ ...EMPTY_PROPOSAL_TRACKING });
+  });
+
+  it("contratado true não zera entrevistaCancelada nem emTeste", () => {
+    const next = mergeProposalFunnel(
+      { ...EMPTY_PROPOSAL_TRACKING, emTeste: true, entrevistaCancelada: true },
+      { contratado: true },
+    );
+    expect(next.contratado).toBe(true);
+    expect(next.naoContratado).toBe(false);
+    expect(next.emTeste).toBe(true);
+    expect(next.entrevistaCancelada).toBe(true);
+  });
+
+  it("parse aceita contatado e entrevistaCancelada", () => {
+    expect(
+      parseProposalFunnelPatch({ contatado: true, entrevistaCancelada: false, extra: null }),
+    ).toEqual({ contatado: true, entrevistaCancelada: false });
+  });
 });

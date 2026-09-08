@@ -152,8 +152,11 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
             <LogoRecruta size="xs" as="h1" depth />
             <span className="ri-dash-access-tag">Acesso Empresa</span>
           </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            <span style={{ fontSize: 10, ...dashPlanAccent }}>
+          <div
+            className="ri-company-header-actions"
+            style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}
+          >
+            <span className="ri-company-header-meta" style={{ fontSize: 10, ...dashPlanAccent }}>
               {dash.planReady && dash.planTier
                 ? `Plano ${dash.planTier} · Liberações: ${dash.unlockedCount}/${maxUnlocksLabel}`
                 : "Carregando plano…"}
