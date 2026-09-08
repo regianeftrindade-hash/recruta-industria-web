@@ -158,6 +158,9 @@
 }
 
 .btnGold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 10px 16px;
   border-radius: 10px;
   border: 1px solid #6b5218;
@@ -166,6 +169,7 @@
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
+  text-decoration: none;
   box-shadow: var(--ri-btn-3d-gold-shadow);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }

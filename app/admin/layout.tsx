@@ -38,6 +38,9 @@ export default async function AdminLayout({
               Tempo real
             </span>
             <AdminNav />
+            <a href="/api/auth/logout" className={styles.btnGold}>
+              Sair
+            </a>
           </div>
         </div>
       </header>
