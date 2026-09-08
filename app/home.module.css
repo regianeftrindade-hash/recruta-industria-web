@@ -1,4 +1,4 @@
-/* Home — uma tela sem scroll no desktop (autorizado 07/09/2026). */
+/* Home — uma tela sem scroll; marca em destaque (autorizado 08/09/2026). */
 
 .homePage {
   --ri-gold: #c89b3c;
@@ -8,9 +8,9 @@
   --ri-text: #f2f2f2;
   position: relative;
   height: 100vh;
+  height: 100dvh;
   max-height: 100vh;
   max-height: 100dvh;
-  height: 100dvh;
   box-sizing: border-box;
   overflow: hidden;
   color: var(--ri-text);
@@ -47,15 +47,15 @@
   position: relative;
   z-index: 1;
   height: 100%;
-  max-height: 100%;
-  display: flex;
-  flex-direction: column;
-  max-width: 1200px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: clamp(8px, 1.4vh, 16px);
+  max-width: 1180px;
   margin: 0 auto;
-  padding: clamp(4px, 1vh, 12px) clamp(14px, 2.5vw, 24px) clamp(4px, 0.8vh, 10px);
+  padding: clamp(8px, 1.6vh, 18px) clamp(16px, 3vw, 28px) clamp(6px, 1vh, 12px);
   box-sizing: border-box;
   min-height: 0;
-  animation: homeFadeIn 0.7s ease both;
+  animation: homeFadeIn 0.65s ease both;
 }
 
 @keyframes homeFadeIn {
@@ -70,12 +70,11 @@
 }
 
 .hero {
-  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 0 0 clamp(4px, 1vh, 10px);
+  padding: 0;
   min-height: 0;
 }
 
@@ -85,29 +84,20 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: clamp(2px, 0.6vh, 8px) 8px clamp(6px, 1.2vh, 14px);
+  padding: clamp(4px, 1vh, 12px) 12px clamp(10px, 1.8vh, 20px);
   box-sizing: border-box;
-  max-height: clamp(72px, 14vh, 140px);
 }
 
 .logoHero > * {
   margin-left: auto;
   margin-right: auto;
   transform: translateX(-0.5cm);
-  max-height: 100%;
-  width: auto;
-}
-
-.logoHero :global(img),
-.logoHero :global(svg) {
-  max-height: clamp(56px, 12vh, 120px);
-  width: auto;
 }
 
 .heroLineRow {
   display: flex;
   align-items: center;
-  width: min(100%, 920px);
+  width: min(100%, 960px);
   gap: 0;
   margin: 0;
 }
@@ -124,33 +114,31 @@
   margin: 0;
   padding: 0 10px;
   color: var(--ri-text);
-  font-size: clamp(1.1rem, 2.2vh + 0.4vw, 1.85rem);
+  font-size: clamp(1.35rem, 2.4vw, 2rem);
   font-weight: 600;
   text-align: center;
-  line-height: 1.15;
+  line-height: 1.2;
   white-space: nowrap;
 }
 
 .heroTaglineStar {
   flex-shrink: 0;
   color: var(--ri-gold);
-  font-size: clamp(1rem, 2vh, 1.45rem);
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
   line-height: 1;
   padding: 0 4px;
 }
 
 .actionCards {
-  flex: 0 1 auto;
   min-height: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(16px, 2.5vw, 32px);
+  gap: clamp(20px, 3vw, 40px);
   width: 100%;
-  max-width: 720px;
-  margin: auto auto 0;
+  max-width: 900px;
+  margin: 0 auto;
   align-content: center;
-  justify-content: center;
-  animation: homeFadeIn 0.85s ease 0.08s both;
+  animation: homeFadeIn 0.8s ease 0.06s both;
 }
 
 .actionCard {
@@ -158,26 +146,27 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  max-height: clamp(200px, 34vh, 280px);
+  max-height: min(320px, 38vh);
   text-decoration: none;
   color: var(--ri-text);
-  background: rgba(43, 43, 43, 0.88);
+  background: rgba(43, 43, 43, 0.9);
   border: 1px solid rgba(200, 155, 60, 0.55);
   border-radius: 12px;
-  padding: 8px;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+  padding: 10px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.38);
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .actionCard:hover {
   transform: translateY(-2px);
   border-color: var(--ri-gold);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.42);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
 }
 
 .cardImageWrap {
-  flex: 0 0 auto;
-  height: clamp(88px, 14vh, 130px);
+  flex: 1 1 auto;
+  min-height: 120px;
+  max-height: 170px;
   overflow: hidden;
   border-radius: 8px;
   line-height: 0;
@@ -205,14 +194,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(3px, 0.6vh, 6px);
-  padding: clamp(6px, 1vh, 10px) 6px clamp(4px, 0.6vh, 8px);
+  gap: 6px;
+  padding: 10px 6px 6px;
 }
 
 .cardTitle {
   margin: 0;
   color: var(--ri-gold);
-  font-size: clamp(0.88rem, 1.5vh + 0.3vw, 1.1rem);
+  font-size: clamp(0.95rem, 1.4vw, 1.15rem);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -222,24 +211,20 @@
   margin: 0;
   text-align: center;
   color: rgba(242, 242, 242, 0.88);
-  font-size: clamp(0.72rem, 1.15vh + 0.2vw, 0.9rem);
-  line-height: 1.35;
+  font-size: clamp(0.8rem, 1.05vw, 0.92rem);
+  line-height: 1.4;
   max-width: 28rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .cardCta {
   margin-top: 2px;
   font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
-  padding: clamp(5px, 0.8vh, 8px) clamp(14px, 1.5vw, 18px);
+  padding: 8px 18px;
   border-radius: 7px;
   background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
   color: #000;
   font-weight: 700;
-  font-size: clamp(0.66rem, 1vh + 0.15vw, 0.8rem);
+  font-size: clamp(0.7rem, 0.95vw, 0.82rem);
   text-transform: uppercase;
   border: 1px solid #6b5218;
   box-shadow: var(--ri-btn-3d-gold-shadow);
@@ -251,8 +236,14 @@
   box-shadow: var(--ri-btn-3d-gold-active);
 }
 
+.homeBottom {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+}
+
 .bannerSection {
-  flex: 0 0 auto;
   display: grid;
   grid-template-columns: 1fr minmax(0, 640px) 1fr;
   align-items: stretch;
@@ -260,9 +251,7 @@
   border-radius: 10px;
   border: 1px solid rgba(141, 107, 31, 0.65);
   background: rgba(43, 43, 43, 0.75);
-  min-height: 0;
-  height: clamp(52px, 7.5vh, 88px);
-  margin: clamp(6px, 1vh, 10px) 0 0;
+  height: clamp(64px, 8vh, 96px);
 }
 
 .bannerSideLeft,
@@ -288,7 +277,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(6px, 1vh, 14px) clamp(10px, 1.5vw, 18px);
+  padding: 10px 16px;
   text-align: center;
   background: rgba(43, 43, 43, 0.92);
   border-left: 1px solid var(--ri-gold-dark);
@@ -298,15 +287,13 @@
 .bannerTextSubtitle {
   margin: 0;
   color: var(--ri-gold);
-  font-size: clamp(0.85rem, 1.5vh + 0.3vw, 1.2rem);
+  font-size: clamp(0.95rem, 1.7vw, 1.3rem);
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 .homeContactsWrap {
-  flex: 0 0 auto;
   width: 100%;
-  margin-top: clamp(2px, 0.5vh, 6px);
 }
 
 .homeContacts {
@@ -315,7 +302,7 @@
   align-items: center;
   justify-content: center;
   gap: 4px 10px;
-  padding: clamp(4px, 0.7vh, 8px) 6px;
+  padding: 6px 6px 4px;
 }
 
 .homeContactLine {
@@ -326,7 +313,7 @@
 
 .homeContactLink {
   color: var(--ri-gold);
-  font-size: clamp(0.68rem, 1.1vh + 0.15vw, 0.82rem);
+  font-size: clamp(0.72rem, 1.1vw, 0.84rem);
   font-weight: 500;
   text-decoration: none;
 }
@@ -341,19 +328,18 @@
 }
 
 .footer {
-  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: clamp(4px, 0.7vh, 8px) 6px 0;
+  padding: 4px 6px 0;
   text-align: center;
 }
 
 .footerTrust {
   margin: 0;
   color: rgba(200, 155, 60, 0.9);
-  font-size: clamp(0.62rem, 1vh, 0.76rem);
+  font-size: clamp(0.66rem, 1vw, 0.78rem);
   font-weight: 600;
   letter-spacing: 0.02em;
 }
@@ -361,7 +347,7 @@
 .footerCopy {
   margin: 0;
   color: rgba(242, 242, 242, 0.72);
-  font-size: clamp(0.58rem, 0.9vh, 0.68rem);
+  font-size: 0.66rem;
 }
 
 @media (max-width: 768px) {
@@ -375,45 +361,32 @@
 
   .homeShell {
     height: auto;
-    max-height: none;
+    display: flex;
+    flex-direction: column;
     min-height: 100vh;
     min-height: 100dvh;
-    padding: 10px 14px 16px;
-  }
-
-  .logoHero {
-    max-height: none;
+    padding: 12px 14px 16px;
   }
 
   .heroTagline {
     white-space: normal;
-    font-size: 1.15rem;
+    font-size: 1.2rem;
   }
 
   .actionCards {
-    flex: none;
     grid-template-columns: 1fr;
+    max-width: 440px;
     gap: 14px;
-    max-width: 420px;
-    margin: 12px auto;
   }
 
   .actionCard {
-    height: auto;
     max-height: none;
   }
 
   .cardImageWrap {
-    flex: none;
-    height: auto;
+    min-height: 140px;
+    max-height: 180px;
     aspect-ratio: 16 / 9;
-    max-height: 160px;
-  }
-
-  .cardText {
-    display: block;
-    -webkit-line-clamp: unset;
-    overflow: visible;
   }
 
   .bannerSection {
@@ -433,22 +406,21 @@
   }
 }
 
-/* Telas baixas (notebook ~768px altura): comprime ainda mais */
-@media (min-width: 769px) and (max-height: 780px) {
+@media (min-width: 769px) and (max-height: 760px) {
   .logoHero {
-    max-height: 88px;
+    padding-bottom: 8px;
   }
 
-  .logoHero :global(img),
-  .logoHero :global(svg) {
-    max-height: 72px;
+  .cardImageWrap {
+    min-height: 100px;
+    max-height: 130px;
   }
 
   .bannerSection {
-    height: 48px;
+    height: 56px;
   }
 
   .cardText {
-    display: none;
+    font-size: 0.78rem;
   }
 }

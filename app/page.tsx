@@ -82,39 +82,41 @@ export default function Home() {
           ))}
         </section>
 
-        <section className={styles.bannerSection}>
-          <div className={styles.bannerSideLeft} aria-hidden />
-          <div className={styles.bannerTextColumn}>
-            <p className={styles.bannerTextSubtitle}>
-              Mais do que recrutamento. Conexões que geram resultados.
+        <div className={styles.homeBottom}>
+          <section className={styles.bannerSection}>
+            <div className={styles.bannerSideLeft} aria-hidden />
+            <div className={styles.bannerTextColumn}>
+              <p className={styles.bannerTextSubtitle}>
+                Mais do que recrutamento. Conexões que geram resultados.
+              </p>
+            </div>
+            <div className={styles.bannerSideRight} aria-hidden />
+          </section>
+
+          <div className={styles.homeContactsWrap}>
+            <div className={styles.homeContacts}>
+              <a href="mailto:contato@recrutaindustria.com" className={styles.homeContactLink}>
+                contato@recrutaindustria.com
+              </a>
+              <span className={styles.homeContactSep} aria-hidden>
+                /
+              </span>
+              <a href="mailto:suporte@recrutaindustria.com" className={styles.homeContactLink}>
+                suporte@recrutaindustria.com
+              </a>
+            </div>
+            <div className={styles.homeContactLine} aria-hidden />
+          </div>
+
+          <footer className={styles.footer} suppressHydrationWarning>
+            <p className={styles.footerTrust}>
+              Dados protegidos com criptografia, controle de acesso e auditoria.
             </p>
-          </div>
-          <div className={styles.bannerSideRight} aria-hidden />
-        </section>
-
-        <div className={styles.homeContactsWrap}>
-          <div className={styles.homeContacts}>
-            <a href="mailto:contato@recrutaindustria.com" className={styles.homeContactLink}>
-              contato@recrutaindustria.com
-            </a>
-            <span className={styles.homeContactSep} aria-hidden>
-              /
-            </span>
-            <a href="mailto:suporte@recrutaindustria.com" className={styles.homeContactLink}>
-              suporte@recrutaindustria.com
-            </a>
-          </div>
-          <div className={styles.homeContactLine} aria-hidden />
+            <p className={styles.footerCopy} suppressHydrationWarning>
+              © {new Date().getFullYear()} Recruta Indústria · Todos os direitos reservados
+            </p>
+          </footer>
         </div>
-
-        <footer className={styles.footer} suppressHydrationWarning>
-          <p className={styles.footerTrust}>
-            Dados protegidos com criptografia, controle de acesso e auditoria.
-          </p>
-          <p className={styles.footerCopy} suppressHydrationWarning>
-            © {new Date().getFullYear()} Recruta Indústria · Todos os direitos reservados
-          </p>
-        </footer>
       </div>
     </main>
   );
