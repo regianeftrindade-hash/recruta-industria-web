@@ -72,22 +72,32 @@ const filterControlStyle: React.CSSProperties = {
   ...dashInput,
   width: "100%",
   boxSizing: "border-box",
+  padding: "6px 8px",
+  fontSize: 12,
+};
+
+const filterLabelStyle: React.CSSProperties = {
+  display: "block",
+  fontSize: 10,
+  ...dashLabel,
+  marginBottom: 2,
+  lineHeight: 1.2,
 };
 
 const filtersGridStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(155px, 1fr))",
-  gap: 8,
+  gridTemplateColumns: "repeat(auto-fill, minmax(148px, 1fr))",
+  gap: 6,
   alignItems: "end",
 };
 
 const filterActionsStyle: React.CSSProperties = {
   display: "flex",
   flexWrap: "wrap",
-  gap: 8,
+  gap: 6,
   alignItems: "center",
   justifyContent: "flex-end",
-  marginTop: 10,
+  marginTop: 8,
 };
 
 export const EMPTY_FILTROS: Filtros = {
@@ -145,12 +155,12 @@ export default function CompanyDashboardVitrineSearchFilters({
   onLimpar,
 }: CompanyDashboardVitrineSearchFiltersProps) {
   return (
-    <section style={{ marginBottom: 12 }}>
-      <h3 style={{ ...dashSectionTitle, margin: "0 0 6px", fontSize: 13 }}>Busca rápida</h3>
-      <div data-card="1" className="dash-card" style={{ padding: 12, ...dashCard }}>
+    <section style={{ marginBottom: 10 }}>
+      <h3 style={{ ...dashSectionTitle, margin: "0 0 4px", fontSize: 12 }}>Busca rápida</h3>
+      <div data-card="1" className="dash-card" style={{ padding: 10, ...dashCard }}>
         <div style={filtersGridStyle}>
           <div style={filterFieldStyle}>
-            <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Cargo</label>
+            <label style={filterLabelStyle}>Cargo</label>
             <input
               placeholder="Ex.: Operador de CNC"
               value={filtros.cargo}
@@ -159,7 +169,7 @@ export default function CompanyDashboardVitrineSearchFilters({
             />
           </div>
           <div style={filterFieldStyle}>
-            <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Estado</label>
+            <label style={filterLabelStyle}>Estado</label>
             <select
               value={filtros.estado}
               onChange={(e) => onFiltrosChange({ ...filtros, estado: e.target.value, cidade: "" })}
@@ -170,7 +180,7 @@ export default function CompanyDashboardVitrineSearchFilters({
             </select>
           </div>
           <div style={filterFieldStyle}>
-            <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Cidade</label>
+            <label style={filterLabelStyle}>Cidade</label>
             <select
               value={filtros.cidade}
               disabled={!filtros.estado}
@@ -182,7 +192,7 @@ export default function CompanyDashboardVitrineSearchFilters({
             </select>
           </div>
           <div style={filterFieldStyle}>
-            <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Experiência</label>
+            <label style={filterLabelStyle}>Experiência</label>
             <select
               value={filtros.experiencia}
               onChange={(e) => onFiltrosChange({ ...filtros, experiencia: e.target.value })}
@@ -195,7 +205,7 @@ export default function CompanyDashboardVitrineSearchFilters({
             </select>
           </div>
           <div style={filterFieldStyle}>
-            <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Turno</label>
+            <label style={filterLabelStyle}>Turno</label>
             <select
               value={filtros.turno}
               onChange={(e) => onFiltrosChange({ ...filtros, turno: e.target.value })}
@@ -229,7 +239,7 @@ export default function CompanyDashboardVitrineSearchFilters({
           >
             {buscaAvancadaAberta ? "▲ Ocultar avançada" : "Busca avançada"}
           </button>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
             <button
               onClick={onBuscar}
               disabled={loadingProfissionais}
@@ -266,60 +276,60 @@ export default function CompanyDashboardVitrineSearchFilters({
         </div>
 
         {buscaAvancadaAberta && (
-          <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${DASH.border}` }}>
-            <p style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 600, color: DASH.muted }}>
+          <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${DASH.border}` }}>
+            <p style={{ margin: "0 0 8px", fontSize: 11, fontWeight: 600, color: DASH.muted }}>
               Filtros avançados
             </p>
             {advancedFilterDisabled && (
-              <p style={{ margin: "0 0 10px", fontSize: 10, color: DASH.muted }}>
+              <p style={{ margin: "0 0 8px", fontSize: 10, color: DASH.muted }}>
                 Filtros avançados disponíveis a partir do plano <span style={dashPlanAccent}>Basic</span>.
               </p>
             )}
             <div style={filtersGridStyle}>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Área de interesse</label>
+                <label style={filterLabelStyle}>Área de interesse</label>
                 <select value={filtros.area} onChange={(e) => onFiltrosChange({ ...filtros, area: e.target.value })} style={filterControlStyle}>
                   <option value="">Selecione</option>
                   {AREAS_INTERESSE.map((a) => <option key={a} value={a}>{a}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Escolaridade (nível) {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Escolaridade (nível) {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.escolaridade} onChange={(e) => onFiltrosChange({ ...filtros, escolaridade: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">Selecione</option>
                   {ESCOLARIDADES_OPCOES.map((e) => <option key={e} value={e}>{e}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Situação profissional {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Situação profissional {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.situacaoProfissional} onChange={(e) => onFiltrosChange({ ...filtros, situacaoProfissional: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">Selecione</option>
                   {SITUACAO_PROFISSIONAL_OPCOES.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Nível operacional {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Nível operacional {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.nivelOperacional} onChange={(e) => onFiltrosChange({ ...filtros, nivelOperacional: e.target.value, areaNivel: e.target.value ? filtros.areaNivel : "" })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">Selecione</option>
                   {NIVEIS_OPERACIONAIS.map((n) => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Área operacional {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Área operacional {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled || !filtros.nivelOperacional} value={filtros.areaNivel} onChange={(e) => onFiltrosChange({ ...filtros, areaNivel: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled || !filtros.nivelOperacional ? 0.5 : 1 }}>
                   <option value="">Selecione</option>
                   {AREAS_COMPLEMENTO_NIVEL.map((a) => <option key={a} value={a}>{a}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Disponibilidade para início {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Disponibilidade para início {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.disponibilidadeInicio} onChange={(e) => onFiltrosChange({ ...filtros, disponibilidadeInicio: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">Selecione</option>
                   {DISPONIBILIDADE_INICIO_OPCOES.map((d) => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Pretensão salarial {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Pretensão salarial {advancedFilterDisabled && "🔒"}</label>
                 <input
                   disabled={advancedFilterDisabled}
                   placeholder="R$ 0,00"
@@ -332,81 +342,81 @@ export default function CompanyDashboardVitrineSearchFilters({
                 />
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Trabalhou na indústria? {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Trabalhou na indústria? {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.trabalhouIndustria} onChange={(e) => onFiltrosChange({ ...filtros, trabalhouIndustria: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">Selecione</option>
                   {TRABALHO_INDUSTRIA_OPCOES.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Segmento (experiência) {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Segmento (experiência) {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.segmentoIndustria} onChange={(e) => onFiltrosChange({ ...filtros, segmentoIndustria: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">Selecione</option>
                   {SEGMENTOS_INDUSTRIA.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Máquinas/equipamentos {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Máquinas/equipamentos {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.maquinaEquipamento} onChange={(e) => onFiltrosChange({ ...filtros, maquinaEquipamento: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">Selecione</option>
                   {MAQUINAS_EQUIPAMENTOS.map((m) => <option key={m} value={m}>{m}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Qualidade e processos {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Qualidade e processos {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.qualidadeProcesso} onChange={(e) => onFiltrosChange({ ...filtros, qualidadeProcesso: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">Selecione</option>
                   {QUALIDADE_PROCESSOS.map((q) => <option key={q} value={q}>{q}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Informática/ERP {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Informática/ERP {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.informatica} onChange={(e) => onFiltrosChange({ ...filtros, informatica: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">Selecione</option>
                   {INFORMATICA_OPCOES.map((i) => <option key={i} value={i}>{i}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Possui CNH? {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Possui CNH? {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.possuiCNH} onChange={(e) => onFiltrosChange({ ...filtros, possuiCNH: e.target.value, categoriaCNH: e.target.value === "Sim" ? filtros.categoriaCNH : "" })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">Selecione</option>
                   {POSSUI_CNH_OPCOES.map((v) => <option key={v} value={v}>{v}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Categoria CNH {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Categoria CNH {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled || filtros.possuiCNH !== "Sim"} value={filtros.categoriaCNH} onChange={(e) => onFiltrosChange({ ...filtros, categoriaCNH: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled || filtros.possuiCNH !== "Sim" ? 0.5 : 1 }}>
                   <option value="">Selecione</option>
                   {CNH_CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Curso/Certificação {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Curso/Certificação {advancedFilterDisabled && "🔒"}</label>
                 <input disabled={advancedFilterDisabled} placeholder="Ex: NR-12" value={filtros.cursoCertificacao} onChange={(e) => onFiltrosChange({ ...filtros, cursoCertificacao: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }} />
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Área do curso {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Área do curso {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.areaCurso} onChange={(e) => onFiltrosChange({ ...filtros, areaCurso: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">Selecione</option>
                   {AREAS_CURSO.map((a) => <option key={a} value={a}>{a}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Idioma {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Idioma {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.idioma} onChange={(e) => onFiltrosChange({ ...filtros, idioma: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">Selecione</option>
                   {IDIOMAS_OPCOES.map((i) => <option key={i} value={i}>{i}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Disponibilidade para mudança {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Disponibilidade para mudança {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.disponibilidadeMudanca} onChange={(e) => onFiltrosChange({ ...filtros, disponibilidadeMudanca: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">Selecione</option>
                   {DISPONIBILIDADE_MUDANCA_OPCOES.map((v) => <option key={v} value={v}>{v}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={{ display: "block", fontSize: 11, ...dashLabel, marginBottom: 4 }}>Disponibilidade para viagens {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>Disponibilidade para viagens {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.aceitaViagens} onChange={(e) => onFiltrosChange({ ...filtros, aceitaViagens: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">Selecione</option>
                   {ACEITA_VIAGENS_OPCOES.map((v) => <option key={v} value={v}>{v}</option>)}

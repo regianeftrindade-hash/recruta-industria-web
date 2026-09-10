@@ -1,9 +1,9 @@
 /**
- * E2E empresa: abre um perfil da vitrine (proposta→perfil).
- * Soft se a vitrine estiver vazia. Requer E2E_COMPANY_*.
+ * E2E empresa: abre um perfil da vitrine.
+ * Login inválido falha o job (continue-on-error no CI).
  */
 import { expect, test } from "@playwright/test";
-import { companyE2eCredentials, E2eLoginError, loginCompanyViaApi } from "./helpers/auth";
+import { companyE2eCredentials, loginCompanyViaApi } from "./helpers/auth";
 
 const creds = companyE2eCredentials();
 
@@ -14,21 +14,14 @@ test.describe("empresa logada — perfil da vitrine", () => {
   );
 
   test.beforeEach(async ({ page, request }) => {
-    try {
-      await loginCompanyViaApi(request, page, creds!.email, creds!.password);
-    } catch (err) {
-      if (err instanceof E2eLoginError) {
-        test.skip(true, err.message);
-      }
-      throw err;
-    }
+    await loginCompanyViaApi(request, page, creds!.email, creds!.password);
   });
 
   test("abre um candidato da vitrine ou registra vitrine vazia", async ({ page }) => {
     await page.goto("/company/dashboard-empresa");
-    await expect(page.getByText(/busca rápida|profissionais na vitrine|banco de talentos/i).first()).toBeVisible({
-      timeout: 20_000,
-    });
+    await expect(
+      page.getByText(/busca rápida|profissionais na vitrine|banco de talentos/i).first(),
+    ).toBeVisible({ timeout: 20_000 });
 
     const profileLink = page
       .locator('a[href*="/company/professional/"]')

@@ -540,7 +540,7 @@ export default function DashboardProfissional() {
                   fontSize: 11,
                   fontWeight: 700,
                   whiteSpace: "nowrap",
-                  color: ativo ? "#000" : DASH.gold,
+                  color: ativo ? "#000" : DASH.muted,
                   background: ativo ? DASH.gold : "transparent",
                   border: `1px solid ${DASH.gold}`,
                   borderRadius: "10px 10px 0 0",
@@ -591,7 +591,7 @@ export default function DashboardProfissional() {
             minWidth: 0,
             display: "flex",
             flexDirection: "column",
-            gap: 12,
+            gap: 14,
           }}
         >
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFotoChange} style={{ display: "none" }} />
@@ -645,11 +645,9 @@ export default function DashboardProfissional() {
                 <p style={{ margin: "0 0 3px", fontSize: 11, color: DASH.text }}>
                   {cargoResumo} · {areaResumo}
                 </p>
-                <p style={{ margin: 0, fontSize: 10, color: DASH.muted }}>
-                  {localResumo} · {escolaridadeResumo} · {turnoResumo}
-                </p>
-                <p style={{ margin: "4px 0 0", fontSize: 10, color: DASH.muted }}>
-                  Exp: {experienciaResumo} · Recolocação: {recolocacaoResumo}
+                <p style={{ margin: 0, fontSize: 10, color: DASH.muted, lineHeight: 1.4 }}>
+                  {localResumo} · {escolaridadeResumo} · {turnoResumo} · Exp. {experienciaResumo}
+                  {recolocacaoResumo !== VAZIO ? ` · Recol. ${recolocacaoResumo}` : ""}
                 </p>
                 {typeof profileData.profileCompletion === "number" && (
                   <span style={{ ...compatBadgeStyle(profileData.profileCompletion, false), marginTop: 8, display: "inline-block" }}>
@@ -707,9 +705,13 @@ export default function DashboardProfissional() {
             <p style={{ margin: "0 0 4px", fontSize: 28, fontWeight: 800, color: DASH.gold, lineHeight: 1.1 }}>
               {weekViewsCount}
             </p>
-            <p style={{ margin: "0 0 12px", fontSize: 12, color: DASH.muted }}>
-              {textoContagemVisualizacoesSemana(weekViewsCount)}
-            </p>
+            {weekViewsCount === 0 ? (
+              <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.muted }}>
+                {textoContagemVisualizacoesSemana(weekViewsCount)}
+              </p>
+            ) : (
+              <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.muted }}>esta semana</p>
+            )}
             {lastViewAt ? (
               <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.text }}>
                 Última visualização: <strong>{formatarData(lastViewAt)}</strong>

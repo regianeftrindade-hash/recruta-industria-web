@@ -1,14 +1,9 @@
 /**
- * E2E profissional logado — dashboard / funil (soft-assert).
- *
- * Requer secrets/env: E2E_PROFESSIONAL_EMAIL + E2E_PROFESSIONAL_PASSWORD.
- * Sem credenciais: skip (não falha o CI). Detalhes: docs/e2e-secrets.md
- *
- * No GitHub Actions o job `e2e-profissional` só é enfileirado se esses secrets existirem.
- * Conta com cadastro incompleto: o 1º teste aceita redirect; o 2º soft-skipa a nav.
+ * E2E profissional logado — dashboard / funil (soft-assert na nav).
+ * Login inválido falha o job (continue-on-error no CI).
  */
 import { expect, test } from "@playwright/test";
-import { E2eLoginError, loginProfessionalViaApi, professionalE2eCredentials } from "./helpers/auth";
+import { loginProfessionalViaApi, professionalE2eCredentials } from "./helpers/auth";
 import { dashNavControl } from "./helpers/nav";
 
 const creds = professionalE2eCredentials();
@@ -16,18 +11,11 @@ const creds = professionalE2eCredentials();
 test.describe("profissional logado", () => {
   test.skip(
     !creds,
-    "Skip: defina E2E_PROFESSIONAL_EMAIL e E2E_PROFESSIONAL_PASSWORD (local ou GitHub Secrets). Ver docs/e2e-secrets.md",
+    "Skip: defina E2E_PROFESSIONAL_EMAIL e E2E_PROFESSIONAL_PASSWORD. Ver docs/e2e-secrets.md",
   );
 
   test.beforeEach(async ({ page, request }) => {
-    try {
-      await loginProfessionalViaApi(request, page, creds!.email, creds!.password);
-    } catch (err) {
-      if (err instanceof E2eLoginError) {
-        test.skip(true, err.message);
-      }
-      throw err;
-    }
+    await loginProfessionalViaApi(request, page, creds!.email, creds!.password);
   });
 
   test("abre dashboard ou completa cadastro", async ({ page }) => {
@@ -47,7 +35,6 @@ test.describe("profissional logado", () => {
     await page.waitForLoadState("domcontentloaded");
 
     if (!/professional\/dashboard/i.test(page.url())) {
-      // Cadastro incompleto — soft skip sem falhar.
       test.info().annotations.push({
         type: "note",
         description: "Skip soft: fora do dashboard (cadastro/boas-vindas) — nav ignorada",
@@ -72,7 +59,6 @@ test.describe("profissional logado", () => {
 
     await funnelNav.click();
 
-    // Soft: headings do funil ou mensagens, sem exigir dados.
     const funnelCopy = page
       .getByText(
         /oportunidades|propostas recebidas|entrevistas agendadas|nenhuma proposta|nenhuma entrevista|mensagens/i,

@@ -49,7 +49,9 @@ Atualize pelo menos:
 
 ### Se o e2e logado falhar no login
 
-O job fica **amarelo** (aviso) ou faz **skip**, sem derrubar o CI. Causas comuns:
+Com secrets definidos, login inválido **falha** o job e2e (fica **amarelo** no CI por `continue-on-error`, sem derrubar testes/build). Corrija e-mail/senha dos secrets.
+
+Causas comuns:
 
 1. Senha errada no secret (atualize `E2E_*_PASSWORD`)
 2. Conta só existe com Google (sem senha) — crie senha em “esqueci a senha” ou use conta com e-mail+senha
