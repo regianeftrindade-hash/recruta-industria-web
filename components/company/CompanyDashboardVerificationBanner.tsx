@@ -18,19 +18,19 @@ export default function CompanyDashboardVerificationBanner({
   verificationReason,
   emailCorporativoVerificado,
 }: CompanyDashboardVerificationBannerProps) {
+  const isRejected = verificationStatus === "REJECTED";
+  const isPending = verificationStatus === "PENDING";
   const docVerified = verificationStatus === "VERIFIED";
-  const awaitingAdmin =
-    emailCorporativoVerificado &&
-    !docVerified &&
-    verificationStatus !== "REJECTED";
+  const awaitingAdmin = emailCorporativoVerificado && isPending;
+  const showCtas = !emailCorporativoVerificado || isPending || isRejected;
 
   return (
     <div style={{
       margin: "20px 24px 0",
       padding: 12,
       borderRadius: 16,
-      border: `1px solid ${verificationStatus === "REJECTED" ? "#dc3545" : DASH.gold}`,
-      background: verificationStatus === "REJECTED" ? "rgba(220,53,69,0.12)" : "rgba(200,155,60,0.12)",
+      border: `1px solid ${isRejected ? "#dc3545" : DASH.gold}`,
+      background: isRejected ? "rgba(220,53,69,0.12)" : "rgba(200,155,60,0.12)",
     }}>
       <p style={{ margin: 0, fontSize: 13, color: DASH.text, lineHeight: 1.5 }}>
         <strong>Liberação de contatos pendente</strong>
@@ -40,7 +40,7 @@ export default function CompanyDashboardVerificationBanner({
         <li>{emailCorporativoVerificado ? '✓' : '○'} E-mail corporativo confirmado por link</li>
         <li>{docVerified ? '✓' : '○'} Cartão CNPJ anexado e aprovado pelo admin</li>
       </ul>
-      {verificationStatus === "REJECTED" && verificationReason && (
+      {isRejected && verificationReason && (
         <p style={{ margin: "8px 0 0", fontSize: 12, color: "#f87171" }}>{verificationReason}</p>
       )}
       {awaitingAdmin && (
@@ -48,7 +48,7 @@ export default function CompanyDashboardVerificationBanner({
           Após enviar o cartão CNPJ, a aprovação do admin costuma levar 1–2 dias úteis.
         </p>
       )}
-      {(!emailCorporativoVerificado || !docVerified || verificationStatus === "REJECTED") && (
+      {showCtas && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
           {!emailCorporativoVerificado && (
             <Link
@@ -64,7 +64,7 @@ export default function CompanyDashboardVerificationBanner({
               Confirmar e-mail corporativo
             </Link>
           )}
-          {(!docVerified || verificationStatus === "REJECTED") && (
+          {(isPending || isRejected) && (
             <Link
               href="/company/register"
               style={{
@@ -75,7 +75,7 @@ export default function CompanyDashboardVerificationBanner({
                 textDecoration: "none",
               }}
             >
-              {verificationStatus === "REJECTED" ? "Reenviar cartão CNPJ" : "Enviar cartão CNPJ"}
+              {isRejected ? "Reenviar cartão CNPJ" : "Enviar cartão CNPJ"}
             </Link>
           )}
         </div>
