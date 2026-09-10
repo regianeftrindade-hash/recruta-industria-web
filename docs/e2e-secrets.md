@@ -41,13 +41,23 @@ Sem credenciais, os specs logados fazem **skip** (não falham).
 
 ## Observabilidade (Sentry) — produção
 
-Não é secret do GitHub Actions. Na **Vercel** (Environment Variables), defina o DSN do projeto Sentry:
+Não é secret do GitHub Actions. Na **Vercel → Settings → Environment Variables** (Production):
 
-| Variável | Onde |
+| Variável | Valor |
 |----------|------|
-| `SENTRY_DSN` | Servidor / Edge |
-| `NEXT_PUBLIC_SENTRY_DSN` | Cliente (mesmo DSN) |
+| `SENTRY_DSN` | DSN do projeto em [sentry.io](https://sentry.io) (Client Keys) |
+| `NEXT_PUBLIC_SENTRY_DSN` | **Mesmo** DSN (browser) |
 
-Opcionais (upload de sourcemaps no build): `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`.
+Opcionais (sourcemaps no build): `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`.
 
 Sem DSN o app sobe normalmente e só loga erros no console.
+
+## Schema sem DDL no request (produção)
+
+Depois de confirmar que `prisma migrate deploy` rodou ok no deploy:
+
+| Variável | Valor |
+|----------|------|
+| `DISABLE_RUNTIME_DDL` | `true` |
+
+Isso corta `CREATE TABLE`/`ALTER` no caminho da requisição e sobe a nota de arquitetura. Se alguma tabela antiga faltar, tire a variável e rode o migrate de novo.
