@@ -31,12 +31,12 @@ export default function CompanyCandidateTipsCard({
 }: Props) {
   const [tipText, setTipText] = useState("");
   const [sendingTip, setSendingTip] = useState(false);
-  const [envioOk, setEnvioOk] = useState("");
+  const [feedback, setFeedback] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
 
   const handleSendTip = async () => {
     if (!tipText.trim()) return;
     setSendingTip(true);
-    setEnvioOk("");
+    setFeedback(null);
     try {
       const res = await fetch("/api/company/tips", {
         method: "POST",
@@ -46,7 +46,7 @@ export default function CompanyCandidateTipsCard({
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao enviar dica");
+        setFeedback({ tone: "err", text: data.error || "Erro ao enviar dica" });
         return;
       }
       const created = data.tip as TipItem | undefined;
@@ -67,9 +67,9 @@ export default function CompanyCandidateTipsCard({
           };
       onTipsChange([nova, ...tips]);
       setTipText("");
-      setEnvioOk("Dica enviada.");
+      setFeedback({ tone: "ok", text: "Dica enviada." });
     } catch {
-      alert("Erro ao enviar dica");
+      setFeedback({ tone: "err", text: "Erro ao enviar dica" });
     } finally {
       setSendingTip(false);
     }
@@ -79,6 +79,7 @@ export default function CompanyCandidateTipsCard({
     if (!window.confirm("Excluir esta dica? Itens com mais de 1 mês também são apagados automaticamente.")) {
       return;
     }
+    setFeedback(null);
     try {
       const res = await fetch(`/api/company/tips?id=${encodeURIComponent(tipId)}`, {
         method: "DELETE",
@@ -86,12 +87,13 @@ export default function CompanyCandidateTipsCard({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        alert(data.error || "Não foi possível excluir a dica.");
+        setFeedback({ tone: "err", text: data.error || "Não foi possível excluir a dica." });
         return;
       }
       onTipsChange(tips.filter((t) => t.id !== tipId));
+      setFeedback({ tone: "ok", text: "Dica excluída." });
     } catch {
-      alert("Não foi possível excluir a dica.");
+      setFeedback({ tone: "err", text: "Não foi possível excluir a dica." });
     }
   };
 
@@ -150,7 +152,7 @@ export default function CompanyCandidateTipsCard({
             value={tipText}
             onChange={(e) => {
               setTipText(e.target.value);
-              if (envioOk) setEnvioOk("");
+              if (feedback) setFeedback(null);
             }}
             rows={3}
             maxLength={500}
@@ -164,8 +166,19 @@ export default function CompanyCandidateTipsCard({
               fontSize: 13,
             }}
           />
-          {envioOk ? (
-            <p style={{ margin: "8px 0 0", fontSize: 12, color: "#8bc34a", fontWeight: 700 }}>{envioOk}</p>
+          {feedback ? (
+            <p
+              role="status"
+              style={{
+                margin: "8px 0 0",
+                fontSize: 12,
+                fontWeight: 700,
+                color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+                lineHeight: 1.45,
+              }}
+            >
+              {feedback.text}
+            </p>
           ) : null}
           <button
             type="button"
@@ -177,6 +190,20 @@ export default function CompanyCandidateTipsCard({
           </button>
         </>
       )}
+      {!(canSendTips && !bloqueado) && feedback ? (
+        <p
+          role="status"
+          style={{
+            margin: "8px 0 0",
+            fontSize: 12,
+            fontWeight: 700,
+            color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+            lineHeight: 1.45,
+          }}
+        >
+          {feedback.text}
+        </p>
+      ) : null}
     </section>
   );
 }

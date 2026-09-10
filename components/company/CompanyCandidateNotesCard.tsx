@@ -41,9 +41,11 @@ type Props = {
 export default function CompanyCandidateNotesCard({ profileId, notes, onNotesChange }: Props) {
   const [notaTexto, setNotaTexto] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
+  const [feedback, setFeedback] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
 
   const salvar = async (patchNotes: string) => {
     setSavingNotes(true);
+    setFeedback(null);
     try {
       const res = await fetch(`/api/company/professionals/${profileId}`, {
         method: "PATCH",
@@ -53,13 +55,13 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao salvar");
+        setFeedback({ tone: "err", text: data.error || "Erro ao salvar" });
         return false;
       }
       onNotesChange(String(data.tracking?.notes || patchNotes));
       return true;
     } catch {
-      alert("Erro ao salvar anotações");
+      setFeedback({ tone: "err", text: "Erro ao salvar anotações" });
       return false;
     } finally {
       setSavingNotes(false);
@@ -69,7 +71,7 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
   const salvarNotaInterna = async () => {
     const text = notaTexto.trim();
     if (!text) {
-      alert("Escreva a anotação antes de salvar.");
+      setFeedback({ tone: "err", text: "Escreva a anotação antes de salvar." });
       return;
     }
     const atuais = parseNotasInternas(notes);
@@ -79,13 +81,17 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
       createdAt: new Date().toISOString(),
     };
     const ok = await salvar(JSON.stringify([nova, ...atuais]));
-    if (ok) setNotaTexto("");
+    if (ok) {
+      setNotaTexto("");
+      setFeedback({ tone: "ok", text: "Anotação salva." });
+    }
   };
 
   const apagarNotaInterna = async (id: string) => {
     if (!confirm("Apagar esta anotação?")) return;
     const atuais = parseNotasInternas(notes).filter((n) => n.id !== id);
-    await salvar(atuais.length ? JSON.stringify(atuais) : "");
+    const ok = await salvar(atuais.length ? JSON.stringify(atuais) : "");
+    if (ok) setFeedback({ tone: "ok", text: "Anotação apagada." });
   };
 
   return (
@@ -96,7 +102,10 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
       </p>
       <textarea
         value={notaTexto}
-        onChange={(e) => setNotaTexto(e.target.value)}
+        onChange={(e) => {
+          setNotaTexto(e.target.value);
+          if (feedback) setFeedback(null);
+        }}
         rows={4}
         placeholder="Escreva uma observação sobre este candidato..."
         style={{
@@ -112,6 +121,20 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
           resize: "vertical",
         }}
       />
+      {feedback ? (
+        <p
+          role="status"
+          style={{
+            margin: "8px 0 0",
+            fontSize: 12,
+            fontWeight: 700,
+            color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+            lineHeight: 1.45,
+          }}
+        >
+          {feedback.text}
+        </p>
+      ) : null}
       <button
         type="button"
         disabled={savingNotes || !notaTexto.trim()}
