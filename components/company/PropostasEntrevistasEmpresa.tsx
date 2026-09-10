@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { DASH, dashCard, dashSectionTitle } from "@/lib/dashboard-theme";
+import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import type { JobProposalDTO, InterviewLocationType } from "@/lib/company/job-proposals-shared";
 import { formatInterviewComprovante } from "@/lib/company/job-proposals-shared";
 import { formatReaisDisplay } from "@/lib/format-reais";
@@ -292,7 +293,48 @@ export default function PropostasEntrevistasEmpresa({
     boxSizing: "border-box",
   };
 
-  if (!canSend && proposals.length === 0) return null;
+  if (!canSend && proposals.length === 0) {
+    return (
+      <section className="dash-card" style={{ ...dashCard, padding: 18, minWidth: 0, maxWidth: "100%", boxSizing: "border-box" }}>
+        <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 12px", fontSize: 16 }}>
+          Propostas e entrevistas
+        </h3>
+        <p style={{ margin: "0 0 12px", fontSize: 13, color: DASH.text, lineHeight: 1.5 }}>
+          Para enviar propostas a este profissional, é preciso plano pago (Basic ou superior) e
+          verificação da empresa (e-mail corporativo + cartão CNPJ).
+        </p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <a
+            href="/company/pagamento?plan=BASIC"
+            style={{
+              ...btnGold,
+              display: "inline-block",
+              padding: "8px 14px",
+              fontSize: 12,
+              textDecoration: "none",
+            }}
+          >
+            Escolher plano
+          </a>
+          <a
+            href="/company/register"
+            style={{
+              display: "inline-block",
+              padding: "8px 14px",
+              fontSize: 12,
+              fontWeight: 700,
+              color: DASH.gold,
+              border: `1px solid ${DASH.gold}`,
+              borderRadius: 8,
+              textDecoration: "none",
+            }}
+          >
+            Completar verificação
+          </a>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="dash-card" style={{ ...dashCard, padding: 18, minWidth: 0, maxWidth: "100%", boxSizing: "border-box" }}>

@@ -504,6 +504,38 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
         {AVISO_RETENCAO_PROPOSTAS}
       </p>
 
+      {listas.entrevistas.some((p) => p.status === "INTERVIEW_PENDING") && (
+        <div
+          role="status"
+          style={{
+            margin: "0 0 12px",
+            padding: "10px 12px",
+            borderRadius: 10,
+            border: `1px solid ${DASH.gold}`,
+            background: "rgba(200,155,60,0.14)",
+          }}
+        >
+          <p style={{ margin: "0 0 8px", fontSize: 12, fontWeight: 800, color: DASH.gold }}>
+            Confirme sua entrevista
+          </p>
+          <p style={{ margin: "0 0 10px", fontSize: 11, color: DASH.text, lineHeight: 1.45 }}>
+            Há convite(s) aguardando sua confirmação. Use Confirmar ou Recusar na lista abaixo.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              document.getElementById("prof-entrevistas-agendadas")?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            }}
+            style={{ ...btnGold, padding: "7px 12px", fontSize: 11 }}
+          >
+            Ver entrevistas
+          </button>
+        </div>
+      )}
+
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <div style={nestedCard}>
           <h4 style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 600, color: DASH.muted }}>
@@ -521,7 +553,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
           )}
         </div>
 
-        <div style={nestedCard}>
+        <div id="prof-entrevistas-agendadas" style={nestedCard}>
           <h4 style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 600, color: DASH.muted }}>
             Entrevistas agendadas ({listas.entrevistas.length})
           </h4>

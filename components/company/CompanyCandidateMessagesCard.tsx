@@ -87,7 +87,7 @@ export default function CompanyCandidateMessagesCard({
   };
 
   return (
-    <section style={{ ...dashCard, padding: 18 }}>
+    <section id="empresa-mensagens-candidato" style={{ ...dashCard, padding: 18 }}>
       <h3 style={{ ...goldTitle, margin: "0 0 12px", fontSize: 16 }}>✉️ Mensagem para o candidato</h3>
       <p style={{ fontSize: 11, color: DASH.muted, margin: "0 0 10px", lineHeight: 1.45 }}>
         {AVISO_RETENCAO_INBOX}

@@ -106,8 +106,22 @@ export default function CompanyPropostaCard({
       </p>
       {(p.status === "SENT" || p.status === "MORE_INFO") && (
         <p style={{ margin: "0 0 8px", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
-          O agendamento fica disponível depois que o profissional confirmar interesse.
+          {p.status === "MORE_INFO"
+            ? "O profissional pediu mais informações. Responda na seção de Mensagens abaixo."
+            : "O agendamento fica disponível depois que o profissional confirmar interesse."}
         </p>
+      )}
+      {p.status === "MORE_INFO" && (
+        <button
+          type="button"
+          onClick={() => {
+            const el = document.getElementById("empresa-mensagens-candidato");
+            el?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
+          style={{ ...btnGold, padding: "8px 12px", fontSize: 12, marginBottom: 8 }}
+        >
+          Responder em Mensagens
+        </button>
       )}
       <button
         type="button"

@@ -518,7 +518,7 @@ export default function DashboardProfissional() {
         >
           {(
             [
-              { id: "oportunidades" as const, label: "Oportunidades", badge: proposals.length },
+              { id: "oportunidades" as const, label: "Oportunidades", badge: proposals.filter((p) => p.status === "SENT" || p.status === "MORE_INFO" || p.status === "INTERVIEW_PENDING").length },
               { id: "dicas" as const, label: "Dicas", badge: tips.length },
               { id: "mensagens" as const, label: "Mensagens", badge: inboxMessages.length },
             ]
