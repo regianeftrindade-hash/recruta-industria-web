@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { avatarImageStyle } from "@/lib/theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import {
@@ -147,9 +148,24 @@ export default function CompanyCandidateProfileHeader({
             <p style={{ fontSize: 13, color: DASH.muted, margin: "0 0 10px" }}>
               {!companyVerified
                 ? "Para ver dados sensíveis, confirme o e-mail corporativo e aguarde a aprovação do cartão CNPJ — mesmo com plano pago."
-                : "Perfil bloqueado — libere o contato para ver o cadastro completo."}
+                : !canUnlock
+                  ? "Perfil bloqueado — faça upgrade do plano ou aguarde novas liberações do mês para ver o cadastro completo."
+                  : "Perfil bloqueado — libere o contato para ver o cadastro completo."}
             </p>
-            {canUnlock && companyVerified && (
+            {!companyVerified ? (
+              <Link
+                href="/company/register"
+                style={{
+                  ...btnGold,
+                  display: "inline-block",
+                  padding: "10px 18px",
+                  fontSize: 13,
+                  textDecoration: "none",
+                }}
+              >
+                Completar verificação
+              </Link>
+            ) : canUnlock ? (
               <button
                 type="button"
                 onClick={onUnlock}
@@ -163,6 +179,19 @@ export default function CompanyCandidateProfileHeader({
               >
                 {unlocking ? "Desbloqueando..." : "🔓 Liberar contato"}
               </button>
+            ) : (
+              <Link
+                href="/company/dashboard-empresa"
+                style={{
+                  ...btnGold,
+                  display: "inline-block",
+                  padding: "10px 18px",
+                  fontSize: 13,
+                  textDecoration: "none",
+                }}
+              >
+                Ver planos e liberações
+              </Link>
             )}
           </div>
         )}

@@ -45,18 +45,18 @@ export default function Home() {
         <section className={styles.actionCards} aria-label="Escolha seu acesso">
           {[
             {
-              href: "/login?tipo=profissional",
+              href: "/professional/register",
               title: "Sou Profissional",
               img: "/profissional.jpg",
               text: "Cadastre seu perfil e encontre oportunidades na indústria.",
-              cta: "Acessar Cadastro",
+              cta: "Criar cadastro",
             },
             {
-              href: "/login?tipo=empresa",
+              href: "/company/register",
               title: "Sou Empresa",
               img: "/empresa.jpg",
               text: "Encontre profissionais qualificados para sua operação.",
-              cta: "Contratar Talentos",
+              cta: "Cadastrar empresa",
             },
           ].map((c) => (
             <Link key={c.href} href={c.href} className={styles.actionCard}>
@@ -66,7 +66,7 @@ export default function Home() {
                   src={c.img}
                   alt=""
                   className={
-                    c.href.includes("empresa")
+                    c.href.includes("company")
                       ? `${styles.cardImage} ${styles.cardImageEmpresa}`
                       : styles.cardImage
                   }

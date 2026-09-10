@@ -149,10 +149,16 @@ function PagamentoProfissional() {
       const data = await res.json();
       if (!res.ok) {
         setProcessing(false);
+        const friendly =
+          /ASAAS_|PAGSEGURO_|PAGBANK_|TOKEN|API_KEY|\.env|Vercel/i.test(
+            `${data?.error || ""} ${data?.detail || ""}`,
+          )
+            ? "Pagamento temporariamente indisponível. Tente novamente em alguns minutos ou fale com o suporte."
+            : data?.error || "Não foi possível gerar a cobrança.";
         setStatusMessage(
-          data?.detail
-            ? `${data.error || "Erro no gateway"}: ${data.detail}`
-            : data?.error || "Não foi possível gerar a cobrança.",
+          process.env.NODE_ENV === "development" && data?.detail
+            ? `${friendly} (${data.detail})`
+            : friendly,
         );
         return;
       }
@@ -193,12 +199,12 @@ function PagamentoProfissional() {
 
         {gatewayReady === false && (
           <div style={{ background: "#1a1508", border: "1px solid #8D6B1F", borderRadius: 8, padding: 14, marginBottom: 20, fontSize: 13, lineHeight: 1.5 }}>
-            <strong style={{ color: "#C89B3C" }}>Pagamentos em modo sandbox.</strong>{" "}
-            Configure <code>PAGSEGURO_TOKEN</code> no <code>.env.local</code> para gerar cobranças de teste.
+            <strong style={{ color: "#C89B3C" }}>Pagamento em configuração.</strong>{" "}
+            Cobranças reais ainda não estão disponíveis neste ambiente. Tente mais tarde ou fale com o suporte.
           </div>
         )}
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
           <div style={{ background: "rgba(43,43,43,0.94)", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
             <p style={{ color: "#C89B3C", fontWeight: "bold", fontSize: 28, margin: "0 0 4px" }}>
               {priceLabel.price}<span style={{ fontSize: 14, color: "#aaa" }}>{priceLabel.period}</span>

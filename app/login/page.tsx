@@ -270,23 +270,35 @@ function LoginContent() {
             </button>
           )}
 
-          <input
-            type="email"
-            placeholder="E-mail"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className={styles.input}
-            autoComplete="email"
-          />
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldLabel} htmlFor="login-email">
+              E-mail
+            </label>
+            <input
+              id="login-email"
+              type="email"
+              placeholder="seu@email.com"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className={styles.input}
+              autoComplete="email"
+            />
+          </div>
 
-          <input
-            type={showPassword ? 'text' : 'password'}
-            placeholder="Senha"
-            value={formData.senha}
-            onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
-            className={styles.input}
-            autoComplete="current-password"
-          />
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldLabel} htmlFor="login-senha">
+              Senha
+            </label>
+            <input
+              id="login-senha"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Sua senha"
+              value={formData.senha}
+              onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
+              className={styles.input}
+              autoComplete="current-password"
+            />
+          </div>
 
           <label className={styles.checkboxLabel}>
             <input
@@ -345,9 +357,12 @@ function LoginContent() {
         </button>
 
         {!isAdminRedirect && (
-          <button type="button" onClick={handleCadastro} className={styles.btnSecondary}>
-            Criar conta
-          </button>
+          <div className={styles.createAccountWrap}>
+            <p className={styles.createAccountHint}>Ainda não tem conta?</p>
+            <button type="button" onClick={handleCadastro} className={styles.btnSecondary}>
+              {tipoLogin === 'company' ? 'Criar conta empresa' : 'Criar conta profissional'}
+            </button>
+          </div>
         )}
 
         <div className={styles.footer}>

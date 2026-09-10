@@ -428,6 +428,7 @@ export default function CadastroProfissional() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [formFeedback, setFormFeedback] = useState<{ tone: 'error' | 'success'; message: string } | null>(null);
   const [cpf, setCpf] = useState('');
   const [senhaPreenchida, setSenhaPreenchida] = useState(false); // Rastreia se senha foi carregada do localStorage
   const [cpfError, setCpfError] = useState('');
@@ -1158,7 +1159,10 @@ export default function CadastroProfissional() {
         const profileData = await parseJsonSafe(profileRes);
 
         if (profileRes.status === 401) {
-          alert('Sessão expirada. Entre com Google novamente e complete o cadastro.');
+          setFormFeedback({
+            tone: 'error',
+            message: 'Sessão expirada. Entre com Google novamente e complete o cadastro.',
+          });
           router.push('/login?tipo=profissional');
           return;
         }
@@ -1176,7 +1180,9 @@ export default function CadastroProfissional() {
           });
           localStorage.removeItem('dadosCadastroSimples');
           if (isEditMode) {
-            if (mensagemSucesso) alert(mensagemSucesso);
+            if (mensagemSucesso) {
+              setFormFeedback({ tone: 'success', message: mensagemSucesso });
+            }
             router.push('/professional/dashboard');
           } else {
             router.push('/professional/boas-vindas');
@@ -1184,7 +1190,10 @@ export default function CadastroProfissional() {
           return;
         }
 
-        alert('Erro ao salvar perfil: ' + (profileData.error || 'Desconhecido'));
+        setFormFeedback({
+          tone: 'error',
+          message: 'Erro ao salvar perfil: ' + (profileData.error || 'Desconhecido'),
+        });
       };
 
       if (isEditMode) {
@@ -1246,7 +1255,10 @@ export default function CadastroProfissional() {
             }
           }
           if (data.code === 'OAUTH_ACCOUNT_EXISTS') {
-            alert(data.error);
+            setFormFeedback({
+              tone: 'error',
+              message: String(data.error || 'Conta Google já cadastrada. Faça login para continuar.'),
+            });
             router.push('/login?tipo=profissional');
             return;
           }
@@ -1283,6 +1295,18 @@ export default function CadastroProfissional() {
           router.push('/professional/boas-vindas');
           return;
         }
+
+        salvarBackupLocal({
+          ...dadosParaSalvar,
+          dataNascimentoDisplay: dataNascimentoValue,
+        });
+        localStorage.removeItem('dadosCadastroSimples');
+        setFormFeedback({
+          tone: 'success',
+          message:
+            'Cadastro realizado. Não foi possível entrar automaticamente — use o login com o mesmo e-mail e senha.',
+        });
+        return;
       }
 
       salvarBackupLocal({
@@ -1290,12 +1314,18 @@ export default function CadastroProfissional() {
         dataNascimentoDisplay: dataNascimentoValue,
       });
       localStorage.removeItem('dadosCadastroSimples');
-      alert('Cadastro realizado com sucesso! Faça login para acessar o painel.');
-      router.push('/login?tipo=profissional');
+      setFormFeedback({
+        tone: 'success',
+        message:
+          'Cadastro realizado com sucesso. Entre com seu e-mail e senha para acessar o painel.',
+      });
 
     } catch (err: any) {
       console.error('Erro no registro:', err);
-      alert(err.message || 'Erro ao conectar ao servidor');
+      setFormFeedback({
+        tone: 'error',
+        message: err.message || 'Erro ao conectar ao servidor',
+      });
     } finally {
       setSubmitting(false);
     }
@@ -1326,6 +1356,20 @@ export default function CadastroProfissional() {
         <h1 id="register-title" className={styles.title}>
           {isEditMode ? 'Atualizar cadastro' : 'Cadastro do profissional'}
         </h1>
+        {formFeedback && (
+          <div
+            className={`${styles.feedbackBanner} ${
+              formFeedback.tone === 'error' ? styles.feedbackBannerError : styles.feedbackBannerSuccess
+            }`}
+            role={formFeedback.tone === 'error' ? 'alert' : 'status'}
+            aria-live="polite"
+          >
+            {formFeedback.message}{' '}
+            {formFeedback.tone === 'success' && (
+              <a href="/login?tipo=profissional">Ir para o login</a>
+            )}
+          </div>
+        )}
         {isEditMode && (
           <p style={{ color: '#F2F2F2', marginTop: 0, marginBottom: 20, fontSize: 15 }}>
             Seus dados foram carregados. Altere o que precisar e clique em salvar.

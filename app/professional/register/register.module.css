@@ -810,6 +810,32 @@
   color: #ffcdd2;
 }
 
+.feedbackBanner {
+  margin: 12px 0 16px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+.feedbackBannerError {
+  border: 1px solid rgba(229, 57, 53, 0.55);
+  background: rgba(229, 57, 53, 0.12);
+  color: #ffcdd2;
+}
+
+.feedbackBannerSuccess {
+  border: 1px solid rgba(200, 155, 60, 0.65);
+  background: rgba(200, 155, 60, 0.14);
+  color: #F2F2F2;
+}
+
+.feedbackBanner a {
+  color: #C89B3C;
+  font-weight: 700;
+}
+
 .fieldGroupErro {
   padding: 8px 10px;
   border-radius: 8px;

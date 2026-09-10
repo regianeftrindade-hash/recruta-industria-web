@@ -136,6 +136,7 @@ function CardPerfil({
   canUnlock,
   canExport,
   onExport,
+  blockHint,
 }: {
   p: ProfissionalResumo;
   variant?: "compact" | "full";
@@ -145,6 +146,8 @@ function CardPerfil({
   canUnlock?: boolean;
   canExport?: boolean;
   onExport?: () => void;
+  /** Motivo quando o contato está bloqueado e não dá para liberar agora */
+  blockHint?: "verification" | "plan" | "slots" | null;
 }) {
   const cursos = dedupeStrings(p.cursos || []);
   const certificacoes = dedupeStrings(p.certificacoes || []);
@@ -409,7 +412,11 @@ function CardPerfil({
 
       {p.bloqueado && !canUnlock && (
         <p style={{ marginTop: 10, fontSize: 10, ...dashPlanAccent, textAlign: "center" }}>
-          Upgrade para Basic para liberar contatos
+          {blockHint === "verification"
+            ? "Confirme e-mail corporativo e cartão CNPJ para liberar contatos"
+            : blockHint === "slots"
+              ? "Limite de liberações do plano atingido neste mês"
+              : "Upgrade para Basic para liberar contatos"}
         </p>
       )}
     </div>
@@ -530,7 +537,8 @@ export type CompanyDashboardVitrineSectionProps = {
   totalEncontrados: number;
   loadingProfissionais: boolean;
   profissionais: ProfissionalResumo[];
-  canUnlock: boolean;
+  canUnlockContacts: boolean;
+  canAccessSensitiveProfiles: boolean;
   slotsRestantes: number | null;
   canExportProfiles?: boolean;
   unlockingId: string | null;
@@ -548,7 +556,8 @@ export default function CompanyDashboardVitrineSection({
   totalEncontrados,
   loadingProfissionais,
   profissionais,
-  canUnlock,
+  canUnlockContacts,
+  canAccessSensitiveProfiles,
   slotsRestantes,
   canExportProfiles,
   unlockingId,
@@ -557,6 +566,15 @@ export default function CompanyDashboardVitrineSection({
   handleExportProfile,
   irParaPagina,
 }: CompanyDashboardVitrineSectionProps) {
+  const slotsOk = slotsRestantes === null || slotsRestantes > 0;
+  const podeLiberar = canUnlockContacts && canAccessSensitiveProfiles && slotsOk;
+  const blockHint: "verification" | "plan" | "slots" | null = !canAccessSensitiveProfiles
+    ? "verification"
+    : !canUnlockContacts
+      ? "plan"
+      : !slotsOk
+        ? "slots"
+        : null;
   return (
     <section ref={sectionRef} style={{ marginBottom: 16 }}>
       <h2 style={{ ...dashSectionTitle, margin: "0 0 8px", fontSize: 15 }}>
@@ -600,7 +618,8 @@ export default function CompanyDashboardVitrineSection({
                 key={p.id}
                 p={p}
                 onOpen={() => openProfile(p.id)}
-                canUnlock={p.bloqueado && canUnlock && (slotsRestantes === null || slotsRestantes > 0)}
+                canUnlock={Boolean(p.bloqueado && podeLiberar)}
+                blockHint={p.bloqueado && !podeLiberar ? blockHint : null}
                 canExport={canExportProfiles && !p.bloqueado}
                 onUnlock={() => handleUnlock(p.id)}
                 onExport={() => handleExportProfile(p.id)}

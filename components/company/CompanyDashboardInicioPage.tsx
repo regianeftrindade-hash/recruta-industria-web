@@ -315,11 +315,13 @@ export default function CompanyDashboardInicioPage() {
   return (
         <>
           {!canAccessSensitiveProfiles && (
-            <CompanyDashboardVerificationBanner
-              verificationStatus={verificationStatus}
-              verificationReason={verificationReason}
-              emailCorporativoVerificado={emailCorporativoVerificado}
-            />
+            <div id="empresa-verificacao">
+              <CompanyDashboardVerificationBanner
+                verificationStatus={verificationStatus}
+                verificationReason={verificationReason}
+                emailCorporativoVerificado={emailCorporativoVerificado}
+              />
+            </div>
           )}
 
           <div style={{ padding: "2px 0 6px", minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
@@ -365,7 +367,8 @@ export default function CompanyDashboardInicioPage() {
             totalEncontrados={search.totalEncontrados}
             loadingProfissionais={search.loadingProfissionais}
             profissionais={search.profissionais}
-            canUnlock={search.canUnlock}
+            canUnlockContacts={planFeatures.canUnlockContacts}
+            canAccessSensitiveProfiles={canAccessSensitiveProfiles}
             slotsRestantes={slotsRestantes}
             canExportProfiles={planFeatures.canExportProfiles}
             unlockingId={search.unlockingId}
