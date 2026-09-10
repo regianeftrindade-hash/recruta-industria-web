@@ -1,6 +1,8 @@
 # Secrets E2E (Playwright) no GitHub
 
-Os jobs **E2E empresa logada** e **E2E profissional logado** no CI são **opcionais**: só rodam se os secrets existirem. Sem eles, o CI continua verde (smoke público + unitários + build).
+Os jobs **E2E empresa logada** e **E2E profissional logado** no CI **sempre entram na fila**. Sem secrets, o Playwright faz **skip** (CI verde). Com secrets, os testes logados rodam de verdade.
+
+**Importante:** não use `if: secrets.*` no workflow — o GitHub rejeita o arquivo e o CI fica vermelho sem rodar nada.
 
 **Nunca** coloque e-mail/senha reais no repositório, em PRs ou em logs.
 
