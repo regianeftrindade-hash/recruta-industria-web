@@ -50,9 +50,11 @@ export default function ProfessionalInterviewsPanel({ proposals, onChanged }: Pr
   });
 
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
 
   const responderEntrevista = async (id: string, action: "CONFIRM" | "DECLINE") => {
     setBusyId(id);
+    setFeedback(null);
     try {
       const res = await fetch(`/api/professional/proposals/${id}/interview-respond`, {
         method: "POST",
@@ -62,12 +64,16 @@ export default function ProfessionalInterviewsPanel({ proposals, onChanged }: Pr
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao responder entrevista");
+        setFeedback({ tone: "err", text: data.error || "Erro ao responder entrevista" });
         return;
       }
       onChanged();
+      setFeedback({
+        tone: "ok",
+        text: action === "CONFIRM" ? "Entrevista confirmada." : "Entrevista recusada.",
+      });
     } catch {
-      alert("Erro ao responder entrevista");
+      setFeedback({ tone: "err", text: "Erro ao responder entrevista" });
     } finally {
       setBusyId(null);
     }
@@ -79,6 +85,7 @@ export default function ProfessionalInterviewsPanel({ proposals, onChanged }: Pr
     atual: boolean,
   ) => {
     setBusyId(id);
+    setFeedback(null);
     try {
       const body: Record<string, unknown> = { [campo]: !atual };
       if (campo === "entrevistaCancelada" && !atual) {
@@ -100,12 +107,12 @@ export default function ProfessionalInterviewsPanel({ proposals, onChanged }: Pr
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao atualizar");
+        setFeedback({ tone: "err", text: data.error || "Erro ao atualizar" });
         return;
       }
       onChanged();
     } catch {
-      alert("Erro ao atualizar histórico");
+      setFeedback({ tone: "err", text: "Erro ao atualizar histórico" });
     } finally {
       setBusyId(null);
     }
@@ -146,6 +153,20 @@ export default function ProfessionalInterviewsPanel({ proposals, onChanged }: Pr
       <p style={{ margin: "0 0 10px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
         Use Contatado / Teste / Contratado no fim da linha para o histórico.
       </p>
+
+      {feedback && (
+        <p
+          role="status"
+          style={{
+            margin: "0 0 10px",
+            fontSize: 12,
+            lineHeight: 1.45,
+            color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+          }}
+        >
+          {feedback.text}
+        </p>
+      )}
 
       {entrevistas.length === 0 ? (
         <div className="ri-dash-empty">

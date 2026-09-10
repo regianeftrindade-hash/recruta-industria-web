@@ -36,9 +36,11 @@ const rowStyle: React.CSSProperties = {
 export default function ProfessionalProposalsPanel({ proposals, onChanged }: Props) {
   const lista = proposals.filter((p) => !STATUS_ENTREVISTA.has(p.status));
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
 
   const responder = async (id: string, action: "INTERESTED" | "MORE_INFO" | "DECLINED") => {
     setBusyId(id);
+    setFeedback(null);
     try {
       const res = await fetch(`/api/professional/proposals/${id}/respond`, {
         method: "POST",
@@ -48,17 +50,19 @@ export default function ProfessionalProposalsPanel({ proposals, onChanged }: Pro
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao responder");
+        setFeedback({ tone: "err", text: data.error || "Erro ao responder" });
         return;
       }
       onChanged();
       if (action === "INTERESTED") {
-        alert("Interesse registrado. A empresa poderá agendar a entrevista.");
+        setFeedback({ tone: "ok", text: "Interesse registrado. A empresa poderá agendar a entrevista." });
       } else if (action === "MORE_INFO") {
-        alert("Pedido de mais informações enviado. Acompanhe também em Mensagens.");
+        setFeedback({ tone: "ok", text: "Pedido enviado. Acompanhe também em Mensagens." });
+      } else {
+        setFeedback({ tone: "ok", text: "Proposta recusada." });
       }
     } catch {
-      alert("Erro ao responder proposta");
+      setFeedback({ tone: "err", text: "Erro ao responder proposta" });
     } finally {
       setBusyId(null);
     }
@@ -85,6 +89,20 @@ export default function ProfessionalProposalsPanel({ proposals, onChanged }: Pro
       <p style={{ margin: "0 0 10px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
         {AVISO_RETENCAO_PROPOSTAS}
       </p>
+
+      {feedback && (
+        <p
+          role="status"
+          style={{
+            margin: "0 0 10px",
+            fontSize: 12,
+            lineHeight: 1.45,
+            color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+          }}
+        >
+          {feedback.text}
+        </p>
+      )}
 
       {lista.length === 0 ? (
         <div className="ri-dash-empty">
