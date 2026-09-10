@@ -3,7 +3,10 @@ import {
   corporateEmailError,
   isCorporateEmail,
 } from '@/lib/company/corporate-email';
-import { calcExtraSeatsAmountCentavos } from '@/lib/company/company-extra-seats';
+import {
+  calcExtraSeatsAmountCentavos,
+  getExtraSeatPackage,
+} from '@/lib/company/company-extra-seats';
 import { asCompanyExtraSeatsPaymentMeta } from '@/lib/payment-config';
 
 describe('e-mail corporativo', () => {
@@ -39,6 +42,15 @@ describe('assentos extras', () => {
 
   it('rejeita quantidade sem pacote', () => {
     expect(() => calcExtraSeatsAmountCentavos(2)).toThrow(/INVALID_PACKAGE/);
+  });
+
+  it('resolve pacote por id ou quantidade', () => {
+    expect(getExtraSeatPackage('pack3')?.quantity).toBe(3);
+    expect(getExtraSeatPackage('pack3')?.priceCentavos).toBe(7990);
+    expect(getExtraSeatPackage(5)?.id).toBe('pack5');
+    expect(getExtraSeatPackage('5')?.id).toBe('pack5');
+    expect(getExtraSeatPackage(2)).toBeNull();
+    expect(getExtraSeatPackage('pack99')).toBeNull();
   });
 
   it('parseia meta de assentos', () => {
