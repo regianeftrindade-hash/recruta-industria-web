@@ -147,7 +147,6 @@
   min-width: 0;
   min-height: 0;
   max-height: min(320px, 38vh);
-  text-decoration: none;
   color: var(--ri-text);
   background: rgba(43, 43, 43, 0.9);
   border: 1px solid rgba(200, 155, 60, 0.55);
@@ -161,6 +160,30 @@
   transform: translateY(-2px);
   border-color: var(--ri-gold);
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
+}
+
+.cardMainLink {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.cardRegisterLink {
+  display: block;
+  margin-top: 6px;
+  text-align: center;
+  color: rgba(212, 175, 55, 0.95);
+  font-size: clamp(0.72rem, 0.95vw, 0.82rem);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.cardRegisterLink:hover {
+  color: var(--ri-gold);
 }
 
 .cardImageWrap {
@@ -231,7 +254,7 @@
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
-.actionCard:active .cardCta {
+.cardMainLink:active .cardCta {
   transform: translateY(2px);
   box-shadow: var(--ri-btn-3d-gold-active);
 }
