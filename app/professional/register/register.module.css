@@ -1440,6 +1440,41 @@
   transition: background-color 0.2s ease, transform 0.12s ease, box-shadow 0.12s ease;
 }
 
+.alreadyRegisteredActions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.alreadyRegisteredActions .submitBtn {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.secondaryLinkBtn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: transparent;
+  border: 1px solid rgba(200, 155, 60, 0.55);
+  border-radius: 10px;
+  color: rgba(242, 242, 242, 0.95);
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.secondaryLinkBtn:hover {
+  border-color: var(--accent-color, #c89b3c);
+  color: #fff;
+}
+
 .submitBtn:active {
   transform: translateY(2px);
   box-shadow: var(--ri-btn-3d-gold-active);

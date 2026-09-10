@@ -19,7 +19,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { signIn, useSession, getSession } from 'next-auth/react';
+import { signIn, signOut, useSession, getSession } from 'next-auth/react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './register.module.css';
 import PasswordStrengthMeter from '../../components/PasswordStrengthMeter';
@@ -419,6 +420,8 @@ export default function CadastroProfissional() {
   const [profileLoaded, setProfileLoaded] = useState(!isEditMode);
   /** Só bloqueia a tela quando há sessão autenticada para checar. Visitante vê o form na hora. */
   const [checkingRegistration, setCheckingRegistration] = useState(false);
+  /** Sessão ativa com cadastro já completo — não redireciona em silêncio. */
+  const [contaJaCompleta, setContaJaCompleta] = useState(false);
   const [sessionWaitTimedOut, setSessionWaitTimedOut] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [camposObrigatoriosFaltando, setCamposObrigatoriosFaltando] = useState<CampoObrigatorioFalta[]>([]);
@@ -813,12 +816,13 @@ export default function CadastroProfissional() {
     setProfileLoaded(true);
   }, [isEditMode, sessionStatus, session?.user?.email, session?.user, router]);
 
-  // Sessão Google: preenche dados básicos; se cadastro já completo, vai ao painel
+  // Sessão Google: preenche dados básicos; se cadastro já completo, avisa (não manda ao painel em silêncio)
   useEffect(() => {
     if (isEditMode) return;
 
     if (sessionStatus === 'unauthenticated') {
       setCheckingRegistration(false);
+      setContaJaCompleta(false);
       return;
     }
 
@@ -834,11 +838,11 @@ export default function CadastroProfissional() {
     setPassword('');
     setConfirmPassword('');
     setCheckingRegistration(true);
+    setContaJaCompleta(false);
 
-    let redirecting = false;
     let cancelled = false;
     const timeoutId = window.setTimeout(() => {
-      if (!cancelled && !redirecting) setCheckingRegistration(false);
+      if (!cancelled) setCheckingRegistration(false);
     }, 8000);
 
     fetch('/api/professional/profile', { credentials: 'include' })
@@ -846,8 +850,7 @@ export default function CadastroProfissional() {
       .then((data) => {
         if (cancelled) return;
         if (data?.registrationComplete) {
-          redirecting = true;
-          router.replace('/professional/dashboard');
+          setContaJaCompleta(true);
           return;
         }
 
@@ -865,7 +868,7 @@ export default function CadastroProfissional() {
       .catch(() => {})
       .finally(() => {
         window.clearTimeout(timeoutId);
-        if (!cancelled && !redirecting) setCheckingRegistration(false);
+        if (!cancelled) setCheckingRegistration(false);
       });
 
     return () => {
@@ -1343,6 +1346,45 @@ export default function CadastroProfissional() {
 
   if (paginaCarregando) {
     return <PageLoader message={mensagemCarregamento} />;
+  }
+
+  if (!isEditMode && contaJaCompleta) {
+    const emailLogado = session?.user?.email || 'sua conta';
+    return (
+      <div className={`${styles.container} ri-readable`}>
+        <AuthAtmosphere intensity="strong" />
+        <div className={styles.card} role="main" aria-labelledby="register-title">
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+            <LogoRecruta size="sm" as="div" depth />
+          </div>
+          <h1 id="register-title" className={styles.title}>
+            Você já tem cadastro
+          </h1>
+          <p className={styles.formHint}>
+            Você já está logado neste site como <strong>{emailLogado}</strong>.
+            Para entrar no painel use o botão abaixo. Se quiser cadastrar outra
+            pessoa ou outra conta, saia primeiro.
+          </p>
+          <div className={styles.alreadyRegisteredActions}>
+            <Link href="/professional/dashboard" className={styles.submitBtn}>
+              Ir ao painel
+            </Link>
+            <button
+              type="button"
+              className={styles.secondaryLinkBtn}
+              onClick={() => {
+                void signOut({ callbackUrl: '/professional/register' });
+              }}
+            >
+              Sair e criar outro cadastro
+            </button>
+            <Link href="/" className={styles.secondaryLinkBtn}>
+              Voltar à página inicial
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
