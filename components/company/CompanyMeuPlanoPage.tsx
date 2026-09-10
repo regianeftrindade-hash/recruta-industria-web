@@ -261,6 +261,7 @@ export default function CompanyMeuPlanoPage() {
   const [planTier, setPlanTier] = useState<CompanyPlanTier>("FREE");
   const [loading, setLoading] = useState(true);
   const [expandAll, setExpandAll] = useState(false);
+  const [feedback, setFeedback] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -285,6 +286,7 @@ export default function CompanyMeuPlanoPage() {
   const planDef = getPlanDefinition(planTier);
 
   const handleSelectFree = async () => {
+    setFeedback(null);
     try {
       const res = await fetch("/api/company/subscription", {
         method: "POST",
@@ -294,13 +296,14 @@ export default function CompanyMeuPlanoPage() {
       });
       if (res.ok) {
         setPlanTier("FREE");
+        setFeedback({ tone: "ok", text: "Plano alterado para Free." });
         router.refresh();
       } else {
         const data = await res.json().catch(() => ({}));
-        alert(data.error || "Não foi possível alterar o plano.");
+        setFeedback({ tone: "err", text: data.error || "Não foi possível alterar o plano." });
       }
     } catch {
-      alert("Erro de rede ao alterar o plano.");
+      setFeedback({ tone: "err", text: "Erro de rede ao alterar o plano." });
     }
   };
 
@@ -322,6 +325,20 @@ export default function CompanyMeuPlanoPage() {
             <p style={{ margin: 0, fontSize: 12, color: DASH.muted, lineHeight: 1.5 }}>
               {planDef.descricao}
             </p>
+            {feedback ? (
+              <p
+                role="status"
+                style={{
+                  margin: "10px 0 0",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+                  lineHeight: 1.45,
+                }}
+              >
+                {feedback.text}
+              </p>
+            ) : null}
           </>
         )}
       </section>

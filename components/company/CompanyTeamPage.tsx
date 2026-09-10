@@ -154,7 +154,7 @@ export default function CompanyTeamPage() {
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      alert(data.error || "Erro ao remover.");
+      setError(data.error || "Erro ao remover.");
       return;
     }
     if (replacingId === memberId) setReplacingId(null);
