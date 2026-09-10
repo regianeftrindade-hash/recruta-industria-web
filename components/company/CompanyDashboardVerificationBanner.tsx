@@ -1,9 +1,11 @@
-/* 🔒 BLOQUEADO (06/07/2026) — não editar sem pedido explícito. Ver .cursor/rules/dashboard-page-lock.mdc */
+/* Autorizado no pacote UX+ops (09/2026): CTAs de verificação — escopo mínimo. */
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import type { CompanyVerificationStatus } from "@/lib/company/company-verification";
 import { DASH } from "@/lib/dashboard-theme";
+import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 
 export type CompanyDashboardVerificationBannerProps = {
   verificationStatus: CompanyVerificationStatus;
@@ -16,6 +18,12 @@ export default function CompanyDashboardVerificationBanner({
   verificationReason,
   emailCorporativoVerificado,
 }: CompanyDashboardVerificationBannerProps) {
+  const docVerified = verificationStatus === "VERIFIED";
+  const awaitingAdmin =
+    emailCorporativoVerificado &&
+    !docVerified &&
+    verificationStatus !== "REJECTED";
+
   return (
     <div style={{
       margin: "20px 24px 0",
@@ -30,10 +38,47 @@ export default function CompanyDashboardVerificationBanner({
       </p>
       <ul style={{ margin: "8px 0 0", paddingLeft: 18, fontSize: 12, color: DASH.muted, lineHeight: 1.6 }}>
         <li>{emailCorporativoVerificado ? '✓' : '○'} E-mail corporativo confirmado por link</li>
-        <li>{verificationStatus === "VERIFIED" ? '✓' : '○'} Cartão CNPJ anexado e aprovado pelo admin</li>
+        <li>{docVerified ? '✓' : '○'} Cartão CNPJ anexado e aprovado pelo admin</li>
       </ul>
       {verificationStatus === "REJECTED" && verificationReason && (
         <p style={{ margin: "8px 0 0", fontSize: 12, color: "#f87171" }}>{verificationReason}</p>
+      )}
+      {awaitingAdmin && (
+        <p style={{ margin: "8px 0 0", fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>
+          Após enviar o cartão CNPJ, a aprovação do admin costuma levar 1–2 dias úteis.
+        </p>
+      )}
+      {(!emailCorporativoVerificado || !docVerified || verificationStatus === "REJECTED") && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+          {!emailCorporativoVerificado && (
+            <Link
+              href="/company/register"
+              style={{
+                ...btnGold,
+                display: "inline-block",
+                padding: "8px 14px",
+                fontSize: 12,
+                textDecoration: "none",
+              }}
+            >
+              Confirmar e-mail corporativo
+            </Link>
+          )}
+          {(!docVerified || verificationStatus === "REJECTED") && (
+            <Link
+              href="/company/register"
+              style={{
+                ...btnGold,
+                display: "inline-block",
+                padding: "8px 14px",
+                fontSize: 12,
+                textDecoration: "none",
+              }}
+            >
+              {verificationStatus === "REJECTED" ? "Reenviar cartão CNPJ" : "Enviar cartão CNPJ"}
+            </Link>
+          )}
+        </div>
       )}
     </div>
   );

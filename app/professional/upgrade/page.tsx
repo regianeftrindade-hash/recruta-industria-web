@@ -158,7 +158,7 @@ function UpgradePageContent() {
               ← Voltar
             </button>
             <button
-              onClick={() => router.push('/professional/checkout')}
+              onClick={() => router.push('/professional/pagamento')}
               style={{
                 background: 'linear-gradient(180deg, #8D6B1F 0%, #C89B3C 45%, #A87E2E 100%)',
                 color: '#000',

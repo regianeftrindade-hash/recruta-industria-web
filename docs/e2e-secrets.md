@@ -68,29 +68,16 @@ Sem credenciais, os specs logados fazem **skip** (não falham).
 ### Checklist rápido (nota 9+)
 
 1. Criar os 4 secrets no GitHub (tabela acima).
-2. Confirmar no Actions que os jobs **E2E empresa/profissional logada** rodaram (não “Skipped”).
-3. Manter `SENTRY_DSN` + `NEXT_PUBLIC_SENTRY_DSN` na Vercel Production.
-4. Manter `DISABLE_RUNTIME_DDL=true` só se o schema já estiver migrado.
+2. Confirmar no Actions que os jobs **E2E empresa/profissional logada** rodaram de verdade (não “Skipped”) e ficaram **verdes** — com secrets inválidos o CI fica **vermelho**.
+3. Ops Vercel (Sentry + migrate/DDL): seguir o runbook em [ops-producao.md](./ops-producao.md).
 
-## Observabilidade (Sentry) — produção
+## Observabilidade e schema (produção)
 
-Não é secret do GitHub Actions. Na **Vercel → Settings → Environment Variables** (Production):
+Detalhes e ordem correta (migrate → `DISABLE_RUNTIME_DDL` → Sentry): **[ops-producao.md](./ops-producao.md)**.
 
-| Variável | Valor |
-|----------|------|
-| `SENTRY_DSN` | DSN do projeto em [sentry.io](https://sentry.io) (Client Keys) |
-| `NEXT_PUBLIC_SENTRY_DSN` | **Mesmo** DSN (browser) |
+Resumo:
 
-Opcionais (sourcemaps no build): `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`.
-
-Sem DSN o app sobe normalmente e só loga erros no console.
-
-## Schema sem DDL no request (produção)
-
-Depois de confirmar que `prisma migrate deploy` rodou ok no deploy:
-
-| Variável | Valor |
-|----------|------|
-| `DISABLE_RUNTIME_DDL` | `true` |
-
-Isso corta `CREATE TABLE`/`ALTER` no caminho da requisição e sobe a nota de arquitetura. Se alguma tabela antiga faltar, tire a variável e rode o migrate de novo.
+| Variável (Vercel Production) | Quando |
+|------------------------------|--------|
+| `SENTRY_DSN` + `NEXT_PUBLIC_SENTRY_DSN` | Sempre (mesmo DSN) |
+| `DISABLE_RUNTIME_DDL=true` | Só depois de `prisma migrate deploy` ok |

@@ -52,6 +52,8 @@ function PagamentoProfissional() {
   const [processing, setProcessing] = useState(false);
   const [gatewayReady, setGatewayReady] = useState<boolean | null>(null);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
+  const pollCountRef = useRef(0);
+  const POLL_MAX = 30; // ~2 min a cada 4s
 
   const priceLabel = useMemo(
     () => formatPlanPriceLabel(planDef.precoCentavos, billingPeriod),
@@ -104,36 +106,86 @@ function PagamentoProfissional() {
     }
   };
 
-  const startPolling = (chargeId: string) => {
-    if (pollRef.current) clearInterval(pollRef.current);
-    setStatusMessage("Aguardando confirmação do pagamento...");
-    pollRef.current = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/pagseguro/status?chargeId=${chargeId}`, {
-          credentials: "include",
-        });
-        const data = await res.json();
-        if (data?.status === "PAID") {
-          setStatusMessage("✅ Pagamento confirmado! Ativando Premium...");
-          if (pollRef.current) clearInterval(pollRef.current);
-          setTimeout(() => finishSuccess(chargeId, Boolean(data.activated)), 1500);
-        } else if (["DECLINED", "CANCELED"].includes(data?.status)) {
-          setStatusMessage("❌ Pagamento não aprovado.");
-          if (pollRef.current) clearInterval(pollRef.current);
-          setProcessing(false);
-        }
-      } catch {
-        if (pollRef.current) clearInterval(pollRef.current);
-        setStatusMessage("Erro ao verificar pagamento.");
+  const stopPolling = () => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  };
+
+  const checkPaymentStatus = async (chargeId: string, opts?: { fromButton?: boolean; isBoleto?: boolean }) => {
+    try {
+      if (opts?.fromButton) {
+        setStatusMessage("Verificando pagamento...");
+      }
+      const res = await fetch(`/api/pagseguro/status?chargeId=${chargeId}`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (data?.status === "PAID") {
+        setStatusMessage("✅ Pagamento confirmado! Ativando Premium...");
+        stopPolling();
+        setTimeout(() => finishSuccess(chargeId, Boolean(data.activated)), 1500);
+        return "paid" as const;
+      }
+      if (["DECLINED", "CANCELED"].includes(data?.status)) {
+        setStatusMessage("❌ Pagamento não aprovado.");
+        stopPolling();
         setProcessing(false);
+        return "failed" as const;
+      }
+      if (opts?.fromButton) {
+        setStatusMessage(
+          opts.isBoleto
+            ? "Ainda não confirmado. Boleto pode levar até 1–2 dias úteis — pode sair; ativamos o plano quando cair."
+            : "Ainda não confirmado. Se já pagou o Pix, aguarde alguns segundos e tente de novo.",
+        );
+      }
+      return "pending" as const;
+    } catch {
+      stopPolling();
+      setStatusMessage("Erro ao verificar pagamento.");
+      setProcessing(false);
+      return "error" as const;
+    }
+  };
+
+  const startPolling = (chargeId: string, isBoleto: boolean) => {
+    stopPolling();
+    pollCountRef.current = 0;
+    setStatusMessage(
+      isBoleto
+        ? "Aguardando confirmação do boleto. Você pode sair desta página — ativamos o plano quando o pagamento cair."
+        : "Aguardando confirmação do pagamento...",
+    );
+    pollRef.current = setInterval(async () => {
+      pollCountRef.current += 1;
+      const result = await checkPaymentStatus(chargeId, { isBoleto });
+      if (result !== "pending") return;
+      if (pollCountRef.current >= POLL_MAX) {
+        stopPolling();
+        setStatusMessage(
+          isBoleto
+            ? "Ainda aguardando o boleto. Pode fechar esta página; quando o pagamento for confirmado, o Premium é ativado automaticamente. Use “Verificar agora” se quiser checar de novo."
+            : "Ainda não vimos a confirmação do Pix. Use “Verificar agora” ou escolha outra forma de pagamento.",
+        );
       }
     }, 4000);
+  };
+
+  const resetPaymentForm = () => {
+    stopPolling();
+    setPaymentData(null);
+    setProcessing(false);
+    setStatusMessage("");
+    pollCountRef.current = 0;
   };
 
   const handleCheckout = async () => {
     setProcessing(true);
     setStatusMessage("Gerando cobrança...");
     try {
+      const payMethod = billingMode === "one_time" ? method : "boleto";
       const res = await fetch("/api/professional/payments/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -142,7 +194,7 @@ function PagamentoProfissional() {
           planTier: "PREMIUM",
           billingPeriod,
           billingMode,
-          method: billingMode === "one_time" ? method : "boleto",
+          method: payMethod,
         }),
       });
 
@@ -165,7 +217,8 @@ function PagamentoProfissional() {
 
       setPaymentData(data);
       setStatusMessage("");
-      if (data.chargeId) startPolling(data.chargeId);
+      const isBoleto = Boolean(data.boletoUrl) && !data.copyPasteKey;
+      if (data.chargeId) startPolling(data.chargeId, isBoleto || payMethod === "boleto");
     } catch {
       setProcessing(false);
       setStatusMessage("Erro na cobrança. Tente novamente.");
@@ -309,7 +362,28 @@ function PagamentoProfissional() {
                     Abrir checkout
                   </a>
                 )}
-                {statusMessage && <p style={{ fontSize: 12, marginTop: 12, color: "#C89B3C" }}>{statusMessage}</p>}
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void checkPaymentStatus(paymentData.chargeId, {
+                        fromButton: true,
+                        isBoleto: Boolean(paymentData.boletoUrl) && !paymentData.copyPasteKey,
+                      })
+                    }
+                    style={{ ...btnGold, width: "100%", padding: 12, fontSize: 13 }}
+                  >
+                    Verificar agora
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetPaymentForm}
+                    style={{ ...btnGold, width: "100%", padding: 12, fontSize: 13 }}
+                  >
+                    Voltar e escolher outra forma
+                  </button>
+                </div>
+                {statusMessage && <p style={{ fontSize: 12, marginTop: 12, color: "#C89B3C", lineHeight: 1.45 }}>{statusMessage}</p>}
               </div>
             )}
           </div>

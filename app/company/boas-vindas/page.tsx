@@ -179,6 +179,20 @@ function BoasVindasEmpresaContent() {
         <div className={styles.actions}>
           <button
             type="button"
+            className={styles.secondaryBtn}
+            onClick={() => router.push("/company/register")}
+          >
+            Completar verificação
+          </button>
+          <button
+            type="button"
+            className={styles.secondaryBtn}
+            onClick={() => router.push("/company/pagamento?plan=BASIC")}
+          >
+            Escolher plano
+          </button>
+          <button
+            type="button"
             className={styles.primaryBtn}
             onClick={() => router.push("/company/dashboard-empresa")}
           >
@@ -187,8 +201,8 @@ function BoasVindasEmpresaContent() {
         </div>
 
         <p className={styles.note}>
-          Você pode atualizar o cadastro a qualquer momento pelo painel
-          empresarial.
+          Contatos e propostas pedem verificação (e-mail + CNPJ) e plano pago.
+          Você pode atualizar o cadastro a qualquer momento pelo painel.
         </p>
       </div>
     </div>
