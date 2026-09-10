@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { getToken } from 'next-auth/jwt';
 import { authOptions } from '@/lib/auth.config';
 import { prisma } from '@/lib/db';
-import { ensureVideoApresentacaoColumn } from '@/lib/ensure-db-schema';
 import {
   VIDEO_APRESENTACAO_MAX_BYTES,
   extensionForVideoMime,
@@ -46,7 +45,6 @@ async function resolveProfessionalUserId(request: NextRequest): Promise<string |
 
 export async function GET(request: NextRequest) {
   try {
-    await ensureVideoApresentacaoColumn();
     const userId = await resolveProfessionalUserId(request);
     if (!userId) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
@@ -75,7 +73,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await ensureVideoApresentacaoColumn();
     const userId = await resolveProfessionalUserId(request);
     if (!userId) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
@@ -144,7 +141,6 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    await ensureVideoApresentacaoColumn();
     const userId = await resolveProfessionalUserId(request);
     if (!userId) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });

@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { getToken } from 'next-auth/jwt';
 import { authOptions } from '@/lib/auth.config';
 import { prisma } from '@/lib/db';
-import { ensureVideoApresentacaoColumn } from '@/lib/ensure-db-schema';
 import {
   getVideoApresentacaoPath,
   setVideoApresentacaoPath,
@@ -39,7 +38,6 @@ async function resolveProfessionalUserId(request: NextRequest): Promise<string |
 
 export async function POST(request: NextRequest) {
   try {
-    await ensureVideoApresentacaoColumn();
     const userId = await resolveProfessionalUserId(request);
     if (!userId) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });

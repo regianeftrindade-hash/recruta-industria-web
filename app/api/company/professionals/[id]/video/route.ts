@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { resolveAuthEmail } from '@/lib/api-auth';
-import { ensureVideoApresentacaoColumn } from '@/lib/ensure-db-schema';
 import { getVideoApresentacaoPathByProfileId } from '@/lib/professional/professional-video-db';
 import { streamVideoResponse } from '@/lib/professional/video-stream';
 import { isCompanyVerified } from '@/lib/company-storage';
@@ -23,7 +22,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    await ensureVideoApresentacaoColumn();
     const companyUser = await getCompanyUser(request);
     if (!companyUser) {
       return NextResponse.json({ error: 'Acesso restrito a empresas' }, { status: 403 });
