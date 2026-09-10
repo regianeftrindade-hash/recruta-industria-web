@@ -7,6 +7,7 @@ import {
 } from "@/lib/company/company-team";
 import { isRuntimeDdlEnabled } from "@/lib/infra/ensure-db-schema";
 import { companyProfessionalPath } from "@/lib/profile/public-slug";
+import { ensureCompanyChatMessageTable } from "@/lib/company/company-chat-db";
 
 export type ProfileShareDTO = {
   id: string;
@@ -62,21 +63,6 @@ export async function ensureCompanyProfileShareTable(): Promise<void> {
   shareTableReady = true;
 }
 
-async function ensureChatTable() {
-  if (!isRuntimeDdlEnabled()) return;
-  await prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS "CompanyChatMessage" (
-      "id" TEXT NOT NULL,
-      "companyKey" TEXT NOT NULL,
-      "authorUserId" TEXT NOT NULL,
-      "authorName" TEXT NOT NULL,
-      "body" TEXT NOT NULL,
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT "CompanyChatMessage_pkey" PRIMARY KEY ("id")
-    )
-  `);
-}
-
 /** Compartilha um perfil com colegas da mesma assinatura/plano. */
 export async function shareProfileWithTeam(input: {
   actorUserId: string;
@@ -117,7 +103,7 @@ export async function shareProfileWithTeam(input: {
     (profile as { cargoDesejado?: string | null }).cargoDesejado || profile.title || "";
   const profileUrl = `${input.origin.replace(/\/$/, "")}${companyProfessionalPath(profile.id)}`;
 
-  await ensureChatTable();
+  await ensureCompanyChatMessageTable();
   const companyKey = getCompanySubscriptionKey(actor.ownerUserId);
 
   for (const toUserId of uniqueTargets) {

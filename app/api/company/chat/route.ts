@@ -6,7 +6,7 @@ import {
   getCompanySubscriptionKey,
   resolveCompanyActor,
 } from "@/lib/company/company-team";
-import { isRuntimeDdlEnabled } from "@/lib/infra/ensure-db-schema";
+import { ensureCompanyChatMessageTable } from "@/lib/company/company-chat-db";
 
 type ChatRow = {
   id: string;
@@ -16,31 +16,6 @@ type ChatRow = {
   body: string;
   createdAt: Date;
 };
-
-let chatTableReady = false;
-
-async function ensureChatTable() {
-  if (chatTableReady) return;
-  if (!isRuntimeDdlEnabled()) {
-    chatTableReady = true;
-    return;
-  }
-  await prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS "CompanyChatMessage" (
-      "id" TEXT NOT NULL,
-      "companyKey" TEXT NOT NULL,
-      "authorUserId" TEXT NOT NULL,
-      "authorName" TEXT NOT NULL,
-      "body" TEXT NOT NULL,
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT "CompanyChatMessage_pkey" PRIMARY KEY ("id")
-    )
-  `);
-  await prisma.$executeRawUnsafe(
-    `CREATE INDEX IF NOT EXISTS "CompanyChatMessage_companyKey_createdAt_idx" ON "CompanyChatMessage"("companyKey", "createdAt")`,
-  );
-  chatTableReady = true;
-}
 
 async function getCompanyChatContext(request: NextRequest) {
   const auth = await resolveAuthEmail(request);
@@ -92,7 +67,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
     }
 
-    await ensureChatTable();
+    await ensureCompanyChatMessageTable();
     const rows = await prisma.$queryRaw<ChatRow[]>`
       SELECT * FROM "CompanyChatMessage"
       WHERE "companyKey" = ${ctx.companyKey}
@@ -123,7 +98,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Informe a mensagem" }, { status: 400 });
     }
 
-    await ensureChatTable();
+    await ensureCompanyChatMessageTable();
     const id = randomUUID();
     await prisma.$executeRaw`
       INSERT INTO "CompanyChatMessage" (
