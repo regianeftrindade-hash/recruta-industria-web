@@ -33,6 +33,14 @@ E2E_PROFESSIONAL_EMAIL=...
 E2E_PROFESSIONAL_PASSWORD=...
 ```
 
+### Se o e2e logado falhar no login
+
+O job fica **amarelo** (aviso) ou faz **skip**, sem derrubar o CI. Causas comuns:
+
+1. Senha errada no secret (atualize `E2E_*_PASSWORD`)
+2. Conta só existe com Google (sem senha) — crie senha em “esqueci a senha” ou use conta com e-mail+senha
+3. Typo no **nome** do secret (`E2E_COMPANY_EMAIL`, sem L a mais)
+
 Scripts:
 
 - `npm run test:e2e:smoke` — público (home → login → cadastro, sem login)

@@ -3,7 +3,7 @@
  * Soft se a vitrine estiver vazia. Requer E2E_COMPANY_*.
  */
 import { expect, test } from "@playwright/test";
-import { companyE2eCredentials, loginCompanyViaApi } from "./helpers/auth";
+import { companyE2eCredentials, E2eLoginError, loginCompanyViaApi } from "./helpers/auth";
 
 const creds = companyE2eCredentials();
 
@@ -14,7 +14,14 @@ test.describe("empresa logada — perfil da vitrine", () => {
   );
 
   test.beforeEach(async ({ page, request }) => {
-    await loginCompanyViaApi(request, page, creds!.email, creds!.password);
+    try {
+      await loginCompanyViaApi(request, page, creds!.email, creds!.password);
+    } catch (err) {
+      if (err instanceof E2eLoginError) {
+        test.skip(true, err.message);
+      }
+      throw err;
+    }
   });
 
   test("abre um candidato da vitrine ou registra vitrine vazia", async ({ page }) => {

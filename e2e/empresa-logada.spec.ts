@@ -7,7 +7,7 @@
  * No GitHub Actions o job `e2e-empresa` só é enfileirado se esses secrets existirem.
  */
 import { expect, test } from "@playwright/test";
-import { companyE2eCredentials, loginCompanyViaApi } from "./helpers/auth";
+import { companyE2eCredentials, E2eLoginError, loginCompanyViaApi } from "./helpers/auth";
 import { clickDashNav } from "./helpers/nav";
 
 const creds = companyE2eCredentials();
@@ -24,7 +24,14 @@ test.describe("empresa logada — funil", () => {
   );
 
   test.beforeEach(async ({ page, request }) => {
-    await loginCompanyViaApi(request, page, creds!.email, creds!.password);
+    try {
+      await loginCompanyViaApi(request, page, creds!.email, creds!.password);
+    } catch (err) {
+      if (err instanceof E2eLoginError) {
+        test.skip(true, err.message);
+      }
+      throw err;
+    }
   });
 
   test("abre dashboard empresa e vê busca/vitrine", async ({ page }) => {

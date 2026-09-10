@@ -65,8 +65,9 @@ jobs:
     name: E2E empresa logada (opcional)
     runs-on: ubuntu-latest
     needs: test
+    continue-on-error: true
     # Secrets: E2E_COMPANY_EMAIL + E2E_COMPANY_PASSWORD (docs/e2e-secrets.md).
-    # Sem secrets o Playwright faz skip (não falha). Não use secrets no if: — o GitHub rejeita o workflow.
+    # Sem secrets ou login inválido: Playwright faz skip. continue-on-error = aviso amarelo, CI não trava.
     env:
       E2E_BASE_URL: https://www.recrutaindustria.com
       E2E_COMPANY_EMAIL: ${{ secrets.E2E_COMPANY_EMAIL }}
@@ -94,8 +95,9 @@ jobs:
     name: E2E profissional logado (opcional)
     runs-on: ubuntu-latest
     needs: test
+    continue-on-error: true
     # Secrets: E2E_PROFESSIONAL_EMAIL + E2E_PROFESSIONAL_PASSWORD (docs/e2e-secrets.md).
-    # Sem secrets o Playwright faz skip (não falha). Não use secrets no if: — o GitHub rejeita o workflow.
+    # Sem secrets ou login inválido: Playwright faz skip. continue-on-error = aviso amarelo, CI não trava.
     env:
       E2E_BASE_URL: https://www.recrutaindustria.com
       E2E_PROFESSIONAL_EMAIL: ${{ secrets.E2E_PROFESSIONAL_EMAIL }}

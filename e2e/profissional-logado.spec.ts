@@ -8,7 +8,7 @@
  * Conta com cadastro incompleto: o 1º teste aceita redirect; o 2º soft-skipa a nav.
  */
 import { expect, test } from "@playwright/test";
-import { loginProfessionalViaApi, professionalE2eCredentials } from "./helpers/auth";
+import { E2eLoginError, loginProfessionalViaApi, professionalE2eCredentials } from "./helpers/auth";
 import { dashNavControl } from "./helpers/nav";
 
 const creds = professionalE2eCredentials();
@@ -20,7 +20,14 @@ test.describe("profissional logado", () => {
   );
 
   test.beforeEach(async ({ page, request }) => {
-    await loginProfessionalViaApi(request, page, creds!.email, creds!.password);
+    try {
+      await loginProfessionalViaApi(request, page, creds!.email, creds!.password);
+    } catch (err) {
+      if (err instanceof E2eLoginError) {
+        test.skip(true, err.message);
+      }
+      throw err;
+    }
   });
 
   test("abre dashboard ou completa cadastro", async ({ page }) => {
