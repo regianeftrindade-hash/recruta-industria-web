@@ -15,7 +15,6 @@ import {
   saveProfileFormSnapshot,
 } from '@/lib/profile-snapshot';
 import { isProfessionalRegistrationComplete } from '@/lib/professional-registration';
-import { ensureUserLastSeenColumn } from '@/lib/ensure-db-schema';
 import { getVideoApresentacaoPath } from '@/lib/professional/professional-video-db';
 import type { User, Prisma } from '@prisma/client';
 
@@ -98,8 +97,6 @@ function incompleteProfileResponse(user: { name: string | null; email: string })
 
 export async function GET(request: NextRequest) {
   try {
-    await ensureUserLastSeenColumn();
-
     const auth = await resolveAuthEmail(request);
 
     if (!auth) {
@@ -229,8 +226,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await ensureUserLastSeenColumn();
-
     const auth = await resolveAuthEmail(request);
 
     if (!auth) {

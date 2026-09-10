@@ -183,10 +183,10 @@ describe("runtime DDL flag", () => {
     await expect(ensureCorporateEmailConfirmationTable()).resolves.toBeUndefined();
   });
 
-  it("rotas app/api não chamam ensure de pagamento/proposta/auditoria", () => {
+  it("rotas app/api não chamam ensure de pagamento/proposta/auditoria/lastSeen", () => {
     const apiRoot = join(process.cwd(), "app", "api");
     const banned =
-      /\bensure(PaymentSchema|JobProposalTables|SecurityAuditTable)\b/;
+      /\bensure(PaymentSchema|JobProposalTables|SecurityAuditTable|UserLastSeenColumn)\b/;
     const offenders: string[] = [];
     for (const file of listTsFiles(apiRoot)) {
       const src = readFileSync(file, "utf8");

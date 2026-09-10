@@ -12,7 +12,6 @@ import { formatCPF, formatCNPJ } from '@/lib/security'
 import { getCompanyPlanContext, getPlanFeatures } from '@/lib/company-plan'
 import { getPlanDefinition } from '@/lib/company-premium-plans'
 import { resolveCompanyActor } from '@/lib/company/company-team'
-import { ensureUserLastSeenColumn } from '@/lib/ensure-db-schema'
 
 const userSelect = {
   id: true,
@@ -23,7 +22,6 @@ const userSelect = {
 
 export async function GET() {
   try {
-    await ensureUserLastSeenColumn()
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user?.email) {

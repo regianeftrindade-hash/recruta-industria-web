@@ -6,7 +6,6 @@ import { getCompanyExtraData, getCompanyVerificationInfo, loadCompanyRowByUserId
 import { ensureCompanyTestBypassReady, matchesCompanyTestBypass } from '@/lib/company/company-test-bypass'
 import { formatCPF } from '@/lib/security'
 import { resolveCompanyActor } from '@/lib/company/company-team'
-import { ensureUserLastSeenColumn } from '@/lib/ensure-db-schema'
 
 const userSelect = {
   id: true,
@@ -17,7 +16,6 @@ const userSelect = {
 
 export async function GET(_request: NextRequest) {
   try {
-    await ensureUserLastSeenColumn()
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user?.email) {
