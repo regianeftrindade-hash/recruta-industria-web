@@ -108,6 +108,50 @@ describe("ativação profissional", () => {
       ),
     ).toBeNull();
   });
+
+  it("exige vínculo de gateway na assinatura recorrente", () => {
+    const metaRecurring = JSON.stringify({
+      type: "professional_subscription",
+      planTier: "PREMIUM",
+      professionalUserId: "prof-1",
+      expectedAmount: 1990,
+      billingPeriod: "monthly",
+      billingMode: "recurring",
+    });
+    expect(
+      validateProfessionalPaymentForActivation(
+        { id: "1", reference: "r", amount: 1990, status: "PAID", meta: metaRecurring },
+        "prof-1",
+        "PREMIUM",
+        "monthly",
+        "recurring",
+      ),
+    ).toBe("Assinatura recorrente sem vínculo no gateway");
+
+    const metaOk = JSON.stringify({
+      ...JSON.parse(metaRecurring),
+      gatewaySubscriptionId: "SUBS_abc",
+    });
+    expect(
+      validateProfessionalPaymentForActivation(
+        { id: "1", reference: "r", amount: 1990, status: "PAID", meta: metaOk },
+        "prof-1",
+        "PREMIUM",
+        "monthly",
+        "recurring",
+      ),
+    ).toBeNull();
+  });
+
+  it("bloqueia meta profissional incompleta", () => {
+    expect(
+      validateProfessionalPaymentForActivation(
+        { id: "1", reference: "r", amount: 1990, status: "PAID", meta: "{}" },
+        "prof-1",
+        "PREMIUM",
+      ),
+    ).toBe("Cobrança sem vínculo de plano profissional");
+  });
 });
 
 describe("ativação empresa", () => {

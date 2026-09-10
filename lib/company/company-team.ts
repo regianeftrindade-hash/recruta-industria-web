@@ -7,6 +7,12 @@ import { applyCollaborationSchema } from "@/lib/infra/ensure-db-schema";
 export type TeamMemberRole = "OWNER" | "ADMIN" | "RH" | "RECRUITER";
 export type TeamMemberStatus = "PENDING" | "ACTIVE" | "REVOKED";
 
+/** Roles convidáveis via API — nunca promove a OWNER. */
+export function normalizeTeamInviteRole(role?: string | null): TeamMemberRole {
+  if (role === "ADMIN" || role === "RECRUITER" || role === "RH") return role;
+  return "RH";
+}
+
 export type CompanyTeamMemberDTO = {
   id: string;
   companyOwnerUserId: string;
@@ -241,8 +247,7 @@ export async function inviteTeamMember(input: {
     LIMIT 1
   `;
 
-  const role: TeamMemberRole =
-    input.role === "ADMIN" || input.role === "RECRUITER" || input.role === "RH" ? input.role : "RH";
+  const role = normalizeTeamInviteRole(input.role);
   const token = randomBytes(24).toString("hex");
   const id = randomUUID();
 
