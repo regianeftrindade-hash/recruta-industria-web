@@ -1,6 +1,6 @@
 /**
  * E2E empresa: funil + atalho Meu Plano (requer E2E_COMPANY_*).
- * Login inválido falha o job (continue-on-error no CI → aviso amarelo, não trava o resto).
+ * Login inválido falha o job e deixa o CI vermelho.
  */
 import { expect, test } from "@playwright/test";
 import { companyE2eCredentials, loginCompanyViaApi } from "./helpers/auth";

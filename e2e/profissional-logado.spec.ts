@@ -1,6 +1,6 @@
 /**
  * E2E profissional logado — dashboard / funil (soft-assert na nav).
- * Login inválido falha o job (continue-on-error no CI).
+ * Login inválido falha o job e deixa o CI vermelho.
  */
 import { expect, test } from "@playwright/test";
 import { loginProfessionalViaApi, professionalE2eCredentials } from "./helpers/auth";

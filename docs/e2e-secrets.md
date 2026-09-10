@@ -49,7 +49,7 @@ Atualize pelo menos:
 
 ### Se o e2e logado falhar no login
 
-Com secrets definidos, login inválido **falha** o job e2e (fica **amarelo** no CI por `continue-on-error`, sem derrubar testes/build). Corrija e-mail/senha dos secrets.
+Com secrets definidos, login inválido **falha** o job e2e e o **CI fica vermelho**. Corrija e-mail/senha dos secrets e rode de novo.
 
 Causas comuns:
 

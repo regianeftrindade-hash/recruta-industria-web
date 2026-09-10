@@ -1,6 +1,6 @@
 /**
  * E2E empresa: abre um perfil da vitrine.
- * Login inválido falha o job (continue-on-error no CI).
+ * Login inválido falha o job e deixa o CI vermelho.
  */
 import { expect, test } from "@playwright/test";
 import { companyE2eCredentials, loginCompanyViaApi } from "./helpers/auth";
