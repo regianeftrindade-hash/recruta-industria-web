@@ -1,10 +1,15 @@
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
+import type { Metadata } from 'next';
 import { authOptions } from '@/lib/auth.config';
 import { hasAdminAccess } from '@/lib/auth/admin-auth';
 import LogoRecruta from '@/app/components/LogoRecruta';
 import styles from './admin.module.css';
 import AdminNav from './AdminNav';
+
+export const metadata: Metadata = {
+  title: 'Admin',
+};
 
 export default async function AdminLayout({
   children,

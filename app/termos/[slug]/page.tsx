@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTermoBySlug } from '@/lib/cadastro-termos';
 import styles from '../termo.module.css';
@@ -6,6 +7,14 @@ import styles from '../termo.module.css';
 type Props = {
   params: Promise<{ slug: string }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const termo = getTermoBySlug(slug);
+  return {
+    title: termo?.titulo || 'Termos',
+  };
+}
 
 export default async function TermoCadastroPage({ params }: Props) {
   const { slug } = await params;

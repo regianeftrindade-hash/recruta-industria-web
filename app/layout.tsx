@@ -25,7 +25,10 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  title: "RECRUTA INDÚSTRIA",
+  title: {
+    default: "Recruta Indústria",
+    template: "%s | Recruta Indústria",
+  },
   description: "Plataforma de recrutamento para setor industrial",
   applicationName: "Recruta Indústria",
   manifest: "/manifest.json",
@@ -43,7 +46,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "RECRUTA INDÚSTRIA",
+    title: "Recruta Indústria",
   },
   formatDetection: {
     telephone: false,
@@ -52,7 +55,7 @@ export const metadata: Metadata = {
     "format-detection": "telephone=no, date=no, email=no, address=no",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "apple-mobile-web-app-title": "RECRUTA INDÚSTRIA",
+    "apple-mobile-web-app-title": "Recruta Indústria",
   },
 };
 

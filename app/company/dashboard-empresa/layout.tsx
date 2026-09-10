@@ -1,8 +1,13 @@
 /* 🔒 BLOQUEADO (06/07/2026) — não editar sem pedido explícito. Ver .cursor/rules/dashboard-page-lock.mdc */
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import CompanyDashboardFrame from "@/components/company/CompanyDashboardFrame";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 import { DASH } from "@/lib/dashboard-theme";
+
+export const metadata: Metadata = {
+  title: "Painel empresa",
+};
 
 export const dynamic = "force-dynamic";
 
