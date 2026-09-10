@@ -129,7 +129,6 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
   });
   if (status === "unauthenticated" && !bypass) return null;
 
-  const maxUnlocksLabel = dash.maxUnlocks === null ? "∞" : String(dash.maxUnlocks);
   const navBadges = dash.getBadges();
 
   return (
@@ -162,9 +161,7 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
             style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}
           >
             <span className="ri-company-header-meta" style={{ fontSize: 10, ...dashPlanAccent }}>
-              {dash.planReady && dash.planTier
-                ? `Plano ${dash.planTier} · Liberações: ${dash.unlockedCount}/${maxUnlocksLabel}`
-                : "Carregando plano…"}
+              {dash.planReady && dash.planTier ? `Plano ${dash.planTier}` : "Carregando plano…"}
             </span>
             {prefsReady ? (
               <AnonymousModeToggle

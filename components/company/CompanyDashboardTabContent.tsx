@@ -44,7 +44,7 @@ export default function CompanyDashboardTabContent() {
     >
       <CompanyProfileAside />
 
-      <div data-company-main style={{ overflowY: "auto", minWidth: 0, display: "flex", flexDirection: "column", gap: 0 }}>
+      <div data-company-main style={{ overflowY: "auto", minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
         {visited.has("inicio") ? (
           <div style={panelStyle("inicio")}>
             <CompanyDashboardInicioPage />

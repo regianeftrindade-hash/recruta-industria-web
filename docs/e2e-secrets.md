@@ -33,6 +33,20 @@ E2E_PROFESSIONAL_EMAIL=...
 E2E_PROFESSIONAL_PASSWORD=...
 ```
 
+### Contas de teste (senha dos secrets)
+
+Os secrets precisam ser de contas que entram com **e-mail + senha** no site (não só “Entrar com Google”).
+
+1. Abra https://www.recrutaindustria.com/login?tipo=empresa  
+2. Confirme que o e-mail/senha **de teste** entram no painel  
+3. Faça o mesmo com a conta profissional: `/login?tipo=profissional`  
+4. Se só entra com Google: use **Esqueci a senha**, defina uma senha, depois atualize o secret  
+5. Secrets: https://github.com/regianeftrindade-hash/recruta-industria-web/settings/secrets/actions  
+
+Atualize pelo menos:
+- `E2E_COMPANY_PASSWORD`
+- `E2E_PROFESSIONAL_PASSWORD`
+
 ### Se o e2e logado falhar no login
 
 O job fica **amarelo** (aviso) ou faz **skip**, sem derrubar o CI. Causas comuns:

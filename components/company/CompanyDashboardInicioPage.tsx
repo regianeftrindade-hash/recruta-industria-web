@@ -4,7 +4,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import CompanyPlanCards from "@/app/components/CompanyPlanCards";
 import { matchesCompanyTestBypass } from "@/lib/company/company-test-bypass-shared";
 import {
   DashboardStatsBar,
@@ -19,7 +18,6 @@ import {
   useCompanyDashboardInicioSearch,
   type PlanFeatures,
 } from "@/components/company/useCompanyDashboardInicioSearch";
-import type { CompanyPlanTier } from "@/lib/company-premium-plans";
 import type { CompanyVerificationStatus } from "@/lib/company/company-verification";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import "@/app/dashboard/dashboard-theme.css";
@@ -67,7 +65,6 @@ export default function CompanyDashboardInicioPage() {
   const [profileLoadError, setProfileLoadError] = useState("");
   const [unlockedCount, setUnlockedCount] = useState(0);
   const [slotsRestantes, setSlotsRestantes] = useState<number | null>(0);
-  const [planTier, setPlanTier] = useState<CompanyPlanTier>("FREE");
   const [planLoaded, setPlanLoaded] = useState(false);
   const [planFeatures, setPlanFeatures] = useState<PlanFeatures>({
     canUseAdvancedFilters: false,
@@ -227,7 +224,6 @@ export default function CompanyDashboardInicioPage() {
 
   useEffect(() => {
     if (!dash.planReady || !dash.planTier) return;
-    setPlanTier(dash.planTier as CompanyPlanTier);
     if (dash.planFeatures && Object.keys(dash.planFeatures).length > 0) {
       setPlanFeatures((prev) => ({ ...prev, ...dash.planFeatures }));
     }
@@ -257,23 +253,6 @@ export default function CompanyDashboardInicioPage() {
       void carregarStats();
     }
   }, [registrationComplete, status, carregarPerfilEmpresa, carregarStats, session?.user?.email, session?.user?.name]);
-
-  const handleSelectFreePlan = async () => {
-    try {
-      const res = await fetch("/api/company/subscription", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ planTier: "FREE" }),
-      });
-      if (res.ok) {
-        await carregarPerfilEmpresa();
-        await search.buscarProfissionais(search.paginaPerfis);
-      }
-    } catch {
-      alert("Erro ao alterar plano");
-    }
-  };
 
   const openProfile = (profileId: string) => {
     router.push(`/company/professional/${encodeURIComponent(profileId)}`);
@@ -352,10 +331,11 @@ export default function CompanyDashboardInicioPage() {
 
           {search.buscaRealizada && search.totalEncontrados > 0 && (
             <p style={{ color: DASH.muted, fontSize: 11, margin: 0 }}>
-              {search.totalEncontrados} profissional(is) compatível(is)
+              {search.totalEncontrados} profissional(is)
+              {search.paginacao.totalPages > 1
+                ? ` · pág. ${search.paginacao.page}/${search.paginacao.totalPages}`
+                : ""}
               {search.desbloqueadosTotal > 0 ? ` · ${search.desbloqueadosTotal} desbloqueado(s)` : ""}
-              {search.paginacao.totalPages > 1 ? ` · página ${search.paginacao.page} de ${search.paginacao.totalPages}` : ""}
-              {" "}— ordenados por índice de compatibilidade.
             </p>
           )}
 
@@ -377,13 +357,6 @@ export default function CompanyDashboardInicioPage() {
             handleExportProfile={search.handleExportProfile}
             irParaPagina={search.irParaPagina}
           />
-
-          <section style={{ marginTop: 2, marginBottom: 4 }}>
-            <CompanyPlanCards
-              currentTier={planLoaded ? planTier : null}
-              onSelectFree={handleSelectFreePlan}
-            />
-          </section>
           </div>
         </>
   );

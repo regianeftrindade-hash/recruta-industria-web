@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { isValidCPF, isValidPhoneBR } from '@/lib/security';
 import PageLoader from '@/app/components/PageLoader';
 import { READABLE_TEXT_STYLE } from '@/lib/theme';
@@ -39,6 +39,7 @@ function CadastroEmpresaContent() {
   const [cpfValidado, setCpfValidado] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkingRegistration, setCheckingRegistration] = useState(false);
+  const [contaJaCompleta, setContaJaCompleta] = useState(false);
   const [sessionWaitTimedOut, setSessionWaitTimedOut] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [faltandoCampos, setFaltandoCampos] = useState<{ id: string; label: string }[]>([]);
@@ -124,6 +125,7 @@ function CadastroEmpresaContent() {
   useEffect(() => {
     if (status === 'unauthenticated') {
       setCheckingRegistration(false);
+      setContaJaCompleta(false);
       return;
     }
 
@@ -151,10 +153,10 @@ function CadastroEmpresaContent() {
     }
 
     setCheckingRegistration(true);
-    let redirecting = false;
+    setContaJaCompleta(false);
     let cancelled = false;
     const timeoutId = window.setTimeout(() => {
-      if (!cancelled && !redirecting) setCheckingRegistration(false);
+      if (!cancelled) setCheckingRegistration(false);
     }, 8000);
     const user = session.user;
     void fetch('/api/company/check-registration', { credentials: 'include' })
@@ -164,9 +166,13 @@ function CadastroEmpresaContent() {
         const testBypass = data?.testBypass === true || bypassByEmail;
         setIsTestBypass(testBypass);
 
-        if ((data?.registrationComplete || testBypass) && !isEditMode) {
-          redirecting = true;
+        if (testBypass && !isEditMode) {
           router.replace('/company/dashboard-empresa');
+          return;
+        }
+
+        if (data?.registrationComplete && !isEditMode) {
+          setContaJaCompleta(true);
           return;
         }
 
@@ -225,7 +231,6 @@ function CadastroEmpresaContent() {
       .catch(() => {
         if (cancelled) return;
         if (bypassByEmail) {
-          redirecting = true;
           router.replace('/company/dashboard-empresa');
           return;
         }
@@ -238,7 +243,7 @@ function CadastroEmpresaContent() {
       })
       .finally(() => {
         window.clearTimeout(timeoutId);
-        if (!cancelled && !redirecting) setCheckingRegistration(false);
+        if (!cancelled) setCheckingRegistration(false);
       });
 
     return () => {
@@ -698,6 +703,45 @@ function CadastroEmpresaContent() {
             >
               Sair e usar outro e-mail
             </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isEditMode && contaJaCompleta) {
+    const emailLogado = session?.user?.email || 'sua conta';
+    return (
+      <div className={`${styles.container} ri-readable`}>
+        <AuthAtmosphere intensity="strong" />
+        <div className={styles.card} role="main" aria-labelledby="register-title">
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+            <LogoRecruta size="sm" as="div" depth />
+          </div>
+          <h1 id="register-title" className={styles.title}>
+            Você já tem cadastro
+          </h1>
+          <p className={styles.formHint}>
+            Você já está logado neste site como <strong>{emailLogado}</strong>.
+            Para entrar no painel use o botão abaixo. Se quiser cadastrar outra
+            empresa, saia primeiro.
+          </p>
+          <div className={styles.alreadyRegisteredActions}>
+            <Link href="/company/dashboard-empresa" className={styles.submitBtn}>
+              Ir ao painel
+            </Link>
+            <button
+              type="button"
+              className={styles.secondaryLinkBtn}
+              onClick={() => {
+                void signOut({ callbackUrl: '/company/register' });
+              }}
+            >
+              Sair e criar outro cadastro
+            </button>
+            <Link href="/" className={styles.secondaryLinkBtn}>
+              Voltar à página inicial
+            </Link>
           </div>
         </div>
       </div>
