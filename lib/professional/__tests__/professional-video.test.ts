@@ -68,8 +68,19 @@ describe("path de storage do vídeo", () => {
     expect(path).toMatch(/^professional-videos\/user-42\/\d+_.+\.mp4$/);
     expect(isProfessionalVideoPathOwned(path, "user-42")).toBe(true);
     expect(isProfessionalVideoPathOwned(path, "outro")).toBe(false);
+  });
+
+  it("bloqueia traversal e paths fora do layout esperado", () => {
     expect(
       isProfessionalVideoPathOwned("professional-videos/user-42/../admin/x.mp4", "user-42"),
-    ).toBe(true);
+    ).toBe(false);
+    expect(
+      isProfessionalVideoPathOwned("professional-videos/user-42/sub/x.mp4", "user-42"),
+    ).toBe(false);
+    expect(isProfessionalVideoPathOwned("professional-videos/user-42/", "user-42")).toBe(false);
+    expect(isProfessionalVideoPathOwned("", "user-42")).toBe(false);
+    expect(
+      isProfessionalVideoPathOwned("professional-videos/user-42/ok.mp4", "user-42/../x"),
+    ).toBe(false);
   });
 });

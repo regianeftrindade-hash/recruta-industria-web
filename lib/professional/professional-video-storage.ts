@@ -18,8 +18,24 @@ export function buildProfessionalVideoPath(userId: string, mime: string): string
   return `professional-videos/${userId}/${Date.now()}_${randomUUID()}.${ext}`;
 }
 
+/**
+ * Garante que o path é exatamente professional-videos/{userId}/{arquivo}.
+ * Rejeita traversal (`..`), barras invertidas e prefixos parciais.
+ */
 export function isProfessionalVideoPathOwned(path: string, userId: string): boolean {
-  return path.startsWith(`professional-videos/${userId}/`);
+  if (!path || !userId) return false;
+  if (userId.includes("/") || userId.includes("\\") || userId.includes("..")) return false;
+
+  const normalized = path.replace(/^\/+/, "").replace(/\\/g, "/");
+  if (!normalized || normalized.includes("..")) return false;
+
+  const parts = normalized.split("/").filter(Boolean);
+  if (parts.length !== 3) return false;
+  if (parts[0] !== "professional-videos") return false;
+  if (parts[1] !== userId) return false;
+  if (!parts[2]) return false;
+
+  return true;
 }
 
 export async function createProfessionalVideoUploadUrl(filePath: string) {
