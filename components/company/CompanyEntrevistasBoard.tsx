@@ -68,6 +68,7 @@ export default function CompanyEntrevistasBoard() {
   });
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
   const [cancelMenuId, setCancelMenuId] = useState<string | null>(null);
   const [cancelMode, setCancelMode] = useState<"menu" | "justify" | "reschedule" | null>(null);
   const [justification, setJustification] = useState("");
@@ -124,6 +125,7 @@ export default function CompanyEntrevistasBoard() {
     atual: boolean,
   ) => {
     setBusyId(p.id);
+    setFeedback(null);
     try {
       const body: Record<string, boolean> = { [campo]: !atual };
       if (campo === "contratado" && !atual) body.naoContratado = false;
@@ -140,12 +142,12 @@ export default function CompanyEntrevistasBoard() {
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao atualizar");
+        setFeedback({ tone: "err", text: data.error || "Erro ao atualizar" });
         return;
       }
       await reload();
     } catch {
-      alert("Erro ao atualizar acompanhamento");
+      setFeedback({ tone: "err", text: "Erro ao atualizar acompanhamento" });
     } finally {
       setBusyId(null);
     }
@@ -160,6 +162,7 @@ export default function CompanyEntrevistasBoard() {
       return;
     }
     setBusyId(id);
+    setFeedback(null);
     try {
       const res = await fetch(`/api/company/proposals/${encodeURIComponent(id)}`, {
         method: "DELETE",
@@ -167,12 +170,13 @@ export default function CompanyEntrevistasBoard() {
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao excluir");
+        setFeedback({ tone: "err", text: data.error || "Erro ao excluir" });
         return;
       }
       await reload();
+      setFeedback({ tone: "ok", text: "Proposta excluída." });
     } catch {
-      alert("Erro ao excluir");
+      setFeedback({ tone: "err", text: "Erro ao excluir" });
     } finally {
       setBusyId(null);
     }
@@ -182,6 +186,7 @@ export default function CompanyEntrevistasBoard() {
     setCancelMenuId(id);
     setCancelMode("menu");
     setJustification("");
+    setFeedback(null);
   };
 
   const fecharCancelar = () => {
@@ -193,10 +198,11 @@ export default function CompanyEntrevistasBoard() {
   const cancelarComJustificativa = async (proposalId: string) => {
     const motivo = justification.trim();
     if (!motivo) {
-      alert("Informe a justificativa do cancelamento.");
+      setFeedback({ tone: "err", text: "Informe a justificativa do cancelamento." });
       return;
     }
     setBusyId(proposalId);
+    setFeedback(null);
     try {
       const res = await fetch(
         `/api/company/proposals/${encodeURIComponent(proposalId)}/interview/cancel`,
@@ -209,13 +215,14 @@ export default function CompanyEntrevistasBoard() {
       );
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao cancelar");
+        setFeedback({ tone: "err", text: data.error || "Erro ao cancelar" });
         return;
       }
       fecharCancelar();
       await reload();
+      setFeedback({ tone: "ok", text: "Entrevista cancelada." });
     } catch {
-      alert("Erro ao cancelar entrevista");
+      setFeedback({ tone: "err", text: "Erro ao cancelar entrevista" });
     } finally {
       setBusyId(null);
     }
@@ -223,10 +230,11 @@ export default function CompanyEntrevistasBoard() {
 
   const reagendar = async (proposalId: string) => {
     if (!rescheduleForm.date || !rescheduleForm.time) {
-      alert("Preencha data e horário.");
+      setFeedback({ tone: "err", text: "Preencha data e horário." });
       return;
     }
     setBusyId(proposalId);
+    setFeedback(null);
     try {
       const scheduledAt = new Date(`${rescheduleForm.date}T${rescheduleForm.time}:00`);
       const res = await fetch(`/api/company/proposals/${encodeURIComponent(proposalId)}/interview`, {
@@ -243,7 +251,7 @@ export default function CompanyEntrevistasBoard() {
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao reagendar");
+        setFeedback({ tone: "err", text: data.error || "Erro ao reagendar" });
         return;
       }
       fecharCancelar();
@@ -256,8 +264,9 @@ export default function CompanyEntrevistasBoard() {
         observacoes: "",
       });
       await reload();
+      setFeedback({ tone: "ok", text: "Entrevista reagendada." });
     } catch {
-      alert("Erro ao reagendar entrevista");
+      setFeedback({ tone: "err", text: "Erro ao reagendar entrevista" });
     } finally {
       setBusyId(null);
     }
@@ -436,6 +445,20 @@ export default function CompanyEntrevistasBoard() {
         <p style={{ margin: "0 0 12px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
           {AVISO_RETENCAO_PROPOSTAS} Após marcar Contratado ou Não contratado, o item vai para Arquivadas.
         </p>
+
+        {feedback && (
+          <p
+            role="status"
+            style={{
+              margin: "0 0 12px",
+              fontSize: 12,
+              lineHeight: 1.45,
+              color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+            }}
+          >
+            {feedback.text}
+          </p>
+        )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={nestedCard}>

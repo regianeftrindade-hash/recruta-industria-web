@@ -29,12 +29,13 @@ export default function CompanyCandidateMessagesCard({
 }: Props) {
   const [mensagemTexto, setMensagemTexto] = useState("");
   const [enviandoMensagem, setEnviandoMensagem] = useState(false);
-  const [envioOk, setEnvioOk] = useState("");
+  const [feedback, setFeedback] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
 
   const handleExcluirMensagem = async (messageId: string) => {
     if (!window.confirm("Excluir esta mensagem? Itens com mais de 1 mês também são apagados automaticamente.")) {
       return;
     }
+    setFeedback(null);
     try {
       const res = await fetch(
         `/api/company/messages?id=${encodeURIComponent(messageId)}&profileId=${encodeURIComponent(profileId)}`,
@@ -42,12 +43,13 @@ export default function CompanyCandidateMessagesCard({
       );
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        alert(data.error || "Não foi possível excluir a mensagem.");
+        setFeedback({ tone: "err", text: data.error || "Não foi possível excluir a mensagem." });
         return;
       }
       onConversaChange(conversa.filter((m) => m.id !== messageId));
+      setFeedback({ tone: "ok", text: "Mensagem excluída." });
     } catch {
-      alert("Não foi possível excluir a mensagem.");
+      setFeedback({ tone: "err", text: "Não foi possível excluir a mensagem." });
     }
   };
 
@@ -55,7 +57,7 @@ export default function CompanyCandidateMessagesCard({
     const text = mensagemTexto.trim();
     if (!text) return;
     setEnviandoMensagem(true);
-    setEnvioOk("");
+    setFeedback(null);
     try {
       const res = await fetch("/api/company/messages", {
         method: "POST",
@@ -65,7 +67,7 @@ export default function CompanyCandidateMessagesCard({
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao enviar mensagem");
+        setFeedback({ tone: "err", text: data.error || "Erro ao enviar mensagem" });
         return;
       }
       const created = data.message as Partial<ConversaItem> | undefined;
@@ -78,9 +80,9 @@ export default function CompanyCandidateMessagesCard({
       };
       onConversaChange([...conversa, nova]);
       setMensagemTexto("");
-      setEnvioOk("Mensagem enviada.");
+      setFeedback({ tone: "ok", text: "Mensagem enviada." });
     } catch {
-      alert("Erro ao enviar mensagem");
+      setFeedback({ tone: "err", text: "Erro ao enviar mensagem" });
     } finally {
       setEnviandoMensagem(false);
     }
@@ -203,7 +205,7 @@ export default function CompanyCandidateMessagesCard({
             value={mensagemTexto}
             onChange={(e) => {
               setMensagemTexto(e.target.value);
-              if (envioOk) setEnvioOk("");
+              if (feedback) setFeedback(null);
             }}
             rows={4}
             maxLength={1000}
@@ -219,8 +221,19 @@ export default function CompanyCandidateMessagesCard({
               resize: "vertical",
             }}
           />
-          {envioOk ? (
-            <p style={{ margin: "8px 0 0", fontSize: 12, color: "#8bc34a", fontWeight: 700 }}>{envioOk}</p>
+          {feedback ? (
+            <p
+              role="status"
+              style={{
+                margin: "8px 0 0",
+                fontSize: 12,
+                fontWeight: 700,
+                color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+                lineHeight: 1.45,
+              }}
+            >
+              {feedback.text}
+            </p>
           ) : null}
           <button
             type="button"
