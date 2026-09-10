@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { prisma } from '@/lib/db';
 import { normalizeCorporateEmail } from '@/lib/company/corporate-email';
+import { isRuntimeDdlEnabled } from '@/lib/infra/ensure-db-schema';
 
 const CONFIRMATION_TTL_MS = 24 * 60 * 60 * 1000;
 const RESEND_COOLDOWN_MS = 60 * 1000;
@@ -19,10 +20,14 @@ let tableReady = false;
 
 /**
  * Garante a tabela do e-mail corporativo.
- * Idempotente — cobre o caso de migrate marcado applied sem CREATE real.
+ * Com DISABLE_RUNTIME_DDL=true, assume migrate já aplicado (sem CREATE no request).
  */
 export async function ensureCorporateEmailConfirmationTable(): Promise<void> {
   if (tableReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    tableReady = true;
+    return;
+  }
 
   try {
     await prisma.$executeRawUnsafe(`

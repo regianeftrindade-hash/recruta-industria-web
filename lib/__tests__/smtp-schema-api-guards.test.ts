@@ -161,4 +161,12 @@ describe("runtime DDL flag", () => {
     process.env.DISABLE_RUNTIME_DDL = "true";
     expect(isRuntimeDdlEnabled()).toBe(false);
   });
+
+  it("e-mail corporativo respeita DISABLE_RUNTIME_DDL (sem CREATE)", async () => {
+    process.env.DISABLE_RUNTIME_DDL = "true";
+    const { ensureCorporateEmailConfirmationTable } = await import(
+      "@/lib/company/corporate-email-confirmation"
+    );
+    await expect(ensureCorporateEmailConfirmationTable()).resolves.toBeUndefined();
+  });
 });
