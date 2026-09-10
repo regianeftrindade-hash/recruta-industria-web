@@ -14,6 +14,7 @@ import { useCompanyDashboardData } from "@/components/company/CompanyDashboardDa
 import CompanyDashboardVitrineSearchFilters from "@/components/company/CompanyDashboardVitrineSearchFilters";
 import CompanyDashboardVitrineSection from "@/components/company/CompanyDashboardVitrineSection";
 import CompanyDashboardVerificationBanner from "@/components/company/CompanyDashboardVerificationBanner";
+import { useCompanyDashboardTab } from "@/components/company/CompanyDashboardTabContext";
 import {
   useCompanyDashboardInicioSearch,
   type PlanFeatures,
@@ -54,6 +55,7 @@ export default function CompanyDashboardInicioPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const dash = useCompanyDashboardData();
+  const { setActiveTab } = useCompanyDashboardTab();
   const [mounted, setMounted] = useState(false);
   const [isCheckingRegistration, setIsCheckingRegistration] = useState(true);
   const [registrationComplete, setRegistrationComplete] = useState(false);
@@ -360,6 +362,38 @@ export default function CompanyDashboardInicioPage() {
             handleExportProfile={search.handleExportProfile}
             irParaPagina={search.irParaPagina}
           />
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 10,
+              flexWrap: "wrap",
+              marginTop: 2,
+              padding: "8px 10px",
+              borderRadius: 8,
+              border: "1px solid rgba(200,155,60,0.28)",
+              background: "rgba(0,0,0,0.18)",
+            }}
+          >
+            <span style={{ fontSize: 12, color: DASH.muted }}>
+              {planLoaded ? `Plano ${planTier}` : "Carregando plano…"}
+              {typeof slotsRestantes === "number" ? ` · ${slotsRestantes} liberação(ões) restante(s)` : ""}
+            </span>
+            <button
+              type="button"
+              onClick={() => setActiveTab("meu-plano")}
+              style={{
+                ...btnGold,
+                padding: "6px 12px",
+                fontSize: 11,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Gerenciar plano
+            </button>
+          </div>
           </div>
         </>
   );

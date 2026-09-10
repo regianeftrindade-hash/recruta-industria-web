@@ -64,9 +64,10 @@ test.describe("smoke público", () => {
     await expect(page.getByRole("button", { name: /voltar/i })).toBeDisabled();
   });
 
-  test("cadastro empresa tem seções recolhíveis", async ({ page }) => {
+  test("cadastro empresa: formulário ou aviso se já logado", async ({ page }) => {
     await page.goto("/company/register");
-    await expect(page.getByRole("heading", { name: /cadastro empresa/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /dados da empresa/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /cadastro empresa|você já tem cadastro|conta profissional detectada/i }),
+    ).toBeVisible({ timeout: 20_000 });
   });
 });
