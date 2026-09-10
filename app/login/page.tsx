@@ -182,7 +182,10 @@ function LoginContent() {
       document.cookie = `login_intent=${isCompany ? 'company' : 'professional'}; path=/; max-age=600; SameSite=Lax${secure}`;
     }
 
-    const defaultCallback = isCompany ? '/company/register' : '/professional/register';
+    // Entrar com Google → painel (não cadastro). Cadastro incompleto é tratado no painel/register.
+    const defaultCallback = isCompany
+      ? '/company/dashboard-empresa'
+      : '/professional/dashboard';
     const targetPath = redirectTo?.startsWith('/') ? redirectTo : defaultCallback;
     const callbackUrl = `${window.location.origin}${targetPath}`;
 
@@ -358,9 +361,9 @@ function LoginContent() {
 
         {!isAdminRedirect && (
           <div className={styles.createAccountWrap}>
-            <p className={styles.createAccountHint}>Ainda não tem conta?</p>
+            <p className={styles.createAccountHint}>Ainda não tem conta? Entre ou faça cadastro.</p>
             <button type="button" onClick={handleCadastro} className={styles.btnSecondary}>
-              {tipoLogin === 'company' ? 'Criar conta empresa' : 'Criar conta profissional'}
+              Fazer cadastro
             </button>
           </div>
         )}

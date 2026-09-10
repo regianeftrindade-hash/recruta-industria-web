@@ -33,11 +33,18 @@ E2E_PROFESSIONAL_PASSWORD=...
 
 Scripts:
 
-- `npm run test:e2e:smoke` — público (sem login)
-- `npm run test:e2e:empresa` — exige `E2E_COMPANY_*`
+- `npm run test:e2e:smoke` — público (home → login → cadastro, sem login)
+- `npm run test:e2e:empresa` — exige `E2E_COMPANY_*` (funil + perfil da vitrine)
 - `npm run test:e2e:profissional` — exige `E2E_PROFESSIONAL_*`
 
 Sem credenciais, os specs logados fazem **skip** (não falham).
+
+### Checklist rápido (nota 9+)
+
+1. Criar os 4 secrets no GitHub (tabela acima).
+2. Confirmar no Actions que os jobs **E2E empresa/profissional logada** rodaram (não “Skipped”).
+3. Manter `SENTRY_DSN` + `NEXT_PUBLIC_SENTRY_DSN` na Vercel Production.
+4. Manter `DISABLE_RUNTIME_DDL=true` só se o schema já estiver migrado.
 
 ## Observabilidade (Sentry) — produção
 

@@ -19,7 +19,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test e2e/smoke-publico.spec.ts",
-    "test:e2e:empresa": "playwright test e2e/empresa-logada.spec.ts",
+    "test:e2e:empresa": "playwright test e2e/empresa-logada.spec.ts e2e/empresa-perfil-vitrine.spec.ts",
     "test:e2e:profissional": "playwright test e2e/profissional-logado.spec.ts"
   },
   "dependencies": {

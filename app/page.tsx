@@ -45,47 +45,40 @@ export default function Home() {
         <section className={styles.actionCards} aria-label="Escolha seu acesso">
           {[
             {
-              loginHref: "/login?tipo=profissional",
-              registerHref: "/professional/register",
+              href: "/login?tipo=profissional",
               title: "Sou Profissional",
               img: "/profissional.jpg",
               text: "Cadastre seu perfil e encontre oportunidades na indústria.",
-              loginCta: "Entrar",
-              registerCta: "Criar cadastro",
-              imageClass: styles.cardImage,
+              cta: "Acessar",
             },
             {
-              loginHref: "/login?tipo=empresa",
-              registerHref: "/company/register",
+              href: "/login?tipo=empresa",
               title: "Sou Empresa",
               img: "/empresa.jpg",
               text: "Encontre profissionais qualificados para sua operação.",
-              loginCta: "Entrar",
-              registerCta: "Criar cadastro",
-              imageClass: `${styles.cardImage} ${styles.cardImageEmpresa}`,
+              cta: "Acessar",
             },
           ].map((c) => (
-            <article key={c.loginHref} className={styles.actionCard}>
-              <Link href={c.loginHref} className={styles.cardMainLink}>
-                <div className={styles.cardImageWrap}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={c.img}
-                    alt=""
-                    className={c.imageClass}
-                    decoding="async"
-                  />
-                </div>
-                <div className={styles.cardContent}>
-                  <h2 className={styles.cardTitle}>{c.title}</h2>
-                  <p className={styles.cardText}>{c.text}</p>
-                  <span className={styles.cardCta}>{c.loginCta}</span>
-                </div>
-              </Link>
-              <Link href={c.registerHref} className={styles.cardRegisterLink}>
-                {c.registerCta}
-              </Link>
-            </article>
+            <Link key={c.href} href={c.href} className={styles.actionCard}>
+              <div className={styles.cardImageWrap}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={c.img}
+                  alt=""
+                  className={
+                    c.href.includes("empresa")
+                      ? `${styles.cardImage} ${styles.cardImageEmpresa}`
+                      : styles.cardImage
+                  }
+                  decoding="async"
+                />
+              </div>
+              <div className={styles.cardContent}>
+                <h2 className={styles.cardTitle}>{c.title}</h2>
+                <p className={styles.cardText}>{c.text}</p>
+                <span className={styles.cardCta}>{c.cta}</span>
+              </div>
+            </Link>
           ))}
         </section>
 

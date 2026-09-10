@@ -89,7 +89,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Funil empresa logada
-        run: npm run test:e2e:empresa
+        run: npx playwright test e2e/empresa-logada.spec.ts e2e/empresa-perfil-vitrine.spec.ts
 
   e2e-profissional:
     name: E2E profissional logado (opcional)
