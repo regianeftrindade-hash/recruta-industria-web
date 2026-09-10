@@ -561,30 +561,15 @@ export function resetFailedAttempts(email: string): void {
   accountLockouts.delete(email);
 }
 
-// Gerador de token seguro para reset de senha
+// Gerador legado em memória — NÃO usar em produção (serverless).
+// Reset real: @/lib/security/security.server (token HMAC assinado).
 const passwordResetTokens = new Map<string, { token: string; email: string; timestamp: number }>();
 
-export function generatePasswordResetToken(email: string): string {
+/** @deprecated Use generatePasswordResetToken de security.server */
+export function generatePasswordResetTokenLegacy(email: string): string {
   const token = Buffer.from(`${email}-${Date.now()}-${Math.random()}`).toString('base64');
   passwordResetTokens.set(token, { token, email, timestamp: Date.now() });
   return token;
-}
-
-export function verifyPasswordResetToken(token: string): string | null {
-  const stored = passwordResetTokens.get(token);
-  if (!stored) return null;
-  
-  // Token válido por 1 hora
-  if ((Date.now() - stored.timestamp) > 3600000) {
-    passwordResetTokens.delete(token);
-    return null;
-  }
-  
-  return stored.email;
-}
-
-export function consumePasswordResetToken(token: string): void {
-  passwordResetTokens.delete(token);
 }
 
 // Detecção de anomalias (login em novo IP/device)

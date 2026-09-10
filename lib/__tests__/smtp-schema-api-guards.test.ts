@@ -56,13 +56,22 @@ describe("cookie 2FA admin", () => {
   });
 });
 
-describe("password reset em memória", () => {
+describe("password reset assinado (multi-instância)", () => {
   it("gera, verifica e consome token", () => {
+    process.env.NEXTAUTH_SECRET = "test-secret-reset-token";
     const token = generatePasswordResetToken("user@empresa.com");
     expect(verifyPasswordResetToken(token)).toBe("user@empresa.com");
     consumePasswordResetToken(token);
     expect(verifyPasswordResetToken(token)).toBeNull();
     expect(verifyPasswordResetToken("token-invalido")).toBeNull();
+  });
+
+  it("rejeita assinatura adulterada", () => {
+    process.env.NEXTAUTH_SECRET = "test-secret-reset-token";
+    const token = generatePasswordResetToken("a@b.com");
+    const [body] = token.split(".");
+    const forged = `${body}.${"0".repeat(64)}`;
+    expect(verifyPasswordResetToken(forged)).toBeNull();
   });
 });
 
