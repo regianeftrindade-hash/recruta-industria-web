@@ -57,6 +57,7 @@ export function useCompanyCandidateProfile(
   const [loadingShareMembers, setLoadingShareMembers] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
+  const [actionFeedback, setActionFeedback] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
   const [conversa, setConversa] = useState<ConversaMsg[]>([]);
   const [sobreMim, setSobreMim] = useState<SobreMimData | null>(null);
   const [sobreMimPreenchido, setSobreMimPreenchido] = useState(false);
@@ -215,6 +216,7 @@ export function useCompanyCandidateProfile(
 
   const handleUnlock = async () => {
     setUnlocking(true);
+    setActionFeedback(null);
     try {
       const res = await fetch("/api/company/professionals", {
         method: "POST",
@@ -224,13 +226,14 @@ export function useCompanyCandidateProfile(
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao desbloquear");
+        setActionFeedback({ tone: "err", text: data.error || "Erro ao desbloquear" });
         return;
       }
       onUnlocked?.();
       await carregar();
+      setActionFeedback({ tone: "ok", text: "Contato liberado." });
     } catch {
-      alert("Erro ao desbloquear perfil");
+      setActionFeedback({ tone: "err", text: "Erro ao desbloquear perfil" });
     } finally {
       setUnlocking(false);
     }
@@ -241,6 +244,7 @@ export function useCompanyCandidateProfile(
     const atual = !!resumo.favorito;
     const proximo = !atual;
     setFavoriting(true);
+    setActionFeedback(null);
     setResumo((r) => (r ? { ...r, favorito: proximo } : r));
     try {
       if (atual) {
@@ -251,7 +255,7 @@ export function useCompanyCandidateProfile(
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           setResumo((r) => (r ? { ...r, favorito: atual } : r));
-          alert(data.error || "Erro ao remover favorito");
+          setActionFeedback({ tone: "err", text: data.error || "Erro ao remover favorito" });
         }
       } else {
         const res = await fetch("/api/company/favorites", {
@@ -263,12 +267,12 @@ export function useCompanyCandidateProfile(
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           setResumo((r) => (r ? { ...r, favorito: atual } : r));
-          alert(data.error || "Erro ao favoritar");
+          setActionFeedback({ tone: "err", text: data.error || "Erro ao favoritar" });
         }
       }
     } catch {
       setResumo((r) => (r ? { ...r, favorito: atual } : r));
-      alert("Erro ao atualizar favorito");
+      setActionFeedback({ tone: "err", text: "Erro ao atualizar favorito" });
     } finally {
       setFavoriting(false);
     }
@@ -359,6 +363,7 @@ export function useCompanyCandidateProfile(
     loadingShareMembers,
     sharing,
     shareMsg,
+    actionFeedback,
     conversa,
     setConversa,
     sobreMim,

@@ -33,6 +33,7 @@ export default function CompanyDashboardSectionPage({ tab }: { tab: CompanyDashb
 
   const cached = hasTabData(tab);
   const [loading, setLoading] = useState(!cached);
+  const [feedback, setFeedback] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
 
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -55,17 +56,25 @@ export default function CompanyDashboardSectionPage({ tab }: { tab: CompanyDashb
     if (!name?.trim()) return;
     const cargo = window.prompt("Cargo desejado (filtro mínimo para o alerta):");
     if (!cargo?.trim()) {
-      alert("Informe ao menos um cargo, ou volte ao Início e use os filtros de busca para criar um alerta mais completo.");
+      setFeedback({
+        tone: "err",
+        text: "Informe ao menos um cargo, ou volte ao Início e use os filtros de busca para criar um alerta mais completo.",
+      });
       return;
     }
+    setFeedback(null);
     const res = await fetch("/api/company/alerts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({ name: name.trim(), filters: { cargo: cargo.trim() } }),
     });
-    if (res.ok) await refreshTabData("alertas");
-    else alert((await res.json()).error || "Erro ao criar alerta");
+    if (res.ok) {
+      await refreshTabData("alertas");
+      setFeedback({ tone: "ok", text: "Alerta criado." });
+    } else {
+      setFeedback({ tone: "err", text: (await res.json()).error || "Erro ao criar alerta" });
+    }
   };
 
   const handleToggleAlert = async (alertId: string, active: boolean) => {
@@ -95,14 +104,19 @@ export default function CompanyDashboardSectionPage({ tab }: { tab: CompanyDashb
   const handleCreateTalentList = async () => {
     const name = window.prompt("Nome da lista (ex: Qualidade):");
     if (!name?.trim()) return;
+    setFeedback(null);
     const res = await fetch("/api/company/talent-lists", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({ action: "createList", name: name.trim() }),
     });
-    if (res.ok) await refreshTabData("banco");
-    else alert((await res.json()).error || "Erro ao criar lista");
+    if (res.ok) {
+      await refreshTabData("banco");
+      setFeedback({ tone: "ok", text: "Lista criada." });
+    } else {
+      setFeedback({ tone: "err", text: (await res.json()).error || "Erro ao criar lista" });
+    }
   };
 
   const handleOpenTalentList = async (list: TalentList) => {
@@ -129,6 +143,20 @@ export default function CompanyDashboardSectionPage({ tab }: { tab: CompanyDashb
 
   return (
     <main style={{ padding: "16px 24px" }}>
+      {feedback && (
+        <p
+          role="status"
+          style={{
+            margin: "0 0 12px",
+            fontSize: 12,
+            fontWeight: 700,
+            lineHeight: 1.45,
+            color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+          }}
+        >
+          {feedback.text}
+        </p>
+      )}
       {tab === "entrevistas" ? (
         <CompanyEntrevistasBoard />
       ) : loading && !cached ? (

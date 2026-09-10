@@ -23,6 +23,7 @@ type Props = {
   canUnlock: boolean;
   unlocking: boolean;
   onUnlock: () => void;
+  actionFeedback?: { tone: "ok" | "err"; text: string } | null;
 };
 
 export default function CompanyCandidateProfileHeader({
@@ -36,6 +37,7 @@ export default function CompanyCandidateProfileHeader({
   canUnlock,
   unlocking,
   onUnlock,
+  actionFeedback,
 }: Props) {
   return (
     <div
@@ -195,6 +197,20 @@ export default function CompanyCandidateProfileHeader({
             )}
           </div>
         )}
+        {actionFeedback ? (
+          <p
+            role="status"
+            style={{
+              margin: "10px 0 0",
+              fontSize: 12,
+              fontWeight: 700,
+              color: actionFeedback.tone === "ok" ? "#8bc34a" : "#e57373",
+              lineHeight: 1.45,
+            }}
+          >
+            {actionFeedback.text}
+          </p>
+        ) : null}
       </div>
     </div>
   );

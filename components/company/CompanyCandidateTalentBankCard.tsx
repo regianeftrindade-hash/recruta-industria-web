@@ -25,6 +25,7 @@ export default function CompanyCandidateTalentBankCard({
   onTalentListsChange,
 }: Props) {
   const [salvandoTalent, setSalvandoTalent] = useState(false);
+  const [feedback, setFeedback] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
 
   return (
     <section style={{ ...dashCard, padding: 18 }}>
@@ -47,6 +48,7 @@ export default function CompanyCandidateTalentBankCard({
             onChange={(e) => {
               const opts = Array.from(e.target.selectedOptions).map((o) => o.value);
               onTalentListIdsChange(opts);
+              if (feedback) setFeedback(null);
             }}
             style={{
               ...dashInput,
@@ -74,6 +76,7 @@ export default function CompanyCandidateTalentBankCard({
               disabled={salvandoTalent}
               onClick={async () => {
                 setSalvandoTalent(true);
+                setFeedback(null);
                 try {
                   const res = await fetch("/api/company/talent-lists", {
                     method: "POST",
@@ -87,15 +90,15 @@ export default function CompanyCandidateTalentBankCard({
                   });
                   const data = await res.json();
                   if (!res.ok) {
-                    alert(data.error || "Erro ao salvar no banco de talentos");
+                    setFeedback({ tone: "err", text: data.error || "Erro ao salvar no banco de talentos" });
                     return;
                   }
                   if (Array.isArray(data.membershipListIds)) {
                     onTalentListIdsChange(data.membershipListIds.map(String));
                   }
-                  alert("Listas do banco de talentos atualizadas.");
+                  setFeedback({ tone: "ok", text: "Listas do banco de talentos atualizadas." });
                 } catch {
-                  alert("Erro ao salvar no banco de talentos");
+                  setFeedback({ tone: "err", text: "Erro ao salvar no banco de talentos" });
                 } finally {
                   setSalvandoTalent(false);
                 }
@@ -110,6 +113,7 @@ export default function CompanyCandidateTalentBankCard({
               onClick={async () => {
                 const name = window.prompt("Nome da nova lista:");
                 if (!name?.trim()) return;
+                setFeedback(null);
                 try {
                   const res = await fetch("/api/company/talent-lists", {
                     method: "POST",
@@ -119,7 +123,7 @@ export default function CompanyCandidateTalentBankCard({
                   });
                   const data = await res.json();
                   if (!res.ok) {
-                    alert(data.error || "Erro ao criar lista");
+                    setFeedback({ tone: "err", text: data.error || "Erro ao criar lista" });
                     return;
                   }
                   const tlRes = await fetch(
@@ -140,8 +144,9 @@ export default function CompanyCandidateTalentBankCard({
                       data.id && !prev.includes(data.id) ? [...prev, data.id] : prev,
                     );
                   }
+                  setFeedback({ tone: "ok", text: "Lista criada." });
                 } catch {
-                  alert("Erro ao criar lista");
+                  setFeedback({ tone: "err", text: "Erro ao criar lista" });
                 }
               }}
               style={{
@@ -159,6 +164,20 @@ export default function CompanyCandidateTalentBankCard({
               + Nova lista
             </button>
           </div>
+          {feedback ? (
+            <p
+              role="status"
+              style={{
+                margin: "10px 0 0",
+                fontSize: 12,
+                fontWeight: 700,
+                color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+                lineHeight: 1.45,
+              }}
+            >
+              {feedback.text}
+            </p>
+          ) : null}
         </>
       )}
     </section>

@@ -50,6 +50,7 @@ export default function CompanyCandidateProfilePanel({
     loadingShareMembers,
     sharing,
     shareMsg,
+    actionFeedback,
     conversa,
     setConversa,
     sobreMim,
@@ -164,6 +165,7 @@ export default function CompanyCandidateProfilePanel({
             canUnlock={canUnlock}
             unlocking={unlocking}
             onUnlock={handleUnlock}
+            actionFeedback={actionFeedback}
           />
 
           <CompanyCandidateProfileDetails

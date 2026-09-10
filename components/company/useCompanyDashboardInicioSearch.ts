@@ -56,6 +56,7 @@ export function useCompanyDashboardInicioSearch({
   const [loadingProfissionais, setLoadingProfissionais] = useState(false);
   const [unlockingId, setUnlockingId] = useState<string | null>(null);
   const [erroBusca, setErroBusca] = useState("");
+  const [msgAcao, setMsgAcao] = useState("");
   const [totalEncontrados, setTotalEncontrados] = useState(0);
   const [alerts, setAlerts] = useState<CompanyAlert[]>([]);
   const [vitrineIds, setVitrineIds] = useState<string[] | null>(null);
@@ -231,6 +232,8 @@ export function useCompanyDashboardInicioSearch({
 
   const handleUnlock = async (profileId: string) => {
     setUnlockingId(profileId);
+    setErroBusca("");
+    setMsgAcao("");
     try {
       const res = await fetch("/api/company/professionals", {
         method: "POST",
@@ -240,13 +243,14 @@ export function useCompanyDashboardInicioSearch({
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao desbloquear");
+        setErroBusca(data.error || "Erro ao desbloquear");
         return;
       }
       await buscarProfissionais(paginaPerfis);
       await carregarPerfilEmpresa();
+      setMsgAcao("Contato liberado.");
     } catch {
-      alert("Erro de rede ao desbloquear perfil");
+      setErroBusca("Erro de rede ao desbloquear perfil");
     } finally {
       setUnlockingId(null);
     }
@@ -255,7 +259,8 @@ export function useCompanyDashboardInicioSearch({
   const handleCreateAlert = async () => {
     const temPreferencia = (Object.keys(EMPTY_FILTROS) as (keyof Filtros)[]).some((key) => Boolean(filtros[key]));
     if (!temPreferencia) {
-      alert("Defina ao menos um filtro de preferência antes de criar o alerta.");
+      setErroBusca("Defina ao menos um filtro de preferência antes de criar o alerta.");
+      setMsgAcao("");
       return;
     }
     const name = window.prompt("Nome do alerta (ex: Operadores CNC SP):");
@@ -265,14 +270,20 @@ export function useCompanyDashboardInicioSearch({
         .filter((key) => Boolean(filtros[key]))
         .map((key) => [key, filtros[key]]),
     );
+    setErroBusca("");
+    setMsgAcao("");
     const res = await fetch("/api/company/alerts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({ name: name.trim(), filters: filtersLimpos }),
     });
-    if (res.ok) await carregarAlertas();
-    else alert((await res.json()).error || "Erro ao criar alerta");
+    if (res.ok) {
+      await carregarAlertas();
+      setMsgAcao("Alerta criado.");
+    } else {
+      setErroBusca((await res.json()).error || "Erro ao criar alerta");
+    }
   };
 
   const handleToggleAlert = async (alertId: string, active: boolean) => {
@@ -407,6 +418,7 @@ export function useCompanyDashboardInicioSearch({
       return;
     }
     setErroBusca("");
+    setMsgAcao("");
     setPaginaPerfis(1);
     setBuscaRealizada(true);
     void buscarProfissionais(1);
@@ -423,6 +435,7 @@ export function useCompanyDashboardInicioSearch({
     setPaginacao(PAGINACAO_INICIAL);
     setPaginaPerfis(1);
     setErroBusca("");
+    setMsgAcao("");
   };
 
   const onToggleBuscaAvancada = () => setBuscaAvancadaAberta((v) => !v);
@@ -435,6 +448,7 @@ export function useCompanyDashboardInicioSearch({
     loadingProfissionais,
     unlockingId,
     erroBusca,
+    msgAcao,
     totalEncontrados,
     alerts,
     vitrineListaNome,

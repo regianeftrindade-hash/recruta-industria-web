@@ -333,6 +333,11 @@ export default function CompanyDashboardInicioPage() {
               {search.erroBusca}
             </div>
           )}
+          {search.msgAcao && (
+            <div style={{ background: "rgba(139,195,74,0.15)", color: "#8bc34a", padding: 10, borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
+              {search.msgAcao}
+            </div>
+          )}
 
           {search.buscaRealizada && search.totalEncontrados > 0 && (
             <p style={{ color: DASH.muted, fontSize: 11, margin: 0 }}>
