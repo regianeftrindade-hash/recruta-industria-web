@@ -18,6 +18,7 @@ import {
   useCompanyDashboardInicioSearch,
   type PlanFeatures,
 } from "@/components/company/useCompanyDashboardInicioSearch";
+import type { CompanyPlanTier } from "@/lib/company-premium-plans";
 import type { CompanyVerificationStatus } from "@/lib/company/company-verification";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import "@/app/dashboard/dashboard-theme.css";
@@ -65,6 +66,7 @@ export default function CompanyDashboardInicioPage() {
   const [profileLoadError, setProfileLoadError] = useState("");
   const [unlockedCount, setUnlockedCount] = useState(0);
   const [slotsRestantes, setSlotsRestantes] = useState<number | null>(0);
+  const [planTier, setPlanTier] = useState<CompanyPlanTier>("FREE");
   const [planLoaded, setPlanLoaded] = useState(false);
   const [planFeatures, setPlanFeatures] = useState<PlanFeatures>({
     canUseAdvancedFilters: false,
@@ -224,6 +226,7 @@ export default function CompanyDashboardInicioPage() {
 
   useEffect(() => {
     if (!dash.planReady || !dash.planTier) return;
+    setPlanTier(dash.planTier as CompanyPlanTier);
     if (dash.planFeatures && Object.keys(dash.planFeatures).length > 0) {
       setPlanFeatures((prev) => ({ ...prev, ...dash.planFeatures }));
     }
