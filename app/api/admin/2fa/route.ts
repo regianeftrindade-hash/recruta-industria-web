@@ -15,7 +15,6 @@ import { logAudit } from "@/lib/security";
 import { generateSecureOtpCode } from "@/lib/security.server";
 import { isEmailConfigured, sendEmailDetailed } from "@/lib/email";
 import { enforceApiRateLimit, getClientIp } from "@/lib/security/api-guard";
-import { ensureSecurityAuditTable } from "@/lib/security/audit-store";
 
 async function requireAdminSession(request: NextRequest) {
   const token = await getToken({
@@ -38,7 +37,6 @@ async function requireAdminSession(request: NextRequest) {
 /** Envia código 2FA para o admin logado. */
 export async function POST(request: NextRequest) {
   try {
-    await ensureSecurityAuditTable();
     const ip = getClientIp(request);
     const userAgent = request.headers.get("user-agent") || "unknown";
 

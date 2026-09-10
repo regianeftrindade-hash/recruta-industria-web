@@ -402,6 +402,55 @@ export async function getCompanyRecruitmentHistory(
   };
 }
 
+/** Contagens do funil vistas pelo profissional (propostas recebidas). */
+export async function getProfessionalRecruitmentHistory(
+  profileId: string,
+): Promise<CompanyRecruitmentHistoryCounts> {
+  await ensureJobProposalTables();
+
+  const [proposalRows, trackingRows] = await Promise.all([
+    prisma.$queryRawUnsafe<Array<{ propostas: bigint }>>(
+      `SELECT COUNT(*)::bigint AS propostas
+       FROM "JobProposal" p
+       WHERE p."profileId" = $1`,
+      profileId,
+    ).catch(() => [{ propostas: BigInt(0) }]),
+    prisma.$queryRawUnsafe<
+      Array<{
+        entrevistas: bigint;
+        testes: bigint;
+        contratacoes: bigint;
+        naoContratacoes: bigint;
+      }>
+    >(
+      `SELECT
+         COUNT(*) FILTER (WHERE entrevistado = true)::bigint AS entrevistas,
+         COUNT(*) FILTER (WHERE "emTeste" = true)::bigint AS testes,
+         COUNT(*) FILTER (WHERE contratado = true)::bigint AS contratacoes,
+         COUNT(*) FILTER (WHERE "naoContratado" = true)::bigint AS "naoContratacoes"
+       FROM "JobProposalTracking" t
+       INNER JOIN "JobProposal" p ON p.id = t."proposalId"
+       WHERE p."profileId" = $1`,
+      profileId,
+    ).catch(() => [
+      {
+        entrevistas: BigInt(0),
+        testes: BigInt(0),
+        contratacoes: BigInt(0),
+        naoContratacoes: BigInt(0),
+      },
+    ]),
+  ]);
+
+  return {
+    propostas: Number(proposalRows[0]?.propostas || 0),
+    entrevistas: Number(trackingRows[0]?.entrevistas || 0),
+    testes: Number(trackingRows[0]?.testes || 0),
+    contratacoes: Number(trackingRows[0]?.contratacoes || 0),
+    naoContratacoes: Number(trackingRows[0]?.naoContratacoes || 0),
+  };
+}
+
 export async function listProposalsForProfessional(profileId: string): Promise<JobProposalDTO[]> {
   await limparPropostasExpiradas({ profileId });
   await ensureJobProposalTables();

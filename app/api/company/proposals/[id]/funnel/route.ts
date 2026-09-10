@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { resolveAuthEmail } from "@/lib/api-auth";
-import { ensureJobProposalTables } from "@/lib/ensure-db-schema";
 import { getProposalById } from "@/lib/company/job-proposals";
 import { upsertProposalFunnel } from "@/lib/company/proposal-funnel";
 import { resolveCompanyOwnerUserId } from "@/lib/company/company-team";
@@ -24,7 +23,6 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    await ensureJobProposalTables();
     const company = await getCompanyOwner(request);
     if (!company) {
       return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });

@@ -3,7 +3,6 @@ import { prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth.config';
 import { getProfessionalPlanContext } from '@/lib/professional-plan';
-import { ensurePaymentSchema } from '@/lib/ensure-db-schema';
 
 function getStartOfWeek(date: Date): Date {
   const d = new Date(date);
@@ -16,7 +15,6 @@ function getStartOfWeek(date: Date): Date {
 
 export async function GET(request: NextRequest) {
   try {
-    await ensurePaymentSchema();
 
     const session = await getServerSession(authOptions);
 

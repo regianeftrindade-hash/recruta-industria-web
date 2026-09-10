@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { resolveAuthEmail } from "@/lib/api-auth";
-import { ensurePaymentSchema } from "@/lib/ensure-db-schema";
 import { getCompanyPlanContext } from "@/lib/company-plan";
 import { canCompanyAccessSensitiveProfiles } from "@/lib/company-storage";
 import {
@@ -28,7 +27,6 @@ async function getCompanyUser(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    await ensurePaymentSchema();
     const companyUser = await getCompanyUser(request);
     if (!companyUser) {
       return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
@@ -51,7 +49,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await ensurePaymentSchema();
     const companyUser = await getCompanyUser(request);
     if (!companyUser) {
       return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });

@@ -19,11 +19,8 @@ import { activateCompanyPlanFromPayment } from '@/lib/company-payment'
 
 
 import { getCompanySubscriptionBilling } from '@/lib/subscription-billing-storage'
-import { ensurePaymentSchema } from '@/lib/ensure-db-schema'
 
 export async function GET() {
-  await ensurePaymentSchema();
-
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.email) {
@@ -70,8 +67,6 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    await ensurePaymentSchema();
-
     const session = await getServerSession(authOptions)
 
 

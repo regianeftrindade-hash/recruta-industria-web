@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { getToken } from 'next-auth/jwt';
@@ -16,7 +15,7 @@ import {
   saveProfileFormSnapshot,
 } from '@/lib/profile-snapshot';
 import { isProfessionalRegistrationComplete } from '@/lib/professional-registration';
-import { ensurePaymentSchema, ensureUserLastSeenColumn } from '@/lib/ensure-db-schema';
+import { ensureUserLastSeenColumn } from '@/lib/ensure-db-schema';
 import { getVideoApresentacaoPath } from '@/lib/professional/professional-video-db';
 import type { User, Prisma } from '@prisma/client';
 
@@ -230,7 +229,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await ensurePaymentSchema();
     await ensureUserLastSeenColumn();
 
     const auth = await resolveAuthEmail(request);

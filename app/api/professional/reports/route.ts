@@ -4,11 +4,9 @@ import { authOptions } from '@/lib/auth.config';
 import { prisma } from '@/lib/db';
 import { getProfessionalPlanContext } from '@/lib/professional-plan';
 import { buildProfessionalActivityReport } from '@/lib/professional-reports';
-import { ensurePaymentSchema } from '@/lib/ensure-db-schema';
 
 export async function GET(request: NextRequest) {
   try {
-    await ensurePaymentSchema();
 
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {

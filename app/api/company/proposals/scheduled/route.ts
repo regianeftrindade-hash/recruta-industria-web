@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { resolveAuthEmail } from "@/lib/api-auth";
-import { ensureJobProposalTables } from "@/lib/ensure-db-schema";
 import { listScheduledInterviewsForCompany } from "@/lib/company/job-proposals";
 import { resolveCompanyOwnerUserId } from "@/lib/company/company-team";
 
 export async function GET(request: NextRequest) {
   try {
-    // Só as tabelas de proposta/entrevista — não o schema de pagamento inteiro
-    await ensureJobProposalTables();
     const auth = await resolveAuthEmail(request);
     if (!auth) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });

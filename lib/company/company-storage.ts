@@ -11,6 +11,7 @@ import type { CompanyVerificationInfo, CompanyVerificationStatus } from '@/lib/c
 import { isCompanyVerificationStatus } from '@/lib/company/company-verification';
 import { isCorporateEmailVerified } from '@/lib/company/corporate-email-confirmation';
 import { isCompanyTestBypassUserId } from '@/lib/company/company-test-bypass';
+import { ensureSubscriptionBillingColumns } from '@/lib/ensure-db-schema';
 
 export type CompanyExtraData = {
   cnpj: string | null;
@@ -367,6 +368,8 @@ export async function getCompanyPlanTier(userId: string): Promise<CompanyPlanTie
     return 'EMPRESARIAL';
   }
 
+  await ensureSubscriptionBillingColumns();
+
   let row:
     | {
         planTier: string | null;
@@ -474,6 +477,8 @@ export async function setCompanyPlanTier(
   planTier: CompanyPlanTier,
   billing?: ApplySubscriptionOptions & { billingPeriod?: BillingPeriod },
 ): Promise<void> {
+  await ensureSubscriptionBillingColumns();
+
   const period = billing?.billingPeriod ?? 'monthly';
   const days = getSubscriptionDays(period);
   const expiresAt = planTier === 'FREE'

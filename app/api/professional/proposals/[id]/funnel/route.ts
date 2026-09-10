@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { resolveAuthEmail } from "@/lib/api-auth";
-import { ensurePaymentSchema } from "@/lib/ensure-db-schema";
 import { cancelInterview, getProposalById } from "@/lib/company/job-proposals";
 import { upsertProposalFunnel } from "@/lib/company/proposal-funnel";
 import { parseProposalFunnelPatch } from "@/lib/company/job-proposals-shared";
@@ -15,7 +14,6 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    await ensurePaymentSchema();
     const auth = await resolveAuthEmail(request);
     if (!auth) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });

@@ -6,7 +6,6 @@ import {
   listarMensagensDoPerfil,
   responderMensagemDaEmpresa,
 } from "@/lib/profile-messages";
-import { ensurePaymentSchema } from "@/lib/ensure-db-schema";
 import {
   notifyCompanyMessageReply,
   notifyProfessionalAsync,
@@ -22,7 +21,6 @@ function limparTextoMensagem(raw: string): string {
 
 export async function GET(request: NextRequest) {
   try {
-    await ensurePaymentSchema();
 
     const auth = await resolveAuthEmail(request);
     if (!auth) {
@@ -49,7 +47,6 @@ export async function GET(request: NextRequest) {
 /** Responder mensagem da empresa. */
 export async function POST(request: NextRequest) {
   try {
-    await ensurePaymentSchema();
 
     const auth = await resolveAuthEmail(request);
     if (!auth) {
@@ -130,7 +127,6 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    await ensurePaymentSchema();
 
     const auth = await resolveAuthEmail(request);
     if (!auth) {

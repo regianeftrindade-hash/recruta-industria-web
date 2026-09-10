@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { resolveAuthEmail } from "@/lib/api-auth";
-import { ensurePaymentSchema } from "@/lib/ensure-db-schema";
 import { listProposalsForProfessional } from "@/lib/company/job-proposals";
 
 export async function GET(request: NextRequest) {
   try {
-    await ensurePaymentSchema();
     const auth = await resolveAuthEmail(request);
     if (!auth) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });

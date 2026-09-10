@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { resolveAuthEmail } from "@/lib/api-auth";
-import { ensurePaymentSchema } from "@/lib/ensure-db-schema";
 import { cancelInterview } from "@/lib/company/job-proposals";
 import {
   notifyProfessionalAsync,
@@ -25,7 +24,6 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    await ensurePaymentSchema();
     const companyUser = await getCompanyUser(request);
     if (!companyUser) {
       return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });

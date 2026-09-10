@@ -8,7 +8,6 @@ import {
 } from "@/lib/profile-messages";
 import { canCompanyAccessSensitiveProfiles } from "@/lib/company-storage";
 import { notifyProfessionalAsync, notifyMessageReceived } from "@/lib/professional-notifications";
-import { ensurePaymentSchema } from "@/lib/ensure-db-schema";
 import { resolveCompanyOwnerUserId } from "@/lib/company/company-team";
 
 async function getCompanyUser(request: NextRequest) {
@@ -31,7 +30,6 @@ async function resolveOwnerId(companyUserId: string) {
 /** Lista a conversa com um profissional (mensagens + respostas). */
 export async function GET(request: NextRequest) {
   try {
-    await ensurePaymentSchema();
     const companyUser = await getCompanyUser(request);
     if (!companyUser) {
       return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
@@ -70,7 +68,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await ensurePaymentSchema();
     const companyUser = await getCompanyUser(request);
     if (!companyUser) {
       return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
@@ -156,7 +153,6 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    await ensurePaymentSchema();
     const companyUser = await getCompanyUser(request);
     if (!companyUser) {
       return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });

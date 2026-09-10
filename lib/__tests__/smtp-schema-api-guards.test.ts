@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { readdirSync, readFileSync, statSync } from "fs";
+import { join } from "path";
 import { isAdmin2faRequired, createAdmin2faToken, verifyAdmin2faToken } from "@/lib/security/admin-2fa-edge";
 import {
   generatePasswordResetToken,
@@ -20,6 +22,17 @@ import {
 import { mapTeamInviteError, mapTeamRevokeError } from "@/lib/company/company-team-errors";
 import { parseInterviewRating } from "@/lib/interview-ratings";
 import { isRuntimeDdlEnabled } from "@/lib/infra/ensure-db-schema";
+
+function listTsFiles(dir: string): string[] {
+  const out: string[] = [];
+  for (const name of readdirSync(dir)) {
+    const full = join(dir, name);
+    const st = statSync(full);
+    if (st.isDirectory()) out.push(...listTsFiles(full));
+    else if (name.endsWith(".ts")) out.push(full);
+  }
+  return out;
+}
 
 describe("isAdmin2faRequired", () => {
   it("respeita true/false e default por NODE_ENV", () => {
@@ -168,5 +181,17 @@ describe("runtime DDL flag", () => {
       "@/lib/company/corporate-email-confirmation"
     );
     await expect(ensureCorporateEmailConfirmationTable()).resolves.toBeUndefined();
+  });
+
+  it("rotas app/api não chamam ensure de pagamento/proposta/auditoria", () => {
+    const apiRoot = join(process.cwd(), "app", "api");
+    const banned =
+      /\bensure(PaymentSchema|JobProposalTables|SecurityAuditTable)\b/;
+    const offenders: string[] = [];
+    for (const file of listTsFiles(apiRoot)) {
+      const src = readFileSync(file, "utf8");
+      if (banned.test(src)) offenders.push(file.replace(process.cwd() + "\\", "").replace(/\\/g, "/"));
+    }
+    expect(offenders).toEqual([]);
   });
 });
