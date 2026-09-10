@@ -40,6 +40,7 @@ export default function PropostasEntrevistasEmpresa({
 }: Props) {
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
 
   // Se há entrevista aguardando, atualiza para ver confirmação do profissional
   useEffect(() => {
@@ -61,10 +62,11 @@ export default function PropostasEntrevistasEmpresa({
 
   const agendar = async (proposalId: string) => {
     if (!interviewForm.date || !interviewForm.time) {
-      alert("Preencha data e horário.");
+      setFeedback({ tone: "err", text: "Preencha data e horário." });
       return;
     }
     setSaving(true);
+    setFeedback(null);
     try {
       const scheduledAt = new Date(`${interviewForm.date}T${interviewForm.time}:00`);
       const res = await fetch(`/api/company/proposals/${proposalId}/interview`, {
@@ -81,7 +83,7 @@ export default function PropostasEntrevistasEmpresa({
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao agendar");
+        setFeedback({ tone: "err", text: data.error || "Erro ao agendar" });
         return;
       }
       setSchedulingId(null);
@@ -94,8 +96,9 @@ export default function PropostasEntrevistasEmpresa({
         observacoes: "",
       });
       onChanged();
+      setFeedback({ tone: "ok", text: "Convite de entrevista enviado ao profissional." });
     } catch {
-      alert("Erro ao agendar entrevista");
+      setFeedback({ tone: "err", text: "Erro ao agendar entrevista" });
     } finally {
       setSaving(false);
     }
@@ -158,6 +161,7 @@ export default function PropostasEntrevistasEmpresa({
       return;
     }
     setBusyId(id);
+    setFeedback(null);
     try {
       const res = await fetch(`/api/company/proposals/${encodeURIComponent(id)}`, {
         method: "DELETE",
@@ -165,12 +169,13 @@ export default function PropostasEntrevistasEmpresa({
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao excluir");
+        setFeedback({ tone: "err", text: data.error || "Erro ao excluir" });
         return;
       }
       onChanged();
+      setFeedback({ tone: "ok", text: "Proposta excluída." });
     } catch {
-      alert("Erro ao excluir");
+      setFeedback({ tone: "err", text: "Erro ao excluir" });
     } finally {
       setBusyId(null);
     }
@@ -182,6 +187,7 @@ export default function PropostasEntrevistasEmpresa({
     atual: boolean,
   ) => {
     setBusyId(p.id);
+    setFeedback(null);
     try {
       const body: Record<string, unknown> = { [campo]: !atual };
       if (campo === "contratado" && !atual) body.naoContratado = false;
@@ -209,7 +215,7 @@ export default function PropostasEntrevistasEmpresa({
         );
         const cancelData = await cancelRes.json();
         if (!cancelRes.ok) {
-          alert(cancelData.error || "Erro ao cancelar entrevista");
+          setFeedback({ tone: "err", text: cancelData.error || "Erro ao cancelar entrevista" });
           setBusyId(null);
           return;
         }
@@ -223,12 +229,12 @@ export default function PropostasEntrevistasEmpresa({
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao atualizar");
+        setFeedback({ tone: "err", text: data.error || "Erro ao atualizar" });
         return;
       }
       onChanged();
     } catch {
-      alert("Erro ao atualizar acompanhamento");
+      setFeedback({ tone: "err", text: "Erro ao atualizar acompanhamento" });
     } finally {
       setBusyId(null);
     }
@@ -341,6 +347,20 @@ export default function PropostasEntrevistasEmpresa({
       <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 12px", fontSize: 16 }}>
         Propostas e entrevistas
       </h3>
+
+      {feedback && (
+        <p
+          role="status"
+          style={{
+            margin: "0 0 12px",
+            fontSize: 12,
+            lineHeight: 1.45,
+            color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+          }}
+        >
+          {feedback.text}
+        </p>
+      )}
 
       {canSend && <CompanyEnviarPropostaForm profileId={profileId} onChanged={onChanged} />}
 

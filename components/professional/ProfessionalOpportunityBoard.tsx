@@ -49,6 +49,7 @@ function trackingOf(p: JobProposalDTO) {
 export default function ProfessionalOpportunityBoard({ proposals, onChanged }: Props) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [abertaId, setAbertaId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
 
   const listas = useMemo(() => {
     const propostas = proposals.filter(isPropostaAtiva);
@@ -63,6 +64,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
 
   const responder = async (id: string, action: "INTERESTED" | "MORE_INFO" | "DECLINED") => {
     setBusyId(id);
+    setFeedback(null);
     try {
       const res = await fetch(`/api/professional/proposals/${id}/respond`, {
         method: "POST",
@@ -72,12 +74,19 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao responder");
+        setFeedback({ tone: "err", text: data.error || "Erro ao responder" });
         return;
       }
       onChanged();
+      if (action === "INTERESTED") {
+        setFeedback({ tone: "ok", text: "Interesse registrado. A empresa poderá agendar a entrevista." });
+      } else if (action === "MORE_INFO") {
+        setFeedback({ tone: "ok", text: "Pedido enviado. Acompanhe também em Mensagens." });
+      } else {
+        setFeedback({ tone: "ok", text: "Proposta recusada." });
+      }
     } catch {
-      alert("Erro ao responder proposta");
+      setFeedback({ tone: "err", text: "Erro ao responder proposta" });
     } finally {
       setBusyId(null);
     }
@@ -85,6 +94,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
 
   const responderEntrevista = async (id: string, action: "CONFIRM" | "DECLINE") => {
     setBusyId(id);
+    setFeedback(null);
     try {
       const res = await fetch(`/api/professional/proposals/${id}/interview-respond`, {
         method: "POST",
@@ -94,12 +104,16 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao responder entrevista");
+        setFeedback({ tone: "err", text: data.error || "Erro ao responder entrevista" });
         return;
       }
       onChanged();
+      setFeedback({
+        tone: "ok",
+        text: action === "CONFIRM" ? "Entrevista confirmada." : "Entrevista recusada.",
+      });
     } catch {
-      alert("Erro ao responder entrevista");
+      setFeedback({ tone: "err", text: "Erro ao responder entrevista" });
     } finally {
       setBusyId(null);
     }
@@ -111,6 +125,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
     atual: boolean,
   ) => {
     setBusyId(id);
+    setFeedback(null);
     try {
       const body: Record<string, unknown> = { [campo]: !atual };
       if (campo === "entrevistaCancelada" && !atual) {
@@ -135,12 +150,12 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao atualizar");
+        setFeedback({ tone: "err", text: data.error || "Erro ao atualizar" });
         return;
       }
       onChanged();
     } catch {
-      alert("Erro ao atualizar histórico");
+      setFeedback({ tone: "err", text: "Erro ao atualizar histórico" });
     } finally {
       setBusyId(null);
     }
@@ -151,6 +166,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
       return;
     }
     setBusyId(id);
+    setFeedback(null);
     try {
       const res = await fetch(`/api/professional/proposals/${id}`, {
         method: "DELETE",
@@ -158,12 +174,13 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Erro ao excluir");
+        setFeedback({ tone: "err", text: data.error || "Erro ao excluir" });
         return;
       }
       onChanged();
+      setFeedback({ tone: "ok", text: "Item excluído." });
     } catch {
-      alert("Erro ao excluir");
+      setFeedback({ tone: "err", text: "Erro ao excluir" });
     } finally {
       setBusyId(null);
     }
@@ -503,6 +520,20 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
       <p style={{ margin: "0 0 12px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
         {AVISO_RETENCAO_PROPOSTAS}
       </p>
+
+      {feedback && (
+        <p
+          role="status"
+          style={{
+            margin: "0 0 12px",
+            fontSize: 12,
+            lineHeight: 1.45,
+            color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+          }}
+        >
+          {feedback.text}
+        </p>
+      )}
 
       {listas.entrevistas.some((p) => p.status === "INTERVIEW_PENDING") && (
         <div
