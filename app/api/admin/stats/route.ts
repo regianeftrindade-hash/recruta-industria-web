@@ -5,6 +5,7 @@ import { requireAdmin } from '@/lib/auth/admin-auth';
 import { COMPANY_PLAN_TIERS, getPlanDefinition } from '@/lib/company/company-premium-plans';
 import {
   getAdminExcludedTestAccounts,
+  getAdminStatsBaselineAt,
   sqlAndUserIdNotIn,
   sumPaidExcludingTestEmails,
 } from '@/lib/admin/admin-exclude-test-accounts';
@@ -36,9 +37,14 @@ export async function GET(request: NextRequest) {
 
   try {
     const days = lastNDays(14);
-    const since = new Date();
-    since.setHours(0, 0, 0, 0);
-    since.setDate(since.getDate() - 13);
+    const seriesWindowStart = new Date();
+    seriesWindowStart.setHours(0, 0, 0, 0);
+    seriesWindowStart.setDate(seriesWindowStart.getDate() - 13);
+
+    const baselineAt = getAdminStatsBaselineAt();
+    const seriesSince = seriesWindowStart.getTime() > baselineAt.getTime()
+      ? seriesWindowStart
+      : baselineAt;
 
     const { userIds: excludedIds, emails: excludedEmails } = await getAdminExcludedTestAccounts();
     const notExcludedUser = excludedIds.length ? { id: { notIn: excludedIds } } : {};
@@ -63,22 +69,43 @@ export async function GET(request: NextRequest) {
       paidPayments,
     ] = await Promise.all([
       prisma.$queryRaw<Array<{ count: bigint }>>`
-        SELECT COUNT(*)::bigint AS count FROM "SiteVisit"
+        SELECT COUNT(*)::bigint AS count
+        FROM "SiteVisit"
+        WHERE "createdAt" >= ${baselineAt}
       `.then((r) => Number(r[0]?.count || 0)).catch(() => 0),
       prisma.$queryRaw<Array<{ count: bigint }>>`
         SELECT COUNT(DISTINCT "sessionId")::bigint AS count
         FROM "SiteVisit"
         WHERE "sessionId" IS NOT NULL
+          AND "createdAt" >= ${baselineAt}
       `.then((r) => Number(r[0]?.count || 0)).catch(() => 0),
       prisma.$queryRaw<Array<{ count: bigint }>>`
         SELECT COUNT(*)::bigint AS count
         FROM "SiteVisit"
         WHERE "createdAt" >= date_trunc('day', NOW())
+          AND "createdAt" >= ${baselineAt}
       `.then((r) => Number(r[0]?.count || 0)).catch(() => 0),
-      prisma.user.count({ where: { role: 'PROFESSIONAL', ...notExcludedUser } }),
-      prisma.user.count({ where: { role: 'COMPANY', ...notExcludedUser } }),
+      prisma.user.count({
+        where: {
+          role: 'PROFESSIONAL',
+          createdAt: { gte: baselineAt },
+          ...notExcludedUser,
+        },
+      }),
+      prisma.user.count({
+        where: {
+          role: 'COMPANY',
+          createdAt: { gte: baselineAt },
+          ...notExcludedUser,
+        },
+      }),
       prisma.profile.count({
-        where: { status: 'ACTIVE', isVisible: true, ...notExcludedProfileUser },
+        where: {
+          status: 'ACTIVE',
+          isVisible: true,
+          createdAt: { gte: baselineAt },
+          ...notExcludedProfileUser,
+        },
       }),
       prisma.$queryRaw<Array<{ count: bigint }>>`
         SELECT COUNT(*)::bigint AS count
@@ -86,19 +113,20 @@ export async function GET(request: NextRequest) {
         WHERE "verificationStatus" = 'PENDING'
           AND "cartaoCnpjUrl" IS NOT NULL
           AND TRIM("cartaoCnpjUrl") <> ''
+          AND "createdAt" >= ${baselineAt}
           ${excludeCompanyUserSql}
       `.then((r) => Number(r[0]?.count || 0)).catch(() => 0),
       prisma.$queryRaw<Array<{ day: Date; count: bigint }>>`
         SELECT date_trunc('day', "createdAt") AS day, COUNT(*)::bigint AS count
         FROM "SiteVisit"
-        WHERE "createdAt" >= ${since}
+        WHERE "createdAt" >= ${seriesSince}
         GROUP BY 1
         ORDER BY 1
       `.catch(() => [] as Array<{ day: Date; count: bigint }>),
       prisma.$queryRaw<Array<{ day: Date; count: bigint }>>`
         SELECT date_trunc('day', "createdAt") AS day, COUNT(*)::bigint AS count
         FROM "User"
-        WHERE role = 'PROFESSIONAL' AND "createdAt" >= ${since}
+        WHERE role = 'PROFESSIONAL' AND "createdAt" >= ${seriesSince}
           ${excludeUserSql}
         GROUP BY 1
         ORDER BY 1
@@ -106,7 +134,7 @@ export async function GET(request: NextRequest) {
       prisma.$queryRaw<Array<{ day: Date; count: bigint }>>`
         SELECT date_trunc('day', "createdAt") AS day, COUNT(*)::bigint AS count
         FROM "User"
-        WHERE role = 'COMPANY' AND "createdAt" >= ${since}
+        WHERE role = 'COMPANY' AND "createdAt" >= ${seriesSince}
           ${excludeUserSql}
         GROUP BY 1
         ORDER BY 1
@@ -114,7 +142,7 @@ export async function GET(request: NextRequest) {
       prisma.$queryRaw<Array<{ planTier: string | null; subscriptionExpiresAt: Date | null; count: bigint }>>`
         SELECT "planTier", "subscriptionExpiresAt", COUNT(*)::bigint AS count
         FROM "Company"
-        WHERE TRUE
+        WHERE "createdAt" >= ${baselineAt}
           ${excludeCompanyUserSql}
         GROUP BY "planTier", "subscriptionExpiresAt"
       `.catch(() => [] as Array<{ planTier: string | null; subscriptionExpiresAt: Date | null; count: bigint }>),
@@ -132,7 +160,7 @@ export async function GET(request: NextRequest) {
           COUNT(*) FILTER (WHERE contratado = true)::bigint AS contratados,
           COUNT(*) FILTER (WHERE "naoContratado" = true)::bigint AS "naoContratados"
         FROM "CompanyProfileTracking"
-        WHERE TRUE
+        WHERE "createdAt" >= ${baselineAt}
           ${excludeTrackingCompanySql}
       `.catch(() => [{
         contatados: BigInt(0),
@@ -142,9 +170,9 @@ export async function GET(request: NextRequest) {
         naoContratados: BigInt(0),
       }]),
       prisma.paymentRecord.findMany({
-        where: { status: 'PAID' },
-        select: { amount: true, customer: true },
-      }).catch(() => [] as Array<{ amount: number; customer: string | null }>),
+        where: { status: 'PAID', createdAt: { gte: baselineAt } },
+        select: { amount: true, customer: true, createdAt: true },
+      }).catch(() => [] as Array<{ amount: number; customer: string | null; createdAt: Date }>),
     ]);
 
     const toMap = (rows: Array<{ day: Date; count: bigint }>) => {
@@ -220,6 +248,7 @@ export async function GET(request: NextRequest) {
     const { collectedCentavos, collectedPayments } = sumPaidExcludingTestEmails(
       paidPayments,
       excludedEmails,
+      baselineAt,
     );
     const formatBrlFromCentavos = (centavos: number) =>
       `R$ ${(centavos / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
@@ -240,6 +269,7 @@ export async function GET(request: NextRequest) {
         contratados: Number(tracking.contratados || 0),
         naoContratados: Number(tracking.naoContratados || 0),
         excludedTestAccounts: excludedIds.length,
+        statsSince: baselineAt.toISOString(),
       },
       plans: {
         items: paidPlans,

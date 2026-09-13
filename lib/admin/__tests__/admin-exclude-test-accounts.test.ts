@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  ADMIN_STATS_BASELINE_DEFAULT,
   getAdminExactTestEmails,
+  getAdminStatsBaselineAt,
   isAdminExcludedTestAccount,
   sumPaidExcludingTestEmails,
 } from '@/lib/admin/admin-exclude-test-accounts';
@@ -8,6 +10,15 @@ import {
 describe('admin-exclude-test-accounts', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
+  });
+
+  it('usa baseline padrão que zera o histórico de teste', () => {
+    expect(getAdminStatsBaselineAt().toISOString()).toBe(ADMIN_STATS_BASELINE_DEFAULT);
+  });
+
+  it('respeita ADMIN_STATS_SINCE=off para contar o histórico', () => {
+    vi.stubEnv('ADMIN_STATS_SINCE', 'off');
+    expect(getAdminStatsBaselineAt().getTime()).toBe(0);
   });
 
   it('exclui bypass paizaonacozinha sem precisar de env', () => {

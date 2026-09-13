@@ -2,11 +2,33 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { matchesCompanyTestBypass } from '@/lib/company/company-test-bypass-shared';
 
+/** Limpeza do painel: só conta visitas/cadastros/pagamentos a partir desta data (BRT 13/09/2026 00:00). */
+export const ADMIN_STATS_BASELINE_DEFAULT = '2026-09-13T03:00:00.000Z';
+
 function splitEmails(raw: string | undefined): string[] {
   return (raw || '')
     .split(',')
     .map((item) => item.toLowerCase().trim())
     .filter(Boolean);
+}
+
+/**
+ * Data de corte das métricas do /admin.
+ * - padrão: zera histórico de teste até 13/09/2026
+ * - ADMIN_STATS_SINCE=ISO → usa essa data
+ * - ADMIN_STATS_SINCE=off → conta tudo (só exclui contas teste)
+ */
+export function getAdminStatsBaselineAt(): Date {
+  const raw = process.env.ADMIN_STATS_SINCE?.trim().toLowerCase();
+  if (raw === 'off' || raw === '0' || raw === 'false') {
+    return new Date(0);
+  }
+  const fromEnv = process.env.ADMIN_STATS_SINCE?.trim();
+  if (fromEnv) {
+    const parsed = new Date(fromEnv);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+  return new Date(ADMIN_STATS_BASELINE_DEFAULT);
 }
 
 /** E-mails exatos a excluir do painel admin (E2E + lista explícita). */
@@ -76,16 +98,22 @@ export function sqlAndUserIdNotIn(columnSql: Prisma.Sql, userIds: string[]): Pri
   return Prisma.sql`AND ${columnSql} NOT IN (${Prisma.join(userIds)})`;
 }
 
-/** Soma pagamentos PAID ignorando customer.email de contas teste. */
+/** Soma pagamentos PAID ignorando customer.email de contas teste e opcionalmente antes do baseline. */
 export function sumPaidExcludingTestEmails(
-  payments: Array<{ amount: number; customer: string | null }>,
+  payments: Array<{ amount: number; customer: string | null; createdAt?: Date | string | null }>,
   excludedEmails: string[],
+  baselineAt?: Date,
 ): { collectedCentavos: number; collectedPayments: number } {
   const emailSet = new Set(excludedEmails.map((e) => e.toLowerCase()));
+  const baselineMs = baselineAt?.getTime() ?? 0;
   let collectedCentavos = 0;
   let collectedPayments = 0;
 
   for (const payment of payments) {
+    if (baselineMs > 0 && payment.createdAt) {
+      const createdMs = new Date(payment.createdAt).getTime();
+      if (!Number.isNaN(createdMs) && createdMs < baselineMs) continue;
+    }
     let email = '';
     if (payment.customer) {
       try {
