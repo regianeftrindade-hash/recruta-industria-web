@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { requireAdmin } from '@/lib/auth/admin-auth';
 import { formatCNPJ } from '@/lib/security';
+import {
+  getAdminExcludedTestAccounts,
+  isAdminExcludedTestAccount,
+  sqlAndUserIdNotIn,
+} from '@/lib/admin/admin-exclude-test-accounts';
 
 export async function GET(request: NextRequest) {
   const denied = await requireAdmin(request);
@@ -9,6 +15,9 @@ export async function GET(request: NextRequest) {
 
   try {
     const status = request.nextUrl.searchParams.get('status') || 'PENDING';
+    const { userIds: excludedIds } = await getAdminExcludedTestAccounts();
+    const excludeCompanyUserSql = sqlAndUserIdNotIn(Prisma.sql`c."userId"`, excludedIds);
+
     const rows = await prisma.$queryRaw<Array<{
       userId: string;
       name: string;
@@ -27,12 +36,17 @@ export async function GET(request: NextRequest) {
       FROM "Company" c
       JOIN "User" u ON u.id = c."userId"
       WHERE c."verificationStatus" = ${status}
+        ${excludeCompanyUserSql}
       ORDER BY c."createdAt" DESC
       LIMIT 100
     `;
 
-    return NextResponse.json({
-      companies: rows.map((row) => ({
+    const companies = rows
+      .filter((row) => !isAdminExcludedTestAccount({
+        email: row.email,
+        companyName: row.name,
+      }))
+      .map((row) => ({
         userId: row.userId,
         razaoSocial: row.name,
         cnpj: row.cnpj ? formatCNPJ(row.cnpj) : null,
@@ -43,8 +57,9 @@ export async function GET(request: NextRequest) {
         verificationStatus: row.verificationStatus,
         rejectionReason: row.rejectionReason,
         createdAt: row.createdAt,
-      })),
-    });
+      }));
+
+    return NextResponse.json({ companies });
   } catch (error) {
     console.error('Erro ao listar empresas para verificação:', error);
     return NextResponse.json({ error: 'Erro ao listar empresas' }, { status: 500 });
