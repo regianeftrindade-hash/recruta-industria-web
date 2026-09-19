@@ -18,6 +18,18 @@ async function handleLogout(request: NextRequest) {
   }
 
   const redirectParam = request.nextUrl.searchParams.get('redirect');
+
+  // Após excluir cadastro: limpa cookies e vai para a home
+  if (redirectParam === '/') {
+    const response = NextResponse.redirect(new URL('/', request.url), { status: 302 });
+    response.cookies.delete('next-auth.session-token');
+    response.cookies.delete('next-auth.callback-url');
+    response.cookies.delete('next-auth.csrf-token');
+    response.cookies.delete('__Secure-next-auth.session-token');
+    response.cookies.delete('__Host-next-auth.csrf-token');
+    return response;
+  }
+
   const loginUrl = new URL('/login', request.url);
 
   if (redirectParam?.startsWith('/')) {

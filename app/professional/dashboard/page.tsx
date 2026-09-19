@@ -32,6 +32,7 @@ import ProfessionalRecruitmentHistory, {
   type RecruitmentHistoryCounts,
 } from "@/components/professional/ProfessionalRecruitmentHistory";
 import PlatformVideoCall from "@/components/shared/PlatformVideoCall";
+import DeleteAccountControl from "@/components/shared/DeleteAccountControl";
 import { buildCareerTimeline } from "@/lib/professional/career-timeline";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
 
@@ -599,13 +600,16 @@ export default function DashboardProfissional() {
           <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
               <h3 style={{ ...dashTitleProf, margin: 0, fontSize: 14 }}>Perfil resumido</h3>
-              <button
-                type="button"
-                onClick={() => router.push("/professional/register?edit=1")}
-                style={{ ...btnGold, padding: "6px 10px", fontSize: 10, flexShrink: 0 }}
-              >
-                Editar perfil
-              </button>
+              <div style={{ display: "flex", gap: 8, alignItems: "flex-start", flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                <button
+                  type="button"
+                  onClick={() => router.push("/professional/register?edit=1")}
+                  style={{ ...btnGold, padding: "6px 10px", fontSize: 10, flexShrink: 0 }}
+                >
+                  Editar perfil
+                </button>
+                <DeleteAccountControl variant="card" />
+              </div>
             </div>
             <p style={{ margin: "0 0 12px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
               É assim que as empresas veem seu perfil antes de liberar o contato.

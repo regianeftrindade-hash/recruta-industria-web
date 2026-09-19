@@ -19,6 +19,7 @@ import {
 } from "@/components/company/CompanyDashboardTabContext";
 import CompanyDashboardTabContent from "@/components/company/CompanyDashboardTabContent";
 import CompanyInterviewConfirmBanner from "@/components/company/CompanyInterviewConfirmBanner";
+import DeleteAccountControl from "@/components/shared/DeleteAccountControl";
 import { matchesCompanyTestBypass } from "@/lib/company/company-test-bypass-shared";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import {
@@ -181,6 +182,7 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
                 Atualizar cadastro
               </button>
             ) : null}
+            <DeleteAccountControl variant="compact" />
             <button type="button" onClick={handleLogout} style={{ ...btnGold, padding: "5px 10px", fontSize: 10 }}>
               Sair
             </button>
