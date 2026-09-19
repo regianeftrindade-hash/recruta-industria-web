@@ -22,13 +22,14 @@ function buildContentSecurityPolicy(): string {
 
   return [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com https://www.googletagmanager.com",
+    // Google Ads: gtag + pixel de conversão (viewthroughconversion em doubleclick)
+    "script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "media-src 'self' blob: https:",
     "font-src 'self' data: https://fonts.gstatic.com",
     "connect-src 'self' https: stun: stuns: turn: turns: wss:",
-    "frame-src 'self' https://accounts.google.com",
+    "frame-src 'self' https://accounts.google.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://www.google.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     // NextAuth redireciona o POST de sign-in para o Google; 'self' sozinho bloqueia o OAuth.
