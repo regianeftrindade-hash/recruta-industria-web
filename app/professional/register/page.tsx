@@ -1172,7 +1172,9 @@ export default function CadastroProfissional() {
         }
 
         if (!profileRes.ok) {
-          throw new Error(String(profileData.error || 'Erro ao salvar perfil'));
+          const detail = String(profileData.details || '').trim();
+          const base = String(profileData.error || 'Erro ao salvar perfil');
+          throw new Error(detail ? `${base}: ${detail}` : base);
         }
 
         if (profileData.success) {

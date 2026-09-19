@@ -274,6 +274,16 @@ export async function POST(request: NextRequest) {
       existingProfile as unknown as Record<string, unknown> | null,
     );
 
+    // Nunca enviar formDataJSON / campos internos no upsert do Prisma
+    delete (mergedData as Record<string, unknown>).formDataJSON;
+    delete (mergedData as Record<string, unknown>).id;
+    delete (mergedData as Record<string, unknown>).userId;
+    delete (mergedData as Record<string, unknown>).createdAt;
+    delete (mergedData as Record<string, unknown>).updatedAt;
+    delete (mergedData as Record<string, unknown>).sobreMimJSON;
+    delete (mergedData as Record<string, unknown>).testeComportamentalJSON;
+    delete (mergedData as Record<string, unknown>).videoApresentacaoPath;
+
     let snapshotToSave = formDataJSON;
     if (existingProfile?.formDataJSON?.trim() && formDataJSON) {
       try {
@@ -299,7 +309,6 @@ export async function POST(request: NextRequest) {
       },
       update: {
         ...(mergedData as Prisma.ProfileUncheckedUpdateInput),
-        formDataJSON: snapshotToSave,
         updatedAt: new Date()
       },
       create: {
@@ -307,7 +316,6 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         title: String(mergedData.title || 'Profissional'),
         location: String(mergedData.location || 'Não informado'),
-        formDataJSON: snapshotToSave,
       }
     });
 
@@ -339,11 +347,13 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Erro ao salvar perfil:', error);
+    const details = error instanceof Error ? error.message : String(error);
+    const safeDetails = details.length > 280 ? `${details.slice(0, 280)}…` : details;
 
     return NextResponse.json(
       {
         error: 'Erro ao salvar perfil',
-        details: String(error)
+        details: safeDetails,
       },
       {
         status: 500

@@ -389,11 +389,10 @@ export function buildProfileUpsertPayload(
   userEmail: string
 ) {
   const formDataJSON = prepareFormSnapshot(body);
+  // formDataJSON NÃO entra no upsert do Prisma — grava via SQL em saveProfileFormSnapshot
+  // (evita PrismaClientValidationError / Unknown argument em clients desatualizados).
   return {
-    prismaData: {
-      ...buildProfileUpsertData(body, userEmail),
-      formDataJSON,
-    },
+    prismaData: buildProfileUpsertData(body, userEmail),
     formDataJSON,
   };
 }
@@ -678,7 +677,7 @@ export function buildProfileUpsertData(body: Record<string, unknown>, userEmail:
     recolocacao: getStringValue(body.recolocacao),
     pretensaoSalarial: getStringValue(body.pretensaoSalarial),
     mensagemEmpresas: getStringValue(body.mensagemEmpresas),
-    profileCompletion: completion,
+    profileCompletion: Math.round(Number(completion) || 0),
     disponivelContratacao: getStringValue(body.disponivelContratacao),
   };
 }
