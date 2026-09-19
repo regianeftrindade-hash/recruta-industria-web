@@ -350,16 +350,37 @@ export function prepareFormSnapshot(body: Record<string, unknown>): string {
 
 function parseQuantidadeFilhos(value: unknown): number | null {
   if (typeof value === 'number') {
-    return Number.isNaN(value) ? null : value;
+    if (!Number.isFinite(value)) return null;
+    const n = Math.trunc(value);
+    if (n < 0 || n > 30) return null;
+    return n;
   }
   if (typeof value === 'string') {
     const trimmed = value.trim();
     if (!trimmed) return null;
     if (trimmed === '4+') return 4;
-    const parsed = parseInt(trimmed.replace(/\D/g, ''), 10);
-    return Number.isNaN(parsed) ? null : parsed;
+    const digits = trimmed.replace(/\D/g, '');
+    // Evita telefone/CPF colados virarem Int gigante no Postgres
+    if (!digits || digits.length > 2) return null;
+    const parsed = parseInt(digits, 10);
+    if (Number.isNaN(parsed) || parsed < 0 || parsed > 30) return null;
+    return parsed;
   }
   return null;
+}
+
+/** Int32 do Postgres; rejeita telefone/CPF e outros números absurdos. */
+function parseSafePgInt(
+  value: unknown,
+  opts: { min: number; max: number },
+): number | null {
+  if (value === null || value === undefined || value === '') return null;
+  const raw = typeof value === 'number' ? value : parseInt(String(value).trim(), 10);
+  if (!Number.isFinite(raw)) return null;
+  const n = Math.trunc(raw);
+  if (n < opts.min || n > opts.max) return null;
+  if (n < -2147483648 || n > 2147483647) return null;
+  return n;
 }
 
 export function rebuildFormSnapshotFromProfile(profile: Profile, user: User): string {
@@ -641,10 +662,7 @@ export function buildProfileUpsertData(body: Record<string, unknown>, userEmail:
     atestadoURL: cleanedAtestado,
     cpf: body.cpf ? formatCpfInput(String(body.cpf)) : null,
     dataNascimento,
-    idade:
-      typeof body.idade === 'string' || typeof body.idade === 'number'
-        ? parseInt(String(body.idade), 10) || null
-        : null,
+    idade: parseSafePgInt(body.idade, { min: 0, max: 120 }),
     sexoBiologico: getStringValue(body.sexoBiologico),
     identidadeGenero: getStringValue(body.identidadeGenero),
     orientacaoSexual: getStringValue(body.orientacaoSexual),
@@ -677,7 +695,7 @@ export function buildProfileUpsertData(body: Record<string, unknown>, userEmail:
     recolocacao: getStringValue(body.recolocacao),
     pretensaoSalarial: getStringValue(body.pretensaoSalarial),
     mensagemEmpresas: getStringValue(body.mensagemEmpresas),
-    profileCompletion: Math.round(Number(completion) || 0),
+    profileCompletion: parseSafePgInt(Math.round(Number(completion) || 0), { min: 0, max: 100 }) ?? 0,
     disponivelContratacao: getStringValue(body.disponivelContratacao),
   };
 }

@@ -1636,7 +1636,17 @@ export default function CadastroProfissional() {
 
               <div className={styles.fieldGroup}>
                 <label className={styles.label} htmlFor="idade">Idade</label>
-                <input id="idade" type="text" className={styles.input} value={formData.idade} onChange={e => setFormData((prev) => ({ ...prev, idade: e.target.value }))} />
+                <input
+                  id="idade"
+                  type="text"
+                  inputMode="numeric"
+                  className={styles.input}
+                  value={formData.idade}
+                  onChange={(e) => {
+                    const onlyDigits = e.target.value.replace(/\D/g, '').slice(0, 3);
+                    setFormData((prev) => ({ ...prev, idade: onlyDigits }));
+                  }}
+                />
               </div>
 
               <div className={fg('sexoBiologico')}>
