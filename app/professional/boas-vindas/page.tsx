@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import PageLoader from "@/app/components/PageLoader";
 import { AuthAtmosphere } from "@/components/shared/AuthAtmosphere";
+import { flushProfessionalSignupConversionIfPending } from "@/lib/analytics/google-ads";
 import styles from "./boas-vindas.module.css";
 
 export default function BoasVindasProfissionalPage() {
@@ -45,6 +46,9 @@ export default function BoasVindasProfissionalPage() {
         }
 
         if (!ativo) return;
+
+        // Só dispara se o cadastro acabou de marcar pendente (não em visitas antigas).
+        flushProfessionalSignupConversionIfPending();
 
         const nomePerfil = String(data.nome || data.formEdit?.formData?.nome || "").trim();
         if (nomePerfil && nomePerfil !== "Usuário") {
