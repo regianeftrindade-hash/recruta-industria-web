@@ -87,7 +87,6 @@ export default function DeleteAccountControl({ variant = "card" }: Props) {
           role="dialog"
           aria-label="Confirmar exclusão de cadastro"
           style={{
-            marginTop: variant === "card" ? 0 : 0,
             padding: 12,
             borderRadius: 10,
             border: `1px solid rgba(229, 57, 53, 0.55)`,
