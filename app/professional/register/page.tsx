@@ -67,6 +67,7 @@ import CertificadoCursoUpload from '@/components/professional/CertificadoCursoUp
 import VideoApresentacaoCadastro from '@/components/professional/VideoApresentacaoCadastro';
 import { AuthAtmosphere } from '@/components/shared/AuthAtmosphere';
 import LogoRecruta from '@/app/components/LogoRecruta';
+import { trackProfessionalSignupConversion } from '@/lib/analytics/google-ads';
 
 const BACKUP_STORAGE_KEY = 'dadosFormularioBackup';
 const FORM_STORAGE_KEY = 'dadosFormularioCompleto';
@@ -1188,6 +1189,7 @@ export default function CadastroProfissional() {
             }
             router.push('/professional/dashboard');
           } else {
+            trackProfessionalSignupConversion();
             router.push('/professional/boas-vindas');
           }
           return;
@@ -1277,6 +1279,7 @@ export default function CadastroProfissional() {
           dataNascimentoDisplay: dataNascimentoValue,
         });
         localStorage.removeItem('dadosCadastroSimples');
+        trackProfessionalSignupConversion();
         router.push('/professional/boas-vindas');
         return;
       }
@@ -1295,6 +1298,7 @@ export default function CadastroProfissional() {
             dataNascimentoDisplay: dataNascimentoValue,
           });
           localStorage.removeItem('dadosCadastroSimples');
+          trackProfessionalSignupConversion();
           router.push('/professional/boas-vindas');
           return;
         }
@@ -1304,6 +1308,7 @@ export default function CadastroProfissional() {
           dataNascimentoDisplay: dataNascimentoValue,
         });
         localStorage.removeItem('dadosCadastroSimples');
+        trackProfessionalSignupConversion();
         setFormFeedback({
           tone: 'success',
           message:
@@ -1317,6 +1322,7 @@ export default function CadastroProfissional() {
         dataNascimentoDisplay: dataNascimentoValue,
       });
       localStorage.removeItem('dadosCadastroSimples');
+      trackProfessionalSignupConversion();
       setFormFeedback({
         tone: 'success',
         message:

@@ -1,11 +1,13 @@
 import React from "react";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Oswald } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import ServiceWorkerRegister from "@/components/app-shell/ServiceWorkerRegister";
 import ManifestInjector from "@/components/app-shell/ManifestInjector";
 import SiteVisitTracker from "@/components/app-shell/SiteVisitTracker";
 import { InstallPromptProvider } from "@/components/pwa/InstallPromptProvider";
+import { GOOGLE_ADS_ID } from "@/lib/analytics/google-ads";
 import Providers from "./providers";
 
 const geistSans = Geist({
@@ -75,6 +77,18 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${geistSans.variable} ${geistMono.variable} ${oswald.variable}`}>
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-ads-gtag" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GOOGLE_ADS_ID}');
+          `}
+        </Script>
         <ManifestInjector />
         <ServiceWorkerRegister />
         <Providers>

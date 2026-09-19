@@ -22,7 +22,7 @@ function buildContentSecurityPolicy(): string {
 
   return [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com",
+    "script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com https://www.googletagmanager.com",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "media-src 'self' blob: https:",
