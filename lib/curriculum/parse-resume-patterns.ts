@@ -49,6 +49,15 @@ const UF_NOME_PARA_SIGLA: Record<string, string> = {
 
 /** Cidades frequentes em currículos → UF (ajuda quando não vem a sigla). */
 const CIDADE_UF_COMUM: Record<string, string> = {
+  cascavel: 'PR',
+  'foz do iguacu': 'PR',
+  'ponta grossa': 'PR',
+  guarapuava: 'PR',
+  colombo: 'PR',
+  araucaria: 'PR',
+  toledo: 'PR',
+  'francisco beltrao': 'PR',
+  'pato branco': 'PR',
   curitiba: 'PR',
   'sao jose dos pinhais': 'PR',
   londrina: 'PR',
@@ -256,7 +265,10 @@ function titleCaseCity(name: string): string {
 }
 
 function ufFromToken(raw: string): string | null {
-  const plain = stripAccents(raw.toLowerCase()).replace(/[.,;].*$/, '').trim();
+  const plain = stripAccents(raw.toLowerCase())
+    .replace(/[:.,;].*$/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (!plain) return null;
   if (plain.length === 2 && UF_SET.has(plain.toUpperCase())) return plain.toUpperCase();
   if (UF_NOME_PARA_SIGLA[plain]) return UF_NOME_PARA_SIGLA[plain];
@@ -278,7 +290,43 @@ function acceptCidade(cidade: string, uf: string): { cidade: string; estado: str
   return { cidade: nome, estado: uf };
 }
 
+function extractEstadoLabel(text: string): string | null {
+  // Só a linha do rótulo (não engolir E-mail/Telefone da linha seguinte)
+  const line = text.match(
+    /(?:^|\n)\s*(?:estado|uf)\s*[:\-–]?\s*([A-Za-zÀ-ÿ]{2,}(?:\s+[A-Za-zÀ-ÿ]+){0,3})\s*(?=\n|$)/i,
+  );
+  if (line) return ufFromToken(line[1]);
+
+  const inline = text.match(
+    /(?:estado|uf)\s*[:\-–]\s*([A-Za-zÀ-ÿ]{2,}(?:\s+[A-Za-zÀ-ÿ]+){0,2})(?=\s{2,}|\s+(?:cidade|e-?mail|telefone|celular|cep|idade|nascimento)\b|[,\n]|$)/i,
+  );
+  return inline ? ufFromToken(inline[1]) : null;
+}
+
+function extractCidadeLabel(text: string): string | null {
+  const linha = text.match(
+    /(?:^|\n)\s*(?:cidade|munic[ií]pio|naturalidade)\s*[:\-–]?\s*\n\s*([A-Za-zÀ-ÿ'][A-Za-zÀ-ÿ' ]{1,40}?)\s*(?:\n|$)/i,
+  );
+  if (linha) return titleCaseCity(normalizeSpaces(linha[1]));
+
+  const labeled = text.match(
+    /(?:^|\n)\s*(?:cidade|munic[ií]pio|naturalidade|natural\s+de|residente\s+em|mora(?:ndo)?\s+em)\s*[:\-–]?\s*([A-Za-zÀ-ÿ'][A-Za-zÀ-ÿ' ]{1,40}?)\s*(?=\n|$)/i,
+  );
+  if (labeled) {
+    return titleCaseCity(normalizeSpaces(labeled[1].replace(/[-–,].*$/, '')));
+  }
+  return null;
+}
+
 function extractCidadeEstado(text: string): { cidade: string | null; estado: string | null } {
+  // Estado/cidade por rótulo primeiro (formato típico de currículo DOCX)
+  let estado = extractEstadoLabel(text);
+  let cidade = extractCidadeLabel(text);
+  if (cidade) {
+    const key = stripAccents(cidade.toLowerCase());
+    return { cidade, estado: estado || CIDADE_UF_COMUM[key] || null };
+  }
+
   // Curitiba/PR | Curitiba - PR | Curitiba, PR | Curitiba (PR)
   const patterns: RegExp[] = [
     /(?:cidade|munic[ií]pio|localidade|reside(?:ncia)?(?:\s+em)?|mora(?:ndo)?(?:\s+em)?|endere[cç]o)\s*[:\-–]?\s*([A-Za-zÀ-ÿ' ]{2,40}?)\s*[-–—,/|(]\s*([A-Za-z]{2})\)?/i,
@@ -343,37 +391,13 @@ function extractCidadeEstado(text: string): { cidade: string | null; estado: str
     }
   }
 
-  const estadoLabel = text.match(
-    /(?:estado|uf)\s*[:\-–]?\s*([A-Za-zÀ-ÿ]{2,}(?:\s+[A-Za-zÀ-ÿ]+){0,3})/i,
-  );
-  let estado: string | null = estadoLabel ? ufFromToken(estadoLabel[1]) : null;
-
-  // Cidade em linha própria após o rótulo (comum em tabela)
-  const cidadeLinha = text.match(
-    /(?:^|\n)\s*(?:cidade|munic[ií]pio|naturalidade)\s*[:\-–]?\s*\n\s*([A-Za-zÀ-ÿ'][A-Za-zÀ-ÿ' ]{1,40}?)\s*(?:\n|$)/i,
-  );
-  if (cidadeLinha) {
-    const cidade = titleCaseCity(normalizeSpaces(cidadeLinha[1]));
-    const key = stripAccents(cidade.toLowerCase());
-    return { cidade, estado: estado || CIDADE_UF_COMUM[key] || null };
-  }
-
-  const cidadeLabel = text.match(
-    /(?:cidade|munic[ií]pio|naturalidade|natural\s+de|residente\s+em|mora(?:ndo)?\s+em)\s*[:\-–]?\s*([A-Za-zÀ-ÿ'][A-Za-zÀ-ÿ' ]{1,40}?)(?=\s+(?:estado|uf|telefone|celular|whatsapp|e-?mail|cep|nascimento|idade|brasil|endere[cç]o|rua|av\.|cnh)\b|[,.\n]|$)/i,
-  );
-  if (cidadeLabel) {
-    const cidade = titleCaseCity(normalizeSpaces(cidadeLabel[1].replace(/[-–,].*$/, '')));
-    const key = stripAccents(cidade.toLowerCase());
-    return { cidade, estado: estado || CIDADE_UF_COMUM[key] || null };
-  }
-
   // Endereço longo: "... - Cidade/UF - CEP"
   const endereco = text.match(
     /(?:endere[cç]o|resid[eê]ncia)\s*[:\-–]?\s*[^\n]{0,120}?([A-Za-zÀ-ÿ'][A-Za-zÀ-ÿ' ]{2,40}?)\s*[/|-]\s*([A-Za-z]{2})\b/i,
   );
   if (endereco) {
     const accepted = acceptCidade(endereco[1], endereco[2].toUpperCase());
-    if (accepted) return accepted;
+    if (accepted) return { ...accepted, estado: accepted.estado || estado };
   }
 
   // Cidade conhecida sozinha no cabeçalho
@@ -724,8 +748,11 @@ export function parseResumePatterns(rawText: string): ResumePatternParseResult {
   const phonesHeader = extractPhones(headerBlob);
   const phones = phonesHeader.length ? phonesHeader : extractPhones(text);
   const locHeader = extractCidadeEstado(headerBlob);
-  const locFallback =
-    locHeader.cidade || locHeader.estado ? locHeader : extractCidadeEstado(text);
+  const locFull = extractCidadeEstado(text);
+  const locFallback = {
+    cidade: locHeader.cidade || locFull.cidade,
+    estado: locHeader.estado || locFull.estado,
+  };
   const nome = extractNome(headerBlob, text);
   const nasc = extractDataNascimento(headerBlob);
   const nascFinal = nasc.display ? nasc : extractDataNascimento(text);
@@ -742,7 +769,7 @@ export function parseResumePatterns(rawText: string): ResumePatternParseResult {
   const expFinal =
     sections.experiencia.trim().length > 0
       ? extractExperiencias(sections.experiencia)
-      : extractExperiencias(text).filter((e) => e.empresa && e.cargo);
+      : [];
 
   const cursos = extractCursos(sections.cursos, text);
   const cnh = extractCnh(text);

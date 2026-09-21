@@ -212,6 +212,14 @@ export default function RegisterImportCurriculo({
       {filledLabels.length > 0 && (
         <p className={styles.importCurriculoSuccess} role="status">
           Preenchido: {filledLabels.join(", ")}.
+          {extraction?.structured?.estado || extraction?.structured?.cidade
+            ? ` Localização detectada: ${[
+                extraction.structured.cidade,
+                extraction.structured.estado,
+              ]
+                .filter(Boolean)
+                .join(" / ")}.`
+            : ""}
         </p>
       )}
 
