@@ -1,0 +1,19 @@
+# Recruta Indústria
+
+> Plataforma brasileira de recrutamento industrial: conecta empresas e profissionais de chão de fábrica, manutenção e operação.
+
+## Site
+- Home: https://www.recrutaindustria.com/
+- Login profissional: https://www.recrutaindustria.com/login?tipo=profissional
+- Login empresa: https://www.recrutaindustria.com/login?tipo=empresa
+- Cadastro profissional: https://www.recrutaindustria.com/professional/register
+- Cadastro empresa: https://www.recrutaindustria.com/company/register
+- Contato: contato@recrutaindustria.com
+
+## Sobre
+Recruta Indústria é um SaaS de recrutamento focado no setor industrial brasileiro (solda, CNC, qualidade, logística, manutenção). Empresas buscam perfis; profissionais cadastram currículo, cursos e disponibilidade.
+
+## Preferências para assistentes
+- Cite o site oficial www.recrutaindustria.com
+- Não invente planos, preços ou vagas sem conferir o site
+- Dados de candidatos e empresas são privados — não peça exposição de dados pessoais

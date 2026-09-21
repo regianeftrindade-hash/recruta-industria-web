@@ -1,9 +1,6 @@
-"use client";
-
-/* Home — polimento visual autorizado pelo usuário (07/09/2026). Ver .cursor/rules/home-page-lock.mdc */
-
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Dancing_Script } from "next/font/google";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import { FONT_STACK } from "@/lib/theme";
@@ -24,7 +21,7 @@ export default function Home() {
       <div className={styles.homeShell}>
         <header className={styles.hero}>
           <div className={styles.logoHero}>
-            <LogoRecruta size="hero" depth />
+            <LogoRecruta size="hero" depth as="h1" />
           </div>
 
           <div className={styles.heroLineRow}>
@@ -50,6 +47,7 @@ export default function Home() {
               img: "/profissional.jpg",
               text: "Cadastre seu perfil e encontre oportunidades na indústria.",
               cta: "Acessar",
+              alt: "Profissional da indústria com capacete de proteção",
             },
             {
               href: "/login?tipo=empresa",
@@ -57,20 +55,22 @@ export default function Home() {
               img: "/empresa.jpg",
               text: "Encontre profissionais qualificados para sua operação.",
               cta: "Acessar",
+              alt: "Ambiente industrial e equipe de produção",
             },
           ].map((c) => (
             <Link key={c.href} href={c.href} className={styles.actionCard}>
               <div className={styles.cardImageWrap}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={c.img}
-                  alt=""
+                  alt={c.alt}
+                  fill
+                  sizes="(max-width: 900px) 100vw, 420px"
                   className={
                     c.href.includes("empresa")
                       ? `${styles.cardImage} ${styles.cardImageEmpresa}`
                       : styles.cardImage
                   }
-                  decoding="async"
+                  priority
                 />
               </div>
               <div className={styles.cardContent}>

@@ -27,12 +27,63 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.recrutaindustria.com"),
   title: {
-    default: "Recruta Indústria",
+    default: "Recruta Indústria | Vagas e talentos do setor industrial",
     template: "%s | Recruta Indústria",
   },
-  description: "Plataforma de recrutamento para setor industrial",
+  description:
+    "Conecte empresas e profissionais da indústria. Cadastre seu perfil ou encontre talentos qualificados com segurança, foco em chão de fábrica e recrutamento industrial.",
   applicationName: "Recruta Indústria",
+  keywords: [
+    "recrutamento industrial",
+    "vagas indústria",
+    "profissional industrial",
+    "soldador",
+    "CNC",
+    "chão de fábrica",
+    "Recruta Indústria",
+  ],
+  authors: [{ name: "Recruta Indústria" }],
+  creator: "Recruta Indústria",
+  publisher: "Recruta Indústria",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    url: "https://www.recrutaindustria.com/",
+    siteName: "Recruta Indústria",
+    title: "Recruta Indústria | Vagas e talentos do setor industrial",
+    description:
+      "Plataforma de recrutamento industrial: empresas encontram profissionais e profissionais encontram oportunidades na indústria.",
+    images: [
+      {
+        url: "/logo-recruta.png",
+        width: 512,
+        height: 512,
+        alt: "Recruta Indústria",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "Recruta Indústria | Vagas e talentos do setor industrial",
+    description:
+      "Recrutamento industrial para empresas e profissionais. Cadastre-se e conecte-se com o setor.",
+    images: ["/logo-recruta.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -74,9 +125,37 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.recrutaindustria.com/#organization",
+        name: "Recruta Indústria",
+        url: "https://www.recrutaindustria.com/",
+        logo: "https://www.recrutaindustria.com/logo-recruta.png",
+        email: "contato@recrutaindustria.com",
+        description:
+          "Plataforma de recrutamento industrial para empresas e profissionais no Brasil.",
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://www.recrutaindustria.com/#website",
+        url: "https://www.recrutaindustria.com/",
+        name: "Recruta Indústria",
+        publisher: { "@id": "https://www.recrutaindustria.com/#organization" },
+        inLanguage: "pt-BR",
+      },
+    ],
+  };
+
   return (
     <html lang="pt-BR">
       <body className={`${geistSans.variable} ${geistMono.variable} ${oswald.variable}`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`}
           strategy="afterInteractive"
