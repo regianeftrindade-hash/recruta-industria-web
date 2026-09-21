@@ -13,9 +13,16 @@ export function isProfessionalRegistrationComplete(
 
   if (profile.formDataJSON?.trim()) {
     try {
-      const parsed = JSON.parse(profile.formDataJSON) as { cpf?: string };
+      const parsed = JSON.parse(profile.formDataJSON) as {
+        cpf?: string;
+        nome?: string;
+        email?: string;
+      };
       const cpfForm = parsed.cpf?.replace(/\D/g, "") ?? "";
       if (cpfForm.length === 11) return true;
+      if (String(parsed.nome || "").trim().length >= 3 && String(parsed.email || "").includes("@")) {
+        return true;
+      }
     } catch {
       /* ignora JSON inválido */
     }

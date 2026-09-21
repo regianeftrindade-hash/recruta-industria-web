@@ -40,6 +40,13 @@ export type CampoObrigatorioFalta = {
   label: string;
 };
 
+export type ValidacaoCadastroEmpresa = {
+  nome: string;
+  cargo: string;
+  dataInicio?: string;
+  dataFim?: string;
+};
+
 export type ValidacaoCadastroInput = {
   nome: string;
   cpf: string;
@@ -72,7 +79,7 @@ export type ValidacaoCadastroInput = {
   disponibilidadeInicio: string;
   pretensaoSalarial: string;
   trabalhouIndustria: string;
-  empresas: Array<{ nome: string; cargo: string }>;
+  empresas: ValidacaoCadastroEmpresa[];
   autorizoDados: boolean;
   declaroVerdadeiro: boolean;
   aceitoLGPD: boolean;
@@ -90,6 +97,20 @@ function dataNascimentoValida(dataDisplay: string, dataIso: string): boolean {
   return !campoVazio(dataIso);
 }
 
+function experienciaCompleta(e: ValidacaoCadastroEmpresa): boolean {
+  return (
+    !campoVazio(e.nome)
+    && !campoVazio(e.cargo)
+    && !campoVazio(e.dataInicio)
+  );
+}
+
+/**
+ * Obrigatórios do cadastro profissional (perfil):
+ * nome, nascimento, cidade, estado, e-mail, telefone, WhatsApp, escolaridade,
+ * experiências (empresa, cargo, período), pretensão, cargo desejado, situação.
+ * Senha (cadastro novo) e termos legais continuam obrigatórios para concluir.
+ */
 export function validarCamposObrigatoriosCadastro(input: ValidacaoCadastroInput): CampoObrigatorioFalta[] {
   const faltando: CampoObrigatorioFalta[] = [];
 
@@ -100,24 +121,13 @@ export function validarCamposObrigatoriosCadastro(input: ValidacaoCadastroInput)
   };
 
   if (campoVazio(input.nome)) add('nome', 'Nome completo');
-  if (campoVazio(input.cpf) || input.cpf.replace(/\D/g, '').length < 11) {
-    add('cpf', 'CPF');
-  } else if (input.cpfError) {
-    add('cpf', 'CPF válido');
-  }
   if (!dataNascimentoValida(input.dataNascimentoValue, input.dataNascimento)) {
     add('dataNascimento', 'Nascimento');
   }
-  if (campoVazio(input.sexoBiologico)) add('sexoBiologico', 'Sexo biológico');
-  if (campoVazio(input.estadoCivil)) add('estadoCivil', 'Estado civil');
-  if (campoVazio(input.possuiCNH)) add('possuiCNH', 'Possui CNH?');
-  if (input.possuiCNH === 'Sim' && campoVazio(input.categoriaCNH)) {
-    add('categoriaCNH', 'Categoria da CNH');
-  }
-  if (campoVazio(input.antecedentes)) add('antecedentes', 'Antecedentes criminais');
 
   if (campoVazio(input.email)) add('email', 'E-mail');
   else if (!isValidEmail(input.email)) add('email', 'E-mail válido');
+
   const telPrincipal = input.telefone.replace(/\D/g, '');
   const telAlternativo = input.telefone2.replace(/\D/g, '');
   if (telPrincipal.length < 10 && telAlternativo.length < 10) {
@@ -127,30 +137,19 @@ export function validarCamposObrigatoriosCadastro(input: ValidacaoCadastroInput)
 
   if (campoVazio(input.estado)) add('estado', 'Estado (UF)');
   if (campoVazio(input.cidade)) add('cidade', 'Cidade');
-  if (campoVazio(input.disponibilidadeMudanca)) add('disponibilidadeMudanca', 'Disponibilidade para mudança');
-  if (campoVazio(input.aceitaViagens)) add('aceitaViagens', 'Disponibilidade para viagens');
 
   if (campoVazio(input.escolaridade)) add('escolaridade', 'Escolaridade (nível)');
-  if (campoVazio(input.cursoFormacao)) add('cursoFormacao', 'Curso');
-  if (campoVazio(input.anoConclusaoFormacao)) add('anoConclusaoFormacao', 'Ano de conclusão');
 
   if (campoVazio(input.situacaoProfissional)) add('situacaoProfissional', 'Situação profissional atual');
-  if (campoVazio(input.areaInteresse)) add('areaInteresse', 'Área de interesse');
-  if (campoVazio(input.nivelOperacional)) add('nivelOperacional', 'Nível operacional');
   if (campoVazio(input.cargoDesejado)) add('cargoDesejado', 'Cargo desejado');
-  if (!campoVazio(input.nivelOperacional) && campoVazio(input.areaNivel)) {
-    add('areaNivel', 'Área Operacional');
-  }
-  if (campoVazio(input.turnoDisponivel)) add('turnoDisponivel', 'Turno disponível');
-  if (campoVazio(input.disponibilidadeInicio)) add('disponibilidadeInicio', 'Disponibilidade para início');
   if (campoVazio(input.pretensaoSalarial)) add('pretensaoSalarial', 'Pretensão salarial');
 
-  if (campoVazio(input.trabalhouIndustria)) add('trabalhouIndustria', 'Trabalhou na indústria?');
-  if (input.trabalhouIndustria === 'Sim') {
-    const temExperiencia = input.empresas.some(
-      (e) => !campoVazio(e.nome) && !campoVazio(e.cargo),
+  const temExperienciaCompleta = input.empresas.some(experienciaCompleta);
+  if (!temExperienciaCompleta) {
+    add(
+      'experiencias',
+      'Experiência profissional (empresa, cargo e período/início)',
     );
-    if (!temExperiencia) add('experiencias', 'Pelo menos 1 experiência profissional');
   }
 
   if (!input.autorizoDados) add('autorizoDados', 'Termo de Autorização de Uso de Dados');
@@ -177,36 +176,20 @@ export function validarCamposObrigatoriosCadastro(input: ValidacaoCadastroInput)
 export const CAMPOS_OBRIGATORIOS_POR_ETAPA: readonly (readonly CampoObrigatorioId[])[] = [
   [
     'nome',
-    'cpf',
     'dataNascimento',
-    'sexoBiologico',
-    'estadoCivil',
-    'possuiCNH',
-    'categoriaCNH',
-    'antecedentes',
     'email',
     'telefone',
     'whatsapp',
     'estado',
     'cidade',
-    'disponibilidadeMudanca',
-    'aceitaViagens',
     'password',
     'confirmPassword',
   ],
   [
     'escolaridade',
-    'cursoFormacao',
-    'anoConclusaoFormacao',
     'situacaoProfissional',
-    'areaInteresse',
-    'nivelOperacional',
     'cargoDesejado',
-    'areaNivel',
-    'turnoDisponivel',
-    'disponibilidadeInicio',
     'pretensaoSalarial',
-    'trabalhouIndustria',
     'experiencias',
   ],
   [],

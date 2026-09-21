@@ -24,7 +24,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './register.module.css';
 import PasswordStrengthMeter from '../../components/PasswordStrengthMeter';
-import { isValidEmail, isValidCPF, sanitizeInput } from '../../../lib/security';
+import { isValidEmail, sanitizeInput } from '../../../lib/security';
 import {
   buildFormEditForLoad,
 } from '../../../lib/professional-profile-map';
@@ -68,6 +68,9 @@ import VideoApresentacaoCadastro from '@/components/professional/VideoApresentac
 import { AuthAtmosphere } from '@/components/shared/AuthAtmosphere';
 import LogoRecruta from '@/app/components/LogoRecruta';
 import { reportProfessionalSignupConversion } from '@/lib/analytics/google-ads';
+import RegisterImportCurriculo from './RegisterImportCurriculo';
+import { buildResumeFormApplyPatch, matchCidadeIbge } from '@/lib/curriculum/apply-resume-to-form';
+import type { ResumeStructuredFields } from '@/lib/curriculum/types';
 
 const BACKUP_STORAGE_KEY = 'dadosFormularioBackup';
 const FORM_STORAGE_KEY = 'dadosFormularioCompleto';
@@ -274,20 +277,6 @@ function CampoFotoPerfil({
   );
 }
 
-const CURRICULO_MIMES = [
-  'application/pdf',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-] as const;
-
-function isCurriculoArquivoValido(file: File): boolean {
-  const ext = file.name.split('.').pop()?.toLowerCase();
-  return (
-    (CURRICULO_MIMES as readonly string[]).includes(file.type)
-    || ext === 'pdf'
-    || ext === 'docx'
-  );
-}
-
 function CampoArquivoAnexo({
   id,
   label,
@@ -435,8 +424,6 @@ export default function CadastroProfissional() {
   const [formFeedback, setFormFeedback] = useState<{ tone: 'error' | 'success'; message: string } | null>(null);
   const [cpf, setCpf] = useState('');
   const [senhaPreenchida, setSenhaPreenchida] = useState(false); // Rastreia se senha foi carregada do localStorage
-  const [cpfError, setCpfError] = useState('');
-  const [cpfValidating, setCpfValidating] = useState(false);
   const [telefone, setTelefone] = useState('');
   const [telefone2, setTelefone2] = useState('');
   const [pretensaoSalarial, setPretensaoSalarial] = useState('');
@@ -964,7 +951,7 @@ export default function CadastroProfissional() {
   const montarInputValidacao = useCallback((): ValidacaoCadastroInput => ({
     nome: formData.nome,
     cpf,
-    cpfError,
+    cpfError: '',
     dataNascimentoValue,
     dataNascimento: formData.dataNascimento,
     sexoBiologico: formData.sexoBiologico,
@@ -1003,7 +990,6 @@ export default function CadastroProfissional() {
   }), [
     formData,
     cpf,
-    cpfError,
     dataNascimentoValue,
     telefone,
     telefone2,
@@ -1041,6 +1027,19 @@ export default function CadastroProfissional() {
     }
     setCamposObrigatoriosFaltando([]);
     return true;
+  };
+
+  const irWizard = (target: number) => {
+    if (target === wizardStep) return;
+    if (target < wizardStep) {
+      setWizardStep(target);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    if (target > wizardStep + 1) return;
+    if (!tentarAvancarWizard()) return;
+    setWizardStep(Math.min(lastWizardStep, wizardStep + 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   const uploadFile = async (file: File, type: string): Promise<string | null> => {
     try {
@@ -1437,6 +1436,8 @@ export default function CadastroProfissional() {
           </p>
         )}
 
+
+
         {useWizard && (
           <RegisterWizardChrome
             step={wizardStep}
@@ -1489,7 +1490,75 @@ export default function CadastroProfissional() {
               reader.readAsDataURL(file);
             }}
           />
+
+          <RegisterImportCurriculo
+            isEditMode={isEditMode}
+            onApplyStructured={(structured, opts) => {
+              const applied = buildResumeFormApplyPatch(
+                structured,
+                {
+                  formData: formData as unknown as Record<string, unknown>,
+                  telefone,
+                  telefone2,
+                },
+                { overwrite: Boolean(opts?.overwrite) },
+              );
           
+              const estadoAplicado = String(applied.formDataPatch.estado || structured.estado || '');
+              const cidadeRaw = applied.cidadePendente || structured.cidade || '';
+          
+              const aplicarPatch = (cidadeFinal?: string | null) => {
+                const patch = { ...applied.formDataPatch };
+                if (cidadeFinal) patch.cidade = cidadeFinal;
+                else if (cidadeRaw && !estadoAplicado) patch.cidade = cidadeRaw;
+
+                if (Object.keys(patch).length > 0) {
+                  setFormData((prev) => ({
+                    ...prev,
+                    ...patch,
+                  }));
+                }
+                if (applied.telefone) {
+                  setTelefone(applied.telefone);
+                  setFormData((prev) => ({ ...prev, telefone: applied.telefone! }));
+                }
+                if (applied.telefone2) {
+                  setTelefone2(applied.telefone2);
+                  setFormData((prev) => ({ ...prev, telefone2: applied.telefone2! }));
+                }
+                if (applied.dataNascimentoDisplay) {
+                  setDataNascimentoValue(applied.dataNascimentoDisplay);
+                }
+                if (applied.cursos?.length) setCursos(applied.cursos);
+                if (applied.empresas?.length) setEmpresas(applied.empresas);
+              };
+          
+              if (estadoAplicado && cidadeRaw) {
+                // Casa cidade com nome oficial do IBGE para o <select> aceitar o valor
+                void fetch(
+                  `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoAplicado}/municipios`,
+                )
+                  .then((res) => res.json())
+                  .then((data: Array<{ nome: string }>) => {
+                    const lista = (data || []).map((c) => c.nome).sort();
+                    setCidades(lista);
+                    const matched = matchCidadeIbge(cidadeRaw, lista);
+                    aplicarPatch(matched || cidadeRaw);
+                  })
+                  .catch(() => {
+                    aplicarPatch(cidadeRaw);
+                  });
+              } else {
+                aplicarPatch(cidadeRaw || null);
+              }
+          
+              return { filledLabels: applied.filledLabels };
+            }}
+            onCurriculoAnexado={(url) => {
+              setFormData((prev) => ({ ...prev, curriculo: url }));
+            }}
+          />
+
           <section className={styles.sectionCard}>
             <RegisterSectionHeader emoji="🏭" title="Dados pessoais" />
             
@@ -1504,74 +1573,6 @@ export default function CadastroProfissional() {
                   value={formData.nome}
                   onChange={(e) => setFormData((prev) => ({ ...prev, nome: e.target.value }))}
                 />
-              </div>
-
-              <div className={fg('cpf')}>
-                <LabelMarcador htmlFor="cpf" marcador="obrigatorio">CPF</LabelMarcador>
-                <div className={styles.inputIndicatorWrap}>
-                  {!cpfValidating && cpf.length === 14 && !cpfError && (
-                    <span className={`${styles.cpfIndicator} ${styles.cpfIndicatorOk}`} aria-label="CPF válido">✓</span>
-                  )}
-                  {!cpfValidating && cpfError && cpf.length === 14 && (
-                    <span className={`${styles.cpfIndicator} ${styles.cpfIndicatorError}`} aria-label="CPF inválido">✕</span>
-                  )}
-                  <input
-                    id="cpf"
-                    type="text"
-                    required
-                    className={`${styles.input} ${styles.inputWithIndicator}`}
-                    placeholder="000.000.000-00"
-                    maxLength={14}
-                    value={cpf}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      const cpfLimpo = value.replace(/\D/g, '');
-
-                      if (cpfLimpo.length > 11) return;
-
-                      let cpfFormatado = '';
-                      if (cpfLimpo.length > 0) {
-                        cpfFormatado = cpfLimpo.slice(0, 3);
-                        if (cpfLimpo.length > 3) {
-                          cpfFormatado += '.' + cpfLimpo.slice(3, 6);
-                        }
-                        if (cpfLimpo.length > 6) {
-                          cpfFormatado += '.' + cpfLimpo.slice(6, 9);
-                        }
-                        if (cpfLimpo.length > 9) {
-                          cpfFormatado += '-' + cpfLimpo.slice(9, 11);
-                        }
-                      }
-
-                      setCpf(cpfFormatado);
-
-                      if (cpfLimpo.length === 11) {
-                        setCpfValidating(true);
-                        fetch('/api/auth/validate-cpf', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ cpf: cpfLimpo })
-                        })
-                          .then(res => res.json())
-                          .then(data => {
-                            if (data.valid) {
-                              setCpfError('');
-                            } else {
-                              setCpfError(data.message);
-                            }
-                            setCpfValidating(false);
-                          })
-                          .catch(err => {
-                            console.error('Erro ao validar CPF:', err);
-                            setCpfValidating(false);
-                          });
-                      } else {
-                        setCpfError('');
-                      }
-                    }}
-                    style={{ borderColor: cpfError ? '#dc3545' : undefined }}
-                  />
-                </div>
               </div>
 
               <div className={fg('dataNascimento')}>
@@ -1650,7 +1651,7 @@ export default function CadastroProfissional() {
               </div>
 
               <div className={fg('sexoBiologico')}>
-                <LabelMarcador htmlFor="sexoBiologico" marcador="obrigatorio">Sexo biológico</LabelMarcador>
+                <LabelMarcador htmlFor="sexoBiologico" marcador="recomendado">Sexo biológico</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="sexoBiologico"
@@ -1706,7 +1707,7 @@ export default function CadastroProfissional() {
               </div>
 
               <div className={fg('estadoCivil')}>
-                <LabelMarcador htmlFor="estadoCivil" marcador="obrigatorio">Estado civil</LabelMarcador>
+                <LabelMarcador htmlFor="estadoCivil" marcador="recomendado">Estado civil</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="estadoCivil"
@@ -1745,7 +1746,7 @@ export default function CadastroProfissional() {
               </div>
 
               <div className={fg('possuiCNH')}>
-                <LabelMarcador htmlFor="possuiCNH" marcador="obrigatorio">Possui CNH?</LabelMarcador>
+                <LabelMarcador htmlFor="possuiCNH" marcador="recomendado">Possui CNH?</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="possuiCNH"
@@ -1768,7 +1769,7 @@ export default function CadastroProfissional() {
 
               {formData.possuiCNH === 'Sim' && (
                 <div className={fg('categoriaCNH')}>
-                  <LabelMarcador htmlFor="categoriaCNH" marcador="obrigatorio">Categoria da CNH</LabelMarcador>
+                  <LabelMarcador htmlFor="categoriaCNH" marcador="recomendado">Categoria da CNH</LabelMarcador>
                   <div className={styles.selectWrap}>
                     <select
                       id="categoriaCNH"
@@ -1786,7 +1787,7 @@ export default function CadastroProfissional() {
               )}
 
               <div className={fg('antecedentes')}>
-                <LabelMarcador htmlFor="antecedentes" marcador="obrigatorio">Antecedentes criminais</LabelMarcador>
+                <LabelMarcador htmlFor="antecedentes" marcador="recomendado">Antecedentes criminais</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="antecedentes"
@@ -1846,79 +1847,78 @@ export default function CadastroProfissional() {
                 }}
               />
             </div>
-          </section>
 
-          <RegisterCollapsibleSection
-            emoji="👨‍👩‍👧‍👦"
-            title="Filhos"
-            marcador="recomendado"
-            defaultOpen={formData.possuiFilhos === 'Sim'}
-          >
-
-            <div className={styles.fieldsRow}>
-              <div className={styles.fieldGroup}>
-                <label className={styles.label} htmlFor="possuiFilhos">Possui filhos?</label>
-                <div className={styles.selectWrap}>
-                  <select id="possuiFilhos" className={styles.select} value={formData.possuiFilhos} onChange={e => setFormData((prev) => ({ ...prev, possuiFilhos: e.target.value }))}>
-                    <option value="">Selecione</option>
-                    <option>Não</option>
-                    <option>Sim</option>
-                  </select>
-                </div>
-              </div>
-
-              {formData.possuiFilhos === 'Sim' && (
-                <>
-                  <div className={styles.fieldGroup}>
-                    <label className={styles.label} htmlFor="quantidadeFilhos">Quantidade de filhos</label>
-                    <div className={styles.selectWrap}>
-                      <select
-                        id="quantidadeFilhos"
-                        className={styles.select}
-                        value={formData.quantidadeFilhos}
-                        onChange={e => setFormData((prev) => ({ ...prev, quantidadeFilhos: e.target.value }))}
-                      >
-                        <option value="">Selecione</option>
-                        <option>1</option>
-                        <option>2</option>
-                        <option>3</option>
-                        <option>4+</option>
-                      </select>
-                    </div>
+            <RegisterCollapsibleSection
+              emoji="👨‍👩‍👧‍👦"
+              title="Filhos"
+              marcador="recomendado"
+              defaultOpen={formData.possuiFilhos === 'Sim'}
+            >
+              <div className={styles.fieldsRow}>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label} htmlFor="possuiFilhos">Possui filhos?</label>
+                  <div className={styles.selectWrap}>
+                    <select id="possuiFilhos" className={styles.select} value={formData.possuiFilhos} onChange={e => setFormData((prev) => ({ ...prev, possuiFilhos: e.target.value }))}>
+                      <option value="">Selecione</option>
+                      <option>Não</option>
+                      <option>Sim</option>
+                    </select>
                   </div>
+                </div>
 
-                  <div className={`${styles.fieldGroup} ${styles.fieldSpan2}`}>
-                    <span className={styles.label}>Faixa etária dos filhos</span>
-                    <div className={styles.tagFieldBox}>
-                      <div className={styles.tagList}>
-                        {['Menos de 1', '1 a 3', '3 a 5', '5 a 7', '7 a 9', '9 a 12', 'Acima de 12'].map((faixa) => {
-                          const selected = formData.faixaEtariaFilhos.includes(faixa);
-                          return (
-                            <button
-                              key={faixa}
-                              type="button"
-                              className={`${styles.tagChip} ${selected ? styles.tagChipActive : ''}`}
-                              aria-pressed={selected}
-                              onClick={() => {
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  faixaEtariaFilhos: selected
-                                    ? prev.faixaEtariaFilhos.filter((f) => f !== faixa)
-                                    : [...prev.faixaEtariaFilhos, faixa],
-                                }));
-                              }}
-                            >
-                              {faixa}
-                            </button>
-                          );
-                        })}
+                {formData.possuiFilhos === 'Sim' && (
+                  <>
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.label} htmlFor="quantidadeFilhos">Quantidade de filhos</label>
+                      <div className={styles.selectWrap}>
+                        <select
+                          id="quantidadeFilhos"
+                          className={styles.select}
+                          value={formData.quantidadeFilhos}
+                          onChange={e => setFormData((prev) => ({ ...prev, quantidadeFilhos: e.target.value }))}
+                        >
+                          <option value="">Selecione</option>
+                          <option>1</option>
+                          <option>2</option>
+                          <option>3</option>
+                          <option>4+</option>
+                        </select>
                       </div>
                     </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </RegisterCollapsibleSection>
+
+                    <div className={`${styles.fieldGroup} ${styles.fieldSpan2}`}>
+                      <span className={styles.label}>Faixa etária dos filhos</span>
+                      <div className={styles.tagFieldBox}>
+                        <div className={styles.tagList}>
+                          {['Menos de 1', '1 a 3', '3 a 5', '5 a 7', '7 a 9', '9 a 12', 'Acima de 12'].map((faixa) => {
+                            const selected = formData.faixaEtariaFilhos.includes(faixa);
+                            return (
+                              <button
+                                key={faixa}
+                                type="button"
+                                className={`${styles.tagChip} ${selected ? styles.tagChipActive : ''}`}
+                                aria-pressed={selected}
+                                onClick={() => {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    faixaEtariaFilhos: selected
+                                      ? prev.faixaEtariaFilhos.filter((f) => f !== faixa)
+                                      : [...prev.faixaEtariaFilhos, faixa],
+                                  }));
+                                }}
+                              >
+                                {faixa}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </RegisterCollapsibleSection>
+          </section>
 
           <section className={styles.sectionCard}>
             <RegisterSectionHeader emoji="📞" title="Contato" />
@@ -2103,7 +2103,7 @@ export default function CadastroProfissional() {
                 </div>
               </div>
               <div className={fg('disponibilidadeMudanca')}>
-                <LabelMarcador htmlFor="disponibilidadeMudanca" marcador="obrigatorio">Disponibilidade para mudança</LabelMarcador>
+                <LabelMarcador htmlFor="disponibilidadeMudanca" marcador="recomendado">Disponibilidade para mudança</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="disponibilidadeMudanca"
@@ -2119,7 +2119,7 @@ export default function CadastroProfissional() {
                 </div>
               </div>
               <div className={fg('aceitaViagens')}>
-                <LabelMarcador htmlFor="aceitaViagens" marcador="obrigatorio">Disponibilidade para viagens</LabelMarcador>
+                <LabelMarcador htmlFor="aceitaViagens" marcador="recomendado">Disponibilidade para viagens</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="aceitaViagens"
@@ -2173,7 +2173,7 @@ export default function CadastroProfissional() {
                     </div>
                   </div>
                   <div className={fg('cursoFormacao')}>
-                    <LabelMarcador htmlFor="cursoFormacao" marcador="obrigatorio">Curso</LabelMarcador>
+                    <LabelMarcador htmlFor="cursoFormacao" marcador="recomendado">Curso</LabelMarcador>
                     <input
                       id="cursoFormacao"
                       type="text"
@@ -2195,7 +2195,7 @@ export default function CadastroProfissional() {
                     />
                   </div>
                   <div className={fg('anoConclusaoFormacao')}>
-                    <LabelMarcador htmlFor="anoConclusaoFormacao" marcador="obrigatorio">Ano de conclusão</LabelMarcador>
+                    <LabelMarcador htmlFor="anoConclusaoFormacao" marcador="recomendado">Ano de conclusão</LabelMarcador>
                     <input
                       id="anoConclusaoFormacao"
                       type="number"
@@ -2515,12 +2515,11 @@ export default function CadastroProfissional() {
               </div>
 
               <div className={fg('areaInteresse')}>
-                <LabelMarcador htmlFor="areaInteresse" marcador="obrigatorio">Área de interesse</LabelMarcador>
+                <LabelMarcador htmlFor="areaInteresse" marcador="recomendado">Área de interesse</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="areaInteresse"
                     className={styles.select}
-                    required
                     value={formData.areaInteresse}
                     onChange={(e) => setFormData((prev) => ({ ...prev, areaInteresse: e.target.value }))}
                   >
@@ -2582,12 +2581,11 @@ export default function CadastroProfissional() {
               </div>
 
               <div className={fg('nivelOperacional')}>
-                <LabelMarcador htmlFor="nivelOperacional" marcador="obrigatorio">Nível operacional</LabelMarcador>
+                <LabelMarcador htmlFor="nivelOperacional" marcador="recomendado">Nível operacional</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="nivelOperacional"
                     className={styles.select}
-                    required
                     value={formData.nivelOperacional}
                     onChange={(e) => setFormData((prev) => ({
                       ...prev,
@@ -2606,7 +2604,7 @@ export default function CadastroProfissional() {
 
               {formData.nivelOperacional && (
                 <div className={fg('areaNivel')}>
-                  <LabelMarcador htmlFor="areaNivel" marcador="obrigatorio">Área Operacional</LabelMarcador>
+                  <LabelMarcador htmlFor="areaNivel" marcador="recomendado">Área Operacional</LabelMarcador>
                   <div className={styles.selectWrap}>
                     <select
                       id="areaNivel"
@@ -2637,7 +2635,7 @@ export default function CadastroProfissional() {
               </div>
 
               <div className={fg('turnoDisponivel')}>
-                <LabelMarcador htmlFor="turnoDisponivel" marcador="obrigatorio">Turno disponível</LabelMarcador>
+                <LabelMarcador htmlFor="turnoDisponivel" marcador="recomendado">Turno disponível</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="turnoDisponivel"
@@ -2654,7 +2652,7 @@ export default function CadastroProfissional() {
                 </div>
               </div>
               <div className={fg('disponibilidadeInicio')}>
-                <LabelMarcador htmlFor="disponibilidadeInicio" marcador="obrigatorio">Disponibilidade para início</LabelMarcador>
+                <LabelMarcador htmlFor="disponibilidadeInicio" marcador="recomendado">Disponibilidade para início</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="disponibilidadeInicio"
@@ -2689,12 +2687,11 @@ export default function CadastroProfissional() {
 
             <div className={styles.fieldsRow}>
               <div className={fg('trabalhouIndustria')}>
-                <LabelMarcador htmlFor="trabalhouIndustria" marcador="obrigatorio">Trabalhou na indústria?</LabelMarcador>
+                <LabelMarcador htmlFor="trabalhouIndustria" marcador="recomendado">Trabalhou na indústria?</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="trabalhouIndustria"
                     className={styles.select}
-                    required
                     value={formData.trabalhouIndustria}
                     onChange={(e) => setFormData((prev) => ({ ...prev, trabalhouIndustria: e.target.value }))}
                   >
@@ -2729,9 +2726,11 @@ export default function CadastroProfissional() {
             )}
             </div>
 
-            {formData.trabalhouIndustria === 'Sim' && (
-              <>
+            <>
                 <TextoMarcador marcador="obrigatorio">Experiências profissionais</TextoMarcador>
+                <p style={{ margin: '0 0 10px', fontSize: 12, color: '#bbb', lineHeight: 1.45 }}>
+                  Informe ao menos uma empresa com nome, cargo e período (mês/ano de início). Deixe o fim em branco se ainda trabalha lá.
+                </p>
                 <div className={blocoErro('experiencias')} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                   {empresas.map((empresa, index) => (
                     <div
@@ -2742,7 +2741,7 @@ export default function CadastroProfissional() {
                       <p style={{ margin: '0 0 10px', fontWeight: 'bold', color: '#C89B3C' }}>Empresa {index + 1}</p>
                       <div className={styles.fieldsRow}>
                         <div className={index === 0 ? fg('experiencias') : styles.fieldGroup}>
-                          <label className={styles.label}>Nome da empresa</label>
+                          <LabelMarcador marcador="obrigatorio">Nome da empresa</LabelMarcador>
                           <input
                             id={index === 0 ? 'experiencias' : undefined}
                             type="text"
@@ -2753,11 +2752,18 @@ export default function CadastroProfissional() {
                               const novasEmpresas = [...empresas];
                               novasEmpresas[index].nome = e.target.value;
                               setEmpresas(novasEmpresas);
+                              if (e.target.value.trim()) {
+                                setFormData((prev) =>
+                                  prev.trabalhouIndustria === 'Sim'
+                                    ? prev
+                                    : { ...prev, trabalhouIndustria: 'Sim' },
+                                );
+                              }
                             }}
                           />
                         </div>
                         <div className={index === 0 ? fg('experiencias') : styles.fieldGroup}>
-                          <label className={styles.label}>Cargo</label>
+                          <LabelMarcador marcador="obrigatorio">Cargo</LabelMarcador>
                           <input
                             type="text"
                             className={styles.input}
@@ -2790,7 +2796,7 @@ export default function CadastroProfissional() {
                           </div>
                         </div>
                         <div className={styles.fieldGroup}>
-                          <label className={styles.label}>Início (Mês/Ano)</label>
+                          <LabelMarcador marcador="obrigatorio">Início (Mês/Ano)</LabelMarcador>
                           <input
                             type="month"
                             className={styles.input}
@@ -2803,12 +2809,11 @@ export default function CadastroProfissional() {
                           />
                         </div>
                         <div className={styles.fieldGroup}>
-                          <label className={styles.label}>Fim (Mês/Ano)</label>
+                          <LabelMarcador marcador="recomendado">Fim (Mês/Ano)</LabelMarcador>
                           <input
                             type="month"
                             className={styles.input}
                             value={empresa.dataFim}
-                            required={index === 0}
                             onChange={(e) => {
                               const novasEmpresas = [...empresas];
                               novasEmpresas[index].dataFim = e.target.value;
@@ -2858,8 +2863,7 @@ export default function CadastroProfissional() {
                     </button>
                   </div>
                 </div>
-              </>
-            )}
+            </>
           </section>
           </>
           )}
@@ -2901,21 +2905,17 @@ export default function CadastroProfissional() {
           <>
           <section className={styles.sectionCard}>
             <RegisterSectionHeader emoji="📄" title="Currículo" />
-
             <p style={{ margin: '0 0 10px', fontSize: 12, color: '#bbb', lineHeight: 1.45 }}>
-              Anexe seu currículo em arquivo. Apenas PDF e DOCX são aceitos.
+              Este anexo é preenchido automaticamente quando você usa <strong>Importar currículo</strong> no início.
+              Se precisar, troque o arquivo aqui.
             </p>
             <div className={styles.formSubCard}>
               <CampoArquivoAnexo
                 id="curriculo"
-                accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 value={formData.curriculo}
-                textoBotaoVazio="Selecionar currículo (PDF ou DOCX)"
+                textoBotaoVazio="Selecionar currículo (PDF, DOC ou DOCX)"
                 onFileSelect={async (file) => {
-                  if (!isCurriculoArquivoValido(file)) {
-                    alert('Formato não permitido. Envie o currículo em PDF ou DOCX.');
-                    return;
-                  }
                   try {
                     const fd = new FormData();
                     fd.append('file', file);
@@ -2941,7 +2941,6 @@ export default function CadastroProfissional() {
                 }}
               />
             </div>
-
           </section>
 
           <section className={styles.sectionCard}>
@@ -2998,7 +2997,43 @@ export default function CadastroProfissional() {
               </ul>
             </div>
           )}
-          {(!useWizard || wizardStep === lastWizardStep) && (
+
+          {useWizard && wizardStep < lastWizardStep && (
+            <div className={styles.wizardNavFooter}>
+              <button
+                type="button"
+                className={styles.wizardNavBtn}
+                disabled={wizardStep <= 0}
+                onClick={() => irWizard(wizardStep - 1)}
+              >
+                Voltar
+              </button>
+              <button
+                type="button"
+                className={styles.wizardNavBtnPrimary}
+                onClick={() => irWizard(wizardStep + 1)}
+              >
+                Continuar
+              </button>
+            </div>
+          )}
+
+          {useWizard && wizardStep === lastWizardStep && (
+            <div className={styles.wizardNavFooter}>
+              <button
+                type="button"
+                className={styles.wizardNavBtn}
+                onClick={() => irWizard(wizardStep - 1)}
+              >
+                Voltar
+              </button>
+              <button type="submit" className={styles.submitBtn}>
+                Finalizar meu cadastro
+              </button>
+            </div>
+          )}
+
+          {!useWizard && (
           <div className={styles.submitBtnRow}>
             <button type="submit" className={styles.submitBtn}>
               {isEditMode ? 'Salvar alterações' : 'Finalizar meu cadastro'}

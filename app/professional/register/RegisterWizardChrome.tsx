@@ -16,7 +16,7 @@ type Props = {
   onContinue?: () => boolean;
 };
 
-/** Indicador + navegação do cadastro em etapas (só no modo novo cadastro). */
+/** Indicador das etapas do cadastro (navegação Voltar/Continuar fica no rodapé). */
 export default function RegisterWizardChrome({ step, onStepChange, onContinue }: Props) {
   const last = REGISTER_WIZARD_STEPS.length - 1;
 
@@ -52,24 +52,6 @@ export default function RegisterWizardChrome({ step, onStepChange, onContinue }:
           );
         })}
       </ol>
-      <div className={styles.wizardNav}>
-        <button
-          type="button"
-          className={styles.wizardNavBtn}
-          disabled={step <= 0}
-          onClick={() => onStepChange(Math.max(0, step - 1))}
-        >
-          Voltar
-        </button>
-        <button
-          type="button"
-          className={styles.wizardNavBtnPrimary}
-          disabled={step >= last}
-          onClick={() => irPara(step + 1)}
-        >
-          Continuar
-        </button>
-      </div>
     </div>
   );
 }

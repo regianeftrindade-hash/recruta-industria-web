@@ -134,6 +134,22 @@
   margin-top: 10px;
 }
 
+.wizardNavFooter {
+  position: sticky;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin: 18px -4px 0;
+  padding: 12px 10px calc(12px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(200, 155, 60, 0.35);
+  background: linear-gradient(180deg, rgba(32, 32, 32, 0.92) 0%, rgba(24, 24, 24, 0.98) 100%);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
+}
+
 .wizardNavBtn,
 .wizardNavBtnPrimary {
   min-width: 110px;
@@ -229,6 +245,141 @@
   color: rgba(242, 242, 242, 0.88);
   font-size: 13px;
   line-height: 1.45;
+}
+
+.importCurriculoCard {
+  margin: 0 0 16px;
+  padding: 14px 14px 12px;
+}
+
+.importCurriculoTitle {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #c89b3c;
+  letter-spacing: 0.02em;
+}
+
+.importCurriculoHint {
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: rgba(242, 242, 242, 0.72);
+}
+
+.importCurriculoHiddenInput {
+  display: none;
+}
+
+.importCurriculoActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.importCurriculoBtn {
+  background: transparent;
+  border: 1px solid rgba(200, 155, 60, 0.45);
+  border-radius: 8px;
+  color: rgba(242, 242, 242, 0.92);
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.importCurriculoBtn:hover:not(:disabled) {
+  border-color: #c89b3c;
+  color: #fff;
+}
+
+.importCurriculoBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.importCurriculoDivider {
+  margin: 10px 0 8px;
+  border: none;
+  border-top: 1px solid rgba(200, 155, 60, 0.35);
+  height: 0;
+}
+
+.importCurriculoFileRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.importCurriculoFileName {
+  flex: 1 1 140px;
+  min-width: 0;
+  font-size: 11px;
+  color: rgba(242, 242, 242, 0.88);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.importCurriculoFileActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.importCurriculoError {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(229, 57, 53, 0.55);
+  background: rgba(229, 57, 53, 0.12);
+  color: #ffcdd2;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.importCurriculoSuccess {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(76, 175, 80, 0.5);
+  background: rgba(76, 175, 80, 0.12);
+  color: #c8e6c9;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.importCurriculoPreview {
+  margin-top: 10px;
+}
+
+.importCurriculoTextarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 140px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(200, 155, 60, 0.35);
+  background: rgba(0, 0, 0, 0.35);
+  color: #f2f2f2;
+  font-size: 11px;
+  line-height: 1.45;
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.importCurriculoPreview summary {
+  cursor: pointer;
+  font-size: 11px;
+  color: rgba(242, 242, 242, 0.75);
+  margin-bottom: 6px;
 }
 
 .sectionCard .sectionTitle {
