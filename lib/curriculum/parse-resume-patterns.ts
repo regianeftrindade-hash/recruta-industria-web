@@ -249,6 +249,29 @@ function titleCaseCity(name: string): string {
     .join(' ');
 }
 
+function ufFromToken(raw: string): string | null {
+  const plain = stripAccents(raw.toLowerCase()).replace(/[.,;].*$/, '').trim();
+  if (!plain) return null;
+  if (plain.length === 2 && UF_SET.has(plain.toUpperCase())) return plain.toUpperCase();
+  if (UF_NOME_PARA_SIGLA[plain]) return UF_NOME_PARA_SIGLA[plain];
+  const keys = Object.keys(UF_NOME_PARA_SIGLA).sort((a, b) => b.length - a.length);
+  for (const key of keys) {
+    if (plain === key || plain.startsWith(`${key} `)) return UF_NOME_PARA_SIGLA[key];
+  }
+  return null;
+}
+
+function acceptCidade(cidade: string, uf: string): { cidade: string; estado: string } | null {
+  const nome = titleCaseCity(normalizeSpaces(cidade).replace(/[-–,].*$/, ''));
+  if (!UF_SET.has(uf)) return null;
+  if (nome.length < 2 || nome.length > 40) return null;
+  if (/email|telefone|whatsapp|cnh|cep|rua|av\.|avenida|linkedin|http|nasciment|idade/i.test(nome)) {
+    return null;
+  }
+  if (/^(de|da|do|em|no|na|para|estado|cidade|uf)$/i.test(nome)) return null;
+  return { cidade: nome, estado: uf };
+}
+
 function extractCidadeEstado(text: string): { cidade: string | null; estado: string | null } {
   // Curitiba/PR | Curitiba - PR | Curitiba, PR | Curitiba (PR)
   const patterns: RegExp[] = [
@@ -273,27 +296,54 @@ function extractCidadeEstado(text: string): { cidade: string | null; estado: str
         cidade = normalizeSpaces(m[1]);
         uf = m[2].toUpperCase();
       }
-      if (!UF_SET.has(uf)) continue;
-      if (cidade.length < 2) continue;
-      if (/email|telefone|whatsapp|cnh|cep|rua|av\.|avenida|linkedin|http/i.test(cidade)) continue;
-      if (/^(de|da|do|em|no|na|para)$/i.test(cidade)) continue;
-      return { cidade: titleCaseCity(cidade), estado: uf };
+      const accepted = acceptCidade(cidade, uf);
+      if (accepted) return accepted;
     }
   }
 
-  const estadoLabel = text.match(/(?:estado|uf)\s*[:\-–]?\s*([A-Za-zÀ-ÿ ]{2,30})/i);
-  let estado: string | null = null;
-  if (estadoLabel) {
-    const raw = stripAccents(estadoLabel[1].toLowerCase().trim());
-    if (UF_SET.has(estadoLabel[1].toUpperCase().slice(0, 2)) && estadoLabel[1].trim().length === 2) {
-      estado = estadoLabel[1].toUpperCase();
-    } else if (UF_NOME_PARA_SIGLA[raw]) {
-      estado = UF_NOME_PARA_SIGLA[raw];
+  // Curitiba - Paraná | São Paulo, Sao Paulo | Londrina/Parana (nome do estado por extenso)
+  const stateAlt = Object.keys(UF_NOME_PARA_SIGLA)
+    .sort((a, b) => b.length - a.length)
+    .join('|');
+  const plain = stripAccents(text);
+  const byName = new RegExp(
+    `([A-Za-z][A-Za-z' ]{2,40}?)\\s*[-–—/,]\\s*(${stateAlt})\\b`,
+    'gi',
+  );
+  let nameMatch: RegExpExecArray | null;
+  while ((nameMatch = byName.exec(plain)) !== null) {
+    const uf = UF_NOME_PARA_SIGLA[nameMatch[2].toLowerCase()];
+    const accepted = uf ? acceptCidade(nameMatch[1], uf) : null;
+    if (accepted) return accepted;
+  }
+
+  const headerLines = linesOf(text).slice(0, 25);
+  for (let i = 0; i < headerLines.length; i += 1) {
+    const line = stripAccents(headerLines[i]);
+    const sameLine = line.match(
+      new RegExp(`^([A-Za-z][A-Za-z' ]{2,40}?)\\s+([A-Z]{2}|(?:${stateAlt}))$`, 'i'),
+    );
+    if (sameLine) {
+      const uf = ufFromToken(sameLine[2]);
+      const accepted = uf ? acceptCidade(sameLine[1], uf) : null;
+      if (accepted) return accepted;
+    }
+    if (i + 1 < headerLines.length) {
+      const uf = ufFromToken(headerLines[i + 1]);
+      if (uf && !ufFromToken(headerLines[i]) && !/\d|@/.test(headerLines[i])) {
+        const accepted = acceptCidade(headerLines[i], uf);
+        if (accepted) return accepted;
+      }
     }
   }
+
+  const estadoLabel = text.match(
+    /(?:estado|uf)\s*[:\-–]?\s*([A-Za-zÀ-ÿ]{2,}(?:\s+[A-Za-zÀ-ÿ]+){0,3})/i,
+  );
+  let estado: string | null = estadoLabel ? ufFromToken(estadoLabel[1]) : null;
 
   const cidadeLabel = text.match(
-    /(?:cidade|munic[ií]pio)\s*[:\-–]?\s*([A-Za-zÀ-ÿ' ]{2,40})/i,
+    /(?:cidade|munic[ií]pio|natural\s+de|residente\s+em|mora(?:ndo)?\s+em)\s*[:\-–]?\s*([A-Za-zÀ-ÿ'][A-Za-zÀ-ÿ' ]{1,40}?)(?=\s+(?:estado|uf|telefone|celular|whatsapp|e-?mail|cep|nascimento|idade|brasil)\b|[,.\n]|$)/i,
   );
   if (cidadeLabel) {
     const cidade = titleCaseCity(normalizeSpaces(cidadeLabel[1].replace(/[-–,].*$/, '')));
@@ -545,13 +595,66 @@ function extractCnh(text: string): string | null {
   return null;
 }
 
+const MESES_PT: Record<string, number> = {
+  janeiro: 1,
+  fevereiro: 2,
+  marco: 3,
+  abril: 4,
+  maio: 5,
+  junho: 6,
+  julho: 7,
+  agosto: 8,
+  setembro: 9,
+  outubro: 10,
+  novembro: 11,
+  dezembro: 12,
+};
+
+function idadeFromDate(day: number, month: number, year: number): string | null {
+  if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1940 || year > new Date().getFullYear() - 14) {
+    return null;
+  }
+  const birth = new Date(year, month - 1, day);
+  if (birth.getDate() !== day || birth.getMonth() !== month - 1) return null;
+  const today = new Date();
+  let idade = today.getFullYear() - year;
+  const md = today.getMonth() - (month - 1);
+  if (md < 0 || (md === 0 && today.getDate() < day)) idade -= 1;
+  if (idade < 14 || idade > 80) return null;
+  return String(idade);
+}
+
+/** Idade escrita sem data (Idade: 34 / 34 anos). */
+function extractIdadeSolta(text: string): string | null {
+  const labeled = text.match(/(?:^|\n|\s)idade\s*[:\-–]?\s*(\d{2})\b/i);
+  const anos = text.match(/\b(\d{2})\s+anos\b/i);
+  const n = Number(labeled?.[1] || anos?.[1]);
+  if (!n || n < 14 || n > 80) return null;
+  return String(n);
+}
+
 function extractDataNascimento(text: string): {
   display: string | null;
   iso: string | null;
   idade: string | null;
 } {
+  const porExtenso = text.match(
+    /(?:data\s+de\s+nascimento|nascimento|nasc\.?|nascido(?:a)?\s+em|dt\.?\s*nasc\.?)?\s*[:\-–]?\s*(\d{1,2})\s+de\s+(janeiro|fevereiro|mar[cç]o|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\s+de\s+((?:19|20)\d{2})/i,
+  );
+  if (porExtenso) {
+    const day = Number(porExtenso[1]);
+    const month = MESES_PT[stripAccents(porExtenso[2].toLowerCase())];
+    const year = Number(porExtenso[3]);
+    const idade = month ? idadeFromDate(day, month, year) : null;
+    if (idade && month) {
+      const display = `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+      const iso = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      return { display, iso, idade };
+    }
+  }
+
   const labeled = text.match(
-    /(?:data\s+de\s+nascimento|nascimento|nasc\.?|born|birthday|dt\.?\s*nasc\.?)\s*[:\-–]?\s*(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})/i,
+    /(?:data\s+de\s+nascimento|nascimento|nasc\.?|nascido(?:a)?\s+em|born|birthday|dt\.?\s*nasc\.?)\s*[:\-–]?\s*(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})/i,
   );
   const loose = text.match(/\b(\d{1,2})[\/.\-](\d{1,2})[\/.\-]((?:19|20)\d{2})\b/);
   const m = labeled || loose;
@@ -560,14 +663,8 @@ function extractDataNascimento(text: string): {
   const day = Number(m[1]);
   const month = Number(m[2]);
   const year = Number(m[3]);
-  if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1940 || year > new Date().getFullYear() - 14) {
-    return { display: null, iso: null, idade: null };
-  }
-
-  const birth = new Date(year, month - 1, day);
-  if (birth.getDate() !== day || birth.getMonth() !== month - 1) {
-    return { display: null, iso: null, idade: null };
-  }
+  const idade = idadeFromDate(day, month, year);
+  if (!idade) return { display: null, iso: null, idade: null };
 
   // Se veio de match "loose" sem rótulo, evita confundir com datas de experiência (anos recentes de trabalho)
   if (!labeled) {
@@ -577,14 +674,9 @@ function extractDataNascimento(text: string): {
     }
   }
 
-  const today = new Date();
-  let idade = today.getFullYear() - year;
-  const md = today.getMonth() - (month - 1);
-  if (md < 0 || (md === 0 && today.getDate() < day)) idade -= 1;
-
   const display = `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
   const iso = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-  return { display, iso, idade: String(idade) };
+  return { display, iso, idade };
 }
 
 export type ResumePatternParseResult = ResumeStructuredFields & {
@@ -610,8 +702,10 @@ export function parseResumePatterns(rawText: string): ResumePatternParseResult {
   const locFallback =
     locHeader.cidade || locHeader.estado ? locHeader : extractCidadeEstado(text);
   const nome = extractNome(headerBlob, text);
-  const nasc = extractDataNascimento(headerBlob) ;
+  const nasc = extractDataNascimento(headerBlob);
   const nascFinal = nasc.display ? nasc : extractDataNascimento(text);
+  const idadeFinal =
+    nascFinal.idade || extractIdadeSolta(headerBlob) || extractIdadeSolta(text);
 
   const formacaoInfo = extractFormacaoDetails(
     sections.formacao || (matchEscolaridade(text) ? text : ''),
@@ -639,6 +733,7 @@ export function parseResumePatterns(rawText: string): ResumePatternParseResult {
   const matchedFields: string[] = [];
   if (nome) matchedFields.push('nome');
   if (nascFinal.display) matchedFields.push('dataNascimento');
+  if (idadeFinal) matchedFields.push('idade');
   if (emails[0]) matchedFields.push('email');
   if (phones[0]) matchedFields.push('telefone');
   if (phones[1]) matchedFields.push('telefone2');
@@ -659,7 +754,7 @@ export function parseResumePatterns(rawText: string): ResumePatternParseResult {
     nome,
     dataNascimentoDisplay: nascFinal.display,
     dataNascimento: nascFinal.iso,
-    idade: nascFinal.idade,
+    idade: idadeFinal,
     contato: {
       email: emails[0] || null,
       telefone: phones[0] || null,

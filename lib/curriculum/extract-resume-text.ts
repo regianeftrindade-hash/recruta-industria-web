@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import mammoth from 'mammoth';
 import { extractText, extractTextItems, getDocumentProxy } from 'unpdf';
 import WordExtractor from 'word-extractor';
+import JSZip from 'jszip';
 import {
   detectResumeFormat,
   looksLikeResumeFile,
@@ -91,9 +92,56 @@ async function extractFromPdf(buffer: Buffer): Promise<string> {
   }
 }
 
+function decodeXmlText(value: string): string {
+  return value
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'");
+}
+
+/** Lê parágrafos do XML do Word (tabelas, caixas de texto e cabeçalho). */
+function docxXmlToText(xml: string): string {
+  return xml
+    .split(/<\/w:p>/i)
+    .map((paragraph) => {
+      const bits = [...paragraph.matchAll(/<w:t[^>]*>([^<]*)<\/w:t>/gi)].map((m) =>
+        decodeXmlText(m[1]),
+      );
+      return bits.join('').replace(/\s+/g, ' ').trim();
+    })
+    .filter(Boolean)
+    .join('\n');
+}
+
+async function extractDocxXmlParts(buffer: Buffer): Promise<string> {
+  const zip = await JSZip.loadAsync(buffer);
+  const names = Object.keys(zip.files)
+    .filter((name) => /^word\/(document|header\d+|footer\d+|footnotes|endnotes)\.xml$/i.test(name))
+    .sort();
+  const chunks: string[] = [];
+  for (const name of names) {
+    const file = zip.files[name];
+    if (!file || file.dir) continue;
+    const xml = await file.async('string');
+    const text = docxXmlToText(xml);
+    if (text) chunks.push(text);
+  }
+  return chunks.join('\n');
+}
+
 async function extractFromDocx(buffer: Buffer): Promise<string> {
-  const result = await mammoth.extractRawText({ buffer });
-  return result.value || '';
+  const [mammothText, xmlText] = await Promise.all([
+    mammoth.extractRawText({ buffer }).then((result) => result.value || ''),
+    extractDocxXmlParts(buffer).catch(() => ''),
+  ]);
+  const fromMammoth = mammothText.trim();
+  const fromXml = xmlText.trim();
+  if (!fromMammoth) return fromXml;
+  if (!fromXml) return fromMammoth;
+  // XML pega cabeçalho e caixa de texto que o mammoth costuma ignorar
+  return fromXml.length > fromMammoth.length ? fromXml : fromMammoth;
 }
 
 async function extractFromDoc(buffer: Buffer): Promise<string> {

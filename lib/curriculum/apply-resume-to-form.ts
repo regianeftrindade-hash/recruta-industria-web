@@ -91,10 +91,14 @@ export function buildResumeFormApplyPatch(
   if (structured.dataNascimentoDisplay && structured.dataNascimento) {
     if (overwrite || empty(current.formData.dataNascimento)) {
       patch.dataNascimento = structured.dataNascimento;
-      if (structured.idade) patch.idade = structured.idade;
       dataNascimentoDisplay = structured.dataNascimentoDisplay;
       filledLabels.push('Nascimento');
     }
+  }
+
+  if (structured.idade && (overwrite || empty(current.formData.idade))) {
+    patch.idade = structured.idade;
+    if (!filledLabels.includes('Idade')) filledLabels.push('Idade');
   }
 
   if (structured.contato?.email && canSet('email')) {

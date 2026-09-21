@@ -69,6 +69,31 @@ describe('parseResumePatterns', () => {
     expect(r.escolaridade).toBe('Médio completo');
     expect(r.cnh).toBe('B');
   });
+
+  it('extrai idade, cidade e estado mesmo sem data numérica', () => {
+    const r = parseResumePatterns(`
+João da Silva
+Idade: 34 anos
+Cidade: Londrina
+Estado: Paraná
+`);
+    expect(r.nome).toMatch(/João/i);
+    expect(r.idade).toBe('34');
+    expect(r.cidade).toMatch(/Londrina/i);
+    expect(r.estado).toBe('PR');
+  });
+
+  it('entende cidade com estado por extenso e data por extenso', () => {
+    const r = parseResumePatterns(`
+Maria Souza
+Curitiba - Paraná
+15 de março de 1990
+`);
+    expect(r.cidade).toMatch(/Curitiba/i);
+    expect(r.estado).toBe('PR');
+    expect(r.dataNascimentoDisplay).toBe('15/03/1990');
+    expect(r.idade).toBeTruthy();
+  });
 });
 
 describe('buildResumeFormApplyPatch', () => {
