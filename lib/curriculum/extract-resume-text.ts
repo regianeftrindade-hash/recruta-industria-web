@@ -1,5 +1,8 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import mammoth from 'mammoth';
-import { extractText as extractPdfText } from 'unpdf';
+import { extractText, extractTextItems, getDocumentProxy } from 'unpdf';
 import WordExtractor from 'word-extractor';
 import {
   detectResumeFormat,
@@ -18,11 +21,62 @@ function normalizeExtractedText(raw: string): string {
     .trim();
 }
 
+/** Fontes/cMaps do pdfjs — sem isso, PDFs com fontes CID (Word/Canva) saem vazios. */
+function pdfjsNodeAssets(): {
+  disableFontFace: boolean;
+  standardFontDataUrl: string;
+  cMapUrl: string;
+  cMapPacked: boolean;
+} | null {
+  const candidates = [
+    path.join(process.cwd(), 'node_modules', 'pdfjs-dist'),
+    path.join(process.cwd(), 'node_modules', 'unpdf', 'node_modules', 'pdfjs-dist'),
+  ];
+
+  for (const root of candidates) {
+    if (!fs.existsSync(path.join(root, 'package.json'))) continue;
+    const fonts = path.join(root, 'standard_fonts');
+    const cmaps = path.join(root, 'cmaps');
+    if (!fs.existsSync(fonts) || !fs.existsSync(cmaps)) continue;
+    return {
+      disableFontFace: true,
+      standardFontDataUrl: `${pathToFileURL(fonts).href}/`,
+      cMapUrl: `${pathToFileURL(cmaps).href}/`,
+      cMapPacked: true,
+    };
+  }
+
+  return null;
+}
+
+function bytesFromBuffer(buffer: Buffer): Uint8Array {
+  // Cópia independente — evita problemas de view/SharedArrayBuffer no PDF.js
+  const copy = new Uint8Array(buffer.byteLength);
+  copy.set(buffer);
+  return copy;
+}
+
 async function extractFromPdf(buffer: Buffer): Promise<string> {
-  // Páginas separadas por quebra de linha melhoram o reconhecimento de padrões
-  const { text } = await extractPdfText(new Uint8Array(buffer), { mergePages: false });
-  if (Array.isArray(text)) return text.filter(Boolean).join('\n\n');
-  return String(text || '');
+  const data = bytesFromBuffer(buffer);
+  const assets = pdfjsNodeAssets();
+  const pdf = await getDocumentProxy(data, assets || undefined);
+
+  try {
+    const { text } = await extractText(pdf, { mergePages: true });
+    let raw = typeof text === 'string' ? text : Array.isArray(text) ? text.join('\n\n') : '';
+
+    if (!normalizeExtractedText(raw)) {
+      const { items } = await extractTextItems(pdf);
+      raw = items
+        .flatMap((page) => page.map((item) => item.str))
+        .filter(Boolean)
+        .join('\n');
+    }
+
+    return raw;
+  } finally {
+    await pdf.destroy().catch(() => undefined);
+  }
 }
 
 async function extractFromDocx(buffer: Buffer): Promise<string> {
@@ -66,17 +120,28 @@ export async function extractResumeText(params: {
   const format = detectResumeFormat(mime);
   let raw = '';
 
-  if (format === 'pdf') {
-    raw = await extractFromPdf(params.buffer);
-  } else if (format === 'docx') {
-    raw = await extractFromDocx(params.buffer);
-  } else {
-    raw = await extractFromDoc(params.buffer);
+  try {
+    if (format === 'pdf') {
+      raw = await extractFromPdf(params.buffer);
+    } else if (format === 'docx') {
+      raw = await extractFromDocx(params.buffer);
+    } else {
+      raw = await extractFromDoc(params.buffer);
+    }
+  } catch (error) {
+    console.error('Falha na biblioteca de extração:', error);
+    throw new Error(
+      'Não foi possível ler este arquivo. Tente exportar de novo em PDF ou DOCX.',
+    );
   }
 
   const rawText = normalizeExtractedText(raw);
   if (!rawText) {
-    throw new Error('Não foi possível extrair texto deste arquivo. Tente outro currículo.');
+    throw new Error(
+      format === 'pdf'
+        ? 'Este PDF não tem texto selecionável (pode ser escaneado/imagem). Salve do Word como DOCX ou PDF com texto e tente de novo.'
+        : 'Não foi possível extrair texto deste arquivo. Tente outro currículo.',
+    );
   }
 
   const structured = parseResumePatterns(rawText);

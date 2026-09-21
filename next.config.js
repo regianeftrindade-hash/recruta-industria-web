@@ -27,6 +27,8 @@ const nextConfig = {
   experimental: {
     proxyClientMaxBodySize: "30mb",
   },
+  // Mantém pdfjs/unpdf fora do bundle para cMaps e fontes padrão no disco (Vercel)
+  serverExternalPackages: ["unpdf", "pdfjs-dist", "mammoth", "word-extractor"],
   turbopack: {
     root: __dirname,
   },

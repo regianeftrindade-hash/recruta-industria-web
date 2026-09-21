@@ -6,6 +6,7 @@ import { extractResumeText } from '@/lib/curriculum/extract-resume-text';
 import { validateResumeUploadMeta } from '@/lib/curriculum/validate-resume-file';
 
 export const runtime = 'nodejs';
+export const maxDuration = 60;
 
 /**
  * Upload temporário + extração de texto do currículo (cadastro ou edição).
