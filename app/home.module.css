@@ -60,11 +60,9 @@
 
 @keyframes homeFadeIn {
   from {
-    opacity: 0;
     transform: translateY(8px);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }
@@ -138,7 +136,7 @@
   max-width: 900px;
   margin: 0 auto;
   align-content: center;
-  animation: homeFadeIn 0.8s ease 0.06s both;
+  animation: homeFadeIn 0.55s ease both;
 }
 
 .actionCard {

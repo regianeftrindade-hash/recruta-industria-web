@@ -25,8 +25,8 @@ export default function Home() {
       <link
         rel="preload"
         as="image"
-        href="/profissional.webp"
-        type="image/webp"
+        href="/profissional.jpg"
+        type="image/jpeg"
         fetchPriority="high"
       />
     <main className={styles.homePage} style={{ fontFamily: FONT_STACK }}>
@@ -59,7 +59,7 @@ export default function Home() {
             {
               href: "/login?tipo=profissional",
               title: "Sou Profissional",
-              img: "/profissional.webp",
+              img: "/profissional.jpg",
               text: "Cadastre seu perfil e encontre oportunidades na indústria.",
               cta: "Acessar",
               alt: "Profissional da indústria com capacete de proteção",
@@ -68,7 +68,7 @@ export default function Home() {
             {
               href: "/login?tipo=empresa",
               title: "Sou Empresa",
-              img: "/empresa.webp",
+              img: "/empresa.jpg",
               text: "Encontre profissionais qualificados para sua operação.",
               cta: "Acessar",
               alt: "Ambiente industrial e equipe de produção",
@@ -84,7 +84,6 @@ export default function Home() {
                   sizes="(max-width: 900px) 92vw, 400px"
                   quality={72}
                   priority={c.priority}
-                  loading={c.priority ? "eager" : "lazy"}
                   className={
                     c.href.includes("empresa")
                       ? `${styles.cardImage} ${styles.cardImageEmpresa}`
