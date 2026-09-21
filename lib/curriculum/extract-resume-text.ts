@@ -103,8 +103,10 @@ function decodeXmlText(value: string): string {
 
 /** Lê parágrafos do XML do Word (tabelas, caixas de texto e cabeçalho). */
 function docxXmlToText(xml: string): string {
-  return xml
-    .split(/<\/w:p>/i)
+  // Quebra célula de tabela para não colar "CidadeCuritibaEstadoPR"
+  const normalized = xml.replace(/<\/w:tc>/gi, '</w:tc>\n').replace(/<\/w:p>/gi, '</w:p>\n');
+  return normalized
+    .split(/\n+/)
     .map((paragraph) => {
       const bits = [...paragraph.matchAll(/<w:t[^>]*>([^<]*)<\/w:t>/gi)].map((m) =>
         decodeXmlText(m[1]),
@@ -119,7 +121,11 @@ async function extractDocxXmlParts(buffer: Buffer): Promise<string> {
   const zip = await JSZip.loadAsync(buffer);
   const names = Object.keys(zip.files)
     .filter((name) => /^word\/(document|header\d+|footer\d+|footnotes|endnotes)\.xml$/i.test(name))
-    .sort();
+    .sort((a, b) => {
+      // Cabeçalho primeiro — endereço costuma estar lá
+      const rank = (n: string) => (n.includes('header') ? 0 : n.includes('document') ? 1 : 2);
+      return rank(a) - rank(b) || a.localeCompare(b);
+    });
   const chunks: string[] = [];
   for (const name of names) {
     const file = zip.files[name];
@@ -131,17 +137,30 @@ async function extractDocxXmlParts(buffer: Buffer): Promise<string> {
   return chunks.join('\n');
 }
 
+function mergeResumeTexts(...parts: string[]): string {
+  const seen = new Set<string>();
+  const lines: string[] = [];
+  for (const part of parts) {
+    for (const line of String(part || '')
+      .split(/\n+/)
+      .map((l) => l.replace(/\s+/g, ' ').trim())
+      .filter(Boolean)) {
+      const key = line.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      lines.push(line);
+    }
+  }
+  return lines.join('\n');
+}
+
 async function extractFromDocx(buffer: Buffer): Promise<string> {
   const [mammothText, xmlText] = await Promise.all([
     mammoth.extractRawText({ buffer }).then((result) => result.value || ''),
     extractDocxXmlParts(buffer).catch(() => ''),
   ]);
-  const fromMammoth = mammothText.trim();
-  const fromXml = xmlText.trim();
-  if (!fromMammoth) return fromXml;
-  if (!fromXml) return fromMammoth;
-  // XML pega cabeçalho e caixa de texto que o mammoth costuma ignorar
-  return fromXml.length > fromMammoth.length ? fromXml : fromMammoth;
+  // Une as duas fontes: mammoth (corpo) + XML (cabeçalho/tabela/caixa)
+  return mergeResumeTexts(xmlText, mammothText);
 }
 
 async function extractFromDoc(buffer: Buffer): Promise<string> {

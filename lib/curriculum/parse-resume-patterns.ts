@@ -123,8 +123,14 @@ export function preprocessResumeText(raw: string): string {
   t = t.replace(/(\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{4})(?=[A-Za-zÀ-ÿ])/g, '$1\n');
 
   t = t.replace(
-    /\s+(?=(?:Nome|E-?mail|Telefone|Celular|WhatsApp|Endere[cç]o|Cidade|Estado|UF|CNH|Data\s+de\s+nascimento|Nascimento|Experi[eê]ncia|Forma[cç][aã]o|Escolaridade|Cursos|Compet[eê]ncias|Habilidades|Objetivo|Dados\s+pessoais|Contato)\b)/gi,
+    /\s+(?=(?:Nome|E-?mail|Telefone|Celular|WhatsApp|Endere[cç]o|Cidade|Munic[ií]pio|Estado|UF|Naturalidade|CNH|Data\s+de\s+nascimento|Nascimento|Idade|Experi[eê]ncia|Forma[cç][aã]o|Escolaridade|Cursos|Compet[eê]ncias|Habilidades|Objetivo|Dados\s+pessoais|Contato|CEP)\b)/gi,
     '\n',
+  );
+
+  // Tabela Word cola rótulo+valor: "Cidade:CuritibaEstado:PR"
+  t = t.replace(
+    /(Cidade|Munic[ií]pio|Estado|UF|Naturalidade|Endere[cç]o|CEP)\s*[:\-–]?\s*/gi,
+    '\n$1: ',
   );
 
   t = t.replace(
@@ -342,13 +348,32 @@ function extractCidadeEstado(text: string): { cidade: string | null; estado: str
   );
   let estado: string | null = estadoLabel ? ufFromToken(estadoLabel[1]) : null;
 
+  // Cidade em linha própria após o rótulo (comum em tabela)
+  const cidadeLinha = text.match(
+    /(?:^|\n)\s*(?:cidade|munic[ií]pio|naturalidade)\s*[:\-–]?\s*\n\s*([A-Za-zÀ-ÿ'][A-Za-zÀ-ÿ' ]{1,40}?)\s*(?:\n|$)/i,
+  );
+  if (cidadeLinha) {
+    const cidade = titleCaseCity(normalizeSpaces(cidadeLinha[1]));
+    const key = stripAccents(cidade.toLowerCase());
+    return { cidade, estado: estado || CIDADE_UF_COMUM[key] || null };
+  }
+
   const cidadeLabel = text.match(
-    /(?:cidade|munic[ií]pio|natural\s+de|residente\s+em|mora(?:ndo)?\s+em)\s*[:\-–]?\s*([A-Za-zÀ-ÿ'][A-Za-zÀ-ÿ' ]{1,40}?)(?=\s+(?:estado|uf|telefone|celular|whatsapp|e-?mail|cep|nascimento|idade|brasil)\b|[,.\n]|$)/i,
+    /(?:cidade|munic[ií]pio|naturalidade|natural\s+de|residente\s+em|mora(?:ndo)?\s+em)\s*[:\-–]?\s*([A-Za-zÀ-ÿ'][A-Za-zÀ-ÿ' ]{1,40}?)(?=\s+(?:estado|uf|telefone|celular|whatsapp|e-?mail|cep|nascimento|idade|brasil|endere[cç]o|rua|av\.|cnh)\b|[,.\n]|$)/i,
   );
   if (cidadeLabel) {
     const cidade = titleCaseCity(normalizeSpaces(cidadeLabel[1].replace(/[-–,].*$/, '')));
     const key = stripAccents(cidade.toLowerCase());
     return { cidade, estado: estado || CIDADE_UF_COMUM[key] || null };
+  }
+
+  // Endereço longo: "... - Cidade/UF - CEP"
+  const endereco = text.match(
+    /(?:endere[cç]o|resid[eê]ncia)\s*[:\-–]?\s*[^\n]{0,120}?([A-Za-zÀ-ÿ'][A-Za-zÀ-ÿ' ]{2,40}?)\s*[/|-]\s*([A-Za-z]{2})\b/i,
+  );
+  if (endereco) {
+    const accepted = acceptCidade(endereco[1], endereco[2].toUpperCase());
+    if (accepted) return accepted;
   }
 
   // Cidade conhecida sozinha no cabeçalho

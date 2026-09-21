@@ -36,11 +36,21 @@ export function matchCidadeIbge(cidadeCurriculo: string, municipios: string[]): 
   const starts = municipios.find((m) => stripAccents(m.toLowerCase()).startsWith(needle));
   if (starts) return starts;
 
-  const includes = municipios.find((m) => {
+  // "Sao Jose" → "São José dos Pinhais"
+  const partial = municipios.find((m) => {
     const n = stripAccents(m.toLowerCase());
     return n.includes(needle) || needle.includes(n);
   });
-  return includes || null;
+  if (partial) return partial;
+
+  // Primeiras palavras: "Sao Jose dos Pinhais - PR" já limpo
+  const firstWords = needle.split(/\s+/).slice(0, 3).join(' ');
+  if (firstWords.length >= 4) {
+    const byPrefix = municipios.find((m) => stripAccents(m.toLowerCase()).startsWith(firstWords));
+    if (byPrefix) return byPrefix;
+  }
+
+  return null;
 }
 
 function parsePeriodoToDates(periodo?: string | null): { dataInicio: string; dataFim: string } {

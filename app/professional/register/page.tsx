@@ -460,6 +460,8 @@ export default function CadastroProfissional() {
 
   const [cidades, setCidades] = useState<string[]>([]);
   const listaEstados = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
+  /** Cidade vinda do currículo — aplica quando a lista IBGE do estado carregar. */
+  const pendingCidadeImportRef = useRef<string | null>(null);
 
   const aplicarDadosDoPerfil = (formEdit: {
     formData: Record<string, unknown>;
@@ -1055,14 +1057,33 @@ export default function CadastroProfissional() {
     return null;
   };
 
-  // Carrega cidades a partir do estado selecionado
+  // Carrega cidades a partir do estado selecionado (e aplica cidade pendente do currículo)
   useEffect(() => {
-    if (formData.estado) {
-      fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${formData.estado}/municipios`)
-        .then(res => res.json())
-        .then(data => setCidades(data.map((c: any) => c.nome).sort()))
-        .catch(err => console.error('Erro ao buscar cidades do IBGE:', err));
+    if (!formData.estado) {
+      setCidades([]);
+      return;
     }
+    let cancelled = false;
+    fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${formData.estado}/municipios`)
+      .then((res) => res.json())
+      .then((data: Array<{ nome: string }>) => {
+        if (cancelled) return;
+        const lista = (data || []).map((c) => c.nome).sort();
+        setCidades(lista);
+        const pending = pendingCidadeImportRef.current;
+        if (!pending) return;
+        const matched = matchCidadeIbge(pending, lista);
+        if (matched) {
+          pendingCidadeImportRef.current = null;
+          setFormData((prev) =>
+            prev.estado === formData.estado ? { ...prev, cidade: matched } : prev,
+          );
+        }
+      })
+      .catch((err) => console.error('Erro ao buscar cidades do IBGE:', err));
+    return () => {
+      cancelled = true;
+    };
   }, [formData.estado]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1503,38 +1524,46 @@ export default function CadastroProfissional() {
                 },
                 { overwrite: Boolean(opts?.overwrite) },
               );
-          
-              const estadoAplicado = String(applied.formDataPatch.estado || structured.estado || '');
-              const cidadeRaw = applied.cidadePendente || structured.cidade || '';
-          
-              const aplicarPatch = (cidadeFinal?: string | null) => {
-                const patch = { ...applied.formDataPatch };
-                if (cidadeFinal) patch.cidade = cidadeFinal;
-                else if (cidadeRaw && !estadoAplicado) patch.cidade = cidadeRaw;
 
-                if (Object.keys(patch).length > 0) {
-                  setFormData((prev) => ({
-                    ...prev,
-                    ...patch,
-                  }));
-                }
-                if (applied.telefone) {
-                  setTelefone(applied.telefone);
-                  setFormData((prev) => ({ ...prev, telefone: applied.telefone! }));
-                }
-                if (applied.telefone2) {
-                  setTelefone2(applied.telefone2);
-                  setFormData((prev) => ({ ...prev, telefone2: applied.telefone2! }));
-                }
-                if (applied.dataNascimentoDisplay) {
-                  setDataNascimentoValue(applied.dataNascimentoDisplay);
-                }
-                if (applied.cursos?.length) setCursos(applied.cursos);
-                if (applied.empresas?.length) setEmpresas(applied.empresas);
-              };
-          
+              const estadoAplicado = String(applied.formDataPatch.estado || structured.estado || '')
+                .trim()
+                .toUpperCase();
+              const cidadeRaw = String(applied.cidadePendente || structured.cidade || '').trim();
+
+              // Aplica estado e demais campos na hora (não espera o IBGE)
+              if (cidadeRaw) pendingCidadeImportRef.current = cidadeRaw;
+              else pendingCidadeImportRef.current = null;
+
+              const patchImediato = { ...applied.formDataPatch };
+              // Cidade só depois da lista IBGE — evita select vazio
+              delete patchImediato.cidade;
+
+              if (Object.keys(patchImediato).length > 0) {
+                setFormData((prev) => ({
+                  ...prev,
+                  ...patchImediato,
+                  ...(estadoAplicado ? { estado: estadoAplicado, cidade: '' } : {}),
+                }));
+              } else if (estadoAplicado) {
+                setFormData((prev) => ({ ...prev, estado: estadoAplicado, cidade: '' }));
+              }
+
+              if (applied.telefone) {
+                setTelefone(applied.telefone);
+                setFormData((prev) => ({ ...prev, telefone: applied.telefone! }));
+              }
+              if (applied.telefone2) {
+                setTelefone2(applied.telefone2);
+                setFormData((prev) => ({ ...prev, telefone2: applied.telefone2! }));
+              }
+              if (applied.dataNascimentoDisplay) {
+                setDataNascimentoValue(applied.dataNascimentoDisplay);
+              }
+              if (applied.cursos?.length) setCursos(applied.cursos);
+              if (applied.empresas?.length) setEmpresas(applied.empresas);
+
+              // Se já temos estado, busca IBGE agora e casa a cidade
               if (estadoAplicado && cidadeRaw) {
-                // Casa cidade com nome oficial do IBGE para o <select> aceitar o valor
                 void fetch(
                   `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoAplicado}/municipios`,
                 )
@@ -1543,15 +1572,18 @@ export default function CadastroProfissional() {
                     const lista = (data || []).map((c) => c.nome).sort();
                     setCidades(lista);
                     const matched = matchCidadeIbge(cidadeRaw, lista);
-                    aplicarPatch(matched || cidadeRaw);
+                    if (matched) {
+                      pendingCidadeImportRef.current = null;
+                      setFormData((prev) =>
+                        prev.estado === estadoAplicado ? { ...prev, cidade: matched } : prev,
+                      );
+                    }
                   })
                   .catch(() => {
-                    aplicarPatch(cidadeRaw);
+                    /* useEffect tenta de novo ao mudar estado */
                   });
-              } else {
-                aplicarPatch(cidadeRaw || null);
               }
-          
+
               return { filledLabels: applied.filledLabels };
             }}
             onCurriculoAnexado={(url) => {
@@ -2081,7 +2113,16 @@ export default function CadastroProfissional() {
               <div className={fg('estado')}>
                 <LabelMarcador htmlFor="estado" marcador="obrigatorio">Estado (UF)</LabelMarcador>
                 <div className={styles.selectWrap}>
-                  <select id="estado" className={styles.select} required value={formData.estado} onChange={e => setFormData((prev) => ({ ...prev, estado: e.target.value }))}>
+                  <select
+                    id="estado"
+                    className={styles.select}
+                    required
+                    value={formData.estado}
+                    onChange={(e) => {
+                      pendingCidadeImportRef.current = null;
+                      setFormData((prev) => ({ ...prev, estado: e.target.value, cidade: '' }));
+                    }}
+                  >
                     <option value="">Selecione</option>
                     {listaEstados.map(uf => <option key={uf} value={uf}>{uf}</option>)}
                   </select>
