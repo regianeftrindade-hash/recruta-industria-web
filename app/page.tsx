@@ -47,7 +47,7 @@ export default function Home() {
               href: "/login?tipo=profissional",
               title: "Sou Profissional",
               img: "/profissional.jpg",
-              text: "Cadastre seu perfil e encontre oportunidades na indústria.",
+              text: "Cadastre seu perfil, currículo e experiência para vagas reais na indústria.",
               cta: "Acessar",
               alt: "Profissional da indústria com capacete de proteção",
               priority: true,
@@ -56,7 +56,7 @@ export default function Home() {
               href: "/login?tipo=empresa",
               title: "Sou Empresa",
               img: "/empresa.jpg",
-              text: "Encontre profissionais qualificados para sua operação.",
+              text: "Encontre soldadores, operadores CNC e talentos de chão de fábrica para sua operação.",
               cta: "Acessar",
               alt: "Ambiente industrial e equipe de produção",
               priority: false,
@@ -88,11 +88,24 @@ export default function Home() {
         </section>
 
         <div className={styles.homeBottom}>
+          <section className={styles.aboutBlock} aria-labelledby="home-about-title">
+            <h2 id="home-about-title" className={styles.aboutTitle}>
+              Recrutamento industrial com foco no chão de fábrica
+            </h2>
+            <p className={styles.aboutText}>
+              O Recruta Indústria é a plataforma que conecta empresas do setor industrial a
+              profissionais de produção, manutenção, solda, CNC e operação. Empresas encontram
+              talentos qualificados para a operação; profissionais cadastram perfil e currículo
+              para oportunidades reais na indústria. Processos seguros, dados protegidos e
+              experiência pensada para quem vive a fábrica no dia a dia.
+            </p>
+          </section>
+
           <section className={styles.bannerSection}>
             <div className={styles.bannerSideLeft} aria-hidden />
             <div className={styles.bannerTextColumn}>
               <p className={styles.bannerTextSubtitle}>
-                Mais do que recrutamento. Conexões que geram resultados.
+                Mais do que recrutamento. Conexões que geram resultados na indústria.
               </p>
             </div>
             <div className={styles.bannerSideRight} aria-hidden />
@@ -115,7 +128,7 @@ export default function Home() {
 
           <footer className={styles.footer} suppressHydrationWarning>
             <p className={styles.footerTrust}>
-              Dados protegidos com criptografia, controle de acesso e auditoria.
+              Dados protegidos com criptografia, controle de acesso e auditoria contínua.
             </p>
             <p className={styles.footerCopy} suppressHydrationWarning>
               © {new Date().getFullYear()} Recruta Indústria · Todos os direitos reservados

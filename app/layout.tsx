@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     template: "%s | Recruta Indústria",
   },
   description:
-    "Conecte empresas e profissionais da indústria. Cadastre seu perfil ou encontre talentos qualificados com segurança, foco em chão de fábrica e recrutamento industrial.",
+    "Recrutamento industrial: conecte empresas e profissionais. Cadastre perfil ou encontre talentos no chão de fábrica.",
   applicationName: "Recruta Indústria",
   keywords: [
     "recrutamento industrial",
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     siteName: "Recruta Indústria",
     title: "Recruta Indústria | Vagas e talentos do setor industrial",
     description:
-      "Plataforma de recrutamento industrial: empresas encontram profissionais e profissionais encontram oportunidades na indústria.",
+      "Recrutamento industrial para empresas e profissionais: vagas, talentos e conexões com foco no chão de fábrica.",
     images: [
       {
         url: "/logo-recruta.png",
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "Recruta Indústria | Vagas e talentos do setor industrial",
     description:
-      "Recrutamento industrial para empresas e profissionais. Cadastre-se e conecte-se com o setor.",
+      "Recrutamento industrial para empresas e profissionais. Cadastre-se e conecte-se ao setor.",
     images: ["/logo-recruta.png"],
   },
   robots: {
