@@ -26,11 +26,13 @@ const securityHeaders = [
 const nextConfig = {
   experimental: {
     proxyClientMaxBodySize: "30mb",
+    optimizePackageImports: ["next-auth/react"],
   },
   images: {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 750, 828, 1080, 1200],
     imageSizes: [96, 128, 256, 384],
+    minimumCacheTTL: 2592000,
   },
   // Mantém pdfjs/unpdf fora do bundle para cMaps e fontes padrão no disco (Vercel)
   serverExternalPackages: ["unpdf", "pdfjs-dist", "mammoth", "word-extractor"],

@@ -1,6 +1,4 @@
-"use client";
-
-import React from "react";
+import type { CSSProperties } from "react";
 import {
   LOGO_ASSETS,
   LOGO_PADRAO,
@@ -14,7 +12,7 @@ type Props = {
   /** Mantido por compatibilidade */
   depth?: boolean;
   className?: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
   label?: string;
 };
 

@@ -10,25 +10,12 @@ const taglineFont = Dancing_Script({
   subsets: ["latin"],
   weight: ["600", "700"],
   display: "swap",
+  preload: false,
+  adjustFontFallback: true,
 });
 
 export default function Home() {
   return (
-    <>
-      <link
-        rel="preload"
-        as="image"
-        href="/logo-recruta-trim.webp"
-        type="image/webp"
-        fetchPriority="high"
-      />
-      <link
-        rel="preload"
-        as="image"
-        href="/profissional.jpg"
-        type="image/jpeg"
-        fetchPriority="high"
-      />
     <main className={styles.homePage} style={{ fontFamily: FONT_STACK }}>
       <div className={styles.atmosphere} aria-hidden />
       <div className={styles.atmosphereGlow} aria-hidden />
@@ -82,7 +69,7 @@ export default function Home() {
                   alt={c.alt}
                   fill
                   sizes="(max-width: 900px) 92vw, 400px"
-                  quality={72}
+                  quality={65}
                   priority={c.priority}
                   className={
                     c.href.includes("empresa")
@@ -137,6 +124,5 @@ export default function Home() {
         </div>
       </div>
     </main>
-    </>
   );
 }

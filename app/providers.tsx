@@ -1,8 +1,8 @@
 "use client";
 
-import { ReactNode } from "react";
-import { SessionProvider } from "next-auth/react";
+import type { ReactNode } from "react";
 
+/** Shell leve na home — SessionProvider fica nos layouts autenticados. */
 export default function Providers({ children }: { children: ReactNode }) {
-  return <SessionProvider>{children}</SessionProvider>;
+  return children;
 }

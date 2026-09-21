@@ -1,14 +1,9 @@
-'use client';
+"use client";
 
-// ...existing code...
+import AuthSessionProvider from "@/components/auth/AuthSessionProvider";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      {children}
-      {/* SessionProvider removido: NextAuth v5 App Router não suporta */}
-    </>
-  );
+  return <AuthSessionProvider>{children}</AuthSessionProvider>;
 }

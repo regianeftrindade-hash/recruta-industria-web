@@ -1,6 +1,4 @@
-"use client";
-
-import React from "react";
+import type { CSSProperties } from "react";
 import {
   LOGO_ASSETS,
   LOGO_PADRAO,
@@ -14,7 +12,7 @@ interface LogoRecrutaProps {
   as?: "h1" | "h2" | "div" | "span";
   /** Mantido por compatibilidade — a arte oficial já inclui o relevo 3D */
   depth?: boolean;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
   className?: string;
 }
 

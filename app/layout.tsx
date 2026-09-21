@@ -1,13 +1,12 @@
 import React from "react";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Oswald } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import ServiceWorkerRegister from "@/components/app-shell/ServiceWorkerRegister";
 import ManifestInjector from "@/components/app-shell/ManifestInjector";
 import SiteVisitTracker from "@/components/app-shell/SiteVisitTracker";
 import { InstallPromptProvider } from "@/components/pwa/InstallPromptProvider";
-import { GOOGLE_ADS_ID } from "@/lib/analytics/google-ads";
+import GoogleAdsLoader from "@/components/analytics/GoogleAdsLoader";
 import Providers from "./providers";
 
 const geistSans = Geist({
@@ -15,6 +14,7 @@ const geistSans = Geist({
   subsets: ["latin"],
   display: "swap",
   preload: true,
+  adjustFontFallback: true,
 });
 
 const geistMono = Geist_Mono({
@@ -22,6 +22,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
   display: "swap",
   preload: false,
+  adjustFontFallback: true,
 });
 
 const oswald = Oswald({
@@ -30,6 +31,7 @@ const oswald = Oswald({
   weight: ["600", "700"],
   display: "swap",
   preload: false,
+  adjustFontFallback: true,
 });
 
 export const metadata: Metadata = {
@@ -162,18 +164,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`}
-          strategy="lazyOnload"
-        />
-        <Script id="google-ads-gtag" strategy="lazyOnload">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${GOOGLE_ADS_ID}');
-          `}
-        </Script>
+        <GoogleAdsLoader />
         <ManifestInjector />
         <ServiceWorkerRegister />
         <Providers>
