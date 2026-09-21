@@ -59,11 +59,23 @@ function bytesFromBuffer(buffer: Buffer): Uint8Array {
 async function extractFromPdf(buffer: Buffer): Promise<string> {
   const data = bytesFromBuffer(buffer);
   const assets = pdfjsNodeAssets();
+  if (!assets) {
+    console.error(
+      '[curriculum] pdfjs-dist cmaps/fonts ausentes em',
+      process.cwd(),
+      '— PDFs com fontes CID podem sair vazios',
+    );
+  }
   const pdf = await getDocumentProxy(data, assets || undefined);
 
   try {
     const { text } = await extractText(pdf, { mergePages: true });
-    let raw = typeof text === 'string' ? text : Array.isArray(text) ? text.join('\n\n') : '';
+    let raw = '';
+    if (typeof text === 'string') {
+      raw = text;
+    } else if (Array.isArray(text)) {
+      raw = (text as string[]).join('\n\n');
+    }
 
     if (!normalizeExtractedText(raw)) {
       const { items } = await extractTextItems(pdf);

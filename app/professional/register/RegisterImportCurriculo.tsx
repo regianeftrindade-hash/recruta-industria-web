@@ -97,7 +97,18 @@ export default function RegisterImportCurriculo({
       };
 
       if (!res.ok || !data.success || !data.extraction) {
-        setError(data.error || "Não foi possível ler o currículo.");
+        // Ainda tenta anexar o arquivo para o usuário não perder o upload
+        const urlFallback = await uploadCurriculoAnexo(file);
+        if (urlFallback) {
+          onCurriculoAnexado(urlFallback, file.name);
+          setAnexoOk(file.name);
+          setError(
+            (data.error || "Não foi possível ler o texto do currículo.") +
+              " Arquivo anexado — complete os campos manualmente.",
+          );
+        } else {
+          setError(data.error || "Não foi possível ler o currículo.");
+        }
         return;
       }
 

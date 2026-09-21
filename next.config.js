@@ -29,6 +29,14 @@ const nextConfig = {
   },
   // Mantém pdfjs/unpdf fora do bundle para cMaps e fontes padrão no disco (Vercel)
   serverExternalPackages: ["unpdf", "pdfjs-dist", "mammoth", "word-extractor"],
+  // Sem isso a Vercel omite cmaps/standard_fonts e PDFs do Word saem sem texto
+  outputFileTracingIncludes: {
+    "/api/professional/curriculum/extract": [
+      "./node_modules/pdfjs-dist/cmaps/**/*",
+      "./node_modules/pdfjs-dist/standard_fonts/**/*",
+      "./node_modules/pdfjs-dist/package.json",
+    ],
+  },
   turbopack: {
     root: __dirname,
   },
