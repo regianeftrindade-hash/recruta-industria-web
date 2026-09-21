@@ -40,19 +40,24 @@ export default function LogoRecruta({
         ...style,
       }}
     >
-      <img
-        src={LOGO_ASSETS.wordmark}
-        alt={LOGO_PADRAO.ariaLabel}
-        width={400}
-        height={178}
-        decoding="async"
-        style={{
-          display: "block",
-          width: config.width,
-          height: "auto",
-          maxWidth: "100%",
-        }}
-      />
+      <picture>
+        <source srcSet={LOGO_ASSETS.wordmarkWebp} type="image/webp" />
+        <img
+          src={LOGO_ASSETS.wordmark}
+          alt={LOGO_PADRAO.ariaLabel}
+          width={400}
+          height={178}
+          decoding="async"
+          loading={size === "hero" ? "eager" : "lazy"}
+          fetchPriority={size === "hero" ? "high" : "auto"}
+          style={{
+            display: "block",
+            width: config.width,
+            height: "auto",
+            maxWidth: "100%",
+          }}
+        />
+      </picture>
     </Tag>
   );
 }

@@ -14,6 +14,21 @@ const taglineFont = Dancing_Script({
 
 export default function Home() {
   return (
+    <>
+      <link
+        rel="preload"
+        as="image"
+        href="/logo-recruta-trim.webp"
+        type="image/webp"
+        fetchPriority="high"
+      />
+      <link
+        rel="preload"
+        as="image"
+        href="/profissional.webp"
+        type="image/webp"
+        fetchPriority="high"
+      />
     <main className={styles.homePage} style={{ fontFamily: FONT_STACK }}>
       <div className={styles.atmosphere} aria-hidden />
       <div className={styles.atmosphereGlow} aria-hidden />
@@ -44,18 +59,20 @@ export default function Home() {
             {
               href: "/login?tipo=profissional",
               title: "Sou Profissional",
-              img: "/profissional.jpg",
+              img: "/profissional.webp",
               text: "Cadastre seu perfil e encontre oportunidades na indústria.",
               cta: "Acessar",
               alt: "Profissional da indústria com capacete de proteção",
+              priority: true,
             },
             {
               href: "/login?tipo=empresa",
               title: "Sou Empresa",
-              img: "/empresa.jpg",
+              img: "/empresa.webp",
               text: "Encontre profissionais qualificados para sua operação.",
               cta: "Acessar",
               alt: "Ambiente industrial e equipe de produção",
+              priority: false,
             },
           ].map((c) => (
             <Link key={c.href} href={c.href} className={styles.actionCard}>
@@ -64,13 +81,15 @@ export default function Home() {
                   src={c.img}
                   alt={c.alt}
                   fill
-                  sizes="(max-width: 900px) 100vw, 420px"
+                  sizes="(max-width: 900px) 92vw, 400px"
+                  quality={72}
+                  priority={c.priority}
+                  loading={c.priority ? "eager" : "lazy"}
                   className={
                     c.href.includes("empresa")
                       ? `${styles.cardImage} ${styles.cardImageEmpresa}`
                       : styles.cardImage
                   }
-                  priority
                 />
               </div>
               <div className={styles.cardContent}>
@@ -119,5 +138,6 @@ export default function Home() {
         </div>
       </div>
     </main>
+    </>
   );
 }

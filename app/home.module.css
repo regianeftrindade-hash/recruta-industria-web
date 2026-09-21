@@ -25,8 +25,8 @@
   inset: 0;
   background:
     linear-gradient(180deg, rgba(58, 58, 58, 0.72) 0%, rgba(43, 43, 43, 0.88) 45%, rgba(58, 58, 58, 0.95) 100%),
-    url("/welding-left.png") left center / cover no-repeat,
-    url("/welding-right.png") right center / cover no-repeat,
+    url("/welding-left.webp") left center / cover no-repeat,
+    url("/welding-right.webp") right center / cover no-repeat,
     #3a3a3a;
   opacity: 0.55;
   pointer-events: none;
@@ -265,12 +265,12 @@
 }
 
 .bannerSideLeft {
-  background-image: url("/welding-left.png");
+  background-image: url("/welding-left.webp");
   background-position: right center;
 }
 
 .bannerSideRight {
-  background-image: url("/welding-right.png");
+  background-image: url("/welding-right.webp");
   background-position: left center;
 }
 

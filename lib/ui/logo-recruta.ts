@@ -11,6 +11,7 @@ import type { CSSProperties } from "react";
 export const LOGO_ASSETS = {
   /** Logotipo completo (símbolo + RECRUTA INDÚSTRIA) */
   wordmark: "/logo-recruta-trim.png",
+  wordmarkWebp: "/logo-recruta-trim.webp",
   /** Símbolo circular (engrenagem + monograma) */
   symbol: "/simbolo-recruta.png",
 } as const;
