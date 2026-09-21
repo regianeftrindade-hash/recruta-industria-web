@@ -513,7 +513,10 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
   };
 
   return (
-    <section className={`dash-card ${css.board}`} style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
+    <section
+      className={`dash-card ${css.board}`}
+      style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow, overflow: "visible" }}
+    >
       <h3 style={{ ...dashSectionTitle, margin: "0 0 6px", fontSize: 14 }}>
         Oportunidades
       </h3>
@@ -578,7 +581,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
               <span>Quando uma empresa enviar uma proposta de vaga, ela aparece aqui para você responder.</span>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div className={css.listaScroll}>
               {listas.propostas.map(renderProposta)}
             </div>
           )}
@@ -594,7 +597,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
               <span>Após demonstrar interesse, a empresa pode marcar a entrevista — ela entra nesta lista.</span>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div className={css.listaScroll}>
               {listas.entrevistas.map(renderEntrevista)}
             </div>
           )}

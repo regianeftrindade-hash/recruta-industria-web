@@ -356,6 +356,19 @@
     max-height: none !important;
     overflow: visible !important;
     border-right: none !important;
+    min-height: 0;
+  }
+
+  /* Coluna de oportunidades: mantém rolagem vertical no celular */
+  .ri-dash-prof .ri-dash-two-col > aside {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .ri-dash-prof .listaScroll,
+  .ri-dash-prof [class*="listaScroll"] {
+    max-height: min(360px, 50vh);
+    overflow-y: auto !important;
   }
 
   .ri-candidate-profile-head {

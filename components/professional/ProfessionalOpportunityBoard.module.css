@@ -60,8 +60,53 @@
   gap: 8px;
   overflow-x: auto;
   max-width: 100%;
-  padding-bottom: 4px;
+  padding-bottom: 6px;
   -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200, 155, 60, 0.75) rgba(0, 0, 0, 0.25);
+}
+
+.listaArquivadas::-webkit-scrollbar {
+  height: 10px;
+}
+
+.listaArquivadas::-webkit-scrollbar-thumb {
+  background: rgba(200, 155, 60, 0.75);
+  border-radius: 999px;
+}
+
+.listaArquivadas::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 999px;
+}
+
+.listaScroll {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: min(420px, 55vh);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200, 155, 60, 0.75) rgba(0, 0, 0, 0.25);
+}
+
+.listaScroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.listaScroll::-webkit-scrollbar-thumb {
+  background: rgba(200, 155, 60, 0.75);
+  border-radius: 999px;
+}
+
+.listaScroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 999px;
 }
 
 @media (max-width: 900px) {
@@ -83,5 +128,11 @@
   .listaArquivadas {
     flex-direction: column;
     overflow-x: hidden;
+    overflow-y: auto;
+    max-height: min(360px, 50vh);
+  }
+
+  .listaScroll {
+    max-height: min(360px, 50vh);
   }
 }

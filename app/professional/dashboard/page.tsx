@@ -588,11 +588,13 @@ export default function DashboardProfissional() {
             padding: "12px 10px 12px 12px",
             overflowY: "auto",
             maxHeight: "calc(100vh - 90px)",
+            minHeight: 0,
             borderRight: `1px solid ${DASH.border}`,
             minWidth: 0,
             display: "flex",
             flexDirection: "column",
             gap: 14,
+            scrollbarGutter: "stable",
           }}
         >
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFotoChange} style={{ display: "none" }} />
@@ -751,7 +753,19 @@ export default function DashboardProfissional() {
         </main>
 
         {/* Direita — conteúdo da aba ativa */}
-        <aside style={{ padding: "12px 12px 12px 10px", overflowY: "auto", maxHeight: "calc(100vh - 90px)", display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
+        <aside
+          style={{
+            padding: "12px 12px 12px 10px",
+            overflowY: "auto",
+            maxHeight: "calc(100vh - 90px)",
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            minWidth: 0,
+            scrollbarGutter: "stable",
+          }}
+        >
           {abaDireita === "oportunidades" && (
             <>
               <PlatformVideoCall role="professional" title="Chamada de vídeo" peerLabel="empresa" />
