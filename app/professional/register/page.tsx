@@ -1969,7 +1969,9 @@ export default function CadastroProfissional() {
                   required
                   className={styles.input}
                   value={formData.email}
+                  readOnly={cadastroComGoogle}
                   onChange={(e) => {
+                    if (cadastroComGoogle) return;
                     const email = e.target.value;
                     setFormData((prev) => ({ ...prev, email }));
                     if (email && !isValidEmail(email)) {
@@ -1978,7 +1980,11 @@ export default function CadastroProfissional() {
                       setEmailError('');
                     }
                   }}
-                  style={{ borderColor: emailError ? '#dc3545' : undefined }}
+                  style={{
+                    borderColor: emailError ? '#dc3545' : undefined,
+                    opacity: cadastroComGoogle ? 0.9 : 1,
+                  }}
+                  title={cadastroComGoogle ? 'E-mail da conta já criada' : undefined}
                 />
               </div>
               <div className={fg('telefone')}>
