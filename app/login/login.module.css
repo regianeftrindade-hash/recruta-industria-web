@@ -241,6 +241,44 @@
   box-shadow: 0 0 0 2px rgba(200, 155, 60, 0.25);
 }
 
+.passwordField {
+  position: relative;
+  width: 100%;
+}
+
+.passwordField .input {
+  padding-right: 46px;
+}
+
+.passwordEyeBtn {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ri-gold);
+  cursor: pointer;
+  line-height: 0;
+}
+
+.passwordEyeBtn:hover {
+  color: #d4af37;
+  background: rgba(200, 155, 60, 0.12);
+}
+
+.passwordEyeBtn:focus-visible {
+  outline: 2px solid var(--ri-gold);
+  outline-offset: 1px;
+}
+
 .fieldLabel {
   display: block;
   margin: 0;
