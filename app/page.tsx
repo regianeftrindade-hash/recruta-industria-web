@@ -81,9 +81,11 @@ export default function Home() {
                 />
               </div>
               <div className={styles.cardContent}>
-                <p className={styles.cardEyebrow}>{c.eyebrow}</p>
-                <h2 className={styles.cardTitle}>{c.title}</h2>
-                <p className={styles.cardText}>{c.text}</p>
+                <div className={styles.cardInnerPanel}>
+                  <p className={styles.cardEyebrow}>{c.eyebrow}</p>
+                  <h2 className={styles.cardTitle}>{c.title}</h2>
+                  <p className={styles.cardText}>{c.text}</p>
+                </div>
                 <span className={styles.cardCta}>{c.cta}</span>
               </div>
             </Link>
