@@ -45,19 +45,21 @@ export default function Home() {
           {[
             {
               href: "/login?tipo=profissional",
-              title: "Sou Profissional",
+              eyebrow: "Para profissionais",
+              title: "Crie sua Vitrine Profissional",
               img: "/profissional.jpg",
-              text: "Cadastre seu perfil, currículo e experiência para vagas reais na indústria.",
-              cta: "Acessar",
+              text: "Cadastre gratuitamente seu perfil, apresente sua experiência, formação e habilidades e fique disponível para empresas que buscam profissionais para suas equipes.",
+              cta: "Sou Profissional",
               alt: "Profissional da indústria com capacete de proteção",
               priority: true,
             },
             {
               href: "/login?tipo=empresa",
-              title: "Sou Empresa",
+              eyebrow: "Para empresas",
+              title: "Encontre profissionais para sua equipe",
               img: "/empresa.jpg",
-              text: "Encontre soldadores, operadores CNC e talentos de chão de fábrica para sua operação.",
-              cta: "Acessar",
+              text: "Cadastre sua empresa e encontre profissionais de acordo com o perfil que sua indústria precisa. Consulte experiências, qualificações e informações profissionais para facilitar sua busca.",
+              cta: "Sou Empresa",
               alt: "Ambiente industrial e equipe de produção",
               priority: false,
             },
@@ -79,6 +81,7 @@ export default function Home() {
                 />
               </div>
               <div className={styles.cardContent}>
+                <p className={styles.cardEyebrow}>{c.eyebrow}</p>
                 <h2 className={styles.cardTitle}>{c.title}</h2>
                 <p className={styles.cardText}>{c.text}</p>
                 <span className={styles.cardCta}>{c.cta}</span>
@@ -88,22 +91,6 @@ export default function Home() {
         </section>
 
         <div className={styles.homeBottom}>
-          <section className={styles.aboutBlock} aria-labelledby="home-about-title">
-            <h2 id="home-about-title" className={styles.aboutTitle}>
-              Encontre profissionais. Encontre oportunidades.
-            </h2>
-            <p className={styles.aboutText}>
-              O <strong>Recruta Indústria</strong> conecta empresas e profissionais de forma
-              mais direta: empresas encontram talentos pela{" "}
-              <strong>Vitrine Profissional</strong> e profissionais apresentam experiência,
-              formação e qualificações em um só lugar.
-            </p>
-            <p className={styles.aboutHighlight}>
-              Recruta Indústria. Aproximando quem procura profissionais de quem está pronto para
-              novas oportunidades.
-            </p>
-          </section>
-
           <section className={styles.bannerSection}>
             <div className={styles.bannerSideLeft} aria-hidden />
             <div className={styles.bannerTextColumn}>
