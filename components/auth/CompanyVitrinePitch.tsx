@@ -78,7 +78,7 @@ export default function CompanyVitrinePitch() {
         <p className={styles.vitrinePitchText}>
           A plataforma foi pensada para aproximar{" "}
           <strong>empresas e profissionais de forma mais direta</strong>, da busca ao
-          contato, propostas e entrevistas — tudo em um só lugar.
+          contato, propostas e entrevistas.
         </p>
 
         <h3 className={styles.vitrinePitchSubtitle}>⭐ Tudo em um só lugar</h3>
