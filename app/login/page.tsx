@@ -195,7 +195,10 @@ function LoginContent() {
       <div className={styles.atmosphereGlow} aria-hidden />
       {loading && <PageLoader message="Entrando..." mode="overlay" />}
 
-      <div className={styles.card}>
+      <div className={styles.authShell}>
+        {!isAdminRedirect && tipoLogin === 'professional' && <ProfessionalVitrinePitch />}
+
+        <div className={styles.card}>
         <div className={styles.loginHeader}>
           <div className={styles.logoWrap}>
             <LogoRecruta size="sm" as="h1" depth />
@@ -218,8 +221,6 @@ function LoginContent() {
                 : 'Acesse seu perfil profissional.'}
           </p>
         </div>
-
-        {!isAdminRedirect && tipoLogin === 'professional' && <ProfessionalVitrinePitch />}
 
         {!tipoLocked && !isAdminRedirect && (
           <div className={styles.tabs}>
@@ -363,6 +364,7 @@ function LoginContent() {
           <Link href="/" className={styles.footerLink}>
             ← Voltar para a página inicial
           </Link>
+        </div>
         </div>
       </div>
     </div>

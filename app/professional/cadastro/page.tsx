@@ -115,7 +115,10 @@ export default function CadastroSimplesProfissionalPage() {
       <div className={loginStyles.atmosphereGlow} aria-hidden />
       {loading && <PageLoader message="Criando sua conta..." mode="overlay" />}
 
-      <div className={loginStyles.card}>
+      <div className={loginStyles.authShell}>
+        <ProfessionalVitrinePitch />
+
+        <div className={loginStyles.card}>
         <div className={loginStyles.loginHeader}>
           <div className={loginStyles.logoWrap}>
             <LogoRecruta size="sm" as="h1" depth />
@@ -124,8 +127,6 @@ export default function CadastroSimplesProfissionalPage() {
             <span className={loginStyles.accessTag}>Cadastro Profissional</span>
           </p>
         </div>
-
-        <ProfessionalVitrinePitch />
 
         <form onSubmit={handleSubmit} className={loginStyles.form}>
           {errorMessage ? (
@@ -215,6 +216,7 @@ export default function CadastroSimplesProfissionalPage() {
           <Link href="/" className={loginStyles.footerLink}>
             ← Voltar para a página inicial
           </Link>
+        </div>
         </div>
       </div>
     </div>
