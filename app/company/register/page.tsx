@@ -126,6 +126,7 @@ function CadastroEmpresaContent() {
     if (status === 'unauthenticated') {
       setCheckingRegistration(false);
       setContaJaCompleta(false);
+      router.replace('/company/cadastro');
       return;
     }
 

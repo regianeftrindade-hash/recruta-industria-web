@@ -11,6 +11,7 @@ import MathCaptcha from '../components/MathCaptcha';
 import LogoRecruta from '../components/LogoRecruta';
 import PageLoader from '../components/PageLoader';
 import ProfessionalVitrinePitch from '@/components/auth/ProfessionalVitrinePitch';
+import CompanyVitrinePitch from '@/components/auth/CompanyVitrinePitch';
 import styles from './login.module.css';
 
 function LoginContent() {
@@ -186,7 +187,7 @@ function LoginContent() {
       setErrorMessage('Para acessar o admin, entre com o e-mail de administrador. Não use criar conta.');
       return;
     }
-    router.push(tipoLogin === 'company' ? '/company/register' : '/professional/cadastro');
+    router.push(tipoLogin === 'company' ? '/company/cadastro' : '/professional/cadastro');
   };
 
   return (
@@ -197,6 +198,7 @@ function LoginContent() {
 
       <div className={styles.authShell}>
         {!isAdminRedirect && tipoLogin === 'professional' && <ProfessionalVitrinePitch />}
+        {!isAdminRedirect && tipoLogin === 'company' && <CompanyVitrinePitch />}
 
         <div className={styles.card}>
         <div className={styles.loginHeader}>

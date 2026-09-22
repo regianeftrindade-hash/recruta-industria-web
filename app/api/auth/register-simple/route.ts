@@ -15,8 +15,8 @@ import { validatePasswordStrength } from "@/lib/password-strength";
 import { logAudit as logSecurityAudit } from "@/lib/security-audit";
 
 /**
- * Cadastro simples do profissional: nome + e-mail + senha.
- * Não cria Profile completo — o painel pede para finalizar o cadastro depois.
+ * Cadastro simples: profissional (nome) ou empresa (razão social) + e-mail + senha.
+ * Perfil/cadastro completo fica para o painel.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -52,6 +52,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    const userTypeRaw = String(body.userType || "professional").toLowerCase();
+    const isCompany = userTypeRaw === "company" || userTypeRaw === "empresa";
     const nome = String(body.name || body.nome || "").trim();
     const email = String(body.email || "").toLowerCase().trim();
     const password = String(body.password || "");
@@ -60,7 +62,11 @@ export async function POST(request: NextRequest) {
     if (!nome || nome.length < 2) {
       incrementRegisterAttempts(ip);
       return NextResponse.json(
-        { error: "Informe seu nome completo." },
+        {
+          error: isCompany
+            ? "Informe a razão social ou nome da empresa."
+            : "Informe seu nome completo.",
+        },
         { status: 400 },
       );
     }
@@ -102,7 +108,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: contaOAuth
-            ? "Este e-mail já foi usado no login com Google. Entre com Google e complete o perfil no painel."
+            ? "Este e-mail já foi usado no login com Google. Entre com Google e complete o cadastro no painel."
             : "Este e-mail já está cadastrado. Faça login ou recupere a senha.",
           code: contaOAuth ? "OAUTH_ACCOUNT_EXISTS" : "EMAIL_ALREADY_REGISTERED",
         },
@@ -111,19 +117,30 @@ export async function POST(request: NextRequest) {
     }
 
     const passwordHash = await hashPassword(password);
+    const role = isCompany ? "COMPANY" : "PROFESSIONAL";
+
     const user = await prisma.user.create({
       data: {
         email,
         name: nome,
-        role: "PROFESSIONAL",
+        role,
         passwordHash,
       },
     });
 
+    if (isCompany) {
+      await prisma.company.create({
+        data: {
+          userId: user.id,
+          name: nome,
+        },
+      });
+    }
+
     resetRegisterAttempts(ip);
-    logAudit("register_simple_success", email, ip, userAgent, "success", "simple_signup");
+    logAudit("register_simple_success", email, ip, userAgent, "success", `simple_signup_${role}`);
     await logSecurityAudit("registration_success", email, "account_created_simple", {
-      userType: "PROFESSIONAL",
+      userType: role,
       ip,
     });
 

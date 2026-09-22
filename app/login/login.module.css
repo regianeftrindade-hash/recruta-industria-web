@@ -227,9 +227,15 @@
   text-align: center;
 }
 
+.vitrinePitchExpandable {
+  /* largura ajustada via JS quando o texto não cabe na altura do card de login */
+  flex: 1 1 360px;
+}
+
 @media (max-width: 900px) {
   .vitrinePitch {
-    height: auto;
+    height: auto !important;
+    min-height: 0 !important;
     overflow: visible;
   }
 

@@ -125,7 +125,7 @@ export const authOptions: NextAuthOptions = {
       const image = user?.image || profile?.picture || null;
 
       try {
-        await prisma.user.upsert({
+        const dbUser = await prisma.user.upsert({
           where: { email: normalizedEmail },
           create: {
             email: normalizedEmail,
@@ -138,6 +138,21 @@ export const authOptions: NextAuthOptions = {
             ...(image ? { image } : {}),
           },
         });
+
+        if (loginIntent === 'COMPANY') {
+          const existingCompany = await prisma.company.findUnique({
+            where: { userId: dbUser.id },
+            select: { id: true },
+          });
+          if (!existingCompany) {
+            await prisma.company.create({
+              data: {
+                userId: dbUser.id,
+                name: name?.trim() || normalizedEmail.split('@')[0],
+              },
+            });
+          }
+        }
       } catch (error) {
         console.error('[auth] Falha ao sincronizar usuário Google:', error);
       }

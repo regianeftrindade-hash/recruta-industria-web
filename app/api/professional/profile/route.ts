@@ -330,10 +330,25 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         title: String(mergedData.title || 'Profissional'),
         location: String(mergedData.location || 'Não informado'),
+        isVisible: false,
       }
     });
 
     await saveProfileFormSnapshot(user.id, snapshotToSave);
+
+    const profileForVisibility = {
+      cpf: profile.cpf,
+      profileCompletion: profile.profileCompletion,
+      formDataJSON: snapshotToSave || profile.formDataJSON,
+    };
+    const visible = isProfessionalRegistrationComplete(profileForVisibility);
+    if (profile.isVisible !== visible) {
+      await prisma.profile.update({
+        where: { id: profile.id },
+        data: { isVisible: visible },
+      });
+      profile.isVisible = visible;
+    }
 
     await prisma.professional.upsert({
       where: {
@@ -357,6 +372,7 @@ export async function POST(request: NextRequest) {
       message: 'Perfil salvo com sucesso',
       profile: dashboard,
       formEdit: mapProfileToFormEdit(profile, mappedUser, savedSnapshot),
+      registrationComplete: visible,
     });
 
   } catch (error) {

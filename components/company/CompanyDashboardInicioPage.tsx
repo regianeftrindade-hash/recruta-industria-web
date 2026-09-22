@@ -259,6 +259,13 @@ export default function CompanyDashboardInicioPage() {
     }
   }, [registrationComplete, status, carregarPerfilEmpresa, carregarStats, session?.user?.email, session?.user?.name]);
 
+  // Conta nova (cadastro incompleto): ainda carrega o esqueleto do painel.
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    if (registrationComplete) return;
+    void carregarPerfilEmpresa();
+  }, [status, registrationComplete, carregarPerfilEmpresa]);
+
   const openProfile = (profileId: string) => {
     router.push(`/company/professional/${encodeURIComponent(profileId)}`);
   };
@@ -282,23 +289,37 @@ export default function CompanyDashboardInicioPage() {
     userName: user.name,
   });
 
-  if (!registrationComplete && isCompanyAccount && !emailBypassGate) {
-    return (
-      <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
-        <div style={{ maxWidth: 560, ...dashCard, padding: 40, borderRadius: 16, textAlign: "center" }}>
-          <h2 style={dashSectionTitle}>Cadastro incompleto</h2>
-          <p style={{ color: DASH.text }}>Complete CNPJ, razão social, responsável, telefone e endereço para acessar a vitrine.</p>
-          <button onClick={() => router.push("/company/register")} style={{ ...btnGold, padding: "14px 32px", fontSize: 15, marginTop: 10 }}>
-            Completar cadastro
-          </button>
-        </div>
-      </main>
-    );
-  }
-
   return (
         <>
-          {!canAccessSensitiveProfiles && (
+          {!registrationComplete && isCompanyAccount && !emailBypassGate && (
+            <section
+              role="status"
+              style={{
+                ...dashCard,
+                margin: "0 0 10px",
+                padding: 16,
+                border: `1px solid ${DASH.gold}`,
+                background: "linear-gradient(180deg, rgba(200,155,60,0.18) 0%, rgba(43,43,43,0.96) 100%)",
+              }}
+            >
+              <h2 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>
+                Sua conta está criada! Agora complete o cadastro da empresa para acessar a vitrine.
+              </h2>
+              <p style={{ margin: "0 0 12px", fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>
+                Nenhum perfil profissional é exibido até o cadastro estar completo e a verificação
+                da empresa ser aprovada.
+              </p>
+              <button
+                type="button"
+                onClick={() => router.push("/company/register")}
+                style={{ ...btnGold, padding: "10px 16px", fontSize: 12 }}
+              >
+                Completar cadastro
+              </button>
+            </section>
+          )}
+
+          {registrationComplete && !canAccessSensitiveProfiles && (
             <div id="empresa-verificacao">
               <CompanyDashboardVerificationBanner
                 verificationStatus={verificationStatus}
@@ -306,6 +327,23 @@ export default function CompanyDashboardInicioPage() {
                 emailCorporativoVerificado={emailCorporativoVerificado}
               />
             </div>
+          )}
+
+          {registrationComplete && !canAccessSensitiveProfiles && (
+            <section
+              role="status"
+              style={{
+                ...dashCard,
+                margin: "0 0 10px",
+                padding: 14,
+                border: `1px solid ${DASH.gold}`,
+              }}
+            >
+              <p style={{ margin: 0, fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>
+                A visualização de perfis na vitrine só é liberada após a verificação da empresa
+                (e-mail corporativo e documento CNPJ aprovados).
+              </p>
+            </section>
           )}
 
           <div style={{ padding: "2px 0 6px", minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
@@ -321,7 +359,9 @@ export default function CompanyDashboardInicioPage() {
             cidadesOpcoes={search.cidadesOpcoes}
             buscaAvancadaAberta={search.buscaAvancadaAberta}
             loadingProfissionais={search.loadingProfissionais}
-            advancedFilterDisabled={advancedFilterDisabled}
+            advancedFilterDisabled={
+              advancedFilterDisabled || !canAccessSensitiveProfiles || !registrationComplete
+            }
             onFiltrosChange={search.setFiltros}
             onToggleBuscaAvancada={search.onToggleBuscaAvancada}
             onBuscar={search.onBuscar}

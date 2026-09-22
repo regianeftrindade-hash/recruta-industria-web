@@ -9,6 +9,8 @@ import {
 import {
   createCompanySearchHistory,
   listCompanyFavoriteProfileIds,
+  getCompanyExtraData,
+  loadCompanyRowByUserId,
 } from '@/lib/company-storage'
 import {
   calculateCompatibilityScore,
@@ -207,6 +209,33 @@ export async function GET(request: NextRequest) {
     const planContext = await getCompanyPlanContext(companyUser.id)
     const { features, usage, tier, verification } = planContext
     const dataUserId = planContext.ownerUserId || companyUser.id
+
+    // Cadastro completo + verificação obrigatórios para visualizar perfis.
+    const companyRow = await loadCompanyRowByUserId(dataUserId)
+    const extra = await getCompanyExtraData(dataUserId)
+    const registrationComplete = Boolean(
+      companyRow?.name?.trim() &&
+        extra.cnpj?.replace(/\D/g, '').length === 14 &&
+        extra.responsavelNome?.trim() &&
+        extra.responsavelCpf?.replace(/\D/g, '').length === 11 &&
+        extra.telefone?.trim() &&
+        extra.endereco?.trim() &&
+        extra.endereco.trim().length >= 5,
+    )
+
+    if (!registrationComplete || !verification.canAccessSensitiveProfiles) {
+      return NextResponse.json({
+        professionals: [],
+        total: 0,
+        page: 1,
+        totalPages: 1,
+        requiresRegistration: !registrationComplete,
+        requiresVerification: !verification.canAccessSensitiveProfiles,
+        error: !registrationComplete
+          ? 'Complete o cadastro da empresa para visualizar profissionais.'
+          : 'Conclua a verificação da empresa para visualizar profissionais na vitrine.',
+      })
+    }
 
     const { searchParams } = new URL(request.url)
     const filters = parseIndustrialFiltersFromParams(searchParams)

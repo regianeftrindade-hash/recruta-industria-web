@@ -135,6 +135,17 @@ export async function GET(
     const dataUserId = planContext.ownerUserId || companyUser.id;
     const { features, tier, verification } = planContext;
 
+    if (!verification.canAccessSensitiveProfiles) {
+      return NextResponse.json(
+        {
+          error:
+            'Conclua a verificação da empresa para visualizar o perfil do profissional.',
+          requiresVerification: true,
+        },
+        { status: 403 },
+      );
+    }
+
     const unlocked = await prisma.accessRecord.findFirst({
       where: {
         profileId,

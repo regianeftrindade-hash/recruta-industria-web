@@ -52,7 +52,7 @@ function BoasVindasEmpresaContent() {
         }
 
         if (!data.registrationComplete && !data.testBypass) {
-          router.replace("/company/register");
+          router.replace("/company/dashboard-empresa");
           return;
         }
 
@@ -66,7 +66,7 @@ function BoasVindasEmpresaContent() {
           setNome(razao.split(" ")[0]);
         }
       } catch {
-        if (ativo) router.replace("/company/register");
+        if (ativo) router.replace("/company/dashboard-empresa");
       } finally {
         if (ativo) setCarregando(false);
       }
