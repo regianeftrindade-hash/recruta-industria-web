@@ -90,15 +90,35 @@ export default function Home() {
         <div className={styles.homeBottom}>
           <section className={styles.aboutBlock} aria-labelledby="home-about-title">
             <h2 id="home-about-title" className={styles.aboutTitle}>
-              Recrutamento industrial com foco no chão de fábrica
+              Encontre profissionais. Encontre oportunidades.
             </h2>
-            <p className={styles.aboutText}>
-              O Recruta Indústria é a plataforma que conecta empresas do setor industrial a
-              profissionais de produção, manutenção, solda, CNC e operação. Empresas encontram
-              talentos qualificados para a operação; profissionais cadastram perfil e currículo
-              para oportunidades reais na indústria. Processos seguros, dados protegidos e
-              experiência pensada para quem vive a fábrica no dia a dia.
-            </p>
+            <div className={styles.aboutCardBody}>
+              <p className={styles.aboutText}>
+                O <strong>Recruta Indústria</strong> conecta empresas e profissionais de forma
+                mais direta, permitindo que empresas encontrem profissionais de acordo com suas
+                necessidades e que profissionais apresentem sua experiência por meio de uma{" "}
+                <strong>Vitrine Profissional</strong>.
+              </p>
+              <p className={styles.aboutText}>
+                Mais do que um currículo, seu perfil reúne suas experiências, formação, cursos,
+                habilidades e qualificações em um só lugar.
+              </p>
+              <p className={styles.aboutText}>
+                Para as empresas, uma plataforma para{" "}
+                <strong>buscar, conhecer, selecionar e entrar em contato com profissionais</strong>,
+                além de conduzir entrevistas, enviar propostas e trabalhar em equipe durante o
+                processo.
+              </p>
+              <p className={styles.aboutText}>
+                Para os profissionais, uma forma de{" "}
+                <strong>dar visibilidade à sua experiência e ser encontrado por empresas</strong>,
+                com ferramentas para contato, entrevistas e propostas dentro da própria plataforma.
+              </p>
+              <p className={styles.aboutHighlight}>
+                Recruta Indústria. Aproximando quem procura profissionais de quem está pronto para
+                novas oportunidades.
+              </p>
+            </div>
           </section>
 
           <section className={styles.bannerSection}>
