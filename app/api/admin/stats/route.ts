@@ -31,6 +31,30 @@ function isActiveSubscription(expiresAt: Date | null | undefined): boolean {
   return new Date(expiresAt).getTime() > Date.now();
 }
 
+function periodStarts() {
+  const now = new Date();
+  const startToday = new Date(now);
+  startToday.setHours(0, 0, 0, 0);
+
+  const startWeek = new Date(startToday);
+  startWeek.setDate(startWeek.getDate() - 6);
+
+  const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  return { startToday, startWeek, startMonth };
+}
+
+async function countRaw(
+  query: Promise<Array<{ count: bigint }>>,
+): Promise<number> {
+  try {
+    const rows = await query;
+    return Number(rows[0]?.count || 0);
+  } catch {
+    return 0;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const denied = await requireAdmin(request);
   if (denied) return denied;
@@ -42,24 +66,92 @@ export async function GET(request: NextRequest) {
     seriesWindowStart.setDate(seriesWindowStart.getDate() - 13);
 
     const baselineAt = getAdminStatsBaselineAt();
-    const seriesSince = seriesWindowStart.getTime() > baselineAt.getTime()
-      ? seriesWindowStart
-      : baselineAt;
+    const seriesSince =
+      seriesWindowStart.getTime() > baselineAt.getTime()
+        ? seriesWindowStart
+        : baselineAt;
 
-    const { userIds: excludedIds, emails: excludedEmails } = await getAdminExcludedTestAccounts();
+    const { startToday, startWeek, startMonth } = periodStarts();
+    const dayFrom = startToday.getTime() > baselineAt.getTime() ? startToday : baselineAt;
+    const weekFrom = startWeek.getTime() > baselineAt.getTime() ? startWeek : baselineAt;
+    const monthFrom = startMonth.getTime() > baselineAt.getTime() ? startMonth : baselineAt;
+
+    const { userIds: excludedIds, emails: excludedEmails } =
+      await getAdminExcludedTestAccounts();
     const notExcludedUser = excludedIds.length ? { id: { notIn: excludedIds } } : {};
-    const notExcludedProfileUser = excludedIds.length ? { userId: { notIn: excludedIds } } : {};
+    const notExcludedProfileUser = excludedIds.length
+      ? { userId: { notIn: excludedIds } }
+      : {};
     const excludeUserSql = sqlAndUserIdNotIn(Prisma.sql`id`, excludedIds);
     const excludeCompanyUserSql = sqlAndUserIdNotIn(Prisma.sql`"userId"`, excludedIds);
-    const excludeTrackingCompanySql = sqlAndUserIdNotIn(Prisma.sql`"companyUserId"`, excludedIds);
+    const excludeProfileUserSql = sqlAndUserIdNotIn(Prisma.sql`"userId"`, excludedIds);
+    const excludeTrackingCompanySql = sqlAndUserIdNotIn(
+      Prisma.sql`"companyUserId"`,
+      excludedIds,
+    );
+
+    const countUsers = (role: 'PROFESSIONAL' | 'COMPANY', from: Date) =>
+      prisma.user.count({
+        where: {
+          role,
+          createdAt: { gte: from },
+          ...notExcludedUser,
+        },
+      });
+
+    const countGoogleUsers = (from: Date) =>
+      prisma.user.count({
+        where: {
+          passwordHash: null,
+          createdAt: { gte: from },
+          ...notExcludedUser,
+        },
+      });
+
+    const countVisits = (from: Date) =>
+      countRaw(
+        prisma.$queryRaw<Array<{ count: bigint }>>`
+          SELECT COUNT(*)::bigint AS count
+          FROM "SiteVisit"
+          WHERE "createdAt" >= ${from}
+        `,
+      );
+
+    const countSessions = (from: Date) =>
+      countRaw(
+        prisma.$queryRaw<Array<{ count: bigint }>>`
+          SELECT COUNT(DISTINCT "sessionId")::bigint AS count
+          FROM "SiteVisit"
+          WHERE "sessionId" IS NOT NULL
+            AND "createdAt" >= ${from}
+        `,
+      );
 
     const [
-      totalVisits,
-      uniqueSessions,
+      visitsTotal,
       visitsToday,
-      professionals,
-      companies,
-      profilesActive,
+      visitsWeek,
+      visitsMonth,
+      sessionsTotal,
+      sessionsToday,
+      sessionsWeek,
+      sessionsMonth,
+      googleTotal,
+      googleToday,
+      googleWeek,
+      googleMonth,
+      proTotal,
+      proToday,
+      proWeek,
+      proMonth,
+      companyTotal,
+      companyToday,
+      companyWeek,
+      companyMonth,
+      proProfilesComplete,
+      proProfilesActive,
+      companyComplete,
+      companyActiveVerified,
       companiesPending,
       visitRows,
       professionalRows,
@@ -68,37 +160,38 @@ export async function GET(request: NextRequest) {
       trackingRows,
       paidPayments,
     ] = await Promise.all([
-      prisma.$queryRaw<Array<{ count: bigint }>>`
-        SELECT COUNT(*)::bigint AS count
-        FROM "SiteVisit"
-        WHERE "createdAt" >= ${baselineAt}
-      `.then((r) => Number(r[0]?.count || 0)).catch(() => 0),
-      prisma.$queryRaw<Array<{ count: bigint }>>`
-        SELECT COUNT(DISTINCT "sessionId")::bigint AS count
-        FROM "SiteVisit"
-        WHERE "sessionId" IS NOT NULL
-          AND "createdAt" >= ${baselineAt}
-      `.then((r) => Number(r[0]?.count || 0)).catch(() => 0),
-      prisma.$queryRaw<Array<{ count: bigint }>>`
-        SELECT COUNT(*)::bigint AS count
-        FROM "SiteVisit"
-        WHERE "createdAt" >= date_trunc('day', NOW())
-          AND "createdAt" >= ${baselineAt}
-      `.then((r) => Number(r[0]?.count || 0)).catch(() => 0),
-      prisma.user.count({
-        where: {
-          role: 'PROFESSIONAL',
-          createdAt: { gte: baselineAt },
-          ...notExcludedUser,
-        },
-      }),
-      prisma.user.count({
-        where: {
-          role: 'COMPANY',
-          createdAt: { gte: baselineAt },
-          ...notExcludedUser,
-        },
-      }),
+      countVisits(baselineAt),
+      countVisits(dayFrom),
+      countVisits(weekFrom),
+      countVisits(monthFrom),
+      countSessions(baselineAt),
+      countSessions(dayFrom),
+      countSessions(weekFrom),
+      countSessions(monthFrom),
+      countGoogleUsers(baselineAt),
+      countGoogleUsers(dayFrom),
+      countGoogleUsers(weekFrom),
+      countGoogleUsers(monthFrom),
+      countUsers('PROFESSIONAL', baselineAt),
+      countUsers('PROFESSIONAL', dayFrom),
+      countUsers('PROFESSIONAL', weekFrom),
+      countUsers('PROFESSIONAL', monthFrom),
+      countUsers('COMPANY', baselineAt),
+      countUsers('COMPANY', dayFrom),
+      countUsers('COMPANY', weekFrom),
+      countUsers('COMPANY', monthFrom),
+      countRaw(
+        prisma.$queryRaw<Array<{ count: bigint }>>`
+          SELECT COUNT(*)::bigint AS count
+          FROM "Profile"
+          WHERE "createdAt" >= ${baselineAt}
+            AND (
+              (cpf IS NOT NULL AND length(regexp_replace(cpf, '\\D', '', 'g')) = 11)
+              OR "profileCompletion" >= 40
+            )
+            ${excludeProfileUserSql}
+        `,
+      ),
       prisma.profile.count({
         where: {
           status: 'ACTIVE',
@@ -107,15 +200,40 @@ export async function GET(request: NextRequest) {
           ...notExcludedProfileUser,
         },
       }),
-      prisma.$queryRaw<Array<{ count: bigint }>>`
-        SELECT COUNT(*)::bigint AS count
-        FROM "Company"
-        WHERE "verificationStatus" = 'PENDING'
-          AND "cartaoCnpjUrl" IS NOT NULL
-          AND TRIM("cartaoCnpjUrl") <> ''
-          AND "createdAt" >= ${baselineAt}
-          ${excludeCompanyUserSql}
-      `.then((r) => Number(r[0]?.count || 0)).catch(() => 0),
+      countRaw(
+        prisma.$queryRaw<Array<{ count: bigint }>>`
+          SELECT COUNT(*)::bigint AS count
+          FROM "Company"
+          WHERE "createdAt" >= ${baselineAt}
+            AND name IS NOT NULL AND TRIM(name) <> ''
+            AND cnpj IS NOT NULL AND length(regexp_replace(cnpj, '\\D', '', 'g')) = 14
+            AND "responsavelNome" IS NOT NULL AND TRIM("responsavelNome") <> ''
+            AND "responsavelCpf" IS NOT NULL AND length(regexp_replace("responsavelCpf", '\\D', '', 'g')) = 11
+            AND telefone IS NOT NULL AND TRIM(telefone) <> ''
+            AND endereco IS NOT NULL AND length(TRIM(endereco)) >= 5
+            ${excludeCompanyUserSql}
+        `,
+      ),
+      countRaw(
+        prisma.$queryRaw<Array<{ count: bigint }>>`
+          SELECT COUNT(*)::bigint AS count
+          FROM "Company"
+          WHERE "createdAt" >= ${baselineAt}
+            AND "verificationStatus" = 'VERIFIED'
+            ${excludeCompanyUserSql}
+        `,
+      ),
+      countRaw(
+        prisma.$queryRaw<Array<{ count: bigint }>>`
+          SELECT COUNT(*)::bigint AS count
+          FROM "Company"
+          WHERE "verificationStatus" = 'PENDING'
+            AND "cartaoCnpjUrl" IS NOT NULL
+            AND TRIM("cartaoCnpjUrl") <> ''
+            AND "createdAt" >= ${baselineAt}
+            ${excludeCompanyUserSql}
+        `,
+      ),
       prisma.$queryRaw<Array<{ day: Date; count: bigint }>>`
         SELECT date_trunc('day', "createdAt") AS day, COUNT(*)::bigint AS count
         FROM "SiteVisit"
@@ -145,14 +263,23 @@ export async function GET(request: NextRequest) {
         WHERE "createdAt" >= ${baselineAt}
           ${excludeCompanyUserSql}
         GROUP BY "planTier", "subscriptionExpiresAt"
-      `.catch(() => [] as Array<{ planTier: string | null; subscriptionExpiresAt: Date | null; count: bigint }>),
-      prisma.$queryRaw<Array<{
-        contatados: bigint;
-        entrevistados: bigint;
-        testados: bigint;
-        contratados: bigint;
-        naoContratados: bigint;
-      }>>`
+      `.catch(
+        () =>
+          [] as Array<{
+            planTier: string | null;
+            subscriptionExpiresAt: Date | null;
+            count: bigint;
+          }>,
+      ),
+      prisma.$queryRaw<
+        Array<{
+          contatados: bigint;
+          entrevistados: bigint;
+          testados: bigint;
+          contratados: bigint;
+          naoContratados: bigint;
+        }>
+      >`
         SELECT
           COUNT(*) FILTER (WHERE contatado = true)::bigint AS contatados,
           COUNT(*) FILTER (WHERE entrevistado = true)::bigint AS entrevistados,
@@ -162,17 +289,24 @@ export async function GET(request: NextRequest) {
         FROM "CompanyProfileTracking"
         WHERE "createdAt" >= ${baselineAt}
           ${excludeTrackingCompanySql}
-      `.catch(() => [{
-        contatados: BigInt(0),
-        entrevistados: BigInt(0),
-        testados: BigInt(0),
-        contratados: BigInt(0),
-        naoContratados: BigInt(0),
-      }]),
-      prisma.paymentRecord.findMany({
-        where: { status: 'PAID', createdAt: { gte: baselineAt } },
-        select: { amount: true, customer: true, createdAt: true },
-      }).catch(() => [] as Array<{ amount: number; customer: string | null; createdAt: Date }>),
+      `.catch(() => [
+        {
+          contatados: BigInt(0),
+          entrevistados: BigInt(0),
+          testados: BigInt(0),
+          contratados: BigInt(0),
+          naoContratados: BigInt(0),
+        },
+      ]),
+      prisma.paymentRecord
+        .findMany({
+          where: { status: 'PAID', createdAt: { gte: baselineAt } },
+          select: { amount: true, customer: true, createdAt: true },
+        })
+        .catch(
+          () =>
+            [] as Array<{ amount: number; customer: string | null; createdAt: Date }>,
+        ),
     ]);
 
     const toMap = (rows: Array<{ day: Date; count: bigint }>) => {
@@ -232,11 +366,16 @@ export async function GET(request: NextRequest) {
         unitPriceCentavos,
         subscriptions,
         revenueCentavos,
-        revenueLabel: `R$ ${(revenueCentavos / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+        revenueLabel: `R$ ${(revenueCentavos / 100).toLocaleString('pt-BR', {
+          minimumFractionDigits: 2,
+        })}`,
       };
     });
 
-    const plansRevenueTotalCentavos = paidPlans.reduce((sum, p) => sum + p.revenueCentavos, 0);
+    const plansRevenueTotalCentavos = paidPlans.reduce(
+      (sum, p) => sum + p.revenueCentavos,
+      0,
+    );
     const tracking = trackingRows[0] || {
       contatados: BigInt(0),
       entrevistados: BigInt(0),
@@ -254,13 +393,54 @@ export async function GET(request: NextRequest) {
       `R$ ${(centavos / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 
     return NextResponse.json({
+      site: {
+        visits: {
+          total: visitsTotal,
+          today: visitsToday,
+          week: visitsWeek,
+          month: visitsMonth,
+        },
+        sessions: {
+          total: sessionsTotal,
+          today: sessionsToday,
+          week: sessionsWeek,
+          month: sessionsMonth,
+        },
+        googleAccounts: {
+          total: googleTotal,
+          today: googleToday,
+          week: googleWeek,
+          month: googleMonth,
+        },
+      },
+      professionals: {
+        cadastros: {
+          total: proTotal,
+          today: proToday,
+          week: proWeek,
+          month: proMonth,
+        },
+        profilesComplete: proProfilesComplete,
+        profilesActive: proProfilesActive,
+      },
+      companies: {
+        cadastros: {
+          total: companyTotal,
+          today: companyToday,
+          week: companyWeek,
+          month: companyMonth,
+        },
+        profilesComplete: companyComplete,
+        profilesActive: companyActiveVerified,
+        pendingCnpj: companiesPending,
+      },
       totals: {
-        visits: totalVisits,
-        uniqueSessions,
+        visits: visitsTotal,
+        uniqueSessions: sessionsTotal,
         visitsToday,
-        professionals,
-        companies,
-        profilesActive,
+        professionals: proTotal,
+        companies: companyTotal,
+        profilesActive: proProfilesActive,
         companiesPending,
         freeCompanies: planCounts.FREE,
         contatados: Number(tracking.contatados || 0),

@@ -12,6 +12,26 @@ type SeriesPoint = {
   companies: number;
 };
 
+type PeriodCounts = {
+  total: number;
+  today: number;
+  week: number;
+  month: number;
+};
+
+type SiteStats = {
+  visits: PeriodCounts;
+  sessions: PeriodCounts;
+  googleAccounts: PeriodCounts;
+};
+
+type AudienceStats = {
+  cadastros: PeriodCounts;
+  profilesComplete: number;
+  profilesActive: number;
+  pendingCnpj?: number;
+};
+
 type Totals = {
   visits: number;
   uniqueSessions: number;
@@ -125,6 +145,9 @@ function BarChart({
 
 export default function AdminDashboardPage() {
   const [totals, setTotals] = useState<Totals | null>(null);
+  const [siteStats, setSiteStats] = useState<SiteStats | null>(null);
+  const [professionalsStats, setProfessionalsStats] = useState<AudienceStats | null>(null);
+  const [companiesStats, setCompaniesStats] = useState<AudienceStats | null>(null);
   const [plans, setPlans] = useState<PlansSummary | null>(null);
   const [series, setSeries] = useState<SeriesPoint[]>([]);
   const [messages, setMessages] = useState<InboxMessage[]>([]);
@@ -155,6 +178,9 @@ export default function AdminDashboardPage() {
       } else {
         setError('');
         setTotals(stats.totals);
+        setSiteStats(stats.site || null);
+        setProfessionalsStats(stats.professionals || null);
+        setCompaniesStats(stats.companies || null);
         setPlans(stats.plans || null);
         setSeries(stats.series || []);
       }
@@ -384,46 +410,127 @@ IMAP_PASS=sua-senha
       {totals && (
         <>
           <section className={`${styles.panel} ${styles.dataCard}`}>
-            <h2 className={styles.sectionTag}>Métricas</h2>
+            <h2 className={styles.sectionTag}>Site geral</h2>
             <div className={styles.tableWrap}>
               <table className={styles.dataTable}>
                 <thead>
                   <tr>
                     <th>Indicador</th>
-                    <th>Valor</th>
-                    <th>Detalhe</th>
+                    <th>Total</th>
+                    <th>Diário</th>
+                    <th>Semanal</th>
+                    <th>Mensal</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td>Visitas no site</td>
-                    <td className={styles.dataValue}>{totals.visits}</td>
-                    <td>{totals.visitsToday} hoje</td>
+                    <td className={styles.dataValue}>{siteStats?.visits.total ?? totals.visits}</td>
+                    <td className={styles.dataValue}>{siteStats?.visits.today ?? totals.visitsToday}</td>
+                    <td className={styles.dataValue}>{siteStats?.visits.week ?? '—'}</td>
+                    <td className={styles.dataValue}>{siteStats?.visits.month ?? '—'}</td>
                   </tr>
                   <tr>
                     <td>Sessões únicas</td>
-                    <td className={styles.dataValue}>{totals.uniqueSessions}</td>
-                    <td>—</td>
+                    <td className={styles.dataValue}>{siteStats?.sessions.total ?? totals.uniqueSessions}</td>
+                    <td className={styles.dataValue}>{siteStats?.sessions.today ?? '—'}</td>
+                    <td className={styles.dataValue}>{siteStats?.sessions.week ?? '—'}</td>
+                    <td className={styles.dataValue}>{siteStats?.sessions.month ?? '—'}</td>
                   </tr>
                   <tr>
-                    <td>Profissionais</td>
-                    <td className={styles.dataValue}>{totals.professionals}</td>
-                    <td>—</td>
+                    <td>Contas / logins Google</td>
+                    <td className={styles.dataValue}>{siteStats?.googleAccounts.total ?? 0}</td>
+                    <td className={styles.dataValue}>{siteStats?.googleAccounts.today ?? 0}</td>
+                    <td className={styles.dataValue}>{siteStats?.googleAccounts.week ?? 0}</td>
+                    <td className={styles.dataValue}>{siteStats?.googleAccounts.month ?? 0}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className={styles.brandSub} style={{ marginTop: 10 }}>
+              Google = contas criadas sem senha (login OAuth). Diário = hoje · Semanal = 7 dias · Mensal = mês atual.
+            </p>
+          </section>
+
+          <section className={`${styles.panel} ${styles.dataCard}`}>
+            <h2 className={styles.sectionTag}>Profissionais</h2>
+            <div className={styles.tableWrap}>
+              <table className={styles.dataTable}>
+                <thead>
+                  <tr>
+                    <th>Indicador</th>
+                    <th>Total</th>
+                    <th>Diário</th>
+                    <th>Semanal</th>
+                    <th>Mensal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Cadastros (contas)</td>
+                    <td className={styles.dataValue}>
+                      {professionalsStats?.cadastros.total ?? totals.professionals}
+                    </td>
+                    <td className={styles.dataValue}>{professionalsStats?.cadastros.today ?? '—'}</td>
+                    <td className={styles.dataValue}>{professionalsStats?.cadastros.week ?? '—'}</td>
+                    <td className={styles.dataValue}>{professionalsStats?.cadastros.month ?? '—'}</td>
                   </tr>
                   <tr>
-                    <td>Empresas</td>
-                    <td className={styles.dataValue}>{totals.companies}</td>
-                    <td>—</td>
+                    <td>Perfis completos</td>
+                    <td className={styles.dataValue}>{professionalsStats?.profilesComplete ?? '—'}</td>
+                    <td colSpan={3}>Cadastro com dados mínimos para vitrine</td>
                   </tr>
                   <tr>
-                    <td>Perfis ativos</td>
-                    <td className={styles.dataValue}>{totals.profilesActive}</td>
-                    <td>—</td>
+                    <td>Perfis ativos (visíveis)</td>
+                    <td className={styles.dataValue}>
+                      {professionalsStats?.profilesActive ?? totals.profilesActive}
+                    </td>
+                    <td colSpan={3}>Ativos e visíveis para empresas</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className={`${styles.panel} ${styles.dataCard}`}>
+            <h2 className={styles.sectionTag}>Empresas</h2>
+            <div className={styles.tableWrap}>
+              <table className={styles.dataTable}>
+                <thead>
+                  <tr>
+                    <th>Indicador</th>
+                    <th>Total</th>
+                    <th>Diário</th>
+                    <th>Semanal</th>
+                    <th>Mensal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Cadastros (contas)</td>
+                    <td className={styles.dataValue}>
+                      {companiesStats?.cadastros.total ?? totals.companies}
+                    </td>
+                    <td className={styles.dataValue}>{companiesStats?.cadastros.today ?? '—'}</td>
+                    <td className={styles.dataValue}>{companiesStats?.cadastros.week ?? '—'}</td>
+                    <td className={styles.dataValue}>{companiesStats?.cadastros.month ?? '—'}</td>
+                  </tr>
+                  <tr>
+                    <td>Cadastros completos</td>
+                    <td className={styles.dataValue}>{companiesStats?.profilesComplete ?? '—'}</td>
+                    <td colSpan={3}>CNPJ, responsável, telefone e endereço</td>
+                  </tr>
+                  <tr>
+                    <td>Empresas ativas (verificadas)</td>
+                    <td className={styles.dataValue}>{companiesStats?.profilesActive ?? '—'}</td>
+                    <td colSpan={3}>Verificação CNPJ aprovada</td>
                   </tr>
                   <tr>
                     <td>Pendentes CNPJ</td>
-                    <td className={styles.dataValue}>{totals.companiesPending}</td>
-                    <td>Aguardando análise</td>
+                    <td className={styles.dataValue}>
+                      {companiesStats?.pendingCnpj ?? totals.companiesPending}
+                    </td>
+                    <td colSpan={3}>Aguardando análise</td>
                   </tr>
                 </tbody>
               </table>
