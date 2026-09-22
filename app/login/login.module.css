@@ -177,6 +177,36 @@
   text-align: center;
 }
 
+.vitrinePitchSubtitle {
+  margin: 6px 0 8px;
+  color: var(--ri-gold);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.vitrinePitchList {
+  margin: 0 0 12px;
+  padding: 0 0 0 1.1rem;
+  color: rgba(242, 242, 242, 0.88);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.vitrinePitchList li {
+  margin: 0 0 6px;
+}
+
+.vitrinePitchList li:last-child {
+  margin-bottom: 0;
+}
+
+.vitrinePitchList strong {
+  color: #f0d78c;
+  font-weight: 700;
+}
+
 .vitrinePitchCta {
   margin: 6px 0 0;
   color: #f0d78c;
