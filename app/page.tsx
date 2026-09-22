@@ -92,33 +92,16 @@ export default function Home() {
             <h2 id="home-about-title" className={styles.aboutTitle}>
               Encontre profissionais. Encontre oportunidades.
             </h2>
-            <div className={styles.aboutCardBody}>
-              <p className={styles.aboutText}>
-                O <strong>Recruta Indústria</strong> conecta empresas e profissionais de forma
-                mais direta, permitindo que empresas encontrem profissionais de acordo com suas
-                necessidades e que profissionais apresentem sua experiência por meio de uma{" "}
-                <strong>Vitrine Profissional</strong>.
-              </p>
-              <p className={styles.aboutText}>
-                Mais do que um currículo, seu perfil reúne suas experiências, formação, cursos,
-                habilidades e qualificações em um só lugar.
-              </p>
-              <p className={styles.aboutText}>
-                Para as empresas, uma plataforma para{" "}
-                <strong>buscar, conhecer, selecionar e entrar em contato com profissionais</strong>,
-                além de conduzir entrevistas, enviar propostas e trabalhar em equipe durante o
-                processo.
-              </p>
-              <p className={styles.aboutText}>
-                Para os profissionais, uma forma de{" "}
-                <strong>dar visibilidade à sua experiência e ser encontrado por empresas</strong>,
-                com ferramentas para contato, entrevistas e propostas dentro da própria plataforma.
-              </p>
-              <p className={styles.aboutHighlight}>
-                Recruta Indústria. Aproximando quem procura profissionais de quem está pronto para
-                novas oportunidades.
-              </p>
-            </div>
+            <p className={styles.aboutText}>
+              O <strong>Recruta Indústria</strong> conecta empresas e profissionais de forma
+              mais direta: empresas encontram talentos pela{" "}
+              <strong>Vitrine Profissional</strong> e profissionais apresentam experiência,
+              formação e qualificações em um só lugar.
+            </p>
+            <p className={styles.aboutHighlight}>
+              Recruta Indústria. Aproximando quem procura profissionais de quem está pronto para
+              novas oportunidades.
+            </p>
           </section>
 
           <section className={styles.bannerSection}>
