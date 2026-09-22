@@ -10,6 +10,7 @@ import { checkRateLimit } from '@/lib/security';
 import MathCaptcha from '../components/MathCaptcha';
 import LogoRecruta from '../components/LogoRecruta';
 import PageLoader from '../components/PageLoader';
+import ProfessionalVitrinePitch from '@/components/auth/ProfessionalVitrinePitch';
 import styles from './login.module.css';
 
 function LoginContent() {
@@ -217,6 +218,8 @@ function LoginContent() {
                 : 'Acesse seu perfil profissional.'}
           </p>
         </div>
+
+        {!isAdminRedirect && tipoLogin === 'professional' && <ProfessionalVitrinePitch />}
 
         {!tipoLocked && !isAdminRedirect && (
           <div className={styles.tabs}>

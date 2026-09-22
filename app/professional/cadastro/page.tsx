@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import PageLoader from "@/app/components/PageLoader";
+import ProfessionalVitrinePitch from "@/components/auth/ProfessionalVitrinePitch";
 import loginStyles from "@/app/login/login.module.css";
 import { validatePasswordStrength } from "@/lib/password-strength";
 
@@ -122,11 +123,9 @@ export default function CadastroSimplesProfissionalPage() {
           <p className={loginStyles.subtitle}>
             <span className={loginStyles.accessTag}>Cadastro Profissional</span>
           </p>
-          <p className={loginStyles.createAccountHint}>
-            Crie sua conta em segundos. Depois complete o perfil no painel para as
-            empresas te encontrarem.
-          </p>
         </div>
+
+        <ProfessionalVitrinePitch />
 
         <form onSubmit={handleSubmit} className={loginStyles.form}>
           {errorMessage ? (

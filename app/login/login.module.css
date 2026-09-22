@@ -114,6 +114,43 @@
   max-width: 28rem;
 }
 
+.vitrinePitch {
+  margin: 0 0 18px;
+  padding: 14px 14px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(200, 155, 60, 0.45);
+  background: rgba(26, 21, 8, 0.55);
+  text-align: center;
+}
+
+.vitrinePitchTitle {
+  margin: 0 0 10px;
+  color: var(--ri-gold);
+  font-size: clamp(0.95rem, 2.4vw, 1.1rem);
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.vitrinePitchText {
+  margin: 0 0 8px;
+  color: rgba(242, 242, 242, 0.88);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.vitrinePitchText strong {
+  color: #f0d78c;
+  font-weight: 700;
+}
+
+.vitrinePitchHighlight {
+  margin: 10px 0 0;
+  color: var(--ri-gold);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
 .tabs {
   display: flex;
   gap: 8px;
