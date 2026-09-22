@@ -139,19 +139,7 @@ function LoginContent() {
         if (data.userType === 'company' || data.userType === 'COMPANY') {
           router.push('/company/dashboard-empresa');
         } else {
-          const profileRes = await fetch('/api/professional/profile', {
-            credentials: 'include',
-          });
-          if (profileRes.ok) {
-            const profile = await profileRes.json();
-            router.push(
-              profile.registrationComplete
-                ? '/professional/dashboard'
-                : '/professional/register'
-            );
-          } else {
-            router.push('/professional/register');
-          }
+          router.push('/professional/dashboard');
         }
       }
     } catch (error) {
@@ -197,7 +185,7 @@ function LoginContent() {
       setErrorMessage('Para acessar o admin, entre com o e-mail de administrador. Não use criar conta.');
       return;
     }
-    router.push(tipoLogin === 'company' ? '/company/register' : '/professional/register');
+    router.push(tipoLogin === 'company' ? '/company/register' : '/professional/cadastro');
   };
 
   return (

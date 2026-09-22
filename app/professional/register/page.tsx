@@ -813,6 +813,7 @@ export default function CadastroProfissional() {
     if (sessionStatus === 'unauthenticated') {
       setCheckingRegistration(false);
       setContaJaCompleta(false);
+      router.replace('/professional/cadastro');
       return;
     }
 
@@ -848,10 +849,14 @@ export default function CadastroProfissional() {
           aplicarDadosDoPerfil(data.formEdit);
         }
 
-        setFormData((prev) => ({
+          setFormData((prev) => ({
           ...prev,
           email: session.user?.email || prev.email,
-          nome: String(prev.nome || '').trim() ? prev.nome : (session.user?.name || prev.nome),
+          nome: String(prev.nome || '').trim()
+            ? prev.nome
+            : (data?.nome && data.nome !== 'Usuário'
+                ? data.nome
+                : session.user?.name || prev.nome),
         }));
         setSenhaPreenchida(true);
       })
@@ -1401,7 +1406,7 @@ export default function CadastroProfissional() {
               type="button"
               className={styles.secondaryLinkBtn}
               onClick={() => {
-                void signOut({ callbackUrl: '/professional/register' });
+                void signOut({ callbackUrl: '/professional/cadastro' });
               }}
             >
               Sair e criar outro cadastro
@@ -1424,7 +1429,7 @@ export default function CadastroProfissional() {
           <LogoRecruta size="sm" as="div" depth />
         </div>
         <h1 id="register-title" className={styles.title}>
-          {isEditMode ? 'Atualizar cadastro' : 'Cadastro do profissional'}
+          {isEditMode ? 'Atualizar cadastro' : 'Complete seu perfil'}
         </h1>
         {formFeedback && (
           <div
@@ -2055,7 +2060,8 @@ export default function CadastroProfissional() {
 
             {cadastroComGoogle && (
               <p style={{ color: '#F2F2F2', fontSize: 13, margin: '0 0 12px' }}>
-                Você entrou com Google. Não é necessário criar senha.
+                Sua conta já está criada. Nome e e-mail permanecem preenchidos — complete o restante do perfil
+                para as empresas te encontrarem.
               </p>
             )}
 

@@ -24,6 +24,7 @@ const userAuthSelect = {
   email: true,
   role: true,
   image: true,
+  passwordHash: true,
 } as const;
 
 function toUser(row: {
@@ -32,9 +33,14 @@ function toUser(row: {
   email: string;
   role: string;
   image: string | null;
+  passwordHash?: string | null;
 }): User {
   return {
-    ...row,
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    role: row.role,
+    image: row.image,
     passwordHash: null,
     lastLogin: null,
     lastSeenAt: null,
@@ -67,7 +73,11 @@ async function resolveAuthEmail(request: NextRequest): Promise<{ email: string; 
   return null;
 }
 
-function incompleteProfileResponse(user: { name: string | null; email: string }) {
+function incompleteProfileResponse(user: {
+  name: string | null;
+  email: string;
+  passwordHash?: string | null;
+}) {
   return NextResponse.json({
       nome: user.name || user.email?.split('@')[0] || 'Usuário',
       email: user.email,
@@ -92,6 +102,8 @@ function incompleteProfileResponse(user: { name: string | null; email: string })
       hasFormSnapshot: false,
       hasVideoApresentacao: false,
       registrationComplete: false,
+      profileCompletion: 0,
+      accountHasPassword: Boolean(user.passwordHash),
   });
 }
 
@@ -198,6 +210,7 @@ export async function GET(request: NextRequest) {
           hasFormSnapshot: !!formSnapshot,
           hasVideoApresentacao: Boolean(videoPath),
           registrationComplete: isProfessionalRegistrationComplete(profile),
+          accountHasPassword: Boolean(user.passwordHash),
         });
       } catch (error) {
         console.error('[profile] Falha ao montar perfil:', error);
@@ -209,6 +222,7 @@ export async function GET(request: NextRequest) {
           hasFormSnapshot: Boolean(profile.formDataJSON),
           hasVideoApresentacao: false,
           registrationComplete: isProfessionalRegistrationComplete(profile),
+          accountHasPassword: Boolean(user.passwordHash),
         });
       }
     }

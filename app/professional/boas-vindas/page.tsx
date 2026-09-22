@@ -34,14 +34,14 @@ export default function BoasVindasProfissionalPage() {
         }
 
         if (!res.ok) {
-          router.replace("/professional/register");
+          router.replace("/professional/dashboard");
           return;
         }
 
         const data = await res.json();
 
         if (!data.registrationComplete) {
-          router.replace("/professional/register");
+          router.replace("/professional/dashboard");
           return;
         }
 
@@ -55,7 +55,7 @@ export default function BoasVindasProfissionalPage() {
           setNome(nomePerfil.split(" ")[0]);
         }
       } catch {
-        if (ativo) router.replace("/professional/register");
+        if (ativo) router.replace("/professional/dashboard");
       } finally {
         if (ativo) setCarregando(false);
       }

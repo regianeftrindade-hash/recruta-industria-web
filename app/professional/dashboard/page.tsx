@@ -51,6 +51,7 @@ interface ProfileData {
   fotoPerfil?: string | null;
   formEdit?: FormEditPayload | null;
   profileCompletion?: number;
+  registrationComplete?: boolean;
 }
 
 interface Tip {
@@ -160,10 +161,6 @@ export default function DashboardProfissional() {
         }
         if (!res.ok) throw new Error("Erro ao buscar perfil");
         const data = await res.json();
-        if (!data.registrationComplete) {
-          router.replace("/professional/register");
-          return;
-        }
         setProfileData(data);
         setFormEdit(data.formEdit || null);
         setLoading(false);
@@ -599,16 +596,50 @@ export default function DashboardProfissional() {
         >
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFotoChange} style={{ display: "none" }} />
 
+          {profileData.registrationComplete === false && (
+            <section
+              className="dash-card"
+              role="status"
+              style={{
+                ...dashCard,
+                padding: 16,
+                boxShadow: DASH.shadow,
+                border: `1px solid ${DASH.gold}`,
+                background: "linear-gradient(180deg, rgba(200,155,60,0.18) 0%, rgba(43,43,43,0.96) 100%)",
+              }}
+            >
+              <h2 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>
+                Sua conta está criada! Agora complete seu perfil para que as empresas possam encontrar você.
+              </h2>
+              <p style={{ margin: "0 0 12px", fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>
+                Nome e e-mail já estão salvos. Falta preencher o restante do cadastro para aparecer na vitrine.
+              </p>
+              <button
+                type="button"
+                onClick={() => router.push("/professional/register")}
+                style={{ ...btnGold, padding: "10px 16px", fontSize: 12 }}
+              >
+                Completar perfil
+              </button>
+            </section>
+          )}
+
           <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
               <h3 style={{ ...dashTitleProf, margin: 0, fontSize: 14 }}>Perfil resumido</h3>
               <div style={{ display: "flex", gap: 8, alignItems: "flex-start", flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
                 <button
                   type="button"
-                  onClick={() => router.push("/professional/register?edit=1")}
+                  onClick={() =>
+                    router.push(
+                      profileData.registrationComplete === false
+                        ? "/professional/register"
+                        : "/professional/register?edit=1",
+                    )
+                  }
                   style={{ ...btnGold, padding: "6px 10px", fontSize: 10, flexShrink: 0 }}
                 >
-                  Editar perfil
+                  {profileData.registrationComplete === false ? "Completar perfil" : "Editar perfil"}
                 </button>
                 <DeleteAccountControl variant="card" />
               </div>
