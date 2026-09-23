@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
-import { requireAdmin } from '@/lib/auth/admin-auth';
+import { requireAdmin, getAdminEmails } from '@/lib/auth/admin-auth';
 import { COMPANY_PLAN_TIERS, getPlanDefinition } from '@/lib/company/company-premium-plans';
 import {
   getAdminExcludedTestAccounts,
@@ -78,16 +78,34 @@ export async function GET(request: NextRequest) {
 
     const { userIds: excludedIds, emails: excludedEmails } =
       await getAdminExcludedTestAccounts();
-    const notExcludedUser = excludedIds.length ? { id: { notIn: excludedIds } } : {};
-    const notExcludedProfileUser = excludedIds.length
-      ? { userId: { notIn: excludedIds } }
+    const adminEmails = getAdminEmails();
+
+    // Admins nunca entram nas contagens de profissional/empresa.
+    const adminUsers = adminEmails.length
+      ? await prisma.user.findMany({
+          where: { email: { in: adminEmails, mode: 'insensitive' } },
+          select: { id: true, email: true },
+        })
+      : [];
+    const adminIds = adminUsers.map((u) => u.id);
+    const excludeIds = [...new Set([...excludedIds, ...adminIds])];
+    const excludeEmails = [
+      ...new Set([
+        ...excludedEmails.map((e) => e.toLowerCase()),
+        ...adminEmails,
+      ]),
+    ];
+
+    const notExcludedUser = excludeIds.length ? { id: { notIn: excludeIds } } : {};
+    const notExcludedProfileUser = excludeIds.length
+      ? { userId: { notIn: excludeIds } }
       : {};
-    const excludeUserSql = sqlAndUserIdNotIn(Prisma.sql`id`, excludedIds);
-    const excludeCompanyUserSql = sqlAndUserIdNotIn(Prisma.sql`"userId"`, excludedIds);
-    const excludeProfileUserSql = sqlAndUserIdNotIn(Prisma.sql`"userId"`, excludedIds);
+    const excludeUserSql = sqlAndUserIdNotIn(Prisma.sql`id`, excludeIds);
+    const excludeCompanyUserSql = sqlAndUserIdNotIn(Prisma.sql`"userId"`, excludeIds);
+    const excludeProfileUserSql = sqlAndUserIdNotIn(Prisma.sql`"userId"`, excludeIds);
     const excludeTrackingCompanySql = sqlAndUserIdNotIn(
       Prisma.sql`"companyUserId"`,
-      excludedIds,
+      excludeIds,
     );
 
     const countUsers = (role: 'PROFESSIONAL' | 'COMPANY', from: Date) =>
@@ -386,7 +404,7 @@ export async function GET(request: NextRequest) {
 
     const { collectedCentavos, collectedPayments } = sumPaidExcludingTestEmails(
       paidPayments,
-      excludedEmails,
+      excludeEmails,
       baselineAt,
     );
     const formatBrlFromCentavos = (centavos: number) =>
@@ -448,7 +466,8 @@ export async function GET(request: NextRequest) {
         testados: Number(tracking.testados || 0),
         contratados: Number(tracking.contratados || 0),
         naoContratados: Number(tracking.naoContratados || 0),
-        excludedTestAccounts: excludedIds.length,
+        excludedTestAccounts: excludeIds.length,
+        adminAccounts: adminEmails.length,
         statsSince: baselineAt.toISOString(),
       },
       plans: {

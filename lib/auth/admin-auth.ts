@@ -8,7 +8,8 @@ const DEV_FALLBACK_KEY = "dev-key-12345";
 /** Sempre admin, mesmo se ADMIN_EMAILS não estiver na Vercel. */
 const DEFAULT_ADMIN_EMAILS = ["recrutaindustria26@gmail.com"];
 
-function getAdminEmails(): string[] {
+/** E-mails com acesso ao painel /admin (lista fixa + ADMIN_EMAILS no ambiente). */
+export function getAdminEmails(): string[] {
   const fromEnv = (process.env.ADMIN_EMAILS || "")
     .split(",")
     .map((email) => email.trim().toLowerCase())

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { requireAdmin } from '@/lib/admin-auth'
+import { getAdminEmails, requireAdmin } from '@/lib/admin-auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,40 +10,67 @@ export async function POST(request: NextRequest) {
     const authError = await requireAdmin(request, { apiKey })
     if (authError) return authError
 
-    // Buscar todos os usuários
+    const adminEmails = new Set(getAdminEmails())
+
     const users = await prisma.user.findMany({
       include: {
         profile: {
-          select: { title: true, location: true, status: true }
+          select: { title: true, location: true, status: true },
         },
         company: {
-          select: { name: true }
+          select: { name: true },
         },
-        professional: true
+        professional: true,
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     })
 
-    return NextResponse.json({
-      success: true,
-      totalUsers: users.length,
-      users: users.map(u => ({
+    const mapped = users.map((u) => {
+      const email = u.email.toLowerCase().trim()
+      const isAdmin = u.role === 'ADMIN' || adminEmails.has(email)
+      return {
         id: u.id,
         email: u.email,
         name: u.name,
-        role: u.role,
+        role: isAdmin ? 'ADMIN' : u.role,
+        isAdmin,
         lastLogin: u.lastLogin,
         createdAt: u.createdAt,
         profile: u.profile,
         company: u.company,
-        hasPassword: !!u.passwordHash
-      }))
+        hasPassword: !!u.passwordHash,
+      }
+    })
+
+    const admins = mapped.filter((u) => u.isAdmin)
+    const professionals = mapped.filter(
+      (u) => !u.isAdmin && u.role === 'PROFESSIONAL',
+    )
+    const companies = mapped.filter((u) => !u.isAdmin && u.role === 'COMPANY')
+    const others = mapped.filter(
+      (u) => !u.isAdmin && u.role !== 'PROFESSIONAL' && u.role !== 'COMPANY',
+    )
+
+    return NextResponse.json({
+      success: true,
+      totalUsers: mapped.length,
+      totals: {
+        admins: admins.length,
+        professionals: professionals.length,
+        companies: companies.length,
+        others: others.length,
+      },
+      admins,
+      professionals,
+      companies,
+      others,
+      users: mapped,
     })
   } catch (error: any) {
     console.error('Erro ao listar usuários:', error)
     return NextResponse.json(
       { error: error?.message || 'Erro ao listar usuários' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
