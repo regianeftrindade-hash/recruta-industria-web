@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import {
   extractSearchPeople,
   fetchDatamagnetPerson,
@@ -60,6 +60,58 @@ function toInput(
   };
 }
 
+const MAX_PERFIS_POR_LOTE = 3;
+
+export const maxDuration = 60;
+
+function readLimit(value: unknown): number {
+  const parsed =
+    typeof value === "number"
+      ? value
+      : typeof value === "string" && value.trim()
+        ? Number(value)
+        : Number.NaN;
+  if (!Number.isFinite(parsed)) return MAX_PERFIS_POR_LOTE;
+  return Math.min(MAX_PERFIS_POR_LOTE, Math.max(1, Math.trunc(parsed)));
+}
+
+async function gravarPerfis(
+  people: Record<string, unknown>[],
+  keyword: string,
+  location: string,
+): Promise<void> {
+  for (const person of people) {
+    let email = readDatagmaPersonEmail(person);
+    let input = toInput(person, email, keyword, location);
+
+    const linkedInUrl =
+      readText(person.linkedInUrl) ||
+      readText(person.url) ||
+      readText(person.profile_url) ||
+      readText(person.navigation_url);
+    if ((!input || !email) && linkedInUrl.startsWith("https://")) {
+      const remote = await fetchDatamagnetPerson(linkedInUrl);
+      if (remote.ok) {
+        const parsed = parseDatamagnetProfile(remote.data);
+        if (parsed.ok) input = parsed.data;
+      }
+    }
+
+    if (!input) {
+      console.error(
+        "Perfil do lote sem e-mail",
+        readText(person.full_name) || readText(person.name),
+      );
+      continue;
+    }
+
+    const saved = await insertDatagmaProfile(input);
+    if (!saved.ok) {
+      console.error("Perfil do lote não gravado", input.nome, saved.error);
+    }
+  }
+}
+
 export async function POST(request: NextRequest) {
   if (!validateDatamagnetIngestKey(readIngestKey(request))) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
@@ -97,60 +149,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: search.error }, { status });
   }
 
-  const people = extractSearchPeople(search.data);
-  const results: Array<
-    | { nome: string; success: true; profileId: string; userId: string }
-    | { nome: string; success: false; error: string }
-  > = [];
+  const found = extractSearchPeople(search.data);
+  const people = found.slice(0, readLimit(raw?.limit));
 
-  for (const person of people) {
-    let email = readDatagmaPersonEmail(person);
-    let input = toInput(person, email, keyword, location);
-
-    const linkedInUrl =
-      readText(person.linkedInUrl) ||
-      readText(person.url) ||
-      readText(person.profile_url) ||
-      readText(person.navigation_url);
-    if ((!input || !email) && linkedInUrl.startsWith("https://")) {
-      const remote = await fetchDatamagnetPerson(linkedInUrl);
-      if (remote.ok) {
-        const parsed = parseDatamagnetProfile(remote.data);
-        if (parsed.ok) input = parsed.data;
+  if (people.length > 0) {
+    after(async () => {
+      try {
+        await gravarPerfis(people, keyword, location);
+      } catch (error) {
+        console.error("Falha ao gravar o lote do Datagma", error);
       }
-    }
-
-    if (!input) {
-      results.push({
-        nome: readText(person.full_name) || readText(person.name),
-        success: false,
-        error: "E-mail inválido",
-      });
-      continue;
-    }
-
-    const saved = await insertDatagmaProfile(input);
-    if (!saved.ok) {
-      results.push({ nome: input.nome, success: false, error: saved.error });
-      continue;
-    }
-
-    results.push({
-      nome: input.nome,
-      success: true,
-      profileId: saved.profileId,
-      userId: saved.userId,
     });
   }
 
-  const imported = results.filter((item) => item.success).length;
   return NextResponse.json(
     {
       success: true,
-      found: people.length,
-      imported,
-      failed: results.length - imported,
-      results,
+      found: found.length,
+      queued: people.length,
     },
     { status: 201 },
   );

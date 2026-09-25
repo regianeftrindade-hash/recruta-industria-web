@@ -42,6 +42,7 @@ const dispararBusca = async () => {
     body: JSON.stringify({
       keyword: "Programador React",
       location: "Brazil",
+      limit: 3,
     }),
   });
 
