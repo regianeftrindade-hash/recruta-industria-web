@@ -67,6 +67,8 @@ export async function fetchDatamagnetPerson(
 export async function searchDatagmaPeople(input: {
   keyword: string;
   location?: string;
+  titles?: string[];
+  countries?: string[];
 }): Promise<{ ok: true; data: unknown } | { ok: false; status: number; error: string }> {
   const apiKey = readServerEnv("DATAGMA_API_KEY");
   if (!apiKey) {
@@ -79,6 +81,8 @@ export async function searchDatagmaPeople(input: {
   }
 
   const location = input.location?.trim() || "Brazil";
+  const titles = (input.titles ?? [keyword]).map((item) => item.trim()).filter((item) => item.length >= 2);
+  const countries = (input.countries ?? [location]).map((item) => item.trim()).filter(Boolean);
   const url = new URL(PEOPLE_KEYWORD_SEARCH_URL);
   url.searchParams.set("apiId", apiKey);
 
@@ -90,7 +94,10 @@ export async function searchDatagmaPeople(input: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({ keyword, keywords: keyword, location, page: 1 }),
+      body: JSON.stringify({
+        titles: titles.length > 0 ? titles : [keyword],
+        countries: countries.length > 0 ? countries : [location],
+      }),
       cache: "no-store",
     });
   } catch {

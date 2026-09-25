@@ -84,10 +84,8 @@ describe("cliente Datamagnet", () => {
     expect(calledInit.method).toBe("POST");
     expect(calledInit.body).toBe(
       JSON.stringify({
-        keyword: "Programador React",
-        keywords: "Programador React",
-        location: "Brazil",
-        page: 1,
+        titles: ["Programador React"],
+        countries: ["Brazil"],
       }),
     );
   });

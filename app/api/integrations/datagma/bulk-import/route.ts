@@ -76,7 +76,12 @@ async function importarPorCargo(
       salvos: Array<{ nome: string; email: string; profileId: string; userId: string }>;
     }
 > {
-  const search = await searchDatagmaPeople({ keyword, location });
+  const search = await searchDatagmaPeople({
+    keyword,
+    location,
+    titles: [keyword],
+    countries: [location],
+  });
   if (!search.ok) {
     return { ok: false, error: search.error, status: search.status === 400 ? 400 : 502 };
   }
