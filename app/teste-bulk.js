@@ -26,9 +26,9 @@ function lerEnvLocal(nome) {
 }
 
 const dispararBusca = async () => {
-  const apiKey = lerEnvLocal("DATAMAGNET_INGEST_KEY");
+  const apiKey = lerEnvLocal("DATAGMA_INGEST_KEY");
   if (!apiKey) {
-    console.error("DATAMAGNET_INGEST_KEY não encontrada no .env.local");
+    console.error("DATAGMA_INGEST_KEY não encontrada no .env.local");
     process.exitCode = 1;
     return;
   }

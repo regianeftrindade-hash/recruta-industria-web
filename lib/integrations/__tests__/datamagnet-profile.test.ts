@@ -12,21 +12,21 @@ const payload = {
 };
 
 describe("ingestão Datamagnet", () => {
-  const prev = process.env.DATAMAGNET_INGEST_KEY;
+  const prev = process.env.DATAGMA_INGEST_KEY;
 
   afterEach(() => {
-    process.env.DATAMAGNET_INGEST_KEY = prev;
+    process.env.DATAGMA_INGEST_KEY = prev;
   });
 
   it("recusa chave ausente ou diferente", () => {
-    process.env.DATAMAGNET_INGEST_KEY = "chave-oficial";
+    process.env.DATAGMA_INGEST_KEY = "chave-oficial";
     expect(validateDatamagnetIngestKey(null)).toBe(false);
     expect(validateDatamagnetIngestKey("outra")).toBe(false);
     expect(validateDatamagnetIngestKey("chave-oficial")).toBe(true);
   });
 
   it("recusa quando a chave do servidor não está definida", () => {
-    delete process.env.DATAMAGNET_INGEST_KEY;
+    delete process.env.DATAGMA_INGEST_KEY;
     expect(validateDatamagnetIngestKey("chave-oficial")).toBe(false);
   });
 

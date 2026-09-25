@@ -28,7 +28,7 @@ export type DatamagnetProfileSuccess = {
 export function validateDatamagnetIngestKey(
   apiKey: string | null | undefined,
 ): boolean {
-  const expected = process.env.DATAMAGNET_INGEST_KEY?.trim();
+  const expected = process.env.DATAGMA_INGEST_KEY?.trim();
   if (!expected || !apiKey) return false;
 
   try {
