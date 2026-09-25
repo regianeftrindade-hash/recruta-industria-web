@@ -12,19 +12,7 @@ import {
 } from "@/lib/integrations/datamagnet-profile";
 import { sanitizeInput } from "@/lib/security/security";
 
-const EMPRESAS_BRASIL = [
-  "itau.com.br",
-  "ambev.com.br",
-  "petrobras.com.br",
-  "vale.com",
-  "bradesco.com.br",
-  "bb.com.br",
-  "nubank.com.br",
-  "magazineluiza.com.br",
-];
-
-const MAX_EMPRESAS = 3;
-const MAX_POR_EMPRESA = 2;
+const MAX_PERFIS = 3;
 
 export const maxDuration = 60;
 
@@ -45,7 +33,7 @@ function toInput(
   person: Record<string, unknown>,
   email: string,
   keyword: string,
-  domain: string,
+  location: string,
 ): DatamagnetProfileInput | null {
   const nome =
     readText(person.full_name) ||
@@ -61,8 +49,8 @@ function toInput(
     readText(person.headline) ||
     keyword;
   const cargoFinal = cargo.length >= 2 ? cargo : keyword;
-  const empresa = readText(person.company) || domain;
-  const location = readText(person.location) || "Brasil";
+  const empresa = readText(person.company) || "Indústria";
+  const local = readText(person.location) || location;
   const skills = Array.isArray(person.skills)
     ? person.skills.filter((item): item is string => typeof item === "string")
     : [];
@@ -70,59 +58,50 @@ function toInput(
 
   return {
     nome,
-    email: email || emailInternoTemporario(nome, domain),
+    email: email || emailInternoTemporario(nome, keyword),
     cargo: cargoFinal,
-    location,
+    location: local,
     habilidades: habilidades.length > 0 ? habilidades : [keyword.slice(0, 80)],
     experiencia: JSON.stringify([{ nome: empresa, cargo: cargoFinal }]),
   };
 }
 
-async function importarPorCargo(keyword: string): Promise<
-  Array<{ nome: string; email: string; domain: string; profileId: string; userId: string }>
+async function importarPorCargo(
+  keyword: string,
+  location: string,
+): Promise<
+  | { ok: false; error: string; status: number }
+  | {
+      ok: true;
+      salvos: Array<{ nome: string; email: string; profileId: string; userId: string }>;
+    }
 > {
-  const salvos: Array<{
-    nome: string;
-    email: string;
-    domain: string;
-    profileId: string;
-    userId: string;
-  }> = [];
+  const search = await searchDatagmaPeople({ keyword, location });
+  if (!search.ok) {
+    return { ok: false, error: search.error, status: search.status === 400 ? 400 : 502 };
+  }
 
-  for (const domain of EMPRESAS_BRASIL.slice(0, MAX_EMPRESAS)) {
-    const search = await searchDatagmaPeople({
-      keyword,
-      location: "brazil",
-      domain,
-    });
-    if (!search.ok) {
-      console.error("Busca recusada", domain, search.error);
+  const salvos: Array<{ nome: string; email: string; profileId: string; userId: string }> = [];
+  for (const person of extractSearchPeople(search.data).slice(0, MAX_PERFIS)) {
+    const email = readDatagmaPersonEmail(person);
+    const input = toInput(person, email, keyword, location);
+    if (!input) continue;
+
+    const saved = await insertDatagmaProfile(input);
+    if (!saved.ok) {
+      console.error("Perfil não gravado", input.nome, saved.error);
       continue;
     }
 
-    const people = extractSearchPeople(search.data).slice(0, MAX_POR_EMPRESA);
-    for (const person of people) {
-      const email = readDatagmaPersonEmail(person);
-      const input = toInput(person, email, keyword, domain);
-      if (!input) continue;
-
-      const saved = await insertDatagmaProfile(input);
-      if (!saved.ok) {
-        console.error("Perfil não gravado", input.nome, saved.error);
-        continue;
-      }
-
-      salvos.push({
-        nome: input.nome,
-        email: input.email,
-        domain,
-        profileId: saved.profileId,
-        userId: saved.userId,
-      });
-    }
+    salvos.push({
+      nome: input.nome,
+      email: input.email,
+      profileId: saved.profileId,
+      userId: saved.userId,
+    });
   }
 
-  return salvos;
+  return { ok: true, salvos };
 }
 
 export async function POST(request: NextRequest) {
@@ -148,21 +127,27 @@ export async function POST(request: NextRequest) {
         ? raw.keywords.trim()
         : "";
 
+  const location = typeof raw?.location === "string" && raw.location.trim() ? raw.location.trim() : "Brazil";
+
   if (keyword.length < 2) {
     return NextResponse.json({ error: "Informe uma palavra-chave" }, { status: 400 });
   }
 
-  let salvos: Awaited<ReturnType<typeof importarPorCargo>>;
+  let resultado: Awaited<ReturnType<typeof importarPorCargo>>;
   try {
-    salvos = await importarPorCargo(keyword);
+    resultado = await importarPorCargo(keyword, location);
   } catch (error) {
     console.error("Falha ao importar por cargo", error);
     return NextResponse.json({ error: "Falha ao importar por cargo" }, { status: 500 });
   }
 
-  if (salvos.length === 0) {
+  if (!resultado.ok) {
+    return NextResponse.json({ error: resultado.error }, { status: resultado.status });
+  }
+
+  if (resultado.salvos.length === 0) {
     return NextResponse.json(
-      { error: "Nenhum perfil com e-mail real foi gravado" },
+      { error: "A busca não devolveu perfis para gravar" },
       { status: 502 },
     );
   }
@@ -171,9 +156,9 @@ export async function POST(request: NextRequest) {
     {
       success: true,
       keyword,
-      companies: MAX_EMPRESAS,
-      imported: salvos.length,
-      results: salvos,
+      location,
+      imported: resultado.salvos.length,
+      results: resultado.salvos,
     },
     { status: 201 },
   );

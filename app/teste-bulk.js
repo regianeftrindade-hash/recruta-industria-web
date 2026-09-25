@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const keyword = "Vendedor";
+const keyword = "Auxiliar de Produção";
 
 const urlDaRota = "https://recrutaindustria.com/api/integrations/datagma/bulk-import";
 
@@ -41,7 +41,7 @@ const dispararBusca = async () => {
       "Content-Type": "application/json",
       "x-api-key": apiKey,
     },
-    body: JSON.stringify({ keyword }),
+    body: JSON.stringify({ keyword, location: "Brazil" }),
   });
 
   const texto = await resposta.text();

@@ -10,7 +10,7 @@ import {
 import { sanitizeInput } from "@/lib/security/security";
 
 const DATAGMA_FULL_URL = "https://gateway.datagma.net/api/ingress/v2/full";
-const PEOPLE_KEYWORD_SEARCH_URL = "https://gateway.datagma.net/api/ingress/v1/find_people";
+const PEOPLE_KEYWORD_SEARCH_URL = "https://gateway.datagma.net/api/v1/person/search";
 
 function readServerEnv(name: string): string {
   loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production", undefined, true);
@@ -67,7 +67,6 @@ export async function fetchDatamagnetPerson(
 export async function searchDatagmaPeople(input: {
   keyword: string;
   location?: string;
-  domain?: string;
 }): Promise<{ ok: true; data: unknown } | { ok: false; status: number; error: string }> {
   const apiKey = readServerEnv("DATAGMA_API_KEY");
   if (!apiKey) {
@@ -79,17 +78,21 @@ export async function searchDatagmaPeople(input: {
     return { ok: false, status: 400, error: "Informe uma palavra-chave" };
   }
 
+  const location = input.location?.trim() || "Brazil";
   const url = new URL(PEOPLE_KEYWORD_SEARCH_URL);
   url.searchParams.set("apiId", apiKey);
-  url.searchParams.set("currentJobTitle", keyword);
-  const domain = input.domain?.trim().toLowerCase();
-  if (domain) url.searchParams.set("domain", domain);
-  const location = input.location?.trim().toLowerCase();
-  if (location) url.searchParams.set("countries", location);
 
   let response: Response;
   try {
-    response = await fetch(url, { method: "GET", cache: "no-store" });
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({ keyword, keywords: keyword, location, page: 1 }),
+      cache: "no-store",
+    });
   } catch {
     return { ok: false, status: 502, error: "Datagma indisponível" };
   }

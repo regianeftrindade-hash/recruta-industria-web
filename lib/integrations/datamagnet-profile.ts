@@ -198,15 +198,19 @@ function readExperiencia(raw: Record<string, unknown>, cargo: string): string {
 export function escolherEmailPessoal(
   ...fontes: Array<Record<string, unknown> | null | undefined>
 ): string {
-  const chaves = ["personal_email", "personalEmail", "email", "gmail"] as const;
+  const chaves = ["personal_email", "personalEmail", "gmail", "email"] as const;
+  const encontrados: string[] = [];
   for (const chave of chaves) {
     for (const fonte of fontes) {
       if (!fonte) continue;
       const email = emailDe(fonte[chave]);
-      if (isValidEmail(email)) return email;
+      if (isValidEmail(email)) encontrados.push(email);
     }
   }
-  return "";
+  const pessoal = encontrados.find((email) =>
+    /@(gmail|hotmail|outlook|live|yahoo)\./i.test(email),
+  );
+  return pessoal || encontrados[0] || "";
 }
 
 export function emailInternoTemporario(nome: string, complemento = ""): string {

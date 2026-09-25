@@ -74,11 +74,22 @@ describe("cliente Datamagnet", () => {
       location: "Brazil",
     });
     expect(result.ok).toBe(true);
-    const [calledUrl, calledInit] = fetchMock.mock.calls[0] as [URL, { method?: string }];
+    const [calledUrl, calledInit] = fetchMock.mock.calls[0] as [
+      URL,
+      { method?: string; body?: string },
+    ];
     expect(String(calledUrl)).toBe(
-      "https://gateway.datagma.net/api/ingress/v1/find_people?apiId=chave-parceiro&currentJobTitle=Programador+React&countries=brazil",
+      "https://gateway.datagma.net/api/v1/person/search?apiId=chave-parceiro",
     );
-    expect(calledInit.method).toBe("GET");
+    expect(calledInit.method).toBe("POST");
+    expect(calledInit.body).toBe(
+      JSON.stringify({
+        keyword: "Programador React",
+        keywords: "Programador React",
+        location: "Brazil",
+        page: 1,
+      }),
+    );
   });
 
   it("busca pessoas por keyword e location", async () => {
