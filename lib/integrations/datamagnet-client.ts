@@ -9,7 +9,7 @@ import {
 import { sanitizeInput } from "@/lib/security/security";
 
 const DATAGMA_FULL_URL = "https://gateway.datagma.net/api/ingress/v2/full";
-const PEOPLE_KEYWORD_SEARCH_URL = "https://datagma.net/api/v1/people-search/search";
+const PEOPLE_KEYWORD_SEARCH_URL = "https://gateway.datagma.net/api/ingress/v1/find_people";
 
 function readServerEnv(name: string): string {
   loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production", undefined, true);
@@ -77,19 +77,18 @@ export async function searchDatagmaPeople(input: {
     return { ok: false, status: 400, error: "Informe uma palavra-chave" };
   }
 
-  const body: Record<string, string | number> = { keywords: keyword, page: 1 };
-  const location = input.location?.trim();
-  if (location) body.location = location;
+  const url = new URL(PEOPLE_KEYWORD_SEARCH_URL);
+  url.searchParams.set("apiId", apiKey);
+  url.searchParams.set("currentJobTitle", keyword);
+  const location = input.location?.trim().toLowerCase();
+  if (location) url.searchParams.set("countries", location);
 
-  const response = await fetch(PEOPLE_KEYWORD_SEARCH_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(body),
-    cache: "no-store",
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, { method: "GET", cache: "no-store" });
+  } catch {
+    return { ok: false, status: 502, error: "Datagma indisponível" };
+  }
   const text = await response.text();
   if (!response.ok) {
     return {
@@ -196,6 +195,10 @@ function readText(...values: unknown[]): string {
 export function extractSearchPeople(payload: unknown): Record<string, unknown>[] {
   const root = asRecord(payload);
   if (!root) return [];
+
+  if (Array.isArray(root.employees)) {
+    return root.employees.filter((item) => asRecord(item)) as Record<string, unknown>[];
+  }
 
   if (Array.isArray(root.results)) {
     return root.results.filter((item) => asRecord(item)) as Record<string, unknown>[];
