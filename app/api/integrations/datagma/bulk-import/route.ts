@@ -5,6 +5,7 @@ import {
   searchDatagmaPeople,
 } from "@/lib/integrations/datamagnet-client";
 import {
+  emailInternoTemporario,
   insertDatagmaProfile,
   validateDatamagnetIngestKey,
   type DatamagnetProfileInput,
@@ -44,6 +45,7 @@ function toInput(
   person: Record<string, unknown>,
   email: string,
   keyword: string,
+  domain: string,
 ): DatamagnetProfileInput | null {
   const nome =
     readText(person.full_name) ||
@@ -51,13 +53,15 @@ function toInput(
     [readText(person.firstname), readText(person.firstName), readText(person.lastName)]
       .filter(Boolean)
       .join(" ");
-  if (nome.length < 2 || email.length < 3) return null;
+  if (nome.length < 2) return null;
 
   const cargo =
     readText(person.jobTitle) ||
     readText(person.title) ||
     readText(person.headline) ||
     keyword;
+  const cargoFinal = cargo.length >= 2 ? cargo : keyword;
+  const empresa = readText(person.company) || domain;
   const location = readText(person.location) || "Brasil";
   const skills = Array.isArray(person.skills)
     ? person.skills.filter((item): item is string => typeof item === "string")
@@ -66,10 +70,11 @@ function toInput(
 
   return {
     nome,
-    email,
-    cargo: cargo.length >= 2 ? cargo : keyword,
+    email: email || emailInternoTemporario(nome, domain),
+    cargo: cargoFinal,
     location,
     habilidades: habilidades.length > 0 ? habilidades : [keyword.slice(0, 80)],
+    experiencia: JSON.stringify([{ nome: empresa, cargo: cargoFinal }]),
   };
 }
 
@@ -98,15 +103,8 @@ async function importarPorCargo(keyword: string): Promise<
     const people = extractSearchPeople(search.data).slice(0, MAX_POR_EMPRESA);
     for (const person of people) {
       const email = readDatagmaPersonEmail(person);
-      const input = toInput(person, email, keyword);
-      if (!input) {
-        console.error(
-          "Perfil sem e-mail real",
-          domain,
-          readText(person.name) || readText(person.full_name),
-        );
-        continue;
-      }
+      const input = toInput(person, email, keyword, domain);
+      if (!input) continue;
 
       const saved = await insertDatagmaProfile(input);
       if (!saved.ok) {

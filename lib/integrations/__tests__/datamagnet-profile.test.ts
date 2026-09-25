@@ -116,7 +116,11 @@ describe("ingestão Datamagnet", () => {
     expect(parseDatamagnetProfile({ ...payload, email: "sem-arroba" }).ok).toBe(
       false,
     );
-    expect(parseDatamagnetProfile({ ...payload, email: "" }).ok).toBe(false);
+    const semEmail = parseDatamagnetProfile({ ...payload, email: "" });
+    expect(semEmail.ok).toBe(true);
+    if (semEmail.ok) {
+      expect(semEmail.data.email).toBe("ana-souza@recrutaindustria.internal");
+    }
     expect(parseDatamagnetProfile({ ...payload, habilidades: [] }).ok).toBe(
       false,
     );

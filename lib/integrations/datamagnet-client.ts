@@ -1,5 +1,6 @@
 import { loadEnvConfig } from "@next/env";
 import {
+  escolherEmailPessoal,
   insertDatamagnetProfile,
   parseDatamagnetProfile,
   type DatamagnetProfileError,
@@ -115,20 +116,8 @@ export function extractDatagmaEmployees(payload: unknown): Record<string, unknow
 }
 
 export function readDatagmaPersonEmail(person: Record<string, unknown>): string {
-  const emailObj = asRecord(person.email);
   const data = asRecord(person.data);
-  const dataEmail = asRecord(data?.email);
-  const candidatos = [
-    data?.email,
-    dataEmail?.email,
-    typeof person.email === "string" ? person.email : emailObj?.email,
-  ];
-  for (const value of candidatos) {
-    if (typeof value !== "string") continue;
-    const email = value.trim().toLowerCase();
-    if (email) return email;
-  }
-  return "";
+  return escolherEmailPessoal(person, data);
 }
 
 export async function searchDatamagnetPeople(input: {

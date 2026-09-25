@@ -11,6 +11,7 @@ export type DatamagnetProfileInput = {
   cargo: string;
   location: string;
   habilidades: string[];
+  experiencia?: string;
 };
 
 export type DatamagnetProfileError = {
@@ -120,7 +121,11 @@ export function parseDatamagnetProfile(
         ? person.skills
         : raw.skills;
   const nome = readNome(raw);
-  const email = readDatagmaEmail(envelope, data, raw);
+  if (emailInformadoInvalido(data, raw, envelope)) {
+    return { ok: false, error: "E-mail inválido" };
+  }
+  const emailLido = readDatagmaEmail(envelope, data, raw);
+  const email = emailLido || emailInternoTemporario(nome);
   const cargo = cargoFonte;
   const location =
     typeof raw.location === "string" && sanitizeInput(raw.location)
@@ -157,7 +162,83 @@ export function parseDatamagnetProfile(
     return { ok: false, error: "Informe ao menos uma habilidade" };
   }
 
-  return { ok: true, data: { nome, email, cargo, location, habilidades } };
+  return {
+    ok: true,
+    data: { nome, email, cargo, location, habilidades, experiencia: readExperiencia(raw, cargo) },
+  };
+}
+
+function readExperiencia(raw: Record<string, unknown>, cargo: string): string {
+  const lista = Array.isArray(raw.experiences)
+    ? raw.experiences
+    : Array.isArray(raw.experience)
+      ? raw.experience
+      : Array.isArray(raw.jobs)
+        ? raw.jobs
+        : null;
+  if (lista) {
+    const itens = lista
+      .map((item) => {
+        const registro = asRecord(item);
+        if (!registro) return null;
+        const empresa = readText(registro.company, registro.organization, registro.nome, registro.name);
+        const funcao = readText(registro.title, registro.jobTitle, registro.cargo) || cargo;
+        if (!empresa && !funcao) return null;
+        return { nome: empresa || "Indústria", cargo: funcao };
+      })
+      .filter((item): item is { nome: string; cargo: string } => Boolean(item));
+    if (itens.length > 0) return JSON.stringify(itens);
+  }
+
+  const empresa = readText(raw.company, raw.currentCompany, raw.organization);
+  if (!empresa) return "";
+  return JSON.stringify([{ nome: empresa, cargo }]);
+}
+
+export function escolherEmailPessoal(
+  ...fontes: Array<Record<string, unknown> | null | undefined>
+): string {
+  const chaves = ["personal_email", "personalEmail", "email", "gmail"] as const;
+  for (const chave of chaves) {
+    for (const fonte of fontes) {
+      if (!fonte) continue;
+      const email = emailDe(fonte[chave]);
+      if (isValidEmail(email)) return email;
+    }
+  }
+  return "";
+}
+
+export function emailInternoTemporario(nome: string, complemento = ""): string {
+  const id = `${nome} ${complemento}`
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+  return `${id || "perfil"}@recrutaindustria.internal`;
+}
+
+function emailInformadoInvalido(
+  ...fontes: Array<Record<string, unknown> | null | undefined>
+): boolean {
+  const chaves = ["personal_email", "personalEmail", "email", "gmail"] as const;
+  for (const fonte of fontes) {
+    if (!fonte) continue;
+    for (const chave of chaves) {
+      const valor = emailDe(fonte[chave]);
+      if (valor && !isValidEmail(valor)) return true;
+    }
+  }
+  return false;
+}
+
+function emailDe(value: unknown): string {
+  if (typeof value === "string") return value.trim().toLowerCase();
+  const registro = asRecord(value);
+  if (!registro || typeof registro.email !== "string") return "";
+  return registro.email.trim().toLowerCase();
 }
 
 function readDatagmaEmail(
@@ -166,13 +247,7 @@ function readDatagmaEmail(
   raw: Record<string, unknown>,
 ): string {
   const emailV2 = asRecord(envelope.emailV2);
-  const candidatos = [data?.email, raw.email, envelope.email, emailV2?.email];
-  for (const value of candidatos) {
-    if (typeof value !== "string") continue;
-    const email = value.trim().toLowerCase();
-    if (email) return email;
-  }
-  return "";
+  return escolherEmailPessoal(data, raw, envelope, emailV2);
 }
 
 export async function insertDatagmaProfile(
@@ -222,6 +297,8 @@ export async function insertDatagmaProfile(
           location: input.location,
           email,
           skills,
+          experience: input.experiencia || null,
+          experienciasJSON: input.experiencia || null,
           isVisible: false,
           status: "ACTIVE",
         },
