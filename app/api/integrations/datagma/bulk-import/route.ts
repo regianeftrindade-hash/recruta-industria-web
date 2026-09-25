@@ -1,4 +1,4 @@
-import { after, NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   extractSearchPeople,
   readDatagmaPersonEmail,
@@ -22,6 +22,7 @@ const EMPRESAS_BRASIL = [
   "magazineluiza.com.br",
 ];
 
+const MAX_EMPRESAS = 3;
 const MAX_POR_EMPRESA = 2;
 
 export const maxDuration = 60;
@@ -72,8 +73,18 @@ function toInput(
   };
 }
 
-async function importarPorCargo(keyword: string): Promise<void> {
-  for (const domain of EMPRESAS_BRASIL) {
+async function importarPorCargo(keyword: string): Promise<
+  Array<{ nome: string; email: string; domain: string; profileId: string; userId: string }>
+> {
+  const salvos: Array<{
+    nome: string;
+    email: string;
+    domain: string;
+    profileId: string;
+    userId: string;
+  }> = [];
+
+  for (const domain of EMPRESAS_BRASIL.slice(0, MAX_EMPRESAS)) {
     const search = await searchDatagmaPeople({
       keyword,
       location: "brazil",
@@ -100,9 +111,20 @@ async function importarPorCargo(keyword: string): Promise<void> {
       const saved = await insertDatagmaProfile(input);
       if (!saved.ok) {
         console.error("Perfil não gravado", input.nome, saved.error);
+        continue;
       }
+
+      salvos.push({
+        nome: input.nome,
+        email: input.email,
+        domain,
+        profileId: saved.profileId,
+        userId: saved.userId,
+      });
     }
   }
+
+  return salvos;
 }
 
 export async function POST(request: NextRequest) {
@@ -132,20 +154,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Informe uma palavra-chave" }, { status: 400 });
   }
 
-  after(async () => {
-    try {
-      await importarPorCargo(keyword);
-    } catch (error) {
-      console.error("Falha ao importar por cargo", error);
-    }
-  });
+  let salvos: Awaited<ReturnType<typeof importarPorCargo>>;
+  try {
+    salvos = await importarPorCargo(keyword);
+  } catch (error) {
+    console.error("Falha ao importar por cargo", error);
+    return NextResponse.json({ error: "Falha ao importar por cargo" }, { status: 500 });
+  }
+
+  if (salvos.length === 0) {
+    return NextResponse.json(
+      { error: "Nenhum perfil com e-mail real foi gravado" },
+      { status: 502 },
+    );
+  }
 
   return NextResponse.json(
     {
       success: true,
       keyword,
-      companies: EMPRESAS_BRASIL.length,
-      queued: true,
+      companies: MAX_EMPRESAS,
+      imported: salvos.length,
+      results: salvos,
     },
     { status: 201 },
   );
