@@ -12,7 +12,7 @@ const DATAGMA_FULL_URL = "https://gateway.datagma.net/api/ingress/v2/full";
 const DATAGMA_FIND_PEOPLE_URL = "https://gateway.datagma.net/api/ingress/v1/find_people";
 
 function readServerEnv(name: string): string {
-  loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production", true);
+  loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production", undefined, true);
   return process.env[name]?.trim() ?? "";
 }
 const PERSON_SEARCH_PATH = "/api/v1/people-search/search";
