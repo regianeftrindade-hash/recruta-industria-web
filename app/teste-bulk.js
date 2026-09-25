@@ -1,11 +1,11 @@
 const dispararBusca = async () => {
-  const urlDoSeuSite = "http://localhost:3000/api/integrations/datamagnet/bulk-import";
+  const urlDoSeuSite = "http://localhost:3000/api/integrations/datagma/bulk-import";
 
   const resposta = await fetch(urlDoSeuSite, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": "crie_uma_senha_sua_aqui_ex_vitrine123",
+      "x-api-key": "vitrine123",
     },
     body: JSON.stringify({
       keyword: "Programador React",

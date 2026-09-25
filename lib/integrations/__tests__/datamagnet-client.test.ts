@@ -1,8 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  extractDatagmaEmployees,
   extractSearchPeople,
   fetchDatamagnetPerson,
   isPublicProfileUrl,
+  readDatagmaPersonEmail,
+  searchDatagmaPeople,
   searchDatamagnetPeople,
   toProfileInput,
 } from "@/lib/integrations/datamagnet-client";
@@ -48,6 +51,40 @@ describe("cliente Datamagnet", () => {
       ),
       expect.objectContaining({ method: "GET" }),
     );
+  });
+
+  it("busca pessoas no Datagma por cargo e país", async () => {
+    process.env.DATAGMA_API_KEY = "chave-parceiro";
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () =>
+        JSON.stringify({
+          employees: [
+            {
+              name: "Ana Souza",
+              jobTitle: "Programadora React",
+              email: { email: "ana.souza@empresa.com", status: "valid" },
+            },
+          ],
+        }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await searchDatagmaPeople({
+      keyword: "Programador React",
+      location: "Brazil",
+    });
+    expect(result.ok).toBe(true);
+    const chamada = fetchMock.mock.calls[0]?.[0] as URL;
+    expect(chamada.href).toContain("/api/ingress/v1/find_people");
+    expect(chamada.searchParams.get("currentJobTitle")).toBe("Programador React");
+    expect(chamada.searchParams.get("countries")).toBe("brazil");
+    expect(chamada.searchParams.get("apiId")).toBe("chave-parceiro");
+    if (result.ok) {
+      const people = extractDatagmaEmployees(result.data);
+      expect(readDatagmaPersonEmail(people[0])).toBe("ana.souza@empresa.com");
+    }
   });
 
   it("busca pessoas por keyword e location", async () => {

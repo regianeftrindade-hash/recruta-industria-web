@@ -175,7 +175,7 @@ function readDatagmaEmail(
   return "";
 }
 
-export async function insertDatamagnetProfile(
+export async function insertDatagmaProfile(
   input: DatamagnetProfileInput,
 ): Promise<DatamagnetProfileSuccess | DatamagnetProfileError> {
   const email = input.email.trim().toLowerCase();
@@ -243,3 +243,5 @@ export async function insertDatamagnetProfile(
     return { ok: false, status: 500, error: "Erro ao inserir perfil" };
   }
 }
+
+export const insertDatamagnetProfile = insertDatagmaProfile;

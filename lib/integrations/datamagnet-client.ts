@@ -8,6 +8,7 @@ import {
 import { sanitizeInput } from "@/lib/security/security";
 
 const DATAGMA_FULL_URL = "https://gateway.datagma.net/api/ingress/v2/full";
+const DATAGMA_FIND_PEOPLE_URL = "https://gateway.datagma.net/api/ingress/v1/find_people";
 const PERSON_SEARCH_PATH = "/api/v1/people-search/search";
 
 export function isPublicProfileUrl(value: string): boolean {
@@ -54,6 +55,69 @@ export async function fetchDatamagnetPerson(
   } catch {
     return { ok: false, status: 502, error: "Resposta do Datagma não é JSON" };
   }
+}
+
+export async function searchDatagmaPeople(input: {
+  keyword: string;
+  location?: string;
+  company?: string;
+}): Promise<{ ok: true; data: unknown } | { ok: false; status: number; error: string }> {
+  const apiKey = process.env.DATAGMA_API_KEY?.trim();
+  if (!apiKey) {
+    return { ok: false, status: 500, error: "Datagma não configurado" };
+  }
+
+  const keyword = input.keyword.trim();
+  if (keyword.length < 2) {
+    return { ok: false, status: 400, error: "Informe uma palavra-chave" };
+  }
+
+  const url = new URL(DATAGMA_FIND_PEOPLE_URL);
+  url.searchParams.set("apiId", apiKey);
+  url.searchParams.set("currentJobTitle", keyword);
+  const location = input.location?.trim().toLowerCase();
+  if (location) url.searchParams.set("countries", location);
+  const company = input.company?.trim();
+  if (company) url.searchParams.set("currentCompanies", company);
+
+  const response = await fetch(url, { method: "GET", cache: "no-store" });
+  const text = await response.text();
+  if (!response.ok) {
+    return {
+      ok: false,
+      status: response.status,
+      error: "Datagma recusou a busca",
+    };
+  }
+
+  try {
+    return { ok: true, data: text ? JSON.parse(text) : null };
+  } catch {
+    return { ok: false, status: 502, error: "Resposta do Datagma não é JSON" };
+  }
+}
+
+export function extractDatagmaEmployees(payload: unknown): Record<string, unknown>[] {
+  const root = asRecord(payload);
+  if (!root || !Array.isArray(root.employees)) return [];
+  return root.employees.filter((item) => asRecord(item)) as Record<string, unknown>[];
+}
+
+export function readDatagmaPersonEmail(person: Record<string, unknown>): string {
+  const emailObj = asRecord(person.email);
+  const data = asRecord(person.data);
+  const dataEmail = asRecord(data?.email);
+  const candidatos = [
+    data?.email,
+    dataEmail?.email,
+    typeof person.email === "string" ? person.email : emailObj?.email,
+  ];
+  for (const value of candidatos) {
+    if (typeof value !== "string") continue;
+    const email = value.trim().toLowerCase();
+    if (email) return email;
+  }
+  return "";
 }
 
 export async function searchDatamagnetPeople(input: {
