@@ -113,16 +113,16 @@ export default function PlatformVideoCall({
       className={overlay ? `dash-card ${styles.pip}` : "dash-card"}
       style={panelStyle}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
           justifyContent: overlayPip ? "flex-end" : "space-between",
-          gap: 8,
+            gap: 8,
           marginBottom: overlayPip ? 4 : 10,
-          flexWrap: "wrap",
-        }}
-      >
+            flexWrap: "wrap",
+          }}
+        >
         {!overlayPip && (
           <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: 0, fontSize: compact ? 13 : 14 }}>
             📹 {title}
@@ -135,7 +135,7 @@ export default function PlatformVideoCall({
           onToggleOverlay={toggleOverlay}
           onToggleMinimized={() => setMinimized((v) => !v)}
         />
-      </div>
+        </div>
 
       {!overlayPip && (
         <p
@@ -197,9 +197,9 @@ export default function PlatformVideoCall({
             }}
           >
             <p
-              style={{
+                    style={{
                 margin: "0 0 6px",
-                fontSize: 10,
+                    fontSize: 10,
                 fontWeight: 700,
                 color: DASH.gold,
                 textTransform: "uppercase",
@@ -245,23 +245,23 @@ export default function PlatformVideoCall({
       )}
 
       {overlayPip && call.status === "accepted" && !minimized && (
-        <button
-          type="button"
+            <button
+              type="button"
           onClick={() => void call.handleEnd()}
-          style={{
-            background: "transparent",
+              style={{
+                background: "transparent",
             border: "1px solid #dc3545",
-            color: "#f87171",
+                  color: "#f87171",
             borderRadius: 6,
             padding: "3px 4px",
             fontSize: 8,
-            cursor: "pointer",
+                  cursor: "pointer",
             width: "100%",
-          }}
-        >
-          Encerrar
-        </button>
-      )}
+              }}
+            >
+              Encerrar
+            </button>
+          )}
 
       {!overlayPip && !compact && (
         <p
@@ -278,7 +278,7 @@ export default function PlatformVideoCall({
             : "Quando a empresa ligar, use Aceitar ou Recusar. Use Sobrepor para rolar a página com o vídeo fixo."}
         </p>
       )}
-    </section>
+      </section>
   );
 
   return <div ref={wrapRef}>{panel}</div>;
