@@ -75,7 +75,7 @@ describe("cliente Datamagnet", () => {
     });
     expect(result.ok).toBe(true);
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://api.datamagnet.co/api/v1/people-search/search",
+      "https://datagma.net/api/v1/people-search/search",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({

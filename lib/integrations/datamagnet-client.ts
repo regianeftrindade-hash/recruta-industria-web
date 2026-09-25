@@ -9,7 +9,7 @@ import {
 import { sanitizeInput } from "@/lib/security/security";
 
 const DATAGMA_FULL_URL = "https://gateway.datagma.net/api/ingress/v2/full";
-const PEOPLE_KEYWORD_SEARCH_URL = "https://api.datamagnet.co/api/v1/people-search/search";
+const PEOPLE_KEYWORD_SEARCH_URL = "https://datagma.net/api/v1/people-search/search";
 
 function readServerEnv(name: string): string {
   loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production", undefined, true);
