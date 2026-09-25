@@ -66,6 +66,7 @@ export async function fetchDatamagnetPerson(
 export async function searchDatagmaPeople(input: {
   keyword: string;
   location?: string;
+  domain?: string;
 }): Promise<{ ok: true; data: unknown } | { ok: false; status: number; error: string }> {
   const apiKey = readServerEnv("DATAGMA_API_KEY");
   if (!apiKey) {
@@ -80,6 +81,8 @@ export async function searchDatagmaPeople(input: {
   const url = new URL(PEOPLE_KEYWORD_SEARCH_URL);
   url.searchParams.set("apiId", apiKey);
   url.searchParams.set("currentJobTitle", keyword);
+  const domain = input.domain?.trim().toLowerCase();
+  if (domain) url.searchParams.set("domain", domain);
   const location = input.location?.trim().toLowerCase();
   if (location) url.searchParams.set("countries", location);
 
