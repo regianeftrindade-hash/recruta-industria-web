@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const urlDaRota = "http://localhost:3000/api/integrations/datagma/bulk-import";
+const urlDaRota = "https://recrutaindustria.com/api/integrations/datagma/bulk-import";
 
 function lerEnvLocal(nome) {
   const arquivo = path.join(__dirname, "..", ".env.local");
