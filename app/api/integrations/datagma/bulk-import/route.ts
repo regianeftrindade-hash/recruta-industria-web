@@ -1,3 +1,4 @@
+import { loadEnvConfig } from "@next/env";
 import { NextRequest, NextResponse } from "next/server";
 import {
   emailInternoTemporario,
@@ -148,6 +149,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
+  loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production", undefined, true);
   const apiKey = process.env.APOLLO_API_KEY?.trim() ?? "";
   if (!apiKey) {
     return NextResponse.json({ error: "Apollo não configurado" }, { status: 500 });
