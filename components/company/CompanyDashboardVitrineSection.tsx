@@ -100,7 +100,13 @@ function LinhaDetalhe({ label, value }: { label: string; value?: string | null }
   return (
     <p style={{ margin: "3px 0", fontSize: 12, lineHeight: 1.5, color: DASH.text }}>
       <span style={{ color: DASH.muted, fontWeight: 600 }}>{label}: </span>
-      {value}
+      {label === "WhatsApp" && value.startsWith("https://wa.me/") ? (
+        <a href={value} target="_blank" rel="noopener noreferrer">
+          Conversar no WhatsApp
+        </a>
+      ) : (
+        value
+      )}
     </p>
   );
 }

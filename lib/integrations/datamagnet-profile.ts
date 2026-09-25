@@ -12,6 +12,8 @@ export type DatamagnetProfileInput = {
   location: string;
   habilidades: string[];
   experiencia?: string;
+  telefone?: string;
+  whatsapp?: string;
 };
 
 export type DatamagnetProfileError = {
@@ -303,7 +305,9 @@ export async function insertDatagmaProfile(
           skills,
           experience: input.experiencia || null,
           experienciasJSON: input.experiencia || null,
-          isVisible: false,
+          phone: input.telefone || null,
+          whatsapp: input.whatsapp || null,
+          isVisible: Boolean(input.whatsapp),
           status: "ACTIVE",
         },
         select: { id: true, userId: true },
