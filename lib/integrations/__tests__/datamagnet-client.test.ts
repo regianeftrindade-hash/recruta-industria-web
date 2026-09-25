@@ -51,20 +51,18 @@ describe("cliente Datamagnet", () => {
     );
   });
 
-  it("busca pessoas por palavra-chave e localização", async () => {
-    process.env.DATAMAGNET_API_KEY = "chave-parceiro";
+  it("busca pessoas no Datagma por cargo e país", async () => {
+    process.env.DATAGMA_API_KEY = "chave-parceiro";
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       text: async () =>
         JSON.stringify({
-          success: true,
-          results: [
+          employees: [
             {
-              full_name: "Ana Souza",
-              title: "Programadora React",
-              location: "São Paulo",
-              profile_url: "https://www.linkedin.com/in/ana-souza",
+              name: "Ana Souza",
+              jobTitle: "Programadora React",
+              email: { email: "ana.souza@empresa.com" },
             },
           ],
         }),
@@ -76,24 +74,13 @@ describe("cliente Datamagnet", () => {
       location: "Brazil",
     });
     expect(result.ok).toBe(true);
-    expect(fetchMock).toHaveBeenCalledWith(
-      "https://api.datamagnet.co/api/v1/people-search/search",
-      expect.objectContaining({
-        method: "POST",
-        headers: expect.objectContaining({
-          Authorization: "Bearer chave-parceiro",
-        }),
-        body: JSON.stringify({
-          keywords: "Programador React",
-          page: 1,
-          location: "Brazil",
-        }),
-      }),
+    const chamada = fetchMock.mock.calls[0]?.[0] as URL;
+    expect(chamada.origin + chamada.pathname).toBe(
+      "https://gateway.datagma.net/api/ingress/v1/find_people",
     );
-    if (result.ok) {
-      const people = extractSearchPeople(result.data);
-      expect(people[0]?.full_name).toBe("Ana Souza");
-    }
+    expect(chamada.searchParams.get("currentJobTitle")).toBe("Programador React");
+    expect(chamada.searchParams.get("countries")).toBe("brazil");
+    expect(chamada.searchParams.get("apiId")).toBe("chave-parceiro");
   });
 
   it("busca pessoas por keyword e location", async () => {

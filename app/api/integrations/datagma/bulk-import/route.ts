@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  extractSearchPeople,
+  extractDatagmaEmployees,
   fetchDatamagnetPerson,
   readDatagmaPersonEmail,
   searchDatagmaPeople,
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: search.error }, { status });
   }
 
-  const people = extractSearchPeople(search.data);
+  const people = extractDatagmaEmployees(search.data);
   const results: Array<
     | { nome: string; success: true; profileId: string; userId: string }
     | { nome: string; success: false; error: string }

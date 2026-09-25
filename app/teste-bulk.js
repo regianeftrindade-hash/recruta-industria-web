@@ -1,15 +1,45 @@
-const dispararBusca = async () => {
-  const urlDoSeuSite = "http://localhost:3000/api/integrations/datagma/bulk-import";
+const fs = require("fs");
+const path = require("path");
 
-  const resposta = await fetch(urlDoSeuSite, {
+const urlDaRota = "http://localhost:3000/api/integrations/datagma/bulk-import";
+
+function lerEnvLocal(nome) {
+  const arquivo = path.join(__dirname, "..", ".env.local");
+  const texto = fs.readFileSync(arquivo, "utf8");
+  for (const linha of texto.split(/\r?\n/)) {
+    const limpa = linha.trim();
+    if (!limpa || limpa.startsWith("#")) continue;
+    const separador = limpa.indexOf("=");
+    if (separador === -1) continue;
+    const chave = limpa.slice(0, separador).trim();
+    if (chave !== nome) continue;
+    let valor = limpa.slice(separador + 1).trim();
+    if (
+      (valor.startsWith('"') && valor.endsWith('"')) ||
+      (valor.startsWith("'") && valor.endsWith("'"))
+    ) {
+      valor = valor.slice(1, -1);
+    }
+    return valor;
+  }
+  return "";
+}
+
+const dispararBusca = async () => {
+  const apiKey = lerEnvLocal("DATAMAGNET_INGEST_KEY");
+  if (!apiKey) {
+    console.error("DATAMAGNET_INGEST_KEY não encontrada no .env.local");
+    process.exitCode = 1;
+    return;
+  }
+
+  const resposta = await fetch(urlDaRota, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": "vitrine123",
+      "x-api-key": apiKey,
     },
     body: JSON.stringify({
-      // A rota traduz keyword -> keywords e envia location
-      // para POST /api/v1/people-search/search
       keyword: "Programador React",
       location: "Brazil",
     }),

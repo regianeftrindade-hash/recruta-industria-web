@@ -1,3 +1,4 @@
+import { loadEnvConfig } from "@next/env";
 import {
   insertDatamagnetProfile,
   parseDatamagnetProfile,
@@ -8,7 +9,12 @@ import {
 import { sanitizeInput } from "@/lib/security/security";
 
 const DATAGMA_FULL_URL = "https://gateway.datagma.net/api/ingress/v2/full";
-const PEOPLE_KEYWORD_SEARCH_URL = "https://api.datamagnet.co/api/v1/people-search/search";
+const DATAGMA_FIND_PEOPLE_URL = "https://gateway.datagma.net/api/ingress/v1/find_people";
+
+function readServerEnv(name: string): string {
+  loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production", true);
+  return process.env[name]?.trim() ?? "";
+}
 const PERSON_SEARCH_PATH = "/api/v1/people-search/search";
 
 export function isPublicProfileUrl(value: string): boolean {
@@ -23,7 +29,7 @@ export function isPublicProfileUrl(value: string): boolean {
 export async function fetchDatamagnetPerson(
   profileUrl: string,
 ): Promise<{ ok: true; data: unknown } | { ok: false; status: number; error: string }> {
-  const apiKey = process.env.DATAGMA_API_KEY?.trim();
+  const apiKey = readServerEnv("DATAGMA_API_KEY");
 
   if (!apiKey) {
     return { ok: false, status: 500, error: "Datagma não configurado" };
@@ -61,9 +67,9 @@ export async function searchDatagmaPeople(input: {
   keyword: string;
   location?: string;
 }): Promise<{ ok: true; data: unknown } | { ok: false; status: number; error: string }> {
-  const apiKey = process.env.DATAMAGNET_API_KEY?.trim();
+  const apiKey = readServerEnv("DATAGMA_API_KEY");
   if (!apiKey) {
-    return { ok: false, status: 500, error: "Busca por palavra-chave não configurada" };
+    return { ok: false, status: 500, error: "Datagma não configurado" };
   }
 
   const keyword = input.keyword.trim();
@@ -71,17 +77,14 @@ export async function searchDatagmaPeople(input: {
     return { ok: false, status: 400, error: "Informe uma palavra-chave" };
   }
 
-  const body: Record<string, unknown> = { keywords: keyword, page: 1 };
-  const location = input.location?.trim();
-  if (location) body.location = location;
+  const url = new URL(DATAGMA_FIND_PEOPLE_URL);
+  url.searchParams.set("apiId", apiKey);
+  url.searchParams.set("currentJobTitle", keyword);
+  const location = input.location?.trim().toLowerCase();
+  if (location) url.searchParams.set("countries", location);
 
-  const response = await fetch(PEOPLE_KEYWORD_SEARCH_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(body),
+  const response = await fetch(url, {
+    method: "GET",
     cache: "no-store",
   });
   const text = await response.text();
@@ -89,7 +92,7 @@ export async function searchDatagmaPeople(input: {
     return {
       ok: false,
       status: response.status,
-      error: "A busca por palavra-chave foi recusada",
+      error: "Datagma recusou a busca",
     };
   }
 
