@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  extractDatagmaEmployees,
+  extractSearchPeople,
   fetchDatamagnetPerson,
   readDatagmaPersonEmail,
   searchDatagmaPeople,
@@ -33,13 +33,18 @@ function toInput(
   locationFallback: string,
 ): DatamagnetProfileInput | null {
   const nome =
+    readText(person.full_name) ||
     readText(person.name) ||
     [readText(person.firstname), readText(person.firstName), readText(person.lastName)]
       .filter(Boolean)
       .join(" ");
   if (nome.length < 2 || email.length < 3) return null;
 
-  const cargo = readText(person.jobTitle) || readText(person.title) || keyword;
+  const cargo =
+    readText(person.jobTitle) ||
+    readText(person.title) ||
+    readText(person.headline) ||
+    keyword;
   const location = readText(person.location) || locationFallback || "Não informado";
   const skills = Array.isArray(person.skills)
     ? person.skills.filter((item): item is string => typeof item === "string")
@@ -71,15 +76,19 @@ export async function POST(request: NextRequest) {
     body && typeof body === "object" && !Array.isArray(body)
       ? (body as Record<string, unknown>)
       : null;
-  const keyword = typeof raw?.keyword === "string" ? raw.keyword.trim() : "";
+  const keyword =
+    typeof raw?.keyword === "string"
+      ? raw.keyword.trim()
+      : typeof raw?.keywords === "string"
+        ? raw.keywords.trim()
+        : "";
   const location = typeof raw?.location === "string" ? raw.location.trim() : "";
-  const company = typeof raw?.company === "string" ? raw.company.trim() : "";
 
   if (keyword.length < 2) {
     return NextResponse.json({ error: "Informe uma palavra-chave" }, { status: 400 });
   }
 
-  const search = await searchDatagmaPeople({ keyword, location, company });
+  const search = await searchDatagmaPeople({ keyword, location });
   if (!search.ok) {
     const status =
       search.status === 401 || search.status === 400 || search.status === 409
@@ -88,7 +97,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: search.error }, { status });
   }
 
-  const people = extractDatagmaEmployees(search.data);
+  const people = extractSearchPeople(search.data);
   const results: Array<
     | { nome: string; success: true; profileId: string; userId: string }
     | { nome: string; success: false; error: string }
@@ -98,7 +107,11 @@ export async function POST(request: NextRequest) {
     let email = readDatagmaPersonEmail(person);
     let input = toInput(person, email, keyword, location);
 
-    const linkedInUrl = readText(person.linkedInUrl);
+    const linkedInUrl =
+      readText(person.linkedInUrl) ||
+      readText(person.url) ||
+      readText(person.profile_url) ||
+      readText(person.navigation_url);
     if ((!input || !email) && linkedInUrl.startsWith("https://")) {
       const remote = await fetchDatamagnetPerson(linkedInUrl);
       if (remote.ok) {
@@ -109,7 +122,7 @@ export async function POST(request: NextRequest) {
 
     if (!input) {
       results.push({
-        nome: readText(person.name),
+        nome: readText(person.full_name) || readText(person.name),
         success: false,
         error: "E-mail inválido",
       });

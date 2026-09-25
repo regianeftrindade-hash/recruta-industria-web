@@ -8,6 +8,8 @@ const dispararBusca = async () => {
       "x-api-key": "vitrine123",
     },
     body: JSON.stringify({
+      // A rota traduz keyword -> keywords e envia location
+      // para POST /api/v1/people-search/search
       keyword: "Programador React",
       location: "Brazil",
     }),

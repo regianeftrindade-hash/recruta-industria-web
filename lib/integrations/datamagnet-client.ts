@@ -8,7 +8,7 @@ import {
 import { sanitizeInput } from "@/lib/security/security";
 
 const DATAGMA_FULL_URL = "https://gateway.datagma.net/api/ingress/v2/full";
-const DATAGMA_FIND_PEOPLE_URL = "https://gateway.datagma.net/api/ingress/v1/find_people";
+const PEOPLE_KEYWORD_SEARCH_URL = "https://api.datamagnet.co/api/v1/people-search/search";
 const PERSON_SEARCH_PATH = "/api/v1/people-search/search";
 
 export function isPublicProfileUrl(value: string): boolean {
@@ -60,11 +60,10 @@ export async function fetchDatamagnetPerson(
 export async function searchDatagmaPeople(input: {
   keyword: string;
   location?: string;
-  company?: string;
 }): Promise<{ ok: true; data: unknown } | { ok: false; status: number; error: string }> {
-  const apiKey = process.env.DATAGMA_API_KEY?.trim();
+  const apiKey = process.env.DATAMAGNET_API_KEY?.trim();
   if (!apiKey) {
-    return { ok: false, status: 500, error: "Datagma não configurado" };
+    return { ok: false, status: 500, error: "Busca por palavra-chave não configurada" };
   }
 
   const keyword = input.keyword.trim();
@@ -72,28 +71,32 @@ export async function searchDatagmaPeople(input: {
     return { ok: false, status: 400, error: "Informe uma palavra-chave" };
   }
 
-  const url = new URL(DATAGMA_FIND_PEOPLE_URL);
-  url.searchParams.set("apiId", apiKey);
-  url.searchParams.set("currentJobTitle", keyword);
-  const location = input.location?.trim().toLowerCase();
-  if (location) url.searchParams.set("countries", location);
-  const company = input.company?.trim();
-  if (company) url.searchParams.set("currentCompanies", company);
+  const body: Record<string, unknown> = { keywords: keyword, page: 1 };
+  const location = input.location?.trim();
+  if (location) body.location = location;
 
-  const response = await fetch(url, { method: "GET", cache: "no-store" });
+  const response = await fetch(PEOPLE_KEYWORD_SEARCH_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
   const text = await response.text();
   if (!response.ok) {
     return {
       ok: false,
       status: response.status,
-      error: "Datagma recusou a busca",
+      error: "A busca por palavra-chave foi recusada",
     };
   }
 
   try {
     return { ok: true, data: text ? JSON.parse(text) : null };
   } catch {
-    return { ok: false, status: 502, error: "Resposta do Datagma não é JSON" };
+    return { ok: false, status: 502, error: "Resposta da busca não é JSON" };
   }
 }
 
