@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { checkRateLimit } from "@/lib/security";
 import GoogleSignInButton from "@/app/components/GoogleSignInButton";
 import styles from "@/app/home.module.css";
 
@@ -42,14 +41,10 @@ export default function HomeAccessForm({
       return;
     }
 
-    if (!checkRateLimit(email)) {
-      setErrorMessage("Muitas tentativas. Aguarde 15 minutos.");
-      return;
-    }
-
     setLoading(true);
 
     try {
+      // Rate limit e validação de senha ficam no servidor (authorize do NextAuth).
       const result = await signIn("credentials", {
         email,
         password: senha,
@@ -102,10 +97,13 @@ export default function HomeAccessForm({
 
   const handleGoogle = () => {
     setErrorMessage("");
+
+    // Igual ao login: cookie de intenção + signIn("google") do NextAuth.
     if (typeof document !== "undefined") {
       const secure = window.location.protocol === "https:" ? "; Secure" : "";
       document.cookie = `login_intent=${isCompany ? "company" : "professional"}; path=/; max-age=600; SameSite=Lax${secure}`;
     }
+
     const callbackUrl = `${window.location.origin}${dashboardPath}`;
     void signIn("google", { callbackUrl });
   };
@@ -115,48 +113,38 @@ export default function HomeAccessForm({
       <div className={`${styles.homeAccess} ${styles.homeAccessPro} ${styles.proLoginPanel}`}>
         <h4 className={styles.proLoginTitle}>LOGIN</h4>
         <form onSubmit={handleSubmit} className={styles.proLoginForm} noValidate>
-          <div className={styles.proLoginField}>
-            <span className={styles.proLoginTag} id="pro-home-email-label">
-              EMAIL
-            </span>
+          <div className={styles.proLoginRow}>
             <input
               id="pro-home-email"
               type="email"
               name="professional-email"
               autoComplete="username"
-              placeholder="seu@email.com"
+              placeholder="EMAIL"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={styles.proLoginInputPill}
-              aria-labelledby="pro-home-email-label"
+              aria-label="E-mail"
               disabled={loading}
             />
-          </div>
-          <div className={styles.proLoginField}>
-            <span className={styles.proLoginTag} id="pro-home-senha-label">
-              SENHA
-            </span>
             <input
               id="pro-home-senha"
               type="password"
               name="professional-senha"
               autoComplete="current-password"
-              placeholder="••••••••"
+              placeholder="SENHA"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               className={styles.proLoginInputPill}
-              aria-labelledby="pro-home-senha-label"
+              aria-label="Senha"
               disabled={loading}
             />
+            <div className={styles.proLoginGoogleIconOnly}>
+              <GoogleSignInButton onClick={handleGoogle} disabled={loading} />
+            </div>
+            <button type="submit" className={styles.proLoginAcessarTag} disabled={loading}>
+              {loading ? "..." : "Acessar"}
+            </button>
           </div>
-
-          <div className={styles.proLoginGoogleWrap}>
-            <GoogleSignInButton onClick={handleGoogle} disabled={loading} />
-          </div>
-
-          <button type="submit" className={styles.proLoginAcessarTag} disabled={loading}>
-            {loading ? "..." : "Acessar"}
-          </button>
 
           {errorMessage ? (
             <p className={styles.homeAccessError} role="alert">
@@ -173,54 +161,53 @@ export default function HomeAccessForm({
   }
 
   return (
-    <div
-      className={`${styles.homeAccess} ${compact ? styles.homeAccessCompact : ""} ${styles.homeAccessEmpresa}`}
-    >
-      <form onSubmit={handleSubmit} className={styles.homeAccessForm} noValidate>
-        <div className={styles.homeAccessFields}>
-          <input
-            type="email"
-            name={`${role}-email`}
-            autoComplete="username"
-            placeholder="E-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={styles.homeAccessInput}
-            aria-label="E-mail"
-            disabled={loading}
-          />
-          <input
-            type="password"
-            name={`${role}-senha`}
-            autoComplete="current-password"
-            placeholder="Senha"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-            className={styles.homeAccessInput}
-            aria-label="Senha"
-            disabled={loading}
-          />
-          <button
-            type="button"
-            className={styles.homeAccessGoogle}
-            onClick={handleGoogle}
-            disabled={loading}
-          >
-            Google
-          </button>
-          <button type="submit" className={styles.cardCta} disabled={loading}>
-            {loading ? "..." : "Acessar"}
-          </button>
-        </div>
-        {errorMessage ? (
-          <p className={styles.homeAccessError} role="alert">
-            {errorMessage}
-          </p>
-        ) : null}
-      </form>
-      <Link href={registerHref} className={styles.homeAccessRegister}>
-        Cadastre-se
-      </Link>
+    <div className={styles.empresaAccessBlock}>
+      <div
+        className={`${styles.homeAccess} ${compact ? styles.homeAccessCompact : ""} ${styles.homeAccessEmpresa}`}
+      >
+        <form onSubmit={handleSubmit} className={styles.homeAccessForm} noValidate>
+          <div className={styles.homeAccessFields}>
+            <span className={styles.empresaAccessTag}>Empresas</span>
+            <input
+              type="email"
+              name={`${role}-email`}
+              autoComplete="username"
+              placeholder="E-mail"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={styles.homeAccessInput}
+              aria-label="E-mail"
+              disabled={loading}
+            />
+            <input
+              type="password"
+              name={`${role}-senha`}
+              autoComplete="current-password"
+              placeholder="Senha"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              className={styles.homeAccessInput}
+              aria-label="Senha"
+              disabled={loading}
+            />
+            <div className={styles.proLoginGoogleIconOnly}>
+              <GoogleSignInButton onClick={handleGoogle} disabled={loading} />
+            </div>
+            <button type="submit" className={styles.cardCta} disabled={loading}>
+              {loading ? "..." : "Acessar"}
+            </button>
+            <Link href={registerHref} className={styles.homeAccessRegister}>
+              Cadastre-se
+            </Link>
+          </div>
+          {errorMessage ? (
+            <p className={styles.homeAccessError} role="alert">
+              {errorMessage}
+            </p>
+          ) : null}
+        </form>
+      </div>
+      <div className={styles.empresaAccessLine} aria-hidden />
     </div>
   );
 }

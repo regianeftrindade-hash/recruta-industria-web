@@ -147,9 +147,94 @@
 }
 
 .homeAccessEmpresa {
-  align-items: flex-end;
+  align-items: stretch;
   max-width: none;
   width: auto;
+  gap: 0;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(200, 155, 60, 0.55);
+  background: rgba(22, 18, 10, 0.88);
+  box-shadow: inset 0 1px 0 rgba(240, 215, 140, 0.08), 0 8px 20px rgba(0, 0, 0, 0.28);
+}
+
+.empresaAccessBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: fit-content;
+  max-width: 100%;
+  gap: 8px;
+}
+
+.homeAccessEmpresa .homeAccessForm {
+  width: auto;
+  align-items: stretch;
+}
+
+.homeAccessEmpresa .homeAccessFields {
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.empresaAccessTag {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(200, 155, 60, 0.55);
+  background: rgba(200, 155, 60, 0.18);
+  color: var(--ri-gold);
+  font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.homeAccessEmpresa .homeAccessInput {
+  border-radius: 999px;
+  width: 132px;
+  padding: 6px 12px;
+}
+
+.homeAccessEmpresa .cardCta {
+  border-radius: 999px;
+  margin-left: 2px;
+}
+
+.homeAccessEmpresa .homeAccessRegister {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #6b5218;
+  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
+  color: #000;
+  font-size: 0.68rem;
+  text-decoration: none;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  white-space: nowrap;
+}
+
+.homeAccessEmpresa .homeAccessRegister:hover {
+  text-decoration: none;
+  filter: brightness(1.05);
+}
+
+.empresaAccessLine {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ri-gold-dark), var(--ri-gold), var(--ri-gold-dark), transparent);
 }
 
 .homeAccessForm {
@@ -266,29 +351,33 @@
 .homeAccessPro {
   margin-top: 2px;
   flex-shrink: 0;
+  width: 100%;
+  max-width: none;
+  align-self: stretch;
 }
 
-/* Login profissional — card interno com tags (só no card da home) */
+/* Login profissional — fileira: email | senha | logo Google | Acessar */
 .proLoginPanel {
   box-sizing: border-box;
-  width: min(100%, 300px);
-  max-width: 300px;
+  width: 100%;
+  max-width: none;
+  align-self: stretch;
   margin-top: 4px;
   padding: clamp(8px, 1vh, 12px) clamp(10px, 1.2vw, 14px);
-  border-radius: 20px;
+  border-radius: 18px;
   border: 1px solid rgba(200, 155, 60, 0.55);
   background: rgba(22, 18, 10, 0.88);
   box-shadow: inset 0 1px 0 rgba(240, 215, 140, 0.08), 0 8px 20px rgba(0, 0, 0, 0.28);
   align-items: stretch;
-  gap: 6px;
+  gap: 8px;
 }
 
 .proLoginTitle {
-  margin: 0 0 4px;
+  margin: 0 0 2px;
   text-align: center;
   color: var(--ri-gold);
   font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
-  font-size: clamp(0.8rem, 1vw, 0.92rem);
+  font-size: clamp(0.78rem, 1vw, 0.9rem);
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -299,48 +388,41 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
 }
 
-.proLoginField {
+.proLoginRow {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  width: 100%;
-}
-
-.proLoginTag {
-  display: inline-flex;
+  flex-wrap: nowrap;
   align-items: center;
-  padding: 3px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(200, 155, 60, 0.55);
-  background: rgba(200, 155, 60, 0.18);
-  color: var(--ri-gold);
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  line-height: 1.2;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
 }
 
 .proLoginInputPill {
   box-sizing: border-box;
-  width: 100%;
-  padding: 7px 14px;
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(200, 155, 60, 0.45);
+  border: 1px solid rgba(200, 155, 60, 0.5);
   background: rgba(70, 62, 42, 0.92);
   color: var(--ri-text);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   line-height: 1.25;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .proLoginInputPill::placeholder {
-  color: rgba(242, 242, 242, 0.4);
+  color: rgba(242, 242, 242, 0.55);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .proLoginInputPill:focus {
@@ -348,16 +430,30 @@
   border-color: var(--ri-gold);
 }
 
-.proLoginGoogleWrap {
-  width: 100%;
-  margin-top: 4px;
+/* Só o ícone Google nesta home — esconde o texto do botão original */
+.proLoginGoogleIconOnly {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
 }
 
-.proLoginGoogleWrap button {
-  margin-top: 0;
-  padding: 9px 12px;
-  font-size: 13px;
-  border-radius: 999px;
+.proLoginGoogleIconOnly button {
+  width: auto !important;
+  min-width: 0 !important;
+  margin-top: 0 !important;
+  padding: 6px !important;
+  gap: 0 !important;
+  border-radius: 999px !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+  color: transparent !important;
+}
+
+.proLoginGoogleIconOnly button svg {
+  width: 22px !important;
+  height: 22px !important;
+  display: block;
 }
 
 .proLoginAcessarTag,
@@ -365,28 +461,30 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  align-self: center;
   box-sizing: border-box;
-  min-width: 140px;
-  padding: 7px 18px;
+  padding: 8px 16px;
   border-radius: 999px;
   border: 1px solid #6b5218;
   background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
   color: #000;
   font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
   font-weight: 700;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   text-decoration: none;
   text-align: center;
   cursor: pointer;
   line-height: 1.2;
   box-shadow: var(--ri-btn-3d-gold-shadow);
+  white-space: nowrap;
 }
 
 .proLoginAcessarTag {
-  margin-top: 10px;
-  width: auto;
+  flex: 0 0 auto;
+  margin-top: 0;
+  margin-left: 4px;
+  min-width: 0;
+  align-self: center;
 }
 
 .proLoginAcessarTag:active:not(:disabled) {
@@ -400,7 +498,9 @@
 }
 
 .proLoginRegisterTag {
-  margin-top: 6px;
+  align-self: center;
+  margin-top: 2px;
+  min-width: 150px;
 }
 
 .proLoginRegisterTag:hover {
@@ -409,7 +509,8 @@
 
 .proLoginPanel .homeAccessError {
   text-align: center;
-  margin-top: 2px;
+  margin-top: 0;
+  font-size: 0.66rem;
 }
 
 .actionCards {
@@ -699,9 +800,19 @@
     width: 100%;
   }
 
+  .homeAccessEmpresa .homeAccessFields {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .homeAccessEmpresa .homeAccessInput {
+    width: calc(50% - 8px);
+    flex: 1 1 120px;
+  }
+
   .homeAccessFields {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
   }
 
   .homeAccessInput,
@@ -718,6 +829,16 @@
   .homeAccessRegister {
     text-align: center;
     align-self: center;
+  }
+
+  .proLoginRow {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .proLoginInputPill {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 120px;
   }
 
   .actionCards {
@@ -787,13 +908,48 @@
   display: flex;
   flex-direction: column;
   grid-template-rows: none;
-  gap: clamp(4px, 0.9vh, 10px);
-  padding: clamp(4px, 1vh, 12px) clamp(14px, 2.8vw, 24px) clamp(4px, 0.8vh, 10px);
+  gap: clamp(4px, 0.8vh, 8px);
+  max-width: none;
+  width: 100%;
+  padding: clamp(4px, 1vh, 12px) clamp(4px, 0.7vw, 10px) clamp(4px, 0.8vh, 10px) clamp(14px, 2.8vw, 24px);
+}
+
+.homePage.homePageFlow .hero {
+  margin-bottom: clamp(28px, 4.5vh, 48px);
+  width: min(100%, 1180px);
+  margin-left: auto;
+  margin-right: auto;
+  flex-shrink: 0;
+}
+
+.homePage.homePageFlow .actionCards.proCardWrap {
+  margin-top: clamp(8px, 1.2vh, 16px);
+  flex: 0 0 auto;
+  min-height: 0;
+  width: min(100%, 1080px);
+  margin-left: auto;
+  margin-right: auto;
+  justify-content: flex-start;
 }
 
 .homePage.homePageFlow .empresaEntry {
   gap: 2px;
   flex-shrink: 0;
+  align-self: flex-end;
+  align-items: flex-end;
+  width: auto;
+  max-width: 100%;
+  margin-right: 0;
+  padding-right: 0;
+}
+
+.homePage.homePageFlow .homeBottom {
+  flex-shrink: 0;
+  gap: 2px;
+  width: min(100%, 1180px);
+  margin-top: auto;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .homePage.homePageFlow .logoHero {
@@ -802,11 +958,6 @@
 
 .homePage.homePageFlow .heroTagline {
   font-size: clamp(1.1rem, 2vw, 1.65rem);
-}
-
-.homePage.homePageFlow .homeBottom {
-  flex-shrink: 0;
-  gap: 2px;
 }
 
 .homePage.homePageFlow .footer {
@@ -820,13 +971,14 @@
   max-width: 1080px;
   grid-template-columns: none;
   align-content: stretch;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   margin: 0 auto;
+  justify-content: flex-start;
 }
 
 .actionCardSide {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   flex-direction: row;
   align-items: stretch;
   max-height: none;
@@ -834,7 +986,7 @@
   min-height: 0;
   width: 100%;
   gap: clamp(10px, 1.4vw, 16px);
-  padding: clamp(8px, 1vh, 12px);
+  padding: clamp(6px, 0.9vh, 10px);
   overflow: hidden;
 }
 
@@ -848,6 +1000,13 @@
   position: relative;
   top: auto;
   align-self: stretch;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.actionCardSide .cardImage {
+  object-fit: cover;
+  object-position: center;
 }
 
 .cardSideBody {
@@ -857,9 +1016,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: clamp(4px, 0.7vh, 8px);
-  padding: 2px 6px 4px 2px;
+  justify-content: flex-start;
+  gap: clamp(4px, 0.6vh, 7px);
+  padding: 0 4px 0 2px;
   overflow: hidden;
 }
 
@@ -1045,6 +1204,14 @@
 }
 
 @media (min-width: 769px) and (max-height: 800px) {
+  .homePage.homePageFlow .hero {
+    margin-bottom: clamp(20px, 3vh, 32px);
+  }
+
+  .homePage.homePageFlow .actionCards.proCardWrap {
+    margin-top: 4px;
+  }
+
   .homePage.homePageFlow .logoHero {
     padding-bottom: 4px;
   }
@@ -1185,26 +1352,35 @@
 
   .proLoginPanel {
     padding: 6px 10px 8px;
-    width: min(100%, 260px);
+    width: 100%;
+  }
+
+  .proLoginRow {
+    gap: 6px;
   }
 
   .proLoginInputPill {
-    padding: 5px 12px;
-    font-size: 0.68rem;
+    padding: 5px 10px;
+    font-size: 0.66rem;
   }
 
-  .proLoginGoogleWrap button {
-    padding: 7px 10px;
-    font-size: 12px;
+  .proLoginGoogleIconOnly button {
+    padding: 4px !important;
+  }
+
+  .proLoginGoogleIconOnly button svg {
+    width: 18px !important;
+    height: 18px !important;
   }
 
   .proLoginAcessarTag {
-    margin-top: 8px;
+    margin-top: 0;
+    margin-left: 2px;
   }
 
   .proLoginAcessarTag,
   .proLoginRegisterTag {
-    padding: 5px 14px;
-    font-size: 0.64rem;
+    padding: 5px 12px;
+    font-size: 0.62rem;
   }
 }

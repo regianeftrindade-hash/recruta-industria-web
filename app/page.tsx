@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Dancing_Script } from "next/font/google";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import HomeAccessForm from "@/app/components/HomeAccessForm";
+import HomeAuthProvider from "@/app/components/HomeAuthProvider";
 import { FONT_STACK } from "@/lib/theme";
 import styles from "./home.module.css";
 
@@ -20,6 +21,7 @@ export default function Home() {
       <div className={styles.atmosphere} aria-hidden />
       <div className={styles.atmosphereGlow} aria-hidden />
 
+      <HomeAuthProvider>
       <div className={styles.homeShell}>
         <div className={styles.empresaEntry}>
           <HomeAccessForm role="company" registerHref="/company/cadastro" compact />
@@ -125,6 +127,7 @@ export default function Home() {
           </footer>
         </div>
       </div>
+      </HomeAuthProvider>
     </main>
   );
 }
