@@ -132,13 +132,284 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 8px;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
-.empresaEntryLine {
+/* Acesso compacto (empresa no topo / profissional no card) */
+.homeAccess {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--ri-gold-dark), transparent);
+  max-width: 420px;
+}
+
+.homeAccessEmpresa {
+  align-items: flex-end;
+  max-width: none;
+  width: auto;
+}
+
+.homeAccessForm {
+  display: flex;
+  flex-direction: column;
+  align-items: inherit;
+  gap: 4px;
+  width: 100%;
+}
+
+.homeAccessFields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: inherit;
+  gap: 6px;
+}
+
+.homeAccessInput {
+  box-sizing: border-box;
+  width: 148px;
+  min-width: 0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(200, 155, 60, 0.55);
+  background: rgba(26, 21, 8, 0.72);
+  color: var(--ri-text);
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.homeAccessInput::placeholder {
+  color: rgba(242, 242, 242, 0.55);
+}
+
+.homeAccessInput:focus {
+  outline: none;
+  border-color: var(--ri-gold);
+}
+
+.homeAccessGoogle {
+  font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(200, 155, 60, 0.45);
+  background: #f5f5f5;
+  color: #1a1a1a;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.homeAccessGoogle:hover:not(:disabled) {
+  background: #fff;
+}
+
+.homeAccessGoogle:disabled,
+.homeAccess .cardCta:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.homeAccess .cardCta {
+  margin-top: 0;
+  padding: 6px 14px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.homeAccessRegister {
+  font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
+  color: var(--ri-gold);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-decoration: none;
+  letter-spacing: 0.03em;
+  padding: 2px 4px;
+}
+
+.homeAccessRegister:hover {
+  text-decoration: underline;
+}
+
+.homeAccessError {
+  margin: 0;
+  color: #f0b4b4;
+  font-size: 0.7rem;
+  line-height: 1.25;
+  text-align: inherit;
+  max-width: 100%;
+}
+
+.homeAccessCompact .homeAccessInput {
+  width: 132px;
+  padding: 5px 8px;
+  font-size: 0.72rem;
+}
+
+.homeAccessCompact .homeAccessGoogle,
+.homeAccessCompact .cardCta {
+  padding: 5px 12px;
+  font-size: 0.68rem;
+}
+
+.homeAccessCompact .homeAccessRegister {
+  font-size: 0.68rem;
+}
+
+.homeAccessPro {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* Login profissional — card interno com tags (só no card da home) */
+.proLoginPanel {
+  box-sizing: border-box;
+  width: min(100%, 300px);
+  max-width: 300px;
+  margin-top: 4px;
+  padding: clamp(8px, 1vh, 12px) clamp(10px, 1.2vw, 14px);
+  border-radius: 20px;
+  border: 1px solid rgba(200, 155, 60, 0.55);
+  background: rgba(22, 18, 10, 0.88);
+  box-shadow: inset 0 1px 0 rgba(240, 215, 140, 0.08), 0 8px 20px rgba(0, 0, 0, 0.28);
+  align-items: stretch;
+  gap: 6px;
+}
+
+.proLoginTitle {
+  margin: 0 0 4px;
+  text-align: center;
+  color: var(--ri-gold);
+  font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
+  font-size: clamp(0.8rem, 1vw, 0.92rem);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.proLoginForm {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+}
+
+.proLoginField {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+}
+
+.proLoginTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(200, 155, 60, 0.55);
+  background: rgba(200, 155, 60, 0.18);
+  color: var(--ri-gold);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.proLoginInputPill {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(200, 155, 60, 0.45);
+  background: rgba(70, 62, 42, 0.92);
+  color: var(--ri-text);
+  font-size: 0.74rem;
+  line-height: 1.25;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.proLoginInputPill::placeholder {
+  color: rgba(242, 242, 242, 0.4);
+}
+
+.proLoginInputPill:focus {
+  outline: none;
+  border-color: var(--ri-gold);
+}
+
+.proLoginGoogleWrap {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.proLoginGoogleWrap button {
+  margin-top: 0;
+  padding: 9px 12px;
+  font-size: 13px;
+  border-radius: 999px;
+}
+
+.proLoginAcessarTag,
+.proLoginRegisterTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  box-sizing: border-box;
+  min-width: 140px;
+  padding: 7px 18px;
+  border-radius: 999px;
+  border: 1px solid #6b5218;
+  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
+  color: #000;
+  font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  line-height: 1.2;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+}
+
+.proLoginAcessarTag {
+  margin-top: 10px;
+  width: auto;
+}
+
+.proLoginAcessarTag:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: var(--ri-btn-3d-gold-active);
+}
+
+.proLoginAcessarTag:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.proLoginRegisterTag {
+  margin-top: 6px;
+}
+
+.proLoginRegisterTag:hover {
+  filter: brightness(1.05);
+}
+
+.proLoginPanel .homeAccessError {
+  text-align: center;
+  margin-top: 2px;
 }
 
 .actionCards {
@@ -419,6 +690,36 @@
     font-size: 1.2rem;
   }
 
+  .empresaEntry {
+    align-items: stretch;
+  }
+
+  .homeAccessEmpresa {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .homeAccessFields {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .homeAccessInput,
+  .homeAccessCompact .homeAccessInput {
+    width: 100%;
+  }
+
+  .homeAccessGoogle,
+  .homeAccess .cardCta {
+    width: 100%;
+    text-align: center;
+  }
+
+  .homeAccessRegister {
+    text-align: center;
+    align-self: center;
+  }
+
   .actionCards {
     grid-template-columns: 1fr;
     max-width: 440px;
@@ -491,13 +792,8 @@
 }
 
 .homePage.homePageFlow .empresaEntry {
-  gap: 4px;
+  gap: 2px;
   flex-shrink: 0;
-}
-
-.homePage.homePageFlow .empresaEntry .cardCta {
-  padding: 6px 14px;
-  font-size: clamp(0.65rem, 0.85vw, 0.76rem);
 }
 
 .homePage.homePageFlow .logoHero {
@@ -757,6 +1053,21 @@
     font-size: clamp(1rem, 1.8vw, 1.35rem);
   }
 
+  .homeAccessInput,
+  .homeAccessCompact .homeAccessInput {
+    width: 120px;
+    padding: 4px 8px;
+    font-size: 0.68rem;
+  }
+
+  .homeAccessGoogle,
+  .homeAccessCompact .homeAccessGoogle,
+  .homeAccess .cardCta,
+  .homeAccessCompact .cardCta {
+    padding: 4px 10px;
+    font-size: 0.64rem;
+  }
+
   .proCopy h2 {
     font-size: clamp(0.88rem, 1.2vw, 1.1rem);
   }
@@ -769,5 +1080,131 @@
   .proSteps li,
   .proReasons li {
     font-size: clamp(0.64rem, 0.8vw, 0.72rem) !important;
+  }
+}
+
+/* Home empresa (/empresa) — tipografia/CTA maiores; não afeta a home profissional. */
+.empresaHomeCard .proCopy h2 {
+  font-size: clamp(1.05rem, 1.5vw, 1.4rem);
+}
+
+.empresaHomeCard .proCopy h3 {
+  font-size: clamp(0.9rem, 1.15vw, 1.05rem);
+}
+
+.empresaHomeCard .proCopy p,
+.empresaHomeCard .proCopy li {
+  font-size: clamp(0.78rem, 1vw, 0.92rem);
+}
+
+.empresaHomeCard .proHighlight {
+  font-size: clamp(0.85rem, 1.1vw, 0.98rem) !important;
+}
+
+.empresaHomeCard .proSteps li,
+.empresaHomeCard .proReasons li {
+  font-size: clamp(0.74rem, 0.95vw, 0.86rem) !important;
+}
+
+.empresaHomeCard .cardSideBody .cardCta {
+  padding: 9px 20px;
+  font-size: clamp(0.76rem, 1vw, 0.9rem);
+}
+
+.empresaLeadTitle,
+.empresaLeadSubtitle {
+  text-align: center;
+  width: 100%;
+}
+
+@media (min-width: 769px) and (max-height: 800px) {
+  .empresaHomeCard .proCopy h2 {
+    font-size: clamp(0.98rem, 1.35vw, 1.22rem);
+  }
+
+  .empresaHomeCard .proCopy p,
+  .empresaHomeCard .proCopy li {
+    font-size: clamp(0.74rem, 0.92vw, 0.86rem);
+  }
+
+  .empresaHomeCard .proSteps li,
+  .empresaHomeCard .proReasons li {
+    font-size: clamp(0.7rem, 0.88vw, 0.8rem) !important;
+  }
+}
+
+/* Home profissional (/) — tipografia/CTA maiores; não afeta a home empresa. */
+.proHomeCard .proCopy h2 {
+  font-size: clamp(1.05rem, 1.5vw, 1.4rem);
+}
+
+.proHomeCard .proCopy h3 {
+  font-size: clamp(0.9rem, 1.15vw, 1.05rem);
+}
+
+.proHomeCard .proCopy p,
+.proHomeCard .proCopy li {
+  font-size: clamp(0.78rem, 1vw, 0.92rem);
+}
+
+.proHomeCard .proHighlight {
+  font-size: clamp(0.85rem, 1.1vw, 0.98rem) !important;
+}
+
+.proHomeCard .proSteps li,
+.proHomeCard .proReasons li {
+  font-size: clamp(0.74rem, 0.95vw, 0.86rem) !important;
+}
+
+.proHomeCard .proLoginAcessarTag,
+.proHomeCard .proLoginRegisterTag {
+  padding: 6px 16px;
+  font-size: clamp(0.66rem, 0.85vw, 0.74rem);
+}
+
+.proLeadTitle,
+.proLeadSubtitle {
+  text-align: center;
+  width: 100%;
+}
+
+@media (min-width: 769px) and (max-height: 800px) {
+  .proHomeCard .proCopy h2 {
+    font-size: clamp(0.98rem, 1.35vw, 1.22rem);
+  }
+
+  .proHomeCard .proCopy p,
+  .proHomeCard .proCopy li {
+    font-size: clamp(0.74rem, 0.92vw, 0.86rem);
+  }
+
+  .proHomeCard .proSteps li,
+  .proHomeCard .proReasons li {
+    font-size: clamp(0.7rem, 0.88vw, 0.8rem) !important;
+  }
+
+  .proLoginPanel {
+    padding: 6px 10px 8px;
+    width: min(100%, 260px);
+  }
+
+  .proLoginInputPill {
+    padding: 5px 12px;
+    font-size: 0.68rem;
+  }
+
+  .proLoginGoogleWrap button {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+
+  .proLoginAcessarTag {
+    margin-top: 8px;
+  }
+
+  .proLoginAcessarTag,
+  .proLoginRegisterTag {
+    padding: 5px 14px;
+    font-size: 0.64rem;
   }
 }

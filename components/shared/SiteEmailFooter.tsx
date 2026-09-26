@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 
 export default function SiteEmailFooter() {
   const pathname = usePathname();
-  if (pathname === "/" || pathname === "/empresa") return null;
+  if (pathname === "/") return null;
 
   return (
     <footer

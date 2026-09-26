@@ -668,10 +668,21 @@ function CadastroEmpresaContent() {
     }
   };
 
-  if ((status === 'loading' && !sessionWaitTimedOut) || (status === 'authenticated' && checkingRegistration)) {
+  // Sem sessão: não pintar o formulário completo enquanto redireciona para /company/cadastro.
+  if (
+    (status === 'loading' && !sessionWaitTimedOut) ||
+    status === 'unauthenticated' ||
+    (status === 'authenticated' && checkingRegistration)
+  ) {
     return (
       <PageLoader
-        message={checkingRegistration ? 'Verificando cadastro...' : 'Carregando...'}
+        message={
+          checkingRegistration
+            ? 'Verificando cadastro...'
+            : status === 'unauthenticated'
+              ? 'Abrindo cadastro...'
+              : 'Carregando...'
+        }
       />
     );
   }

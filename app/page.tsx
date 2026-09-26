@@ -1,8 +1,8 @@
 import React from "react";
-import Link from "next/link";
 import Image from "next/image";
 import { Dancing_Script } from "next/font/google";
 import LogoRecruta from "@/app/components/LogoRecruta";
+import HomeAccessForm from "@/app/components/HomeAccessForm";
 import { FONT_STACK } from "@/lib/theme";
 import styles from "./home.module.css";
 
@@ -22,10 +22,7 @@ export default function Home() {
 
       <div className={styles.homeShell}>
         <div className={styles.empresaEntry}>
-          <Link href="/empresa" className={styles.cardCta}>
-            Entrar como empresa
-          </Link>
-          <div className={styles.empresaEntryLine} aria-hidden />
+          <HomeAccessForm role="company" registerHref="/company/cadastro" compact />
         </div>
 
         <header className={styles.hero}>
@@ -49,7 +46,7 @@ export default function Home() {
         </header>
 
         <section className={`${styles.actionCards} ${styles.proCardWrap}`} aria-label="Acesso profissional">
-          <article className={`${styles.actionCard} ${styles.actionCardSide}`}>
+          <article className={`${styles.actionCard} ${styles.actionCardSide} ${styles.proHomeCard}`}>
             <div className={styles.cardImageWrap}>
               <Image
                 src="/profissional.jpg"
@@ -63,8 +60,8 @@ export default function Home() {
             </div>
             <div className={styles.cardSideBody}>
               <div className={styles.proCopy}>
-                <h2>Pare de correr atrás de vagas.</h2>
-                <h3>Deixe as empresas encontrarem você.</h3>
+                <h2 className={styles.proLeadTitle}>Pare de correr atrás de vagas.</h2>
+                <h3 className={styles.proLeadSubtitle}>Deixe as empresas encontrarem você.</h3>
                 <p>
                   Crie seu perfil profissional gratuitamente e fique disponível para empresas que
                   procuram profissionais com a sua experiência.
@@ -97,11 +94,7 @@ export default function Home() {
                 <p className={styles.proHighlight}>Deixe seu currículo trabalhar por você.</p>
               </div>
 
-              <Link href="/professional/register" className={styles.cardCta}>
-                Criar meu perfil gratuitamente
-              </Link>
-              <p className={styles.proBrand}>Recruta Indústria</p>
-              <p className={styles.proClose}>Profissionais encontrados. Empresas conectadas.</p>
+              <HomeAccessForm role="professional" registerHref="/professional/register" />
             </div>
           </article>
         </section>

@@ -51,6 +51,11 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: "/empresa",
+        destination: "/",
+        permanent: false,
+      },
+      {
         source: "/login/empresa",
         destination: "/login?tipo=empresa",
         permanent: false,
