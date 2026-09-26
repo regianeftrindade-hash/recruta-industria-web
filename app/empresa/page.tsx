@@ -1,10 +1,11 @@
 import React from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Dancing_Script } from "next/font/google";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import { FONT_STACK } from "@/lib/theme";
-import styles from "./home.module.css";
+import styles from "../home.module.css";
 
 const taglineFont = Dancing_Script({
   subsets: ["latin"],
@@ -14,7 +15,13 @@ const taglineFont = Dancing_Script({
   adjustFontFallback: true,
 });
 
-export default function Home() {
+export const metadata: Metadata = {
+  title: "Para empresas",
+  description:
+    "Encontre profissionais da indústria de acordo com o perfil, experiência, localização e formação que sua empresa procura.",
+};
+
+export default function HomeEmpresa() {
   return (
     <main className={styles.homePage} style={{ fontFamily: FONT_STACK }}>
       <div className={styles.atmosphere} aria-hidden />
@@ -32,7 +39,7 @@ export default function Home() {
               ★
             </span>
             <p className={`${styles.heroTagline} ${taglineFont.className}`}>
-              A indústria evolui. O recrutamento também.
+              Para quem contrata na indústria.
             </p>
             <span className={`${styles.heroTaglineStar} ${taglineFont.className}`} aria-hidden>
               ★
@@ -41,26 +48,26 @@ export default function Home() {
           </div>
         </header>
 
-        <section className={styles.actionCards} aria-label="Escolha seu acesso">
+        <section className={styles.actionCards} aria-label="Acesso para empresas">
           {[
             {
-              href: "/login?tipo=profissional",
-              eyebrow: "Para profissionais",
-              title: "Crie sua Vitrine Profissional",
-              img: "/profissional.jpg",
-              text: "Cadastre gratuitamente seu perfil, apresente sua experiência, formação e habilidades e fique disponível para empresas que buscam profissionais para suas equipes.",
-              cta: "Sou Profissional",
-              alt: "Profissional da indústria com capacete de proteção",
+              href: "/company/dashboard-empresa",
+              eyebrow: "Para empresas",
+              title: "Encontre os profissionais que sua empresa precisa",
+              img: "/empresa.jpg",
+              text: "Encontre profissionais da indústria de acordo com o perfil, experiência, localização, formação e outras características que sua empresa procura.",
+              cta: "Encontrar profissionais",
+              alt: "Ambiente industrial e equipe de produção",
               priority: true,
             },
             {
-              href: "/login?tipo=empresa",
-              eyebrow: "Para empresas",
-              title: "Encontre profissionais para sua equipe",
-              img: "/empresa.jpg",
-              text: "Cadastre sua empresa e encontre profissionais de acordo com o perfil que sua indústria precisa. Consulte experiências, qualificações e informações profissionais para facilitar sua busca.",
-              cta: "Sou Empresa",
-              alt: "Ambiente industrial e equipe de produção",
+              href: "/company/register",
+              eyebrow: "Cadastro",
+              title: "Cadastre sua empresa na plataforma",
+              img: "/profissional.jpg",
+              text: "Pesquise profissionais, veja perfis e currículos conforme as regras da plataforma, publique oportunidades e fale com candidatos pelas ferramentas que já existem.",
+              cta: "Cadastrar minha empresa",
+              alt: "Profissional da indústria com capacete de proteção",
               priority: false,
             },
           ].map((c) => (
@@ -74,7 +81,7 @@ export default function Home() {
                   quality={65}
                   priority={c.priority}
                   className={
-                    c.href.includes("empresa")
+                    c.href.includes("dashboard")
                       ? `${styles.cardImage} ${styles.cardImageEmpresa}`
                       : styles.cardImage
                   }
@@ -105,6 +112,11 @@ export default function Home() {
 
           <div className={styles.homeContactsWrap}>
             <div className={styles.homeContacts}>
+              <Link href="/login?tipo=empresa" className={styles.cardCta}>
+                Entrar como empresa
+              </Link>
+            </div>
+            <div className={styles.homeContacts}>
               <a href="mailto:contato@recrutaindustria.com" className={styles.homeContactLink}>
                 contato@recrutaindustria.com
               </a>
@@ -117,8 +129,8 @@ export default function Home() {
               <span className={styles.homeContactSep} aria-hidden>
                 /
               </span>
-              <Link href="/empresa" className={styles.homeContactLink}>
-                Para empresas →
+              <Link href="/" className={styles.homeContactLink}>
+                Para profissionais →
               </Link>
             </div>
             <div className={styles.homeContactLine} aria-hidden />
