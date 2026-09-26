@@ -176,7 +176,7 @@
 .homeAccessEmpresa .homeAccessFields {
   flex-wrap: nowrap;
   justify-content: flex-end;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
 }
 
@@ -210,7 +210,9 @@
 }
 
 .homeAccessEmpresa .homeAccessRegister {
-  align-self: center;
+  align-self: flex-start;
+  height: 28px;
+  color: #000;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -293,8 +295,12 @@
 
 .homeAccessGoogle:hover:not(:disabled) {
   background: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
+  filter: brightness(1.05);
+}
+
+.homeAccessGoogle:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: var(--ri-btn-3d-gold-active);
 }
 
 .homeAccessGoogle:disabled,
@@ -379,15 +385,25 @@
 }
 
 .proLoginTitle {
-  margin: 0 0 2px;
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  margin: 0 0 4px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(200, 155, 60, 0.55);
+  background: rgba(200, 155, 60, 0.18);
   text-align: center;
   color: var(--ri-gold);
   font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
-  font-size: clamp(0.78rem, 1vw, 0.9rem);
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .proLoginForm {
@@ -434,6 +450,98 @@
 .proLoginInputPill:focus {
   outline: none;
   border-color: var(--ri-gold);
+}
+
+.homePasswordField {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+.homePasswordStack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+.homeAccessEmpresa .homePasswordStack {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 148px;
+}
+
+.homeAccessEmpresa .homePasswordField {
+  flex: none;
+  width: 100%;
+}
+
+.homePasswordField .proLoginInputPill,
+.homePasswordField .homeAccessInput {
+  width: 100%;
+  padding-right: 30px;
+}
+
+.homePasswordEye {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ri-gold);
+  cursor: pointer;
+  line-height: 0;
+}
+
+.homePasswordEye:hover {
+  color: #d4af37;
+}
+
+.homePasswordEye:focus-visible {
+  outline: 2px solid var(--ri-gold);
+  outline-offset: 1px;
+}
+
+.homeForgotLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  max-width: 100%;
+  align-self: flex-end;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(200, 155, 60, 0.7);
+  background: rgba(200, 155, 60, 0.14);
+  color: rgba(242, 242, 242, 0.88);
+  font-size: 0.6rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.homeForgotLink:hover {
+  color: #fff;
+  border-color: var(--ri-gold);
+  text-decoration: none;
 }
 
 /* Só o ícone Google nesta home — esconde o texto do botão original */
@@ -491,11 +599,14 @@
   margin-top: 0;
   margin-left: 4px;
   min-width: 0;
-  align-self: center;
+  align-self: flex-start;
+  height: 28px;
 }
 
-.proLoginAcessarTag:active:not(:disabled) {
-  transform: translateY(1px);
+.proLoginAcessarTag:active:not(:disabled),
+.proLoginRegisterTag:active,
+.homeForgotLink:active {
+  transform: translateY(2px);
   box-shadow: var(--ri-btn-3d-gold-active);
 }
 
@@ -506,9 +617,11 @@
 
 .proLoginRegisterTag {
   flex: 0 0 auto;
-  align-self: center;
+  align-self: flex-start;
   margin-top: 0;
   min-width: 0;
+  height: 28px;
+  color: #000;
 }
 
 .proLoginRegisterTag:hover {
@@ -650,15 +763,17 @@
 .proLoginRegisterTag:hover,
 .homeAccessEmpresa .homeAccessRegister:hover,
 .homeAccessGoogle:hover:not(:disabled),
-.proLoginGoogleIconOnly button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
+.proLoginGoogleIconOnly button:hover,
+.homeForgotLink:hover {
+  filter: brightness(1.05);
 }
 
 .cardCta:active,
 .proLoginAcessarTag:active:not(:disabled),
 .proLoginRegisterTag:active,
-.homeAccessEmpresa .homeAccessRegister:active {
+.homeAccessEmpresa .homeAccessRegister:active,
+.homeForgotLink:active,
+.proLoginGoogleIconOnly button:active:not(:disabled) {
   transform: translateY(2px);
   box-shadow: var(--ri-btn-3d-gold-active);
 }
@@ -1041,18 +1156,18 @@
 .proLeadBlock .proLeadSubtitle {
   margin: 0;
   text-align: center;
-  width: auto;
-  white-space: nowrap;
+  width: 100%;
+  white-space: normal;
 }
 
 .proLeadBlock .proLeadTitle,
 .proLeadBlock .proLeadSubtitle {
   color: var(--ri-gold);
   font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
-  font-size: clamp(1.15rem, 1.7vw, 1.45rem);
+  font-size: clamp(1.55rem, 2.4vw, 2rem);
   font-weight: 700;
   letter-spacing: 0.02em;
-  line-height: 1.15;
+  line-height: 1.2;
 }
 
 .proMidRow {
@@ -1188,6 +1303,12 @@
   gap: clamp(3px, 0.55vh, 6px);
   text-align: left;
   min-height: 0;
+}
+
+.proCopyGold {
+  color: var(--ri-gold);
+  font-weight: 700;
+  text-align: center;
 }
 
 .proCopy h2,
@@ -1524,7 +1645,7 @@
 
 .proHomeCard .proCopy p,
 .proHomeCard .proCopy li {
-  font-size: clamp(0.98rem, 1.25vw, 1.14rem);
+  font-size: clamp(1.08rem, 1.4vw, 1.28rem);
 }
 
 .proHomeCard .proHighlight {

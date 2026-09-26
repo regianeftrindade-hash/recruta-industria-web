@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import GoogleSignInButton from "@/app/components/GoogleSignInButton";
+import HomePasswordEye from "@/app/components/HomePasswordEye";
 import styles from "@/app/home.module.css";
 
 type HomeAccessRole = "company" | "professional";
@@ -23,6 +24,7 @@ export default function HomeAccessForm({
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -95,6 +97,19 @@ export default function HomeAccessForm({
     }
   };
 
+  const forgotHref = isCompany
+    ? "/esqueci-senha?tipo=empresa"
+    : "/esqueci-senha?tipo=profissional";
+
+  const passwordEye = (
+    <HomePasswordEye
+      visible={showPassword}
+      disabled={loading}
+      onToggle={() => setShowPassword((v) => !v)}
+      className={`${styles.homePasswordEye} home-password-eye`}
+    />
+  );
+
   const handleGoogle = () => {
     setErrorMessage("");
 
@@ -126,27 +141,39 @@ export default function HomeAccessForm({
               aria-label="E-mail"
               disabled={loading}
             />
-            <input
-              id="pro-home-senha"
-              type="password"
-              name="professional-senha"
-              autoComplete="current-password"
-              placeholder="SENHA"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              className={styles.proLoginInputPill}
-              aria-label="Senha"
-              disabled={loading}
-            />
+            <div className={`${styles.homePasswordStack} home-password-stack`}>
+              <div className={`${styles.homePasswordField} home-password-field`}>
+                <input
+                  id="pro-home-senha"
+                  type={showPassword ? "text" : "password"}
+                  name="professional-senha"
+                  autoComplete="current-password"
+                  placeholder="SENHA"
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  className={styles.proLoginInputPill}
+                  aria-label="Senha"
+                  disabled={loading}
+                />
+                {passwordEye}
+              </div>
+              <Link href={forgotHref} className={`${styles.homeForgotLink} home-forgot-btn`}>
+                Esqueci a senha
+              </Link>
+            </div>
             <div className={styles.proLoginGoogleIconOnly}>
               <GoogleSignInButton onClick={handleGoogle} disabled={loading} />
             </div>
             <button type="submit" className={styles.proLoginAcessarTag} disabled={loading}>
               {loading ? "..." : "Acessar"}
             </button>
-            <Link href={registerHref} className={styles.proLoginRegisterTag}>
+            <button
+              type="button"
+              className={styles.proLoginRegisterTag}
+              onClick={() => router.push(registerHref)}
+            >
               Cadastre-se
-            </Link>
+            </button>
           </div>
 
           {errorMessage ? (
@@ -178,26 +205,38 @@ export default function HomeAccessForm({
               aria-label="E-mail"
               disabled={loading}
             />
-            <input
-              type="password"
-              name={`${role}-senha`}
-              autoComplete="current-password"
-              placeholder="Senha"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              className={styles.homeAccessInput}
-              aria-label="Senha"
-              disabled={loading}
-            />
+            <div className={`${styles.homePasswordStack} home-password-stack`}>
+              <div className={`${styles.homePasswordField} home-password-field`}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name={`${role}-senha`}
+                  autoComplete="current-password"
+                  placeholder="Senha"
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  className={styles.homeAccessInput}
+                  aria-label="Senha"
+                  disabled={loading}
+                />
+                {passwordEye}
+              </div>
+              <Link href={forgotHref} className={`${styles.homeForgotLink} home-forgot-btn`}>
+                Esqueci a senha
+              </Link>
+            </div>
             <div className={styles.proLoginGoogleIconOnly}>
               <GoogleSignInButton onClick={handleGoogle} disabled={loading} />
             </div>
             <button type="submit" className={styles.cardCta} disabled={loading}>
               {loading ? "..." : "Acessar"}
             </button>
-            <Link href={registerHref} className={styles.homeAccessRegister}>
+            <button
+              type="button"
+              className={styles.homeAccessRegister}
+              onClick={() => router.push(registerHref)}
+            >
               Cadastre-se
-            </Link>
+            </button>
           </div>
           {errorMessage ? (
             <p className={styles.homeAccessError} role="alert">
