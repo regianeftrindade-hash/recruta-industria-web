@@ -51,8 +51,8 @@ export default function Home() {
           <article className={`${styles.actionCard} ${styles.actionCardSide} ${styles.proHomeCard}`}>
             <div className={styles.cardImageWrap}>
               <Image
-                src="/profissional.jpg"
-                alt="Profissional da indústria com capacete de proteção"
+                src="/profissional-equipe.jpg"
+                alt="Equipe de profissionais da indústria com capacete de proteção"
                 fill
                 sizes="(max-width: 768px) 92vw, 380px"
                 quality={65}
