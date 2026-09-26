@@ -8,6 +8,7 @@ import SiteVisitTracker from "@/components/app-shell/SiteVisitTracker";
 import { InstallPromptProvider } from "@/components/pwa/InstallPromptProvider";
 import GoogleAdsLoader from "@/components/analytics/GoogleAdsLoader";
 import Providers from "./providers";
+import SiteEmailFooter from "@/components/shared/SiteEmailFooter";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -171,6 +172,7 @@ export default function RootLayout({
           <InstallPromptProvider>
             <SiteVisitTracker />
             {children}
+            <SiteEmailFooter />
           </InstallPromptProvider>
         </Providers>
       </body>

@@ -21,6 +21,13 @@ export default function Home() {
       <div className={styles.atmosphereGlow} aria-hidden />
 
       <div className={styles.homeShell}>
+        <div className={styles.empresaEntry}>
+          <Link href="/empresa" className={styles.cardCta}>
+            Entrar como empresa
+          </Link>
+          <div className={styles.empresaEntryLine} aria-hidden />
+        </div>
+
         <header className={styles.hero}>
           <div className={styles.logoHero}>
             <LogoRecruta size="hero" depth as="h1" />
@@ -41,7 +48,7 @@ export default function Home() {
           </div>
         </header>
 
-        <section className={styles.actionCards} aria-label="Escolha seu acesso">
+        <section className={`${styles.actionCards} ${styles.actionCardsSingle}`} aria-label="Acesso profissional">
           {[
             {
               href: "/login?tipo=profissional",
@@ -52,16 +59,6 @@ export default function Home() {
               cta: "Sou Profissional",
               alt: "Profissional da indústria com capacete de proteção",
               priority: true,
-            },
-            {
-              href: "/login?tipo=empresa",
-              eyebrow: "Para empresas",
-              title: "Encontre profissionais para sua equipe",
-              img: "/empresa.jpg",
-              text: "Cadastre sua empresa e encontre profissionais de acordo com o perfil que sua indústria precisa. Consulte experiências, qualificações e informações profissionais para facilitar sua busca.",
-              cta: "Sou Empresa",
-              alt: "Ambiente industrial e equipe de produção",
-              priority: false,
             },
           ].map((c) => (
             <Link key={c.href} href={c.href} className={styles.actionCard}>
@@ -114,12 +111,6 @@ export default function Home() {
               <a href="mailto:suporte@recrutaindustria.com" className={styles.homeContactLink}>
                 suporte@recrutaindustria.com
               </a>
-              <span className={styles.homeContactSep} aria-hidden>
-                /
-              </span>
-              <Link href="/empresa" className={styles.homeContactLink}>
-                Para empresas →
-              </Link>
             </div>
             <div className={styles.homeContactLine} aria-hidden />
           </div>

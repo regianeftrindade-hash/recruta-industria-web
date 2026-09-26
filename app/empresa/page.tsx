@@ -48,27 +48,17 @@ export default function HomeEmpresa() {
           </div>
         </header>
 
-        <section className={styles.actionCards} aria-label="Acesso para empresas">
+        <section className={`${styles.actionCards} ${styles.actionCardsSingle}`} aria-label="Acesso para empresas">
           {[
             {
-              href: "/company/dashboard-empresa",
+              href: "/login?tipo=empresa",
               eyebrow: "Para empresas",
-              title: "Encontre os profissionais que sua empresa precisa",
+              title: "Encontre profissionais para sua equipe",
               img: "/empresa.jpg",
-              text: "Encontre profissionais da indústria de acordo com o perfil, experiência, localização, formação e outras características que sua empresa procura.",
-              cta: "Encontrar profissionais",
+              text: "Cadastre sua empresa e encontre profissionais de acordo com o perfil que sua indústria precisa. Consulte experiências, qualificações e informações profissionais para facilitar sua busca.",
+              cta: "Sou Empresa",
               alt: "Ambiente industrial e equipe de produção",
               priority: true,
-            },
-            {
-              href: "/company/register",
-              eyebrow: "Cadastro",
-              title: "Cadastre sua empresa na plataforma",
-              img: "/profissional.jpg",
-              text: "Pesquise profissionais, veja perfis e currículos conforme as regras da plataforma, publique oportunidades e fale com candidatos pelas ferramentas que já existem.",
-              cta: "Cadastrar minha empresa",
-              alt: "Profissional da indústria com capacete de proteção",
-              priority: false,
             },
           ].map((c) => (
             <Link key={c.href} href={c.href} className={styles.actionCard}>
@@ -80,11 +70,7 @@ export default function HomeEmpresa() {
                   sizes="(max-width: 900px) 92vw, 400px"
                   quality={65}
                   priority={c.priority}
-                  className={
-                    c.href.includes("dashboard")
-                      ? `${styles.cardImage} ${styles.cardImageEmpresa}`
-                      : styles.cardImage
-                  }
+                  className={`${styles.cardImage} ${styles.cardImageEmpresa}`}
                 />
               </div>
               <div className={styles.cardContent}>
@@ -111,11 +97,6 @@ export default function HomeEmpresa() {
           </section>
 
           <div className={styles.homeContactsWrap}>
-            <div className={styles.homeContacts}>
-              <Link href="/login?tipo=empresa" className={styles.cardCta}>
-                Entrar como empresa
-              </Link>
-            </div>
             <div className={styles.homeContacts}>
               <a href="mailto:contato@recrutaindustria.com" className={styles.homeContactLink}>
                 contato@recrutaindustria.com
