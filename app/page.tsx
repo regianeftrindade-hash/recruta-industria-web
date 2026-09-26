@@ -55,7 +55,7 @@ export default function Home() {
             .${styles.proHomeCard} .${styles.proMediaCol}{display:flex!important;flex-direction:column!important;height:100%!important;min-height:100%!important;width:100%!important;max-width:none!important}
             .${styles.proHomeCard} .${styles.cardImageWrap}{flex:1 1 auto!important;width:100%!important;height:100%!important;max-height:none!important;min-height:100%!important;margin:0!important;align-self:stretch!important;position:relative!important}
             .${styles.proHomeCard} .${styles.cardSideBody}{display:flex!important;flex-direction:column!important;align-items:center!important;min-width:0!important;padding:0 4px 0 2px!important;margin:0!important}
-            .${styles.proHomeCard} .${styles.proLeadBlock}{width:100%!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:baseline!important;justify-content:center!important;gap:0.55em!important;text-align:center!important}
+            .${styles.proHomeCard} .${styles.proLeadBlock}{width:100%!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:baseline!important;justify-content:center!important;gap:0.55em!important;text-align:center!important;margin-top:10px!important}
             .${styles.proHomeCard} .${styles.proLeadTitle},
             .${styles.proHomeCard} .${styles.proLeadSubtitle}{width:auto!important;margin:0!important;text-align:center!important;white-space:nowrap!important;color:var(--ri-gold)!important;font-size:clamp(1.15rem,1.7vw,1.45rem)!important;font-weight:700!important;line-height:1.15!important}
             .${styles.proHomeCard} .${styles.proCopy}{width:100%!important;margin:0!important;padding:0!important}
@@ -64,6 +64,9 @@ export default function Home() {
             .${styles.proHomeCard} .${styles.proHighlight}{font-size:clamp(1.05rem,1.35vw,1.22rem)!important}
             .${styles.proHomeCard} .${styles.proSectionTitle}{font-size:clamp(1.12rem,1.45vw,1.32rem)!important}
             .${styles.proHomeCard} .${styles.proSteps} li{font-size:clamp(0.95rem,1.18vw,1.08rem)!important;line-height:1.35!important}
+            .${styles.proHomeCard} .${styles.proClosingRow}{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:baseline!important;gap:0.65em!important;width:100%!important}
+            .${styles.proHomeCard} .${styles.proClosingRow} p:first-child{flex:1 1 auto!important;min-width:0!important;margin:0!important}
+            .${styles.proHomeCard} .${styles.proClosingRow} .${styles.proHighlight}{flex:0 0 auto!important;white-space:nowrap!important;margin:0!important}
             .${styles.proHomeCard} .${styles.proLoginPanel}{display:flex!important;flex-direction:column!important;align-items:stretch!important;width:100%!important;max-width:none!important;align-self:stretch!important;margin:0!important;box-sizing:border-box!important;grid-column:auto!important;grid-row:auto!important}
             .${styles.proHomeCard} .${styles.proLoginForm}{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;width:100%!important;gap:8px!important}
             .${styles.proHomeCard} .${styles.proLoginRow}{display:flex!important;flex:1 1 auto!important;flex-wrap:nowrap!important;align-items:center!important;min-width:0!important;gap:8px!important;width:auto!important}
@@ -123,9 +126,9 @@ export default function Home() {
 
                   <p>
                     Chega de preencher o mesmo cadastro várias vezes. No Recruta Indústria, você cria seu
-                    perfil uma vez e mantém suas informações atualizadas.
+                    perfil uma vez e mantém suas informações atualizadas. Deixe seu currículo trabalhar por
+                    você.
                   </p>
-                  <p className={styles.proHighlight}>Deixe seu currículo trabalhar por você.</p>
                 </div>
               </div>
             </div>
