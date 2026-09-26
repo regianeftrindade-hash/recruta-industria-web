@@ -231,15 +231,6 @@ export default function CadastroSimplesEmpresaPage() {
             </button>
           </form>
 
-          <div className={loginStyles.createAccountWrap}>
-            <p className={loginStyles.createAccountHint}>
-              Já tem conta?{" "}
-              <Link href="/login?tipo=empresa" className={loginStyles.forgotLink}>
-                Entrar
-              </Link>
-            </p>
-          </div>
-
           <div className={loginStyles.footer}>
             <Link href="/" className={loginStyles.footerLink}>
               ← Voltar para a página inicial

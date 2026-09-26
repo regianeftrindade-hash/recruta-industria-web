@@ -50,10 +50,13 @@ export default function Home() {
 
         <section className={`${styles.actionCards} ${styles.proCardWrap}`} aria-label="Acesso profissional">
           <style>{`
-            .${styles.proHomeCard}{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:8px!important;padding-top:0!important}
+            .${styles.homePageFlow} .${styles.hero}{margin-bottom:0!important}
+            .${styles.homePageFlow} .${styles.actionCards}.${styles.proCardWrap}{flex:1 1 auto!important;justify-content:center!important;margin-top:0!important}
+            .${styles.homePageFlow} .${styles.homeBottom}{margin-top:0!important}
+            .${styles.proHomeCard}{display:flex!important;flex:0 0 auto!important;height:auto!important;flex-direction:column!important;align-items:stretch!important;gap:8px!important;padding-top:0!important}
             .${styles.proHomeCard} .${styles.proMidRow}{display:grid!important;grid-template-columns:26% 1fr!important;column-gap:clamp(10px,1.4vw,16px)!important;align-items:stretch!important;width:100%!important;flex:0 0 auto!important}
             .${styles.proHomeCard} .${styles.proMediaCol}{display:flex!important;flex-direction:column!important;height:100%!important;min-height:100%!important;width:100%!important;max-width:none!important}
-            .${styles.proHomeCard} .${styles.cardImageWrap}{flex:1 1 auto!important;width:100%!important;height:100%!important;max-height:none!important;min-height:100%!important;margin:0!important;align-self:stretch!important;position:relative!important}
+            .${styles.proHomeCard} .${styles.cardImageWrap}{flex:1 1 auto!important;width:100%!important;height:100%!important;max-height:none!important;min-height:100%!important;margin:0!important;align-self:stretch!important;position:relative!important;-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 14%,#000 86%,transparent 100%)!important;mask-image:linear-gradient(90deg,transparent 0%,#000 14%,#000 86%,transparent 100%)!important}
             .${styles.proHomeCard} .${styles.cardSideBody}{display:flex!important;flex-direction:column!important;align-items:center!important;min-width:0!important;padding:0 4px 0 2px!important;margin:0!important}
             .${styles.proHomeCard} .${styles.proLeadBlock}{width:100%!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:baseline!important;justify-content:center!important;gap:0.55em!important;text-align:center!important;margin-top:10px!important}
             .${styles.proHomeCard} .${styles.proLeadTitle},
@@ -128,7 +131,7 @@ export default function Home() {
                     alt="Equipe de profissionais da indústria com capacete de proteção"
                     fill
                     sizes="(max-width: 768px) 92vw, 380px"
-                    quality={65}
+                    quality={75}
                     priority
                     className={styles.cardImage}
                   />
@@ -147,25 +150,13 @@ export default function Home() {
                     competências diretamente para recrutadores e líderes da indústria que estão
                     ativamente buscando profissionais.
                   </p>
-                  <p>
-                    <strong>Visibilidade direcionada:</strong> Destaque sua trajetória para quem
-                    realmente toma a decisão de contratação.
-                  </p>
-                  <p>
-                    <strong>Valorização real:</strong> Vá além do currículo padrão e mostre o verdadeiro
-                    impacto do seu trabalho.
-                  </p>
-                  <p>
-                    <strong>Oportunidades até você:</strong> Sem a perda de tempo de aplicar para dezenas
-                    de processos sem retorno.
-                  </p>
                   <p className={styles.proCopyGold}>
                     Cadastre-se e descubra a revolução no recrutamento.
                   </p>
                 </div>
               </div>
             </div>
-            <HomeAccessForm role="professional" registerHref="/professional/register" />
+            <HomeAccessForm role="professional" registerHref="/professional/cadastro" />
           </article>
         </section>
 

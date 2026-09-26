@@ -127,7 +127,7 @@ export default function HomeAccessForm({
     return (
       <div className={`${styles.homeAccess} ${styles.homeAccessPro} ${styles.proLoginPanel}`}>
         <h4 className={styles.proLoginTitle}>LOGIN</h4>
-        <form onSubmit={handleSubmit} className={styles.proLoginForm} noValidate>
+        <form onSubmit={handleSubmit} className={styles.proLoginForm} noValidate suppressHydrationWarning>
           <div className={styles.proLoginRow}>
             <input
               id="pro-home-email"
@@ -140,6 +140,7 @@ export default function HomeAccessForm({
               className={styles.proLoginInputPill}
               aria-label="E-mail"
               disabled={loading}
+              suppressHydrationWarning
             />
             <div className={`${styles.homePasswordStack} home-password-stack`}>
               <div className={`${styles.homePasswordField} home-password-field`}>
@@ -154,6 +155,7 @@ export default function HomeAccessForm({
                   className={styles.proLoginInputPill}
                   aria-label="Senha"
                   disabled={loading}
+                  suppressHydrationWarning
                 />
                 {passwordEye}
               </div>
@@ -167,13 +169,9 @@ export default function HomeAccessForm({
             <button type="submit" className={styles.proLoginAcessarTag} disabled={loading}>
               {loading ? "..." : "Acessar"}
             </button>
-            <button
-              type="button"
-              className={styles.proLoginRegisterTag}
-              onClick={() => router.push(registerHref)}
-            >
+            <Link href={registerHref} className={styles.proLoginRegisterTag}>
               Cadastre-se
-            </button>
+            </Link>
           </div>
 
           {errorMessage ? (
@@ -191,7 +189,7 @@ export default function HomeAccessForm({
       <div
         className={`${styles.homeAccess} ${compact ? styles.homeAccessCompact : ""} ${styles.homeAccessEmpresa}`}
       >
-        <form onSubmit={handleSubmit} className={styles.homeAccessForm} noValidate>
+        <form onSubmit={handleSubmit} className={styles.homeAccessForm} noValidate suppressHydrationWarning>
           <div className={styles.homeAccessFields}>
             <span className={styles.empresaAccessTag}>Empresas</span>
             <input
@@ -204,6 +202,7 @@ export default function HomeAccessForm({
               className={styles.homeAccessInput}
               aria-label="E-mail"
               disabled={loading}
+              suppressHydrationWarning
             />
             <div className={`${styles.homePasswordStack} home-password-stack`}>
               <div className={`${styles.homePasswordField} home-password-field`}>
@@ -217,6 +216,7 @@ export default function HomeAccessForm({
                   className={styles.homeAccessInput}
                   aria-label="Senha"
                   disabled={loading}
+                  suppressHydrationWarning
                 />
                 {passwordEye}
               </div>
@@ -230,13 +230,9 @@ export default function HomeAccessForm({
             <button type="submit" className={styles.cardCta} disabled={loading}>
               {loading ? "..." : "Acessar"}
             </button>
-            <button
-              type="button"
-              className={styles.homeAccessRegister}
-              onClick={() => router.push(registerHref)}
-            >
+            <Link href={registerHref} className={styles.homeAccessRegister}>
               Cadastre-se
-            </button>
+            </Link>
           </div>
           {errorMessage ? (
             <p className={styles.homeAccessError} role="alert">
