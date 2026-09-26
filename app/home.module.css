@@ -224,6 +224,7 @@
   text-decoration: none;
   box-shadow: var(--ri-btn-3d-gold-shadow);
   white-space: nowrap;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .homeAccessEmpresa .homeAccessRegister:hover {
@@ -287,10 +288,13 @@
   text-transform: uppercase;
   cursor: pointer;
   white-space: nowrap;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
 }
 
 .homeAccessGoogle:hover:not(:disabled) {
   background: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
 }
 
 .homeAccessGoogle:disabled,
@@ -363,7 +367,9 @@
   max-width: none;
   align-self: stretch;
   margin-top: 4px;
-  padding: clamp(8px, 1vh, 12px) clamp(10px, 1.2vw, 14px);
+  margin-left: -2px;
+  margin-right: -2px;
+  padding: clamp(8px, 1vh, 12px) clamp(8px, 1vw, 12px);
   border-radius: 18px;
   border: 1px solid rgba(200, 155, 60, 0.55);
   background: rgba(22, 18, 10, 0.88);
@@ -477,6 +483,7 @@
   line-height: 1.2;
   box-shadow: var(--ri-btn-3d-gold-shadow);
   white-space: nowrap;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
 }
 
 .proLoginAcessarTag {
@@ -498,9 +505,10 @@
 }
 
 .proLoginRegisterTag {
+  flex: 0 0 auto;
   align-self: center;
-  margin-top: 2px;
-  min-width: 150px;
+  margin-top: 0;
+  min-width: 0;
 }
 
 .proLoginRegisterTag:hover {
@@ -543,13 +551,6 @@
   border-radius: 12px;
   padding: 10px;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.38);
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.actionCard:hover {
-  transform: translateY(-2px);
-  border-color: var(--ri-gold);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
 }
 
 .cardImageWrap {
@@ -568,11 +569,6 @@
   object-fit: cover;
   object-position: center;
   display: block;
-  transition: transform 0.35s ease;
-}
-
-.actionCard:hover .cardImage {
-  transform: scale(1.03);
 }
 
 .cardImageEmpresa {
@@ -649,7 +645,20 @@
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
-.actionCard:active .cardCta {
+.cardCta:hover,
+.proLoginAcessarTag:hover,
+.proLoginRegisterTag:hover,
+.homeAccessEmpresa .homeAccessRegister:hover,
+.homeAccessGoogle:hover:not(:disabled),
+.proLoginGoogleIconOnly button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
+}
+
+.cardCta:active,
+.proLoginAcessarTag:active:not(:disabled),
+.proLoginRegisterTag:active,
+.homeAccessEmpresa .homeAccessRegister:active {
   transform: translateY(2px);
   box-shadow: var(--ri-btn-3d-gold-active);
 }
@@ -766,6 +775,24 @@
   margin: 0;
   color: rgba(242, 242, 242, 0.72);
   font-size: 0.66rem;
+}
+
+.footerPrivacy {
+  margin: 1px 0 0;
+  line-height: 1;
+}
+
+.footerPrivacy a {
+  color: rgba(242, 242, 242, 0.38);
+  font-size: 0.58rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+}
+
+.footerPrivacy a:hover {
+  color: rgba(242, 242, 242, 0.62);
+  text-decoration: underline;
 }
 
 @media (max-width: 768px) {
@@ -990,18 +1017,149 @@
   overflow: hidden;
 }
 
-.actionCardSide .cardImageWrap {
-  flex: 0 0 36%;
-  width: 36%;
-  height: auto;
-  min-height: 0;
+.proHomeCard.actionCardSide {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: clamp(6px, 0.8vh, 10px);
+}
+
+.proLeadBlock {
+  width: 100%;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.55em;
+  text-align: center;
+}
+
+.proLeadBlock .proLeadTitle,
+.proLeadBlock .proLeadSubtitle {
+  margin: 0;
+  text-align: center;
+  width: auto;
+  white-space: nowrap;
+}
+
+.proLeadBlock .proLeadTitle,
+.proLeadBlock .proLeadSubtitle {
+  color: var(--ri-gold);
+  font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
+  font-size: clamp(1.15rem, 1.7vw, 1.45rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+}
+
+.proMidRow {
+  display: grid;
+  grid-template-columns: 26% 1fr;
+  column-gap: clamp(10px, 1.4vw, 16px);
+  row-gap: 8px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.proMediaCol {
+  display: contents;
+}
+
+.proHomeCard .cardImageWrap {
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  height: 100%;
   max-height: none;
-  aspect-ratio: auto;
-  position: relative;
-  top: auto;
+  min-height: 0;
+  margin-top: 0;
   align-self: stretch;
+  position: relative;
   border-radius: 8px;
-  overflow: hidden;
+}
+
+.proHomeCard .cardSideBody {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.proHomeCard .proLoginPanel {
+  width: 100%;
+  max-width: none;
+  align-self: stretch;
+}
+
+.proHomeCard .cardSideBody {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  gap: clamp(6px, 0.8vh, 10px);
+}
+
+.proHomeCard .proCopy {
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.proHomeCard .proCopy > :first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+/* Login esticado na largura do card */
+.proHomeCard .proLoginPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  max-width: none;
+  align-self: stretch;
+  flex: 0 0 auto;
+  margin: 8px 0 0;
+  box-sizing: border-box;
+}
+
+.proHomeCard .proLoginForm {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+}
+
+.proHomeCard .proLoginRow {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+  align-items: center;
+  min-width: 0;
+  gap: 8px;
+}
+
+.proHomeCard .proLoginInputPill {
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+}
+
+.proHomeCard .proLoginGoogleIconOnly {
+  flex: 0 0 auto;
+}
+
+.proHomeCard .proLoginAcessarTag,
+.proHomeCard .proLoginRegisterTag {
+  flex: 0 0 auto;
+  margin: 0;
+  white-space: nowrap;
 }
 
 .actionCardSide .cardImage {
@@ -1175,18 +1333,51 @@
   }
 
   .actionCardSide {
+    display: flex;
     flex-direction: column;
     height: auto;
     overflow: visible;
   }
 
+  .proHomeCard.actionCardSide {
+    display: flex;
+    flex-direction: column;
+    padding-top: 10px;
+  }
+
+  .proHomeCard .proMidRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .proHomeCard .proMediaCol {
+    flex: none;
+    width: 100%;
+    max-width: none;
+  }
+
+  .proHomeCard .cardSideBody {
+    display: flex;
+  }
+
+  .proHomeCard .proCopy,
+  .proHomeCard .proLoginPanel,
+  .proHomeCard .cardImageWrap,
+  .proHomeCard .proMediaCol {
+    grid-column: auto;
+    grid-row: auto;
+    width: 100%;
+  }
+
+  .proHomeCard .cardImageWrap,
   .actionCardSide .cardImageWrap {
     position: relative;
     top: auto;
     flex: none;
     width: 100%;
-    height: 200px;
-    min-height: 180px;
+    height: 150px;
+    min-height: 150px;
+    max-height: 180px;
     align-self: stretch;
   }
 
@@ -1311,22 +1502,32 @@
 
 .proHomeCard .proCopy p,
 .proHomeCard .proCopy li {
-  font-size: clamp(0.78rem, 1vw, 0.92rem);
+  font-size: clamp(0.98rem, 1.25vw, 1.14rem);
 }
 
 .proHomeCard .proHighlight {
-  font-size: clamp(0.85rem, 1.1vw, 0.98rem) !important;
+  font-size: clamp(1.05rem, 1.35vw, 1.22rem) !important;
+}
+
+.proHomeCard .proSectionTitle {
+  font-size: clamp(1.12rem, 1.45vw, 1.32rem) !important;
 }
 
 .proHomeCard .proSteps li,
 .proHomeCard .proReasons li {
-  font-size: clamp(0.74rem, 0.95vw, 0.86rem) !important;
+  font-size: clamp(0.95rem, 1.18vw, 1.08rem) !important;
 }
 
 .proHomeCard .proLoginAcessarTag,
 .proHomeCard .proLoginRegisterTag {
   padding: 6px 16px;
   font-size: clamp(0.66rem, 0.85vw, 0.74rem);
+}
+
+.proHomeCard .proMediaCol .proLoginPanel {
+  width: 100% !important;
+  max-width: none !important;
+  align-self: stretch !important;
 }
 
 .proLeadTitle,

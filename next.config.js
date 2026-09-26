@@ -88,6 +88,10 @@ const nextConfig = {
     ];
   },
   async headers() {
+    const staticCache =
+      process.env.NODE_ENV === "production"
+        ? "public, max-age=31536000, immutable"
+        : "no-store";
     return [
       {
         source: "/:path*",
@@ -101,9 +105,7 @@ const nextConfig = {
       },
       {
         source: "/_next/static/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
+        headers: [{ key: "Cache-Control", value: staticCache }],
       },
       {
         source: "/.well-known/:path*",

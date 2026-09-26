@@ -144,6 +144,9 @@ export default function HomeAccessForm({
             <button type="submit" className={styles.proLoginAcessarTag} disabled={loading}>
               {loading ? "..." : "Acessar"}
             </button>
+            <Link href={registerHref} className={styles.proLoginRegisterTag}>
+              Cadastre-se
+            </Link>
           </div>
 
           {errorMessage ? (
@@ -151,10 +154,6 @@ export default function HomeAccessForm({
               {errorMessage}
             </p>
           ) : null}
-
-          <Link href={registerHref} className={styles.proLoginRegisterTag}>
-            Cadastre-se
-          </Link>
         </form>
       </div>
     );
