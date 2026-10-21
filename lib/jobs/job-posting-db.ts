@@ -21,7 +21,7 @@ import {
   loadOwnedResumePdf,
   sendJobApplicationEmail,
 } from "@/lib/jobs/job-application-mail";
-import { publicJobWhere, type JobSearchFilters } from "@/lib/jobs/job-search";
+import { parseJobSearch, publicJobWhere, type JobSearchFilters } from "@/lib/jobs/job-search";
 
 function asRecord(job: JobPosting, applicationCount = 0): JobRecord {
   return {
@@ -342,15 +342,7 @@ export async function searchPublicJobs(filters: JobSearchFilters): Promise<Publi
 }
 
 export async function listPublicJobs(): Promise<PublicJob[]> {
-  return searchPublicJobs({
-    q: "",
-    contractType: null,
-    workMode: null,
-    workplace: "",
-    salary: "",
-    publishedFrom: null,
-    publishedTo: null,
-  });
+  return searchPublicJobs(parseJobSearch({}));
 }
 
 export async function getPublicJob(id: string): Promise<PublicJob | null> {

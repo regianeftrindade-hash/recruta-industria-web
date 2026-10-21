@@ -35,4 +35,44 @@ describe("busca pública de vagas", () => {
     expect(JSON.stringify(where)).toContain('"salaryNegotiable":true');
     expect(JSON.stringify(where)).not.toContain("applicationEmail");
   });
+
+  it("combina cidade, estado, período, faixa, contratação e modalidade", () => {
+    const now = new Date("2026-10-21T15:00:00.000Z");
+    const filters = parseJobSearch({
+      q: "Auxiliar administrativo",
+      cidade: "Hortolândia",
+      estado: "SP",
+      periodo: "15",
+      minimo: "1.000",
+      maximo: "2.000,00",
+      contrato: "CLT",
+      modalidade: "HOME_OFFICE",
+    });
+    expect(filters.salaryMinCents).toBe(100000);
+    expect(filters.salaryMaxCents).toBe(200000);
+    const where = publicJobWhere(filters, now);
+    const text = JSON.stringify(where);
+    expect(text).toContain("Hortolândia");
+    expect(text).toContain("/SP");
+    expect(text).toContain("2026-10-06T00:00:00.000Z");
+    expect(text).toContain('"gte":100000');
+    expect(text).toContain('"lte":200000');
+    expect(text).toContain('"salaryNegotiable":false');
+    expect(text).toContain("HOME_OFFICE");
+    expect(text).toContain('"confidential":false');
+  });
+
+  it("usa o horário real da publicação nas últimas 24 horas", () => {
+    const now = new Date("2026-10-21T15:00:00.000Z");
+    const where = publicJobWhere(parseJobSearch({ periodo: "24h" }), now);
+    expect(JSON.stringify(where)).toContain('"publishedAt":{"gte":"2026-10-20T15:00:00.000Z"}');
+  });
+
+  it("aceita só um limite da faixa e não inventa o outro", () => {
+    const where = publicJobWhere(parseJobSearch({ minimo: "1500" }));
+    const text = JSON.stringify(where);
+    expect(text).toContain('"gte":150000');
+    expect(text).not.toContain('"lte"');
+    expect(text).toContain('"salaryNegotiable":false');
+  });
 });

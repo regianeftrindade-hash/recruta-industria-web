@@ -142,7 +142,7 @@ export default function DashboardProfissional() {
   const [mensagemAbertaId, setMensagemAbertaId] = useState<string | null>(null);
   const [respostaTexto, setRespostaTexto] = useState<Record<string, string>>({});
   const [enviandoRespostaId, setEnviandoRespostaId] = useState<string | null>(null);
-  const [abaDireita, setAbaDireita] = useState<"vagas" | "oportunidades" | "dicas" | "mensagens">("oportunidades");
+  const [abaDireita, setAbaDireita] = useState<"vagas" | "oportunidades" | "dicas" | "perfil" | "mensagens">("vagas");
   const [weekViewsCount, setWeekViewsCount] = useState(0);
   const [lastViewAt, setLastViewAt] = useState<string | null>(null);
   const [lastViewCompany, setLastViewCompany] = useState<string | null>(null);
@@ -510,7 +510,7 @@ export default function DashboardProfissional() {
             flexWrap: "wrap",
             gap: 6,
             alignItems: "center",
-            justifyContent: "flex-end",
+            justifyContent: "flex-start",
             width: "100%",
             paddingTop: 2,
           }}
@@ -520,6 +520,7 @@ export default function DashboardProfissional() {
               { id: "vagas" as const, label: "Buscar vagas", badge: 0 },
               { id: "oportunidades" as const, label: "Oportunidades", badge: proposals.filter((p) => p.status === "SENT" || p.status === "MORE_INFO" || p.status === "INTERVIEW_PENDING").length },
               { id: "dicas" as const, label: "Dicas", badge: tips.length },
+              { id: "perfil" as const, label: "Meu perfil", badge: 0 },
               { id: "mensagens" as const, label: "Mensagens", badge: inboxMessages.length },
             ]
           ).map((tab) => {
@@ -575,7 +576,7 @@ export default function DashboardProfissional() {
         className="ri-dash-two-col"
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
+          gridTemplateColumns: "1fr",
           width: "100%",
           minHeight: "calc(100vh - 90px)",
           alignItems: "stretch",
@@ -588,9 +589,9 @@ export default function DashboardProfissional() {
             overflowY: "auto",
             maxHeight: "calc(100vh - 90px)",
             minHeight: 0,
-            borderRight: `1px solid ${DASH.border}`,
+            borderRight: "none",
             minWidth: 0,
-            display: "flex",
+            display: abaDireita === "perfil" ? "flex" : "none",
             flexDirection: "column",
             gap: 14,
             scrollbarGutter: "stable",
@@ -792,7 +793,7 @@ export default function DashboardProfissional() {
             overflowY: "auto",
             maxHeight: "calc(100vh - 90px)",
             minHeight: 0,
-            display: "flex",
+            display: abaDireita === "perfil" ? "none" : "flex",
             flexDirection: "column",
             gap: 10,
             minWidth: 0,

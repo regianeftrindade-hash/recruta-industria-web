@@ -6,9 +6,13 @@ import styles from "./professional-job-search.module.css";
 
 type SearchState = {
   q: string;
+  cidade: string;
+  estado: string;
+  periodo: string;
+  minimo: string;
+  maximo: string;
   contrato: string;
   modalidade: string;
-  local: string;
   salario: string;
   de: string;
   ate: string;
@@ -16,13 +20,27 @@ type SearchState = {
 
 const EMPTY: SearchState = {
   q: "",
+  cidade: "",
+  estado: "",
+  periodo: "",
+  minimo: "",
+  maximo: "",
   contrato: "",
   modalidade: "",
-  local: "",
   salario: "",
   de: "",
   ate: "",
 };
+
+function contractOptionLabel(value: string, label: string): string {
+  if (value === "APRENDIZ") return "Jovem Aprendiz";
+  return label;
+}
+
+function modeOptionLabel(value: string, label: string): string {
+  if (value === "HOME_OFFICE") return "Home office / remoto";
+  return label;
+}
 
 function excerpt(value: string): string {
   const plain = value.replace(/\s+/g, " ").trim();
@@ -41,9 +59,13 @@ export default function ProfessionalJobSearch() {
     setError("");
     const params = new URLSearchParams();
     if (next.q.trim()) params.set("q", next.q.trim());
+    if (next.cidade.trim()) params.set("cidade", next.cidade.trim());
+    if (next.estado.trim()) params.set("estado", next.estado.trim());
+    if (next.periodo) params.set("periodo", next.periodo);
+    if (next.minimo.trim()) params.set("minimo", next.minimo.trim());
+    if (next.maximo.trim()) params.set("maximo", next.maximo.trim());
     if (next.contrato) params.set("contrato", next.contrato);
     if (next.modalidade) params.set("modalidade", next.modalidade);
-    if (next.local.trim()) params.set("local", next.local.trim());
     if (next.salario) params.set("salario", next.salario);
     if (next.de) params.set("de", next.de);
     if (next.ate) params.set("ate", next.ate);
@@ -85,15 +107,49 @@ export default function ProfessionalJobSearch() {
         }}
       >
         <label className={styles.fieldWide}>
-          Cargo, descrição ou empresa
-          <input value={form.q} onChange={(event) => update("q", event.target.value)} maxLength={80} placeholder="Ex.: soldador, Joinville, CLT" />
+          Cargo ou palavra-chave
+          <input value={form.q} onChange={(event) => update("q", event.target.value)} maxLength={80} placeholder="Cargo, descrição ou nome público da empresa" />
         </label>
         <label>
-          Contratação
+          Cidade
+          <input value={form.cidade} onChange={(event) => update("cidade", event.target.value)} maxLength={80} placeholder="Ex.: Hortolândia" />
+        </label>
+        <label>
+          Estado
+          <input value={form.estado} onChange={(event) => update("estado", event.target.value)} maxLength={40} placeholder="UF, ex.: SP" />
+        </label>
+        <label>
+          Data de publicação
+          <select value={form.periodo} onChange={(event) => update("periodo", event.target.value)}>
+            <option value="">Qualquer data</option>
+            <option value="24h">Últimas 24 horas</option>
+            <option value="7">Últimos 7 dias</option>
+            <option value="15">Últimos 15 dias</option>
+            <option value="30">Últimos 30 dias</option>
+          </select>
+        </label>
+        <label>
+          Tipo de salário
+          <select value={form.salario} onChange={(event) => update("salario", event.target.value)}>
+            <option value="">Todos</option>
+            <option value="negociavel">A combinar</option>
+            <option value="informado">Com valor informado</option>
+          </select>
+        </label>
+        <label>
+          Salário mínimo (R$)
+          <input value={form.minimo} onChange={(event) => update("minimo", event.target.value)} inputMode="decimal" placeholder="1000" />
+        </label>
+        <label>
+          Salário máximo (R$)
+          <input value={form.maximo} onChange={(event) => update("maximo", event.target.value)} inputMode="decimal" placeholder="2000" />
+        </label>
+        <label>
+          Tipo de contratação
           <select value={form.contrato} onChange={(event) => update("contrato", event.target.value)}>
-            <option value="">Todas</option>
+            <option value="">Todos</option>
             {CONTRACT_TYPES.map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
+              <option key={option.value} value={option.value}>{contractOptionLabel(option.value, option.label)}</option>
             ))}
           </select>
         </label>
@@ -102,20 +158,8 @@ export default function ProfessionalJobSearch() {
           <select value={form.modalidade} onChange={(event) => update("modalidade", event.target.value)}>
             <option value="">Todas</option>
             {WORK_MODES.map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
+              <option key={option.value} value={option.value}>{modeOptionLabel(option.value, option.label)}</option>
             ))}
-          </select>
-        </label>
-        <label>
-          Local
-          <input value={form.local} onChange={(event) => update("local", event.target.value)} maxLength={120} placeholder="Cidade / UF" />
-        </label>
-        <label>
-          Salário
-          <select value={form.salario} onChange={(event) => update("salario", event.target.value)}>
-            <option value="">Todos</option>
-            <option value="negociavel">A combinar</option>
-            <option value="informado">Com valor informado</option>
           </select>
         </label>
         <label>
@@ -126,6 +170,9 @@ export default function ProfessionalJobSearch() {
           Publicada até
           <input type="date" value={form.ate} onChange={(event) => update("ate", event.target.value)} />
         </label>
+        <p className={`${styles.lead} ${styles.fieldWide}`}>
+          A faixa usa o valor cadastrado. Vaga com salário a combinar não entra nela, porque não tem número. As últimas 24 horas usam o horário em que a vaga foi publicada. Os outros períodos usam a data de publicação.
+        </p>
         <div className={styles.actions}>
           <button type="submit">Buscar</button>
           <button
