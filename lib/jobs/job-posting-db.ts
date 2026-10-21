@@ -74,11 +74,11 @@ function jobDataForUpdate(
   current?: { publishedAt: Date | null; closedAt: Date | null },
 ) {
   const payload = writeData(data, current);
-  if (!input || typeof input !== "object" || Array.isArray(input) || !("workplace" in input)) {
-    const { workplace: _workplace, ...rest } = payload;
-    return rest;
-  }
-  return payload;
+  if (!input || typeof input !== "object" || Array.isArray(input)) return payload;
+  const next = { ...payload };
+  if (!("workplace" in input)) delete next.workplace;
+  if (!("applicationInstructions" in input)) delete next.applicationInstructions;
+  return next;
 }
 
 function writeData(data: JobWriteData, current?: { publishedAt: Date | null; closedAt: Date | null }) {

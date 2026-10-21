@@ -30,7 +30,6 @@ type FormState = {
   workplace: string;
   description: string;
   observations: string;
-  applicationInstructions: string;
   applicationMode: ApplicationMode;
   externalApplyUrl: string;
   applicationEmail: string;
@@ -62,7 +61,6 @@ function emptyForm(companyName: string): FormState {
     workplace: "",
     description: "",
     observations: "",
-    applicationInstructions: "",
     applicationMode: "INTERNAL",
     externalApplyUrl: "",
     applicationEmail: "",
@@ -83,7 +81,6 @@ function formFromJob(job: AdminJob): FormState {
     workplace: job.workplace,
     description: job.description,
     observations: job.observations ?? "",
-    applicationInstructions: job.applicationInstructions ?? "",
     applicationMode: job.applicationMode,
     externalApplyUrl: job.externalApplyUrl,
     applicationEmail: job.applicationEmail,
@@ -476,14 +473,6 @@ export default function CompanyVagasPanel({
                   ))}
                 </div>
               </fieldset>
-              <ApplicationModeFields
-                mode={form.applicationMode}
-                url={form.externalApplyUrl}
-                email={form.applicationEmail}
-                onMode={(mode) => update("applicationMode", mode)}
-                onUrl={(value) => update("externalApplyUrl", value)}
-                onEmail={(value) => update("applicationEmail", value)}
-              />
               <label className={fields.field}>
                 Descrição da vaga
                 <textarea value={form.description} onChange={(event) => update("description", event.target.value)} maxLength={8000} />
@@ -492,10 +481,14 @@ export default function CompanyVagasPanel({
                 Observações
                 <textarea value={form.observations} onChange={(event) => update("observations", event.target.value)} maxLength={4000} placeholder="Opcional." />
               </label>
-              <label className={fields.field}>
-                Como se candidatar
-                <textarea value={form.applicationInstructions} onChange={(event) => update("applicationInstructions", event.target.value)} maxLength={2000} />
-              </label>
+              <ApplicationModeFields
+                mode={form.applicationMode}
+                url={form.externalApplyUrl}
+                email={form.applicationEmail}
+                onMode={(mode) => update("applicationMode", mode)}
+                onUrl={(value) => update("externalApplyUrl", value)}
+                onEmail={(value) => update("applicationEmail", value)}
+              />
             </div>
           </div>
           <div className={styles.actions}>
