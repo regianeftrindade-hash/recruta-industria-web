@@ -1746,6 +1746,16 @@
   grid-column: auto;
 }
 
+.containerIncorporado .fieldGroup.fieldWide,
+.containerIncorporado .fieldGroup.fieldSpan2,
+.containerIncorporado .fieldsRow > .fieldGroup:not(:has(> label)),
+.containerIncorporado .fieldGroup:not(:has(> label)) {
+  flex: 1 1 100%;
+  width: 100%;
+  max-width: 100%;
+  min-width: min(100%, 240px);
+}
+
 .containerIncorporado .fieldGroup > label {
   width: max-content;
   max-width: 100%;
@@ -1759,6 +1769,15 @@
   box-sizing: border-box;
 }
 
+.containerIncorporado .fieldGroup.fieldWide > :not(label),
+.containerIncorporado .fieldGroup.fieldSpan2 > :not(label),
+.containerIncorporado .fieldsRow > .fieldGroup:not(:has(> label)) > :not(label),
+.containerIncorporado .fieldGroup:not(:has(> label)) > :not(label) {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
 .containerIncorporado .input,
 .containerIncorporado .select {
   padding: 4px 8px;
@@ -1767,7 +1786,9 @@
 }
 
 .containerIncorporado .textarea {
-  min-height: 52px;
+  width: 100%;
+  min-width: 0;
+  min-height: 88px;
 }
 
 .containerIncorporado .completionSticky,
