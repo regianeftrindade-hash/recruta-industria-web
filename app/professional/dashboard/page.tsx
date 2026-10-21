@@ -582,17 +582,16 @@ export default function DashboardProfissional() {
           style={{
             padding: "12px 10px 12px 12px",
             overflowY: "auto",
-            maxHeight: "calc(100vh - 90px)",
+            maxHeight: "none",
             minHeight: 0,
             borderRight: "none",
             minWidth: 0,
             display: abaDireita === "perfil" ? "flex" : "none",
             flexDirection: "column",
             gap: 14,
-            scrollbarGutter: "stable",
           }}
         >
-          <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
+          <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow, overflow: "visible", alignSelf: "stretch" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
               <h3 style={{ ...dashTitleProf, margin: 0, fontSize: 14 }}>Perfil</h3>
               <div style={{ display: "flex", gap: 8, alignItems: "flex-start", flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>

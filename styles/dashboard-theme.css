@@ -229,6 +229,11 @@
   gap: 10px;
 }
 
+.ri-dash-prof .ri-dash-two-col > main {
+  overflow: visible;
+  max-height: none;
+}
+
 .ri-dash-prof h3 {
   font-size: 15px;
   font-weight: 700;
