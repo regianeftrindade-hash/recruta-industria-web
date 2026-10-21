@@ -130,6 +130,63 @@ export async function updateAdminJob(id: string, input: unknown): Promise<AdminJ
   return toAdminJob(asRecord(saved, saved._count.applications));
 }
 
+export async function listCompanyJobs(companyOwnerUserId: string): Promise<AdminJob[]> {
+  const rows = await prisma.jobPosting.findMany({
+    where: { companyUserId: companyOwnerUserId },
+    orderBy: [{ updatedAt: "desc" }],
+    include: { _count: { select: { applications: true } } },
+  });
+  return rows.map((row) => toAdminJob(asRecord(row, row._count.applications)));
+}
+
+export async function createCompanyJob(
+  companyOwnerUserId: string,
+  createdByUserId: string,
+  input: unknown,
+): Promise<AdminJob> {
+  const data = parseJobWrite(input);
+  const created = await prisma.jobPosting.create({
+    data: {
+      ...writeData(data),
+      origin: "COMPANY",
+      companyUserId: companyOwnerUserId,
+      createdByUserId,
+    },
+  });
+  const saved = await prisma.jobPosting.findUnique({ where: { id: created.id } });
+  if (!saved) {
+    throw new JobPostingError("A vaga não foi confirmada no banco de dados.", 500);
+  }
+  return toAdminJob(asRecord(saved, 0));
+}
+
+export async function updateCompanyJob(
+  companyOwnerUserId: string,
+  id: string,
+  input: unknown,
+): Promise<AdminJob> {
+  const jobId = assertJobId(id);
+  const current = await prisma.jobPosting.findUnique({ where: { id: jobId } });
+  if (!current || current.companyUserId !== companyOwnerUserId) {
+    throw new JobPostingError("Você não pode alterar esta vaga.", 403);
+  }
+
+  const data = parseJobWrite(input);
+  await prisma.jobPosting.update({
+    where: { id: jobId },
+    data: writeData(data, current),
+  });
+
+  const saved = await prisma.jobPosting.findUnique({
+    where: { id: jobId },
+    include: { _count: { select: { applications: true } } },
+  });
+  if (!saved) {
+    throw new JobPostingError("A alteração da vaga não foi confirmada no banco de dados.", 500);
+  }
+  return toAdminJob(asRecord(saved, saved._count.applications));
+}
+
 export async function listPublicJobs(): Promise<PublicJob[]> {
   const rows = await prisma.jobPosting.findMany({
     where: { status: "PUBLISHED" },

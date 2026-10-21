@@ -9,6 +9,7 @@ export type CompanyDashboardActiveTab = CompanyDashboardTabId | "inicio";
 const BASE = "/company/dashboard-empresa";
 
 const TAB_IDS: CompanyDashboardTabId[] = [
+  "vagas",
   "entrevistas",
   "equipe",
   "banco",
@@ -33,14 +34,15 @@ function tabFromLegacyPath(pathname: string): CompanyDashboardActiveTab | null {
 }
 
 function resolveTab(pathname: string, tabParam: string | null): CompanyDashboardActiveTab {
+  if (tabParam === "inicio") return "inicio";
   if (isTabId(tabParam)) return tabParam;
   const legacy = tabFromLegacyPath(pathname);
   if (legacy) return legacy;
-  return "inicio";
+  return "vagas";
 }
 
 function hrefForTab(tab: CompanyDashboardActiveTab): string {
-  return tab === "inicio" ? BASE : `${BASE}?tab=${tab}`;
+  return tab === "vagas" ? BASE : `${BASE}?tab=${tab}`;
 }
 
 type Ctx = {

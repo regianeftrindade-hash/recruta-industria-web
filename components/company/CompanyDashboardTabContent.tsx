@@ -8,6 +8,7 @@ import CompanyDashboardInicioPage from "@/components/company/CompanyDashboardIni
 import CompanyTeamPage from "@/components/company/CompanyTeamPage";
 import CompanyMeuPlanoPage from "@/components/company/CompanyMeuPlanoPage";
 import CompanyProfileAside from "@/components/company/CompanyProfileAside";
+import CompanyVagasPanel from "@/components/company/CompanyVagasPanel";
 
 const SECTION_TABS: CompanyDashboardTabId[] = ["entrevistas", "banco", "alertas", "contato"];
 
@@ -45,6 +46,11 @@ export default function CompanyDashboardTabContent() {
       <CompanyProfileAside />
 
       <div data-company-main style={{ overflowY: "auto", minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+        {visited.has("vagas") ? (
+          <div style={panelStyle("vagas")}>
+            <CompanyVagasPanel />
+          </div>
+        ) : null}
         {visited.has("inicio") ? (
           <div style={panelStyle("inicio")}>
             <CompanyDashboardInicioPage />

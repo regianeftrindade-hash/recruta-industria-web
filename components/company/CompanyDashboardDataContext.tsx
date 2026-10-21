@@ -94,6 +94,7 @@ const EMPTY: DashData = {
 const CompanyDashboardDataContext = createContext<Ctx | null>(null);
 
 const TAB_SLICES: Record<CompanyDashboardTabId, CacheSlice[]> = {
+  vagas: [],
   entrevistas: ["entrevistas"],
   equipe: [],
   banco: ["planFeatures", "talentLists"],

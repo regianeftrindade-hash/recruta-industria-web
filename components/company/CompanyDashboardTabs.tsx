@@ -17,6 +17,7 @@ import {
 } from "@/components/company/CompanyDashboardTabContext";
 
 export type CompanyDashboardTabId =
+  | "vagas"
   | "entrevistas"
   | "equipe"
   | "banco"
@@ -51,7 +52,8 @@ export const COMPANY_DASH_TABS: Array<{
   label: string;
   href: string;
 }> = [
-  { id: "inicio", label: "Caça Talentos", href: BASE },
+  { id: "vagas", label: "Publicar vagas", href: BASE },
+  { id: "inicio", label: "Caça Talentos", href: `${BASE}?tab=inicio` },
   { id: "entrevistas", label: "Entrevistas", href: `${BASE}/entrevistas` },
   { id: "equipe", label: "Equipe", href: `${BASE}/equipe` },
   { id: "banco", label: "Banco", href: `${BASE}/banco` },
