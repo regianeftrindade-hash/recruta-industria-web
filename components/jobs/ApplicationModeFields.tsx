@@ -56,18 +56,18 @@ export default function ApplicationModeFields({
 
       {mode === "EMAIL" ? (
         <label className={styles.field}>
-          E-mail da empresa para receber candidaturas
+          E-mail privado para receber os currículos
           <input
             type="email"
             inputMode="email"
-            autoComplete="email"
+            autoComplete="off"
             value={email}
             onChange={(event) => onEmail(event.target.value)}
             maxLength={254}
             placeholder="recrutamento@empresa.com.br"
           />
           <span className={styles.help}>
-            Obrigatório para publicar. O profissional envia a candidatura por este e-mail sem abrir o próprio correio.
+            Obrigatório para publicar. Este endereço não aparece na página pública nem nas redes. O currículo em PDF vai em anexo.
           </span>
         </label>
       ) : null}

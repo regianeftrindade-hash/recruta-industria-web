@@ -23,6 +23,7 @@ export default function JobApplyButton({
   const [state, setState] = useState<ApplyState | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [needsResume, setNeedsResume] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const jobReturn = safeJobReturnPath(`/vagas/${jobId}`);
@@ -43,6 +44,7 @@ export default function JobApplyButton({
   async function apply() {
     setBusy(true);
     setError("");
+    setNeedsResume(false);
     try {
       const response = await fetch(`/api/vagas/${jobId}/candidatar`, {
         method: "POST",
@@ -52,6 +54,17 @@ export default function JobApplyButton({
 
       if (response.status === 401) {
         window.location.href = loginHref;
+        return;
+      }
+
+      if (data.code === "RESUME_REQUIRED") {
+        setNeedsResume(true);
+        setError(data.error || "Para se candidatar a esta vaga por e-mail, anexe seu currículo em PDF ao seu perfil.");
+        return;
+      }
+
+      if (data.code === "EMAIL_BUSY") {
+        setError(data.error || "O envio desta candidatura já está em andamento.");
         return;
       }
 
@@ -92,7 +105,7 @@ export default function JobApplyButton({
     void (async () => {
       try {
         const current = await loadState();
-        if (cancelled || !autoApply || current.applied || current.canApply === false) return;
+        if (cancelled || mode === "EMAIL" || !autoApply || current.applied || current.canApply === false) return;
         await apply();
       } catch (loadError) {
         if (!cancelled) {
@@ -117,13 +130,18 @@ export default function JobApplyButton({
           ? (mode === "EMAIL" ? "Enviando..." : "Registrando...")
           : applied
             ? (mode === "EMAIL" ? "Candidatura enviada" : "Candidatura registrada")
-            : (mode === "EMAIL" ? "Candidatar-se por e-mail automático" : "Candidatar-se pelo Recruta Indústria")}
+            : (mode === "EMAIL" ? "Candidatar-se" : "Candidatar-se pelo Recruta Indústria")}
       </button>
       <p className={styles.note}>
         {mode === "EMAIL"
-          ? "Ao clicar, sua candidatura é enviada para o e-mail da empresa. Não é preciso abrir seu programa de e-mail."
+          ? "Ao clicar, o currículo em PDF do seu perfil é enviado para o processo seletivo. O e-mail da empresa não aparece aqui."
           : "O botão registra sua candidatura no Recruta Indústria. Sem conta, o cadastro de profissional devolve você para esta mesma vaga."}
       </p>
+      {needsResume ? (
+        <p className={styles.note}>
+          <a className={styles.resumeLink} href={`/vagas/${jobId}/curriculo`}>Anexar currículo em PDF</a>
+        </p>
+      ) : null}
       {blocked && state?.blockReason ? <p className={styles.error}>{state.blockReason}</p> : null}
       {message ? <p className={styles.message}>{message}</p> : null}
       {error ? <p className={styles.error}>{error}</p> : null}

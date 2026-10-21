@@ -10,7 +10,8 @@ export function jsonError(error: unknown, fallback: string) {
     return NextResponse.json(
       {
         error: error.message,
-        alreadyApplied: error.status === 409,
+        code: error.code ?? null,
+        alreadyApplied: error.status === 409 && error.code !== "EMAIL_BUSY",
       },
       { status: error.status },
     );

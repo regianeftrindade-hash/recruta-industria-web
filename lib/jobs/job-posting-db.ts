@@ -16,7 +16,11 @@ import {
   toAdminJob,
   toPublicJob,
 } from "@/lib/jobs/job-posting";
-import { resolveResumeLink, sendJobApplicationEmail } from "@/lib/jobs/job-application-mail";
+import {
+  APPLICATION_EMAIL_SUCCESS,
+  loadOwnedResumePdf,
+  sendJobApplicationEmail,
+} from "@/lib/jobs/job-application-mail";
 
 function asRecord(job: JobPosting, applicationCount = 0): JobRecord {
   return {
@@ -480,8 +484,28 @@ export async function getOwnApplicationState(jobId: string, email: string | null
 
   const existing = await prisma.jobApplication.findUnique({
     where: { jobId_userId: { jobId: id, userId: user.id } },
-    select: { createdAt: true },
+    select: { createdAt: true, emailStatus: true },
   });
+
+  if (existing?.emailStatus === "FAILED") {
+    return {
+      authenticated: true,
+      applied: false,
+      appliedAt: null,
+      canApply: true,
+      blockReason: null,
+    };
+  }
+
+  if (existing?.emailStatus === "PENDING") {
+    return {
+      authenticated: true,
+      applied: false,
+      appliedAt: null,
+      canApply: false,
+      blockReason: "O envio desta candidatura já está em andamento.",
+    };
+  }
 
   if (existing) {
     return {
@@ -500,6 +524,68 @@ export async function getOwnApplicationState(jobId: string, email: string | null
     canApply: true,
     blockReason: null,
   };
+}
+
+const EMAIL_CLAIM_MS = 2 * 60 * 1000;
+
+async function claimEmailApplication(
+  jobId: string,
+  userId: string,
+  profileId: string | null,
+): Promise<"send" | "already" | "busy"> {
+  const existing = await prisma.jobApplication.findUnique({
+    where: { jobId_userId: { jobId, userId } },
+    select: { id: true, emailStatus: true, emailAttemptAt: true },
+  });
+
+  if (existing && (existing.emailStatus === "SENT" || existing.emailStatus == null)) {
+    return "already";
+  }
+
+  const now = new Date();
+  const staleBefore = new Date(now.getTime() - EMAIL_CLAIM_MS);
+
+  if (!existing) {
+    try {
+      await prisma.jobApplication.create({
+        data: {
+          jobId,
+          userId,
+          profileId,
+          emailStatus: "PENDING",
+          emailAttemptAt: now,
+        },
+      });
+      return "send";
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        return "busy";
+      }
+      throw error;
+    }
+  }
+
+  if (existing.emailStatus === "FAILED") {
+    const claimed = await prisma.jobApplication.updateMany({
+      where: { id: existing.id, emailStatus: "FAILED" },
+      data: { emailStatus: "PENDING", emailAttemptAt: now, profileId },
+    });
+    return claimed.count === 1 ? "send" : "busy";
+  }
+
+  const pendingIsStale = existing.emailStatus === "PENDING"
+    && (!existing.emailAttemptAt || existing.emailAttemptAt < staleBefore);
+  if (!pendingIsStale) return "busy";
+
+  const claimed = await prisma.jobApplication.updateMany({
+    where: {
+      id: existing.id,
+      emailStatus: "PENDING",
+      OR: [{ emailAttemptAt: null }, { emailAttemptAt: { lt: staleBefore } }],
+    },
+    data: { emailStatus: "PENDING", emailAttemptAt: now, profileId },
+  });
+  return claimed.count === 1 ? "send" : "busy";
 }
 
 export async function registerJobApplication(jobId: string, email: string) {
@@ -534,8 +620,6 @@ export async function registerJobApplication(jobId: string, email: string) {
     select: {
       id: true,
       title: true,
-      companyName: true,
-      confidential: true,
       applicationMode: true,
       applicationEmail: true,
     },
@@ -553,28 +637,50 @@ export async function registerJobApplication(jobId: string, email: string) {
       throw new JobPostingError("Esta vaga não tem e-mail para receber candidaturas.", 400);
     }
 
-    const alreadySent = await prisma.jobApplication.findUnique({
-      where: { jobId_userId: { jobId: id, userId: user.id } },
-      select: { id: true },
-    });
-    if (alreadySent) {
-      throw new JobPostingError("Você já enviou sua candidatura para esta vaga.", 409);
+    const resume = await loadOwnedResumePdf(user.email, user.profile?.curricoURL);
+    const claim = await claimEmailApplication(id, user.id, user.profile?.id ?? null);
+    if (claim === "already") {
+      throw new JobPostingError("Você já enviou sua candidatura para esta vaga.", 409, "ALREADY_APPLIED");
+    }
+    if (claim === "busy") {
+      throw new JobPostingError("O envio desta candidatura já está em andamento.", 409, "EMAIL_BUSY");
     }
 
-    const resumeUrl = await resolveResumeLink(user.profile?.curricoURL);
     const sent = await sendJobApplicationEmail({
       to: job.applicationEmail,
       jobTitle: job.title,
-      confidential: job.confidential,
-      companyName: job.companyName,
       professionalName: user.name,
       professionalEmail: user.email,
-      profileTitle: user.profile?.title ?? null,
-      resumeUrl,
+      resume,
     });
     if (!sent.ok) {
+      await prisma.jobApplication.updateMany({
+        where: { jobId: id, userId: user.id, emailStatus: "PENDING" },
+        data: { emailStatus: "FAILED" },
+      });
       throw new JobPostingError(sent.error, 502);
     }
+
+    await prisma.jobApplication.updateMany({
+      where: { jobId: id, userId: user.id },
+      data: { emailStatus: "SENT", profileId: user.profile?.id ?? null },
+    });
+
+    const saved = await prisma.jobApplication.findUnique({
+      where: { jobId_userId: { jobId: id, userId: user.id } },
+      select: { id: true, jobId: true, userId: true, profileId: true, createdAt: true, emailStatus: true },
+    });
+    if (!saved || saved.userId !== user.id || saved.jobId !== id || saved.emailStatus !== "SENT") {
+      throw new JobPostingError("A candidatura não foi confirmada no banco de dados.", 500);
+    }
+    return {
+      id: saved.id,
+      jobId: saved.jobId,
+      userId: saved.userId,
+      profileId: saved.profileId,
+      createdAt: saved.createdAt.toISOString(),
+      message: APPLICATION_EMAIL_SUCCESS,
+    };
   }
 
   try {
@@ -600,9 +706,7 @@ export async function registerJobApplication(jobId: string, email: string) {
       userId: saved.userId,
       profileId: saved.profileId,
       createdAt: saved.createdAt.toISOString(),
-      message: job.applicationMode === "EMAIL"
-        ? "Candidatura enviada para o e-mail da empresa."
-        : "Candidatura registrada.",
+      message: "Candidatura registrada.",
     };
   } catch (error) {
     if (error instanceof JobPostingError) throw error;

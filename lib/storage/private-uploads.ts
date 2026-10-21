@@ -73,6 +73,16 @@ export async function createSignedMediaUrl(
   return data.signedUrl;
 }
 
+export async function downloadPrivateFile(filePath: string): Promise<Buffer | null> {
+  const clean = filePath.replace(/^\/+/, "").split("?")[0];
+  if (!clean || clean.includes("..") || clean.includes("\\")) return null;
+  const supabase = getSupabase();
+  const bucket = getUploadsBucket();
+  const { data, error } = await supabase.storage.from(bucket).download(clean);
+  if (error || !data) return null;
+  return Buffer.from(await data.arrayBuffer());
+}
+
 /** Extrai path relativo a partir de URL pública/assinada do bucket. */
 export function extractStoragePath(urlOrPath: string): string | null {
   if (!urlOrPath) return null;

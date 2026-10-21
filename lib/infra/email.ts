@@ -155,6 +155,11 @@ export interface SendEmailOptions {
   inReplyTo?: string;
   references?: string;
   headers?: Record<string, string>;
+  attachments?: Array<{
+    filename: string;
+    content: Buffer;
+    contentType: string;
+  }>;
 }
 
 /** From alinhado ao SMTP_USER (Hostinger rejeita remetente diferente). */
@@ -243,6 +248,7 @@ async function sendWithTransport(
     ...(options.inReplyTo ? { inReplyTo: options.inReplyTo } : {}),
     ...(options.references ? { references: options.references } : {}),
     ...(options.headers ? { headers: options.headers } : {}),
+    ...(options.attachments?.length ? { attachments: options.attachments } : {}),
   });
 }
 

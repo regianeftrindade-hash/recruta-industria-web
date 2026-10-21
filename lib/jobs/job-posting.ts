@@ -25,9 +25,9 @@ export const APPLICATION_STAGES = [
 ] as const;
 
 export const APPLICATION_MODES = [
-  { value: "EXTERNAL", label: "Candidatar-se no site da empresa" },
-  { value: "EMAIL", label: "Candidatar-se por e-mail automático" },
-  { value: "INTERNAL", label: "Candidatar-se dentro do Recruta Indústria" },
+  { value: "EXTERNAL", label: "Candidatura pelo site da empresa" },
+  { value: "EMAIL", label: "Candidatura por e-mail" },
+  { value: "INTERNAL", label: "Candidatura pelo Recruta Indústria" },
 ] as const;
 
 export type ContractType = (typeof CONTRACT_TYPES)[number]["value"];
@@ -56,11 +56,13 @@ const LIMITS = {
 
 export class JobPostingError extends Error {
   status: number;
+  code?: string;
 
-  constructor(message: string, status = 400) {
+  constructor(message: string, status = 400, code?: string) {
     super(message);
     this.name = "JobPostingError";
     this.status = status;
+    this.code = code;
   }
 }
 

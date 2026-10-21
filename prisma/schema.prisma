@@ -1008,6 +1008,9 @@ model JobApplication {
   profileId String?
   /// NEW | REVIEW | INTERVIEW | APPROVED | REJECTED
   stage     String   @default("NEW")
+  /// PENDING | SENT | FAILED. Nulo nas candidaturas que não usam e-mail.
+  emailStatus   String?
+  emailAttemptAt DateTime?
   createdAt DateTime @default(now())
 
   job     JobPosting @relation(fields: [jobId], references: [id], onDelete: Restrict)

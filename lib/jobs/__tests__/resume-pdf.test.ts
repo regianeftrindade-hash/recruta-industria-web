@@ -1,0 +1,36 @@
+import { describe, expect, it } from "vitest";
+import { buildApplicationMail } from "@/lib/jobs/job-application-mail";
+import { isPdfBuffer, resumePathOwnedBy } from "@/lib/jobs/resume-pdf";
+
+describe("currículo PDF da candidatura", () => {
+  it("aceita só arquivo que começa com a assinatura PDF e cabe no limite", () => {
+    expect(isPdfBuffer(Buffer.from("%PDF-1.7\n"))).toBe(true);
+    expect(isPdfBuffer(Buffer.from("%PDF"))).toBe(false);
+    expect(isPdfBuffer(Buffer.from("nao-e-pdf"))).toBe(false);
+    expect(isPdfBuffer(Buffer.from("<html>%PDF-1.4</html>"))).toBe(false);
+    const grande = Buffer.concat([Buffer.from("%PDF-"), Buffer.alloc(20)]);
+    expect(isPdfBuffer(grande, 10)).toBe(false);
+  });
+
+  it("só aceita o currículo da pasta do profissional autenticado", () => {
+    const email = "ana@example.invalid";
+    expect(resumePathOwnedBy("curriculos/ana@example.invalid/10_cv.pdf", email)).toBe(true);
+    expect(resumePathOwnedBy("curriculos/outro@example.invalid/10_cv.pdf", email)).toBe(false);
+    expect(resumePathOwnedBy("curriculos/ana@example.invalid/../outro/cv.pdf", email)).toBe(false);
+    expect(resumePathOwnedBy("https://files.example/cv.pdf", email)).toBe(false);
+  });
+
+  it("monta o e-mail sem nome de empresa, sem destinatário e sem link do currículo", () => {
+    const mail = buildApplicationMail({
+      jobTitle: "Auxiliar Administrativo",
+      professionalName: "Ana Souza",
+    });
+    expect(mail.subject).toBe("Candidatura — Auxiliar Administrativo — Recruta Indústria");
+    expect(mail.text).toContain("Profissional: Ana Souza");
+    expect(mail.text).toContain("O currículo do candidato está anexado a este e-mail em formato PDF.");
+    expect(mail.text).not.toContain("Metalurgica");
+    expect(mail.text).not.toContain("@");
+    expect(mail.text).not.toContain("http");
+    expect(mail.html).not.toContain("Metalurgica");
+  });
+});
