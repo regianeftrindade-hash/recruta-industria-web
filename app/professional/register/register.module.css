@@ -1817,3 +1817,141 @@
 .containerIncorporado .completionHighlight {
   margin-top: 4px;
 }
+
+/* Cadastro no painel: escuro um degrau mais claro; claro em creme */
+:global(.ri-dashboard[data-theme="dark"]) .containerIncorporado {
+  --background: #7a7a7a;
+  --card-bg: #5c5c5c;
+  --text-primary: #f2f2f2;
+  --text-secondary: #f2f2f2;
+}
+
+:global(.ri-dashboard[data-theme="dark"]) .card,
+:global(.ri-dashboard[data-theme="dark"]) .completionSticky {
+  background: #5c5c5c;
+}
+
+:global(.ri-dashboard[data-theme="dark"]) .sectionCard,
+:global(.ri-dashboard[data-theme="dark"]) .formSubCard,
+:global(.ri-dashboard[data-theme="dark"]) .legendaPreenchimentoCard,
+:global(.ri-dashboard[data-theme="dark"]) .completionTrack {
+  background: #3a3a3a;
+}
+
+:global(.ri-dashboard[data-theme="dark"]) .sectionTitle,
+:global(.ri-dashboard[data-theme="dark"]) .tagChip,
+:global(.ri-dashboard[data-theme="dark"]) .avisoSalvarTag,
+:global(.ri-dashboard[data-theme="dark"]) .completionWrap {
+  background: #5c5c5c;
+}
+
+:global(.ri-dashboard[data-theme="dark"]) .tagChipActive {
+  background: linear-gradient(180deg, #8d6b1f 0%, #c89b3c 45%, #a87e2e 100%);
+  color: #000;
+  border-color: #c89b3c;
+}
+
+:global(.ri-dashboard[data-theme="dark"]) .input,
+:global(.ri-dashboard[data-theme="dark"]) .select,
+:global(.ri-dashboard[data-theme="dark"]) .textarea,
+:global(.ri-dashboard[data-theme="dark"]) .input[type="month"],
+:global(.ri-dashboard[data-theme="dark"]) .input[type="date"],
+:global(.ri-dashboard[data-theme="dark"]) .input[type="text"],
+:global(.ri-dashboard[data-theme="dark"]) .input[type="tel"],
+:global(.ri-dashboard[data-theme="dark"]) .input[type="email"],
+:global(.ri-dashboard[data-theme="dark"]) .input[type="password"],
+:global(.ri-dashboard[data-theme="dark"]) .input[type="number"] {
+  background-color: #7a7a7a !important;
+  color: #f2f2f2 !important;
+}
+
+:global(.ri-dashboard[data-theme="light"]) .containerIncorporado {
+  --background: #fbf7ef;
+  --card-bg: #f6efe2;
+  --text-primary: #2a2216;
+  --text-secondary: #3a3224;
+  --border-color: #5a430e;
+  color: #2a2216;
+}
+
+:global(.ri-dashboard[data-theme="light"]) .card,
+:global(.ri-dashboard[data-theme="light"]) .completionSticky {
+  background: #f6efe2;
+  color: #2a2216;
+  border-color: #5a430e;
+}
+
+:global(.ri-dashboard[data-theme="light"]) .sectionCard,
+:global(.ri-dashboard[data-theme="light"]) .formSubCard,
+:global(.ri-dashboard[data-theme="light"]) .legendaPreenchimentoCard {
+  background: #e9dcc4;
+  border-color: #5a430e;
+  color: #2a2216;
+}
+
+:global(.ri-dashboard[data-theme="light"]) .sectionTitle,
+:global(.ri-dashboard[data-theme="light"]) .avisoSalvarTag,
+:global(.ri-dashboard[data-theme="light"]) .tagChip,
+:global(.ri-dashboard[data-theme="light"]) .completionWrap {
+  background: #fbf7ef;
+  border: 2px solid #5a430e;
+  color: #2a1c08;
+  font-weight: 800;
+}
+
+:global(.ri-dashboard[data-theme="light"]) .tagChipActive {
+  background: linear-gradient(180deg, #8d6b1f 0%, #c89b3c 45%, #a87e2e 100%);
+  color: #1a1208;
+  border: 2px solid #5a430e;
+}
+
+:global(.ri-dashboard[data-theme="light"]) .label,
+:global(.ri-dashboard[data-theme="light"]) .legendaPreenchimentoTitulo,
+:global(.ri-dashboard[data-theme="light"]) .legendaPreenchimentoItem,
+:global(.ri-dashboard[data-theme="light"]) .completionTitle,
+:global(.ri-dashboard[data-theme="light"]) .completionPercent,
+:global(.ri-dashboard[data-theme="light"]) .sobreMimSubtitulo {
+  color: #3d2a0c;
+  font-weight: 800;
+}
+
+:global(.ri-dashboard[data-theme="light"]) .input,
+:global(.ri-dashboard[data-theme="light"]) .select,
+:global(.ri-dashboard[data-theme="light"]) .textarea,
+:global(.ri-dashboard[data-theme="light"]) .input[type="month"],
+:global(.ri-dashboard[data-theme="light"]) .input[type="date"],
+:global(.ri-dashboard[data-theme="light"]) .input[type="text"],
+:global(.ri-dashboard[data-theme="light"]) .input[type="tel"],
+:global(.ri-dashboard[data-theme="light"]) .input[type="email"],
+:global(.ri-dashboard[data-theme="light"]) .input[type="password"],
+:global(.ri-dashboard[data-theme="light"]) .input[type="number"] {
+  background-color: #fbf7ef !important;
+  color: #2a2216 !important;
+  border: 2px solid #5a430e;
+  font-weight: 700;
+  color-scheme: light;
+}
+
+:global(.ri-dashboard[data-theme="light"]) .input:-webkit-autofill,
+:global(.ri-dashboard[data-theme="light"]) .select:-webkit-autofill,
+:global(.ri-dashboard[data-theme="light"]) .textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #fbf7ef inset !important;
+  box-shadow: 0 0 0 1000px #fbf7ef inset !important;
+  -webkit-text-fill-color: #2a2216 !important;
+  caret-color: #2a2216;
+}
+
+:global(.ri-dashboard[data-theme="light"]) .select option {
+  background-color: #fbf7ef;
+  color: #2a2216;
+}
+
+:global(.ri-dashboard[data-theme="light"]) .completionTrack {
+  background: #e9dcc4;
+  border-color: #5a430e;
+}
+
+:global(.ri-dashboard[data-theme="light"]) .completionNote,
+:global(.ri-dashboard[data-theme="light"]) .formHint {
+  color: #3a3224;
+}
