@@ -60,11 +60,11 @@ export default function Home() {
             .${styles.proHomeCard} .${styles.cardSideBody}{display:flex!important;flex-direction:column!important;align-items:center!important;min-width:0!important;padding:0 4px 0 2px!important;margin:0!important}
             .${styles.proHomeCard} .${styles.proLeadBlock}{width:100%!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:baseline!important;justify-content:center!important;gap:0.55em!important;text-align:center!important;margin-top:10px!important}
             .${styles.proHomeCard} .${styles.proLeadTitle},
-            .${styles.proHomeCard} .${styles.proLeadSubtitle}{width:100%!important;margin:0!important;text-align:center!important;white-space:normal!important;color:var(--ri-gold)!important;font-size:clamp(1.55rem,2.4vw,2rem)!important;font-weight:700!important;line-height:1.2!important}
+            .${styles.proHomeCard} .${styles.proLeadSubtitle}{width:100%!important;margin:0!important;text-align:center!important;white-space:normal!important;color:#414141!important;font-size:clamp(1.55rem,2.4vw,2rem)!important;font-weight:700!important;line-height:1.2!important}
             .${styles.proHomeCard} .${styles.proCopy}{width:100%!important;margin:0!important;padding:0!important}
             .${styles.proHomeCard} .${styles.proCopy} p,
             .${styles.proHomeCard} .${styles.proCopy} li{font-size:clamp(1.08rem,1.4vw,1.28rem)!important;line-height:1.45!important}
-            .${styles.proHomeCard} .${styles.proCopyGold}{color:var(--ri-gold)!important;font-weight:700!important;text-align:center!important}
+            .${styles.proHomeCard} .${styles.proCopyGold}{color:#414141!important;font-weight:700!important;text-align:center!important}
             .${styles.proHomeCard} .${styles.proHighlight}{font-size:clamp(1.05rem,1.35vw,1.22rem)!important}
             .${styles.proHomeCard} .${styles.proSectionTitle}{font-size:clamp(1.12rem,1.45vw,1.32rem)!important}
             .${styles.proHomeCard} .${styles.proSteps} li{font-size:clamp(0.95rem,1.18vw,1.08rem)!important;line-height:1.35!important}
@@ -72,15 +72,15 @@ export default function Home() {
             .${styles.proHomeCard} .${styles.proClosingRow} p:first-child{flex:1 1 auto!important;min-width:0!important;margin:0!important}
             .${styles.proHomeCard} .${styles.proClosingRow} .${styles.proHighlight}{flex:0 0 auto!important;white-space:nowrap!important;margin:0!important}
             .${styles.proHomeCard} .${styles.proLoginPanel}{display:flex!important;flex-direction:column!important;align-items:stretch!important;width:100%!important;max-width:none!important;align-self:stretch!important;margin:0!important;box-sizing:border-box!important;grid-column:auto!important;grid-row:auto!important}
-            .${styles.proHomeCard} .${styles.proLoginTitle}{display:inline-flex!important;align-self:center!important;align-items:center!important;justify-content:center!important;width:auto!important;margin:0 0 4px!important;padding:6px 14px!important;border-radius:999px!important;border:1px solid rgba(200,155,60,0.55)!important;background:rgba(200,155,60,0.18)!important;color:var(--ri-gold)!important;font-size:0.68rem!important;font-weight:700!important;letter-spacing:0.06em!important;line-height:1.2!important;white-space:nowrap!important}
+            .${styles.proHomeCard} .${styles.proLoginTitle}{display:inline-flex!important;align-self:center!important;align-items:center!important;justify-content:center!important;width:auto!important;margin:0 0 4px!important;padding:6px 14px!important;border-radius:999px!important;border:1px solid #E8E1D5!important;background:#F3E6C8!important;color:#414141!important;font-size:0.68rem!important;font-weight:700!important;letter-spacing:0.06em!important;line-height:1.2!important;white-space:nowrap!important}
             .${styles.proHomeCard} .${styles.proLoginForm}{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;width:100%!important;gap:8px!important}
             .${styles.proHomeCard} .${styles.proLoginRow}{display:flex!important;flex:1 1 auto!important;flex-wrap:nowrap!important;align-items:flex-start!important;min-width:0!important;gap:8px!important;width:auto!important}
             .${styles.homeAccessFields}{align-items:flex-start!important}
             .home-password-stack{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:4px!important;min-width:0!important}
             .home-password-field{position:relative!important;display:inline-flex!important;align-items:center!important;min-width:0!important;width:100%!important}
             .home-password-field input{padding-right:28px!important;width:100%!important;box-sizing:border-box!important}
-            .home-password-eye,.home-password-eye:active{position:absolute!important;top:50%!important;right:3px!important;transform:translateY(-50%)!important;width:22px!important;height:22px!important;padding:0!important;border:none!important;border-radius:999px!important;background:transparent!important;color:#c89b3c!important;cursor:pointer!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;line-height:0!important;box-shadow:none!important}
-            .home-forgot-btn,.home-forgot-btn:active{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:auto!important;max-width:100%!important;align-self:flex-end!important;flex:0 0 auto!important;box-sizing:border-box!important;margin:0!important;padding:3px 8px!important;border-radius:999px!important;border:1px solid rgba(200,155,60,0.7)!important;background:rgba(200,155,60,0.14)!important;color:rgba(242,242,242,0.9)!important;font-size:0.6rem!important;font-weight:600!important;line-height:1.2!important;text-decoration:none!important;white-space:nowrap!important;box-shadow:var(--ri-btn-3d-gold-shadow)!important;transition:transform .12s ease,box-shadow .12s ease!important}
+            .home-password-eye,.home-password-eye:active{position:absolute!important;top:50%!important;right:3px!important;transform:translateY(-50%)!important;width:22px!important;height:22px!important;padding:0!important;border:none!important;border-radius:999px!important;background:transparent!important;color:#414141!important;cursor:pointer!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;line-height:0!important;box-shadow:none!important}
+            .home-forgot-btn,.home-forgot-btn:active{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:auto!important;max-width:100%!important;align-self:flex-end!important;flex:0 0 auto!important;box-sizing:border-box!important;margin:0!important;padding:3px 8px!important;border-radius:999px!important;border:1px solid #E8E1D5!important;background:#F3E6C8!important;color:#414141!important;font-size:0.6rem!important;font-weight:600!important;line-height:1.2!important;text-decoration:none!important;white-space:nowrap!important;box-shadow:var(--ri-btn-3d-gold-shadow)!important;transition:transform .12s ease,box-shadow .12s ease!important}
             .home-forgot-btn:active,
             .${styles.proHomeCard} .${styles.proLoginAcessarTag}:active,
             .${styles.proHomeCard} .${styles.proLoginRegisterTag}:active,
@@ -104,11 +104,16 @@ export default function Home() {
             .${styles.proHomeCard} .${styles.proLoginAcessarTag},
             .${styles.proHomeCard} .${styles.proLoginRegisterTag},
             .${styles.homeAccessEmpresa} .${styles.proLoginGoogleIconOnly} button,
-            .${styles.proHomeCard} .${styles.proLoginGoogleIconOnly} button{box-sizing:border-box!important;height:28px!important;min-height:28px!important;margin:0!important;padding:0 12px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:999px!important;border:1px solid #6b5218!important;background:linear-gradient(180deg,#8d6b1f 0%,#d4af37 45%,#c89b3c 100%)!important;color:#000!important;font-size:0.68rem!important;font-weight:700!important;line-height:1!important;text-decoration:none!important;text-transform:uppercase!important;white-space:nowrap!important;box-shadow:var(--ri-btn-3d-gold-shadow)!important;transition:transform .12s ease,box-shadow .12s ease,filter .12s ease!important}
+            .${styles.proHomeCard} .${styles.proLoginGoogleIconOnly} button{box-sizing:border-box!important;height:28px!important;min-height:28px!important;margin:0!important;padding:0 12px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:999px!important;border:1px solid #E8D5A3!important;background:#D4AF37!important;color:#414141!important;font-size:0.68rem!important;font-weight:700!important;line-height:1!important;text-decoration:none!important;text-transform:uppercase!important;white-space:nowrap!important;box-shadow:var(--ri-btn-3d-gold-shadow)!important;transition:transform .12s ease,box-shadow .12s ease,filter .12s ease!important}
             .${styles.proHomeCard} .${styles.proLoginGoogleIconOnly},
             .${styles.homeAccessEmpresa} .${styles.proLoginGoogleIconOnly}{flex:0 0 auto!important;width:28px!important;min-width:28px!important}
             .${styles.proHomeCard} .${styles.proLoginGoogleIconOnly} button,
-            .${styles.homeAccessEmpresa} .${styles.proLoginGoogleIconOnly} button{width:28px!important;min-width:28px!important;max-width:28px!important;padding:0!important;font-size:0!important;line-height:0!important;color:transparent!important;gap:0!important}
+            .${styles.homeAccessEmpresa} .${styles.proLoginGoogleIconOnly} button{width:28px!important;min-width:28px!important;max-width:28px!important;padding:0!important;font-size:0!important;line-height:0!important;color:transparent!important;gap:0!important;background:#FFFEFB!important;border:1px solid #E8E1D5!important}
+            .${styles.homeAccessEmpresa} .${styles.cardCta}:hover,
+            .${styles.homeAccessEmpresa} .${styles.homeAccessRegister}:hover,
+            .${styles.proHomeCard} .${styles.proLoginAcessarTag}:hover,
+            .${styles.proHomeCard} .${styles.proLoginRegisterTag}:hover,
+            .home-forgot-btn:hover{background:#E8D5A3!important;color:#414141!important;border-color:#E8D5A3!important}
             .${styles.homeAccessEmpresa} .${styles.homeAccessRegister},
             .${styles.homeAccessEmpresa} .${styles.homeAccessRegister}:active,
             .${styles.proHomeCard} .${styles.proLoginRegisterTag},
@@ -116,7 +121,7 @@ export default function Home() {
             .${styles.homeAccessEmpresa} .${styles.cardCta},
             .${styles.homeAccessEmpresa} .${styles.cardCta}:active,
             .${styles.proHomeCard} .${styles.proLoginAcessarTag},
-            .${styles.proHomeCard} .${styles.proLoginAcessarTag}:active{width:auto!important;min-width:max-content!important;max-width:none!important;flex:0 0 auto!important;height:28px!important;padding:0 14px!important;font-size:0.68rem!important;line-height:1!important;color:#000!important;overflow:visible!important}
+            .${styles.proHomeCard} .${styles.proLoginAcessarTag}:active{width:auto!important;min-width:max-content!important;max-width:none!important;flex:0 0 auto!important;height:28px!important;padding:0 14px!important;font-size:0.68rem!important;line-height:1!important;color:#414141!important;overflow:visible!important}
             .${styles.proHomeCard} .${styles.proLoginGoogleIconOnly} button svg,
             .${styles.homeAccessEmpresa} .${styles.proLoginGoogleIconOnly} button svg{width:16px!important;height:16px!important}
             .${styles.proHomeCard} .${styles.proLoginAcessarTag},
@@ -188,7 +193,7 @@ export default function Home() {
                 Política de privacidade
               </Link>
             </p>
-            <style>{`.footer-privacy-link{color:rgba(242,242,242,0.4)!important;font-size:0.58rem!important;font-weight:400!important;letter-spacing:0.01em!important;text-decoration:none!important}.footer-privacy-link:hover{color:rgba(242,242,242,0.65)!important;text-decoration:underline!important}`}</style>
+            <style>{`.footer-privacy-link{color:#414141!important;font-size:0.58rem!important;font-weight:400!important;letter-spacing:0.01em!important;text-decoration:none!important}.footer-privacy-link:hover{color:#414141!important;text-decoration:underline!important}`}</style>
           </footer>
         </div>
       </div>

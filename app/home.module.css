@@ -1,11 +1,11 @@
 /* Home — uma tela sem scroll; marca em destaque (autorizado 08/09/2026). */
 
 .homePage {
-  --ri-gold: #c89b3c;
-  --ri-gold-dark: #8d6b1f;
-  --ri-ink: #3a3a3a;
-  --ri-panel: #2b2b2b;
-  --ri-text: #f2f2f2;
+  --ri-gold: #D4AF37;
+  --ri-gold-dark: #E8E1D5;
+  --ri-ink: #FAF7F0;
+  --ri-panel: #FFFEFB;
+  --ri-text: #414141;
   position: relative;
   height: 100vh;
   height: 100dvh;
@@ -23,12 +23,8 @@
 .atmosphere {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(180deg, rgba(58, 58, 58, 0.72) 0%, rgba(43, 43, 43, 0.88) 45%, rgba(58, 58, 58, 0.95) 100%),
-    url("/welding-left.webp") left center / cover no-repeat,
-    url("/welding-right.webp") right center / cover no-repeat,
-    #3a3a3a;
-  opacity: 0.55;
+  background: #FAF7F0;
+  opacity: 1;
   pointer-events: none;
   z-index: 0;
 }
@@ -36,9 +32,7 @@
 .atmosphereGlow {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 70% 45% at 50% 8%, rgba(200, 155, 60, 0.16), transparent 60%),
-    radial-gradient(ellipse 50% 40% at 50% 100%, rgba(0, 0, 0, 0.35), transparent 70%);
+  background: radial-gradient(ellipse 70% 45% at 50% 8%, rgba(243, 230, 200, 0.65), transparent 62%);
   pointer-events: none;
   z-index: 0;
 }
@@ -121,7 +115,7 @@
 
 .heroTaglineStar {
   flex-shrink: 0;
-  color: var(--ri-gold);
+  color: #D4AF37;
   font-size: clamp(1.2rem, 2vw, 1.6rem);
   line-height: 1;
   padding: 0 4px;
@@ -154,8 +148,8 @@
   box-sizing: border-box;
   padding: 10px 12px;
   border-radius: 18px;
-  border: 1px solid rgba(200, 155, 60, 0.55);
-  background: rgba(22, 18, 10, 0.88);
+  border: 1px solid #E8E1D5;
+  background: #FFFEFB;
   box-shadow: inset 0 1px 0 rgba(240, 215, 140, 0.08), 0 8px 20px rgba(0, 0, 0, 0.28);
 }
 
@@ -186,9 +180,9 @@
   flex: 0 0 auto;
   padding: 6px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(200, 155, 60, 0.55);
-  background: rgba(200, 155, 60, 0.18);
-  color: var(--ri-gold);
+  border: 1px solid #E8E1D5;
+  background: #F3E6C8;
+  color: #414141;
   font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
   font-size: 0.68rem;
   font-weight: 700;
@@ -212,16 +206,16 @@
 .homeAccessEmpresa .homeAccessRegister {
   align-self: flex-start;
   height: 28px;
-  color: #000;
+  color: #414141;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
   padding: 6px 14px;
   border-radius: 999px;
-  border: 1px solid #6b5218;
-  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
-  color: #000;
+  border: 1px solid #E8D5A3;
+  background: #D4AF37;
+  color: #414141;
   font-size: 0.68rem;
   text-decoration: none;
   box-shadow: var(--ri-btn-3d-gold-shadow);
@@ -230,8 +224,10 @@
 }
 
 .homeAccessEmpresa .homeAccessRegister:hover {
+  background: #E8D5A3;
+  color: #414141;
   text-decoration: none;
-  filter: brightness(1.05);
+  filter: none;
 }
 
 .empresaAccessLine {
@@ -262,29 +258,39 @@
   min-width: 0;
   padding: 6px 10px;
   border-radius: 6px;
-  border: 1px solid rgba(200, 155, 60, 0.55);
-  background: rgba(26, 21, 8, 0.72);
-  color: var(--ri-text);
+  border: 1px solid #E8E1D5;
+  background: #FFFEFB !important;
+  color: #414141 !important;
   font-size: 0.78rem;
   line-height: 1.2;
 }
 
 .homeAccessInput::placeholder {
-  color: rgba(242, 242, 242, 0.55);
+  color: #8a8174 !important;
 }
 
 .homeAccessInput:focus {
   outline: none;
-  border-color: var(--ri-gold);
+  border-color: #D4AF37;
+}
+
+.homePage input:-webkit-autofill,
+.homePage input:-webkit-autofill:hover,
+.homePage input:-webkit-autofill:focus,
+.homePage input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #FFFEFB inset !important;
+  box-shadow: 0 0 0 1000px #FFFEFB inset !important;
+  -webkit-text-fill-color: #414141 !important;
+  caret-color: #414141;
 }
 
 .homeAccessGoogle {
   font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
   padding: 6px 12px;
   border-radius: 6px;
-  border: 1px solid rgba(200, 155, 60, 0.45);
-  background: #f5f5f5;
-  color: #1a1a1a;
+  border: 1px solid #E8E1D5;
+  background: #FFFEFB;
+  color: #414141;
   font-weight: 700;
   font-size: 0.72rem;
   text-transform: uppercase;
@@ -294,7 +300,7 @@
 }
 
 .homeAccessGoogle:hover:not(:disabled) {
-  background: #fff;
+  background: #F3E6C8;
   filter: brightness(1.05);
 }
 
@@ -320,7 +326,7 @@
 
 .homeAccessRegister {
   font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
-  color: var(--ri-gold);
+  color: #414141;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -335,7 +341,7 @@
 
 .homeAccessError {
   margin: 0;
-  color: #f0b4b4;
+  color: #9b2c2c;
   font-size: 0.7rem;
   line-height: 1.25;
   text-align: inherit;
@@ -377,8 +383,8 @@
   margin-right: -2px;
   padding: clamp(8px, 1vh, 12px) clamp(8px, 1vw, 12px);
   border-radius: 18px;
-  border: 1px solid rgba(200, 155, 60, 0.55);
-  background: rgba(22, 18, 10, 0.88);
+  border: 1px solid #E8E1D5;
+  background: #FFFEFB;
   box-shadow: inset 0 1px 0 rgba(240, 215, 140, 0.08), 0 8px 20px rgba(0, 0, 0, 0.28);
   align-items: stretch;
   gap: 8px;
@@ -393,10 +399,10 @@
   margin: 0 0 4px;
   padding: 6px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(200, 155, 60, 0.55);
-  background: rgba(200, 155, 60, 0.18);
+  border: 1px solid #E8E1D5;
+  background: #F3E6C8;
   text-align: center;
-  color: var(--ri-gold);
+  color: #414141;
   font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
   font-size: 0.68rem;
   font-weight: 700;
@@ -430,9 +436,9 @@
   width: auto;
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(200, 155, 60, 0.5);
-  background: rgba(70, 62, 42, 0.92);
-  color: var(--ri-text);
+  border: 1px solid #E8E1D5;
+  background: #FFFEFB !important;
+  color: #414141 !important;
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -441,7 +447,7 @@
 }
 
 .proLoginInputPill::placeholder {
-  color: rgba(242, 242, 242, 0.55);
+  color: #8a8174 !important;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -449,7 +455,7 @@
 
 .proLoginInputPill:focus {
   outline: none;
-  border-color: var(--ri-gold);
+  border-color: #414141;
 }
 
 .homePasswordField {
@@ -500,7 +506,7 @@
   border: none;
   border-radius: 999px;
   background: transparent;
-  color: var(--ri-gold);
+  color: #414141;
   cursor: pointer;
   line-height: 0;
 }
@@ -526,9 +532,9 @@
   margin: 0;
   padding: 3px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(200, 155, 60, 0.7);
-  background: rgba(200, 155, 60, 0.14);
-  color: rgba(242, 242, 242, 0.88);
+  border: 1px solid #E8E1D5;
+  background: #F3E6C8;
+  color: #414141;
   font-size: 0.6rem;
   font-weight: 600;
   line-height: 1.2;
@@ -539,8 +545,9 @@
 }
 
 .homeForgotLink:hover {
-  color: #fff;
-  border-color: var(--ri-gold);
+  background: #E8D5A3;
+  color: #414141;
+  border-color: #E8D5A3;
   text-decoration: none;
 }
 
@@ -578,9 +585,9 @@
   box-sizing: border-box;
   padding: 8px 16px;
   border-radius: 999px;
-  border: 1px solid #6b5218;
-  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
-  color: #000;
+  border: 1px solid #E8D5A3;
+  background: #D4AF37;
+  color: #414141;
   font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
   font-weight: 700;
   font-size: 0.7rem;
@@ -621,11 +628,13 @@
   margin-top: 0;
   min-width: 0;
   height: 28px;
-  color: #000;
+  color: #414141;
 }
 
 .proLoginRegisterTag:hover {
-  filter: brightness(1.05);
+  background: #E8D5A3;
+  color: #414141;
+  filter: none;
 }
 
 .proLoginPanel .homeAccessError {
@@ -659,8 +668,8 @@
   max-height: min(320px, 38vh);
   text-decoration: none;
   color: var(--ri-text);
-  background: rgba(43, 43, 43, 0.9);
-  border: 1px solid rgba(200, 155, 60, 0.55);
+  background: #FFFEFB;
+  border: 1px solid #E8E1D5;
   border-radius: 12px;
   padding: 10px;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.38);
@@ -708,14 +717,14 @@
   gap: 5px;
   padding: 10px 12px;
   border-radius: 9px;
-  border: 1px solid rgba(200, 155, 60, 0.45);
-  background: rgba(26, 21, 8, 0.55);
+  border: 1px solid #E8E1D5;
+  background: #F3E6C8;
   box-shadow: inset 0 1px 0 rgba(240, 215, 140, 0.08);
 }
 
 .cardEyebrow {
   margin: 0;
-  color: rgba(242, 242, 242, 0.72);
+  color: #414141;
   font-size: clamp(0.68rem, 0.95vw, 0.78rem);
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -725,7 +734,7 @@
 
 .cardTitle {
   margin: 0;
-  color: var(--ri-gold);
+  color: #414141;
   font-size: clamp(0.88rem, 1.25vw, 1.05rem);
   font-weight: 800;
   letter-spacing: 0.01em;
@@ -737,7 +746,7 @@
 .cardText {
   margin: 0;
   text-align: center;
-  color: rgba(242, 242, 242, 0.88);
+  color: #414141;
   font-size: clamp(0.72rem, 0.95vw, 0.82rem);
   line-height: 1.4;
   max-width: 26rem;
@@ -748,12 +757,12 @@
   font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
   padding: 8px 18px;
   border-radius: 7px;
-  background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
-  color: #000;
+  background: #D4AF37;
+  color: #414141;
   font-weight: 700;
   font-size: clamp(0.7rem, 0.95vw, 0.82rem);
   text-transform: uppercase;
-  border: 1px solid #6b5218;
+  border: 1px solid #E8D5A3;
   box-shadow: var(--ri-btn-3d-gold-shadow);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
@@ -762,10 +771,16 @@
 .proLoginAcessarTag:hover,
 .proLoginRegisterTag:hover,
 .homeAccessEmpresa .homeAccessRegister:hover,
-.homeAccessGoogle:hover:not(:disabled),
-.proLoginGoogleIconOnly button:hover,
 .homeForgotLink:hover {
-  filter: brightness(1.05);
+  background: #E8D5A3;
+  color: #414141;
+  filter: none;
+}
+
+.homeAccessGoogle:hover:not(:disabled),
+.proLoginGoogleIconOnly button:hover {
+  background: #F3E6C8;
+  filter: none;
 }
 
 .cardCta:active,
@@ -791,8 +806,8 @@
   align-items: stretch;
   overflow: hidden;
   border-radius: 10px;
-  border: 1px solid rgba(141, 107, 31, 0.65);
-  background: rgba(43, 43, 43, 0.75);
+  border: 1px solid #E8E1D5;
+  background: #FFFEFB;
   height: clamp(64px, 8vh, 96px);
 }
 
@@ -821,14 +836,14 @@
   justify-content: center;
   padding: 10px 16px;
   text-align: center;
-  background: rgba(43, 43, 43, 0.92);
+  background: #FFFEFB;
   border-left: 1px solid var(--ri-gold-dark);
   border-right: 1px solid var(--ri-gold-dark);
 }
 
 .bannerTextSubtitle {
   margin: 0;
-  color: var(--ri-gold);
+  color: #414141;
   font-size: clamp(0.95rem, 1.7vw, 1.3rem);
   font-weight: 600;
   line-height: 1.35;
@@ -854,7 +869,7 @@
 }
 
 .homeContactLink {
-  color: var(--ri-gold);
+  color: #414141;
   font-size: clamp(0.72rem, 1.1vw, 0.84rem);
   font-weight: 500;
   text-decoration: none;
@@ -865,7 +880,7 @@
 }
 
 .homeContactSep {
-  color: var(--ri-gold-dark);
+  color: #414141;
   opacity: 0.9;
 }
 
@@ -880,7 +895,7 @@
 
 .footerTrust {
   margin: 0;
-  color: rgba(200, 155, 60, 0.9);
+  color: #414141;
   font-size: clamp(0.66rem, 1vw, 0.78rem);
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -888,7 +903,7 @@
 
 .footerCopy {
   margin: 0;
-  color: rgba(242, 242, 242, 0.72);
+  color: #414141;
   font-size: 0.66rem;
 }
 
@@ -898,7 +913,7 @@
 }
 
 .footerPrivacy a {
-  color: rgba(242, 242, 242, 0.38);
+  color: #414141;
   font-size: 0.58rem;
   font-weight: 400;
   letter-spacing: 0.01em;
@@ -906,7 +921,7 @@
 }
 
 .footerPrivacy a:hover {
-  color: rgba(242, 242, 242, 0.62);
+  color: #414141;
   text-decoration: underline;
 }
 
@@ -1164,7 +1179,7 @@
 
 .proLeadBlock .proLeadTitle,
 .proLeadBlock .proLeadSubtitle {
-  color: var(--ri-gold);
+  color: #414141;
   font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
   font-size: clamp(1.55rem, 2.4vw, 2rem);
   font-weight: 700;
@@ -1310,7 +1325,7 @@
 }
 
 .proCopyGold {
-  color: var(--ri-gold);
+  color: #414141;
   font-weight: 700;
   text-align: center;
 }
@@ -1318,7 +1333,7 @@
 .proCopy h2,
 .proCopy h3 {
   margin: 0;
-  color: var(--ri-gold);
+  color: #414141;
   line-height: 1.2;
   font-weight: 800;
 }
@@ -1342,7 +1357,7 @@
 }
 
 .proHighlight {
-  color: #fff !important;
+  color: #414141 !important;
   font-weight: 700;
   font-size: clamp(0.78rem, 1vw, 0.9rem) !important;
   line-height: 1.3 !important;
@@ -1372,7 +1387,7 @@
 .proCopy p,
 .proCopy li {
   margin: 0;
-  color: rgba(242, 242, 242, 0.92);
+  color: #414141;
   font-size: clamp(0.72rem, 0.92vw, 0.84rem);
   line-height: 1.35;
 }
@@ -1384,7 +1399,7 @@
 }
 
 .proCopy strong {
-  color: #fff;
+  color: #414141;
 }
 
 .proSteps,
@@ -1418,7 +1433,7 @@
   content: counter(step) ".";
   position: absolute;
   left: 0;
-  color: var(--ri-gold);
+  color: #414141;
   font-weight: 800;
 }
 
@@ -1442,14 +1457,14 @@
 }
 
 .proBrand {
-  color: var(--ri-gold);
+  color: #414141;
   font-weight: 800;
   font-size: clamp(0.78rem, 1vw, 0.9rem);
   line-height: 1.2;
 }
 
 .proClose {
-  color: rgba(242, 242, 242, 0.88);
+  color: #414141;
   font-style: italic;
   font-size: clamp(0.68rem, 0.9vw, 0.78rem);
   line-height: 1.25;
