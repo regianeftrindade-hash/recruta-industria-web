@@ -488,7 +488,7 @@ export default function DashboardProfissional() {
             flexWrap: "wrap",
             gap: 6,
             alignItems: "center",
-            justifyContent: "flex-start",
+            justifyContent: "flex-end",
             width: "100%",
             paddingTop: 2,
           }}
