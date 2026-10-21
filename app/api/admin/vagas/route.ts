@@ -16,7 +16,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const access = await requireAdminUser(request);
-  if (access.denied || !access.userId) return access.denied;
+  if (!access.userId) {
+    return access.denied ?? NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  }
 
   try {
     const body = await request.json().catch(() => null);
