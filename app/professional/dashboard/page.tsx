@@ -760,11 +760,15 @@ export default function DashboardProfissional() {
           {abaDireita === "vagas" && (
             <>
               {profileData.registrationComplete === false && (
-                <section className="dash-card" role="status" style={{ ...dashCard, padding: 16, boxShadow: DASH.shadow, border: `1px solid ${DASH.gold}` }}>
+                <section className="dash-card" role="status" style={{ ...dashCard, padding: "16px 16px 22px", overflow: "visible", boxShadow: DASH.shadow, border: `1px solid ${DASH.gold}` }}>
                   <h2 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>
                     Sua conta está criada! Agora complete seu perfil para que as empresas possam encontrar você.
                   </h2>
-                  <button type="button" onClick={() => router.push("/professional/register")} style={{ ...btnGold, padding: "10px 16px", fontSize: 12 }}>
+                  <button
+                    type="button"
+                    onClick={() => router.push("/professional/register")}
+                    style={{ ...btnGold, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "10px 16px", fontSize: 12, lineHeight: 1.2, whiteSpace: "nowrap", marginBottom: 6, overflow: "visible" }}
+                  >
                     Completar perfil
                   </button>
                 </section>

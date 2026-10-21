@@ -1,0 +1,22 @@
+---
+description: Depois de concluir uma alteração pedida, enviar para a branch main
+alwaysApply: true
+---
+
+# Sempre subir
+
+Pedido do usuário em 21/10/2026: ao terminar uma alteração pedida neste repositório, **commitar e enviar para `main`** sem esperar outro pedido de “sobe”.
+
+## O que entra no commit
+
+- Só os arquivos da alteração pedida
+- Mensagem em português, no estilo dos commits recentes
+
+## O que fica de fora
+
+- `.next`, `.env`, credenciais
+- `app/video-mock/`, `docs/screenshots/**`, `scripts/_tmp-*` e outros arquivos soltos que não fazem parte do pedido
+
+## Envio
+
+`git push origin HEAD` para `main`. Não usar force push. Não alterar a configuração do git.
