@@ -68,8 +68,7 @@ import VideoApresentacaoCadastro from '@/components/professional/VideoApresentac
 import { AuthAtmosphere } from '@/components/shared/AuthAtmosphere';
 import LogoRecruta from '@/app/components/LogoRecruta';
 import { reportProfessionalSignupConversion } from '@/lib/analytics/google-ads';
-import RegisterImportCurriculo from './RegisterImportCurriculo';
-import { buildResumeFormApplyPatch, matchCidadeIbge } from '@/lib/curriculum/apply-resume-to-form';
+import { matchCidadeIbge } from '@/lib/curriculum/apply-resume-to-form';
 import type { ResumeStructuredFields } from '@/lib/curriculum/types';
 
 const BACKUP_STORAGE_KEY = 'dadosFormularioBackup';
@@ -1541,85 +1540,6 @@ export default function CadastroProfissional({
             }}
           />
 
-          <RegisterImportCurriculo
-            isEditMode={isEditMode}
-            onApplyStructured={(structured, opts) => {
-              const applied = buildResumeFormApplyPatch(
-                structured,
-                {
-                  formData: formData as unknown as Record<string, unknown>,
-                  telefone,
-                  telefone2,
-                },
-                { overwrite: Boolean(opts?.overwrite) },
-              );
-
-              const estadoAplicado = String(applied.formDataPatch.estado || structured.estado || '')
-                .trim()
-                .toUpperCase();
-              const cidadeRaw = String(applied.cidadePendente || structured.cidade || '').trim();
-
-              // Aplica estado e demais campos na hora (não espera o IBGE)
-              if (cidadeRaw) pendingCidadeImportRef.current = cidadeRaw;
-              else pendingCidadeImportRef.current = null;
-
-              const patchImediato = { ...applied.formDataPatch };
-              // Cidade só depois da lista IBGE — evita select vazio
-              delete patchImediato.cidade;
-
-              if (Object.keys(patchImediato).length > 0) {
-                setFormData((prev) => ({
-                  ...prev,
-                  ...patchImediato,
-                  ...(estadoAplicado ? { estado: estadoAplicado, cidade: '' } : {}),
-                }));
-              } else if (estadoAplicado) {
-                setFormData((prev) => ({ ...prev, estado: estadoAplicado, cidade: '' }));
-              }
-
-              if (applied.telefone) {
-                setTelefone(applied.telefone);
-                setFormData((prev) => ({ ...prev, telefone: applied.telefone! }));
-              }
-              if (applied.telefone2) {
-                setTelefone2(applied.telefone2);
-                setFormData((prev) => ({ ...prev, telefone2: applied.telefone2! }));
-              }
-              if (applied.dataNascimentoDisplay) {
-                setDataNascimentoValue(applied.dataNascimentoDisplay);
-              }
-              if (applied.cursos?.length) setCursos(applied.cursos);
-              if (applied.empresas?.length) setEmpresas(applied.empresas);
-
-              // Se já temos estado, busca IBGE agora e casa a cidade
-              if (estadoAplicado && cidadeRaw) {
-                void fetch(
-                  `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoAplicado}/municipios`,
-                )
-                  .then((res) => res.json())
-                  .then((data: Array<{ nome: string }>) => {
-                    const lista = (data || []).map((c) => c.nome).sort();
-                    setCidades(lista);
-                    const matched = matchCidadeIbge(cidadeRaw, lista);
-                    if (matched) {
-                      pendingCidadeImportRef.current = null;
-                      setFormData((prev) =>
-                        prev.estado === estadoAplicado ? { ...prev, cidade: matched } : prev,
-                      );
-                    }
-                  })
-                  .catch(() => {
-                    /* useEffect tenta de novo ao mudar estado */
-                  });
-              }
-
-              return { filledLabels: applied.filledLabels };
-            }}
-            onCurriculoAnexado={(url) => {
-              setFormData((prev) => ({ ...prev, curriculo: url }));
-            }}
-          />
-
           <section className={styles.sectionCard}>
             <RegisterSectionHeader emoji="🏭" title="Dados pessoais" />
             
@@ -2982,10 +2902,6 @@ export default function CadastroProfissional({
           <>
           <section className={styles.sectionCard}>
             <RegisterSectionHeader emoji="📄" title="Currículo" />
-            <p style={{ margin: '0 0 10px', fontSize: 12, color: '#bbb', lineHeight: 1.45 }}>
-              Este anexo é preenchido automaticamente quando você usa <strong>Importar currículo</strong> no início.
-              Se precisar, troque o arquivo aqui.
-            </p>
             <div className={styles.formSubCard}>
               <CampoArquivoAnexo
                 id="curriculo"
