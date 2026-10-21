@@ -434,14 +434,16 @@ export default function CompanyVagasPanel({
               Cargo
               <input value={form.title} onChange={(event) => update("title", event.target.value)} maxLength={160} placeholder="Ex.: Operador CNC" />
             </label>
-            <label className={fields.field}>
-              Salário
-              <input value={form.salary} onChange={(event) => update("salary", event.target.value)} disabled={form.salaryNegotiable} inputMode="decimal" placeholder="R$ 3.500,00" />
-            </label>
-            <label className={`${fields.check} ${styles.span}`}>
-              <input type="checkbox" checked={form.salaryNegotiable} onChange={(event) => update("salaryNegotiable", event.target.checked)} />
-              A combinar
-            </label>
+            <div>
+              <label className={fields.field}>
+                Salário
+                <input value={form.salary} onChange={(event) => update("salary", event.target.value)} disabled={form.salaryNegotiable} inputMode="decimal" placeholder="R$ 3.500,00" />
+              </label>
+              <label className={fields.check}>
+                <input type="checkbox" checked={form.salaryNegotiable} onChange={(event) => update("salaryNegotiable", event.target.checked)} />
+                A combinar
+              </label>
+            </div>
             <label className={fields.field}>
               Local de trabalho
               <input value={form.workplace} onChange={(event) => update("workplace", event.target.value)} maxLength={120} placeholder="Cidade / UF" />
