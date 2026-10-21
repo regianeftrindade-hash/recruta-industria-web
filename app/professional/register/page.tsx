@@ -2901,42 +2901,6 @@ export default function CadastroProfissional({
           {showWizardStep(3) && (
           <>
           <section className={styles.sectionCard}>
-            <RegisterSectionHeader emoji="📄" title="Currículo" />
-            <div className={styles.formSubCard}>
-              <CampoArquivoAnexo
-                id="curriculo"
-                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                value={formData.curriculo}
-                textoBotaoVazio="Selecionar currículo (PDF, DOC ou DOCX)"
-                onFileSelect={async (file) => {
-                  try {
-                    const fd = new FormData();
-                    fd.append('file', file);
-                    fd.append('type', 'documents');
-                    const res = await fetch('/api/upload', { method: 'POST', body: fd, credentials: 'include' });
-                    const data = await res.json();
-                    if (res.ok && data.success && data.file?.url) {
-                      setFormData((prev) => ({ ...prev, curriculo: data.file.url }));
-                    } else if (res.status === 401) {
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        setFormData((prev) => ({ ...prev, curriculo: reader.result as string }));
-                      };
-                      reader.readAsDataURL(file);
-                    } else {
-                      console.error('Upload curriculo falhou', data);
-                      alert('Erro ao enviar currículo');
-                    }
-                  } catch (err) {
-                    console.error('Erro no upload do currículo:', err);
-                    alert('Erro no upload do currículo: ' + String(err));
-                  }
-                }}
-              />
-            </div>
-          </section>
-
-          <section className={styles.sectionCard}>
             <RegisterSectionHeader emoji="🎬" title="Vídeo de apresentação" />
             <div className={styles.formSubCard}>
               <VideoApresentacaoCadastro />
