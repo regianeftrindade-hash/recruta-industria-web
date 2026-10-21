@@ -32,10 +32,10 @@
 .ri-dashboard.ri-dash-prof[data-theme="dark"] {
   --dash-card: #2b2b2b;
   --dash-sidebar: #2b2b2b;
-  --dash-inner: #1f1f1f;
-  --dash-input-bg: #1a1a1a;
-  --dash-tag-bg: #1f1f1f;
-  --dash-compat-low: #1a1a1a;
+  --dash-inner: #3a3a3a;
+  --dash-input-bg: #3a3a3a;
+  --dash-tag-bg: #3a3a3a;
+  --dash-compat-low: #3a3a3a;
 }
 
 .ri-dashboard[data-theme="light"] {

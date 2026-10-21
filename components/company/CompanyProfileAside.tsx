@@ -64,7 +64,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
             overflow: "hidden",
             flexShrink: 0,
             border: `2px solid ${DASH.gold}`,
-            background: companyProfile?.logoUrl ? "#0d0d0d" : DASH.input,
+            background: companyProfile?.logoUrl ? "#3A3A3A" : DASH.input,
           }}
         >
           {companyProfile?.logoUrl ? (
@@ -126,7 +126,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
                 border: "none",
                 boxShadow: `0 0 0 2px ${DASH.gold}`,
                 background: companyProfile.logoUrl
-                  ? "#0d0d0d"
+                  ? "#3A3A3A"
                   : "linear-gradient(160deg, #e2c66c 0%, #c89b3c 45%, #8d6b1f 100%)",
               }}
             >
@@ -181,7 +181,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
                 borderRadius: "50%",
                 border: `3px solid ${DASH.gold}`,
                 overflow: "hidden",
-                background: companyProfile.fotoResponsavelUrl ? DASH.inner : "#1a1a1a",
+                background: companyProfile.fotoResponsavelUrl ? DASH.inner : "#3A3A3A",
                 zIndex: 2,
                 boxShadow: `0 0 0 4px ${DASH.card}`,
               }}
@@ -217,7 +217,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
             <p style={{ margin: "0 0 4px", fontSize: 10, fontWeight: 800, letterSpacing: "0.04em", color: DASH.gold }}>
               CADASTRO {completude}%
             </p>
-            <div style={{ height: 10, borderRadius: 8, border: `1px solid ${DASH.gold}`, background: "#222", overflow: "hidden" }}>
+            <div style={{ height: 10, borderRadius: 8, border: `1px solid ${DASH.gold}`, background: "#3A3A3A", overflow: "hidden" }}>
               <div
                 style={{
                   width: `${completude}%`,
@@ -245,7 +245,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
             style={{
               margin: "0 0 12px",
               padding: "12px 14px",
-              background: "#0d0d0d",
+              background: "#3A3A3A",
               border: "1px solid rgba(141, 107, 31, 0.45)",
               borderRadius: 8,
             }}

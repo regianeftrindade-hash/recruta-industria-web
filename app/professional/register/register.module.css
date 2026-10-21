@@ -77,7 +77,7 @@
 
 .sectionCard {
   margin: 0;
-  background-color: #0d0d0d;
+  background-color: #3A3A3A;
   border: 1px solid rgba(141, 107, 31, 0.45);
   border-radius: 12px;
   padding: clamp(14px, 2.5vw, 20px) clamp(14px, 2.5vw, 18px);
@@ -90,7 +90,7 @@
   padding: 12px 12px 10px;
   border-radius: 12px;
   border: 1px solid rgba(141, 107, 31, 0.4);
-  background: rgba(13, 13, 13, 0.72);
+  background: #3A3A3A;
 }
 
 .wizardSteps {
@@ -387,7 +387,7 @@
   padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid rgba(200, 155, 60, 0.35);
-  background: rgba(0, 0, 0, 0.35);
+  background: #3A3A3A;
   color: #f2f2f2;
   font-size: 11px;
   line-height: 1.45;
@@ -784,7 +784,7 @@
 
 .completionTrack {
   height: 10px;
-  background: #222;
+  background: #3A3A3A;
   border-radius: 5px;
   overflow: hidden;
   border: 1px solid #8D6B1F;
@@ -1086,7 +1086,7 @@
   width: 100%;
   margin-top: 4px;
   padding: 12px 14px;
-  background-color: #0d0d0d;
+  background-color: #3A3A3A;
   border: 1px solid rgba(141, 107, 31, 0.45);
   border-radius: 8px;
   box-sizing: border-box;
@@ -1273,11 +1273,11 @@
   /* Moldura por fora — a imagem preenche o círculo até a borda */
   border: none;
   box-shadow: 0 0 0 2px #8d6b1f;
-  background: #0d0d0d;
+  background: #3A3A3A;
 }
 
 .logoCircleFilled {
-  background: #0d0d0d;
+  background: #3A3A3A;
 }
 
 .fotoCircle {
@@ -1287,7 +1287,7 @@
   height: 88px;
   z-index: 2;
   border: 3px solid #8d6b1f;
-  background: #1a1a1a;
+  background: #3A3A3A;
   box-shadow: 0 0 0 5px #2b2b2b;
   display: flex;
   align-items: center;
@@ -1383,7 +1383,7 @@
 }
 
 .anexoCard {
-  background-color: #0d0d0d;
+  background-color: #3A3A3A;
   border: 1px solid rgba(141, 107, 31, 0.45);
   border-radius: 12px;
   padding: clamp(12px, 2vw, 16px);
@@ -1404,7 +1404,7 @@
   width: min(200px, 100%);
   aspect-ratio: 16 / 9;
   border-radius: 8px;
-  background: #0d0d0d;
+  background: #3A3A3A;
   border: 1px dashed rgba(141, 107, 31, 0.45);
   display: flex;
   align-items: center;
@@ -1428,7 +1428,7 @@
 }
 
 .formSubCard {
-  background-color: #0d0d0d;
+  background-color: #3A3A3A;
   border: 1px solid rgba(141, 107, 31, 0.45);
   border-radius: 12px;
   padding: clamp(12px, 2vw, 16px);

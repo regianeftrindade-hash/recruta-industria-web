@@ -882,7 +882,7 @@ function CadastroEmpresaContent() {
             </div>
           )}
           {successMessage && (
-            <div style={{ background: '#1a1508', color: '#F2F2F2', padding: '10px', borderRadius: '8px', fontWeight: 'bold', border: '1px solid #8D6B1F' }}>
+            <div style={{ background: '#3A3A3A', color: '#F2F2F2', padding: '10px', borderRadius: '8px', fontWeight: 'bold', border: '1px solid #8D6B1F' }}>
               {successMessage}
             </div>
           )}
@@ -1007,7 +1007,7 @@ function CadastroEmpresaContent() {
                   : 'E-mail de acesso da conta. Tem que ser corporativo (não Gmail/Hotmail). Se já usa esse e-mail no site, teste com alias: nome+teste@suaempresa.com.br'}
               </small>
               {emailMensagem && (
-                <div style={{ marginTop: 10, background: '#1a1508', color: '#F2F2F2', padding: 10, borderRadius: 8, border: '1px solid #8D6B1F', fontSize: 13, lineHeight: 1.5 }}>
+                <div style={{ marginTop: 10, background: '#3A3A3A', color: '#F2F2F2', padding: 10, borderRadius: 8, border: '1px solid #8D6B1F', fontSize: 13, lineHeight: 1.5 }}>
                   {emailMensagem}
                 </div>
               )}
