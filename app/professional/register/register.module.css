@@ -1710,3 +1710,73 @@
     padding: 16px;
   }
 }
+
+/* Aba Perfil: cards mais baixos e na largura do título */
+.containerIncorporado .sectionCard {
+  padding: 8px 10px;
+}
+
+.containerIncorporado .sectionTitle {
+  padding: 2px 10px;
+  margin-bottom: 8px;
+}
+
+.containerIncorporado .fieldsRow,
+.containerIncorporado .grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 12px;
+}
+
+.containerIncorporado .fieldsRow > .fieldGroup,
+.containerIncorporado .fieldsRow > div,
+.containerIncorporado .grid > .fieldGroup,
+.containerIncorporado .grid > div,
+.containerIncorporado .fieldGroup {
+  width: max-content;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.containerIncorporado .fieldWide,
+.containerIncorporado .fieldSpan2 {
+  width: max-content;
+  max-width: 100%;
+  grid-column: auto;
+}
+
+.containerIncorporado .fieldGroup > label {
+  width: max-content;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.containerIncorporado .fieldGroup > :not(label) {
+  width: 0;
+  min-width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.containerIncorporado .input,
+.containerIncorporado .select {
+  padding: 4px 8px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.containerIncorporado .textarea {
+  min-height: 52px;
+}
+
+.containerIncorporado .completionSticky,
+.containerIncorporado .completionWrap {
+  padding: 6px 8px;
+  margin-bottom: 8px;
+}
+
+.containerIncorporado .completionNote,
+.containerIncorporado .completionHighlight {
+  margin-top: 4px;
+}
