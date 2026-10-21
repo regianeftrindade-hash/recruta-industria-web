@@ -26,6 +26,8 @@ model User {
   company      Company?
   professional Professional?
   profile      Profile?
+  jobPostingsCreated JobPosting[] @relation("JobPostingCreator")
+  jobApplications    JobApplication[]
 }
 
 model VideoCallInvite {
@@ -112,6 +114,7 @@ model Company {
   talentLists CompanyTalentList[]
   alerts CompanyAlert[]
   profileTracking CompanyProfileTracking[]
+  jobPostings JobPosting[]
 }
 
 /// Usuários RH da mesma assinatura (dono convida; cada um tem login próprio)
@@ -353,6 +356,7 @@ model Profile {
   tips            Tip[]
   profileMessages ProfileMessage[]
   jobProposals    JobProposal[]
+  jobApplications JobApplication[]
 
   @@index([userId])
   @@index([location])
@@ -947,4 +951,63 @@ model Report {
   @@index([targetType, targetId])
   @@index([reporterId])
   @@map("reports")
+}
+
+/// Vaga divulgada pelo Recruta Indústria ou, no futuro, pela própria empresa.
+/// O nome real fica guardado mesmo quando a vaga é confidencial.
+model JobPosting {
+  id                       String    @id @default(cuid())
+  companyName              String    @default("")
+  confidential             Boolean   @default(false)
+  /// Data de divulgação escolhida no cadastro. Não é a data de encerramento.
+  publicationDate          DateTime? @db.Date
+  title                    String
+  /// Valor em centavos. Nulo quando o salário é "A combinar" ou não foi informado.
+  salaryCents              Int?
+  salaryNegotiable         Boolean   @default(false)
+  /// CLT | PJ | ESTAGIO | TEMPORARIO | APRENDIZ | FREELANCER | OUTRO
+  contractType             String?
+  contractTypeOther        String?
+  /// HOME_OFFICE | PRESENCIAL | HIBRIDO
+  workMode                 String?
+  description              String    @default("")
+  observations             String?
+  applicationInstructions  String?
+  /// DRAFT | PUBLISHED | UNPUBLISHED | CLOSED
+  status                   String    @default("DRAFT")
+  /// ADMIN = cadastrada pelo Recruta | COMPANY = publicada pela empresa
+  origin                   String    @default("ADMIN")
+  companyUserId            String?
+  createdByUserId          String?
+  publishedAt              DateTime?
+  closedAt                 DateTime?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  company    Company?         @relation(fields: [companyUserId], references: [userId], onDelete: SetNull)
+  createdBy  User?            @relation("JobPostingCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  applications JobApplication[]
+
+  @@index([status, publicationDate])
+  @@index([companyUserId])
+  @@index([createdByUserId])
+  @@map("job_postings")
+}
+
+/// Candidatura de um profissional a uma vaga. Uma por par vaga + profissional.
+model JobApplication {
+  id        String   @id @default(cuid())
+  jobId     String
+  userId    String
+  profileId String?
+  createdAt DateTime @default(now())
+
+  job     JobPosting @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profile Profile?   @relation(fields: [profileId], references: [id], onDelete: SetNull)
+
+  @@unique([jobId, userId])
+  @@index([userId])
+  @@index([jobId, createdAt])
+  @@map("job_applications")
 }

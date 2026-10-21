@@ -268,7 +268,7 @@ export default function AdminDashboardPage() {
             Centro de <span>comando</span>
           </h1>
           <p className={styles.heroMeta}>
-            Painel de visualização em tempo real — ações em Empresas, Contato e Serviços.
+            Painel de visualização em tempo real — ações em Vagas, Empresas, Contato e Serviços.
             {clockReady && lastUpdate ? ` · Última atualização ${formatClock(lastUpdate)}` : ''}
             {clockReady && now ? ` · Agora ${formatClock(now)}` : ''}
           </p>
@@ -286,6 +286,20 @@ export default function AdminDashboardPage() {
           </button>
         </div>
       </div>
+
+      <section className={styles.panel} style={{ marginBottom: 20 }}>
+        <div className={styles.panelHead}>
+          <div>
+            <h2 className={styles.panelTitle}>Publicar vagas</h2>
+            <p className={styles.panelSub}>
+              Cadastre a vaga, publique e acompanhe as candidaturas recebidas.
+            </p>
+          </div>
+          <Link href="/admin/vagas" className={styles.btnGold}>
+            Abrir publicação de vagas
+          </Link>
+        </div>
+      </section>
 
       {loading && !totals && <p className={styles.empty}>Carregando painel...</p>}
       {error && <div className={styles.errorBox}>{error}</div>}

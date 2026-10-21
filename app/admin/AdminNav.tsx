@@ -6,6 +6,7 @@ import styles from './admin.module.css';
 
 const LINKS = [
   { href: '/admin', label: 'Centro de comando', exact: true },
+  { href: '/admin/vagas', label: 'Publicar vagas', exact: false },
   { href: '/admin/companies', label: 'Empresas', exact: false },
   { href: '/admin/contato', label: 'Contato', exact: false },
   { href: '/admin/servicos', label: 'Serviços', exact: false },
