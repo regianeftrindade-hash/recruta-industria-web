@@ -1,9 +1,12 @@
 "use client";
 
 import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
+import DeleteAccountControl from "@/components/shared/DeleteAccountControl";
 import { useCompanyDashboardData } from "@/components/company/CompanyDashboardDataContext";
 import type { CompanyChromeProfile } from "@/components/company/CompanyDashboardDataContext";
+import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import {
   DASH,
   dashAside,
@@ -33,6 +36,7 @@ function completudeEmpresa(profile: CompanyChromeProfile): number {
  * Coluna esquerda fixa — usa o cache compartilhado do perfil (sem fetch extra).
  */
 export default function CompanyProfileAside({ compact = false }: { compact?: boolean }) {
+  const router = useRouter();
   const dash = useCompanyDashboardData();
 
   useEffect(() => {
@@ -217,6 +221,19 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
                 }}
               />
             </div>
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, flexWrap: "wrap", margin: "0 0 12px" }}>
+            {dash.planReady && dash.isOwner ? (
+              <button
+                type="button"
+                onClick={() => router.push("/company/register?edit=1")}
+                style={{ ...btnGold, padding: "6px 10px", fontSize: 10, flexShrink: 0 }}
+              >
+                Atualizar cadastro
+              </button>
+            ) : null}
+            <DeleteAccountControl variant="compact" />
           </div>
 
           <div
