@@ -23,7 +23,8 @@ export type CompanyDashboardTabId =
   | "banco"
   | "alertas"
   | "contato"
-  | "meu-plano";
+  | "meu-plano"
+  | "perfil";
 
 export type TalentListDetalhada = TalentList & {
   profiles: Array<{ id: string; nome: string; cargo: string }>;
@@ -60,6 +61,7 @@ export const COMPANY_DASH_TABS: Array<{
   { id: "alertas", label: "Alertas", href: `${BASE}/alertas` },
   { id: "contato", label: "Contato Recruta", href: `${BASE}/contato` },
   { id: "meu-plano", label: "Meu Plano", href: `${BASE}/meu-plano` },
+  { id: "perfil", label: "Perfil", href: `${BASE}?tab=perfil` },
 ];
 
 function UpgradeNote({ texto }: { texto: string }) {

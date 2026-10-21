@@ -37,15 +37,16 @@ export default function CompanyDashboardTabContent() {
     <div
       className="ri-company-dash-grid"
       style={{
-        display: "grid",
-        gridTemplateColumns: "minmax(260px, 300px) minmax(0, 1fr)",
-        gap: 0,
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
         minHeight: "calc(100vh - 90px)",
       }}
     >
-      <CompanyProfileAside />
+      {activeTab === "vagas" ? <CompanyProfileAside compact /> : null}
+      {activeTab === "perfil" ? <CompanyProfileAside /> : null}
 
-      <div data-company-main style={{ overflowY: "auto", minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+      <div data-company-main style={{ overflowY: "auto", minWidth: 0, display: activeTab === "perfil" ? "none" : "flex", flexDirection: "column", gap: 12 }}>
         {visited.has("vagas") ? (
           <div style={panelStyle("vagas")}>
             <CompanyVagasPanel />

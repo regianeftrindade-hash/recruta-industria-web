@@ -1,11 +1,15 @@
 "use client";
 
 import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 import { useCompanyDashboardData } from "@/components/company/CompanyDashboardDataContext";
+import type { CompanyChromeProfile } from "@/components/company/CompanyDashboardDataContext";
+import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import {
   DASH,
   dashAside,
+  dashCard,
   dashInnerBox,
   dashLabel,
   dashPlanAccent,
@@ -13,11 +17,26 @@ import {
   dashSectionTitle,
 } from "@/lib/dashboard-theme";
 
+const CAMPOS_CADASTRO = [
+  "razaoSocial",
+  "cnpj",
+  "responsavelNome",
+  "responsavelCpf",
+  "telefone",
+  "endereco",
+] as const;
+
+function completudeEmpresa(profile: CompanyChromeProfile): number {
+  const preenchidos = CAMPOS_CADASTRO.filter((chave) => String(profile[chave] || "").trim()).length;
+  return Math.round((preenchidos / CAMPOS_CADASTRO.length) * 100);
+}
+
 /**
  * Coluna esquerda fixa — usa o cache compartilhado do perfil (sem fetch extra).
  */
-export default function CompanyProfileAside() {
+export default function CompanyProfileAside({ compact = false }: { compact?: boolean }) {
   const dash = useCompanyDashboardData();
+  const router = useRouter();
 
   useEffect(() => {
     void dash.ensureChrome();
@@ -25,9 +44,58 @@ export default function CompanyProfileAside() {
 
   const companyProfile = dash.companyProfile;
   const slotsLabel = dash.slotsRestantes === null ? "∞" : String(dash.slotsRestantes ?? "…");
+  const completude = companyProfile ? completudeEmpresa(companyProfile) : 0;
+  const cadastroIncompleto = Boolean(companyProfile) && completude < 100;
+
+  if (compact) {
+    return (
+      <section style={{ ...dashCard, padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
+        {cadastroIncompleto ? (
+          <div role="status">
+            <h2 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>
+              Sua conta está criada! Agora complete o cadastro da empresa.
+            </h2>
+            <button type="button" onClick={() => router.push("/company/register")} style={{ ...btnGold, padding: "10px 16px", fontSize: 12 }}>
+              Completar cadastro
+            </button>
+          </div>
+        ) : null}
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: "50%",
+              overflow: "hidden",
+              flexShrink: 0,
+              border: `2px solid ${DASH.gold}`,
+              background: companyProfile?.logoUrl ? "#0d0d0d" : DASH.input,
+            }}
+          >
+            {companyProfile?.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={companyProfile.logoUrl} alt="Logotipo da empresa" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              <span style={{ display: "flex", width: "100%", height: "100%", alignItems: "center", justifyContent: "center", color: DASH.gold, fontSize: 9, fontWeight: 700 }}>
+                Logo
+              </span>
+            )}
+          </div>
+          <div>
+            <p style={{ margin: "0 0 6px", fontWeight: 800, fontSize: 16, color: DASH.title }}>
+              {companyProfile?.razaoSocial || "Empresa"}
+            </p>
+            <span style={{ display: "inline-block", fontSize: 11, fontWeight: 800, color: DASH.gold }}>
+              Completude {companyProfile ? completude : 0}%
+            </span>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <aside style={dashAside}>
+    <aside style={{ ...dashAside, borderRight: "none", maxWidth: 720 }}>
       <h3 style={{ ...dashSectionTitle, margin: "0 0 12px", fontSize: 14 }}>
         🏢 Perfil da Empresa
         {dash.companyVerified ? (
@@ -150,6 +218,8 @@ export default function CompanyProfileAside() {
               ["E-mail corporativo", companyProfile.emailCorporativo],
               ["Telefone", companyProfile.telefone],
               ["Endereço", companyProfile.endereco],
+              ["E-mail corporativo verificado", companyProfile.emailCorporativoVerificado ? "Sim" : "Não"],
+              ["Cartão CNPJ", companyProfile.cartaoCnpjUrl],
             ] as const
           ).map(([label, val]) => (
             <div
@@ -162,7 +232,15 @@ export default function CompanyProfileAside() {
               }}
             >
               <p style={{ ...dashLabel, margin: "0 0 2px", fontSize: 10, textTransform: "uppercase" }}>{label}</p>
-              <p style={{ color: DASH.text, margin: 0, fontSize: 12, wordBreak: "break-word" }}>{val || "—"}</p>
+              <p style={{ color: DASH.text, margin: 0, fontSize: 12, wordBreak: "break-word" }}>
+                {typeof val === "string" && /^https?:\/\//i.test(val) ? (
+                  <a href={val} target="_blank" rel="noopener noreferrer" style={{ color: DASH.gold, fontWeight: 700 }}>
+                    Abrir arquivo
+                  </a>
+                ) : (
+                  val || "—"
+                )}
+              </p>
             </div>
           ))}
 

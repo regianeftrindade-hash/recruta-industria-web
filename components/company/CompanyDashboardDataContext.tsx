@@ -41,6 +41,8 @@ export type CompanyChromeProfile = {
   telefone: string | null;
   endereco: string | null;
   emailCorporativo: string | null;
+  emailCorporativoVerificado?: boolean;
+  cartaoCnpjUrl?: string | null;
   logoUrl?: string | null;
   fotoResponsavelUrl?: string | null;
   email: string;
@@ -101,6 +103,7 @@ const TAB_SLICES: Record<CompanyDashboardTabId, CacheSlice[]> = {
   alertas: ["planFeatures", "alerts"],
   contato: ["planFeatures"],
   "meu-plano": ["planFeatures"],
+  perfil: [],
 };
 
 function parseProfilePayload(data: Record<string, unknown>): Partial<DashData> | null {
@@ -116,6 +119,8 @@ function parseProfilePayload(data: Record<string, unknown>): Partial<DashData> |
     telefone?: string | null;
     endereco?: string | null;
     emailCorporativo?: string | null;
+    emailCorporativoVerificado?: boolean;
+    cartaoCnpjUrl?: string | null;
     logoUrl?: string | null;
     fotoResponsavelUrl?: string | null;
     email?: string;
@@ -152,6 +157,8 @@ function parseProfilePayload(data: Record<string, unknown>): Partial<DashData> |
           telefone: company.telefone ?? null,
           endereco: company.endereco ?? null,
           emailCorporativo: company.emailCorporativo ?? null,
+          emailCorporativoVerificado: company.emailCorporativoVerificado === true,
+          cartaoCnpjUrl: company.cartaoCnpjUrl ?? null,
           logoUrl: company.logoUrl ?? null,
           fotoResponsavelUrl: company.fotoResponsavelUrl ?? null,
           email: company.email || "",
@@ -175,6 +182,8 @@ async function fetchSlice(slice: CacheSlice): Promise<{ ok: boolean; patch: Part
               telefone?: string | null;
               endereco?: string | null;
               emailCorporativo?: string | null;
+              emailCorporativoVerificado?: boolean;
+              cartaoCnpjUrl?: string | null;
               logoUrl?: string | null;
               fotoResponsavelUrl?: string | null;
               email?: string;
@@ -196,6 +205,8 @@ async function fetchSlice(slice: CacheSlice): Promise<{ ok: boolean; patch: Part
               telefone: u.telefone ?? null,
               endereco: u.endereco ?? null,
               emailCorporativo: u.emailCorporativo ?? null,
+              emailCorporativoVerificado: u.emailCorporativoVerificado === true,
+              cartaoCnpjUrl: u.cartaoCnpjUrl ?? null,
               logoUrl: u.logoUrl ?? null,
               fotoResponsavelUrl: u.fotoResponsavelUrl ?? null,
               email: u.email || "",

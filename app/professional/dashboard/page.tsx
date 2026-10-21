@@ -27,6 +27,7 @@ import {
 } from "@/lib/teste-comportamental";
 import { AVISO_RETENCAO_INBOX } from "@/lib/profile/inbox-retention";
 import CarreiraTimeline from "@/components/professional/CarreiraTimeline";
+import ProfessionalCadastroCompleto from "@/components/professional/ProfessionalCadastroCompleto";
 import ProfessionalJobSearch from "@/components/professional/ProfessionalJobSearch";
 import ProfessionalOpportunityBoard from "@/components/professional/ProfessionalOpportunityBoard";
 import ProfessionalRecruitmentHistory, {
@@ -520,8 +521,8 @@ export default function DashboardProfissional() {
               { id: "vagas" as const, label: "Buscar vagas", badge: 0 },
               { id: "oportunidades" as const, label: "Oportunidades", badge: proposals.filter((p) => p.status === "SENT" || p.status === "MORE_INFO" || p.status === "INTERVIEW_PENDING").length },
               { id: "dicas" as const, label: "Dicas", badge: tips.length },
-              { id: "perfil" as const, label: "Meu perfil", badge: 0 },
               { id: "mensagens" as const, label: "Mensagens", badge: inboxMessages.length },
+              { id: "perfil" as const, label: "Perfil", badge: 0 },
             ]
           ).map((tab) => {
             const ativo = abaDireita === tab.id;
@@ -572,6 +573,8 @@ export default function DashboardProfissional() {
         </div>
       </header>
 
+      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFotoChange} style={{ display: "none" }} />
+
       <div
         className="ri-dash-two-col"
         style={{
@@ -582,7 +585,7 @@ export default function DashboardProfissional() {
           alignItems: "stretch",
         }}
       >
-        {/* Esquerda — perfil resumido, visualizações e histórico */}
+        {/* Esquerda — cadastro completo */}
         <main
           style={{
             padding: "12px 10px 12px 12px",
@@ -597,8 +600,6 @@ export default function DashboardProfissional() {
             scrollbarGutter: "stable",
           }}
         >
-          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFotoChange} style={{ display: "none" }} />
-
           {profileData.registrationComplete === false && (
             <section
               className="dash-card"
@@ -629,7 +630,7 @@ export default function DashboardProfissional() {
 
           <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
-              <h3 style={{ ...dashTitleProf, margin: 0, fontSize: 14 }}>Perfil resumido</h3>
+              <h3 style={{ ...dashTitleProf, margin: 0, fontSize: 14 }}>Perfil</h3>
               <div style={{ display: "flex", gap: 8, alignItems: "flex-start", flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
                 <button
                   type="button"
@@ -738,52 +739,8 @@ export default function DashboardProfissional() {
                 </div>
               )}
             </div>
+            <ProfessionalCadastroCompleto edit={edit} />
           </section>
-
-          <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow, textAlign: "center" }}>
-            <h3 style={{ ...dashTitleProf, margin: "0 0 12px", fontSize: 14 }}>Visualizações da semana</h3>
-            <p style={{ margin: "0 0 4px", fontSize: 28, fontWeight: 800, color: DASH.gold, lineHeight: 1.1 }}>
-              {weekViewsCount}
-            </p>
-            {weekViewsCount === 0 ? (
-              <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.muted }}>
-                {textoContagemVisualizacoesSemana(weekViewsCount)}
-              </p>
-            ) : (
-              <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.muted }}>esta semana</p>
-            )}
-            {lastViewAt ? (
-              <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.text }}>
-                Última visualização: <strong>{formatarData(lastViewAt)}</strong>
-                {lastViewCompany ? <> · <strong>{lastViewCompany}</strong></> : null}
-              </p>
-            ) : (
-              <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
-                Ainda sem visualizações — quando uma empresa abrir seu perfil, a data e o nome aparecem aqui.
-              </p>
-            )}
-
-            {!companyNamesHidden && weekViews.length > 0 ? (
-              <div style={{ textAlign: "left", marginTop: 8 }}>
-                <p style={{ margin: "0 0 6px", fontSize: 10, fontWeight: 700, color: DASH.muted, textTransform: "uppercase" }}>
-                  Empresas que visualizaram
-                </p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 160, overflowY: "auto" }}>
-                  {weekViews.map((view) => (
-                    <div key={view.id} style={{ padding: "6px 8px", ...dashInnerBox, fontSize: 11 }}>
-                      <strong style={{ color: DASH.title }}>{view.companyName || "Empresa"}</strong>
-                      <span style={{ color: DASH.muted }}> · {formatarDataHoraCurta(view.createdAt)}</span>
-                      <span style={{ display: "block", fontSize: 10, color: DASH.muted, marginTop: 2 }}>
-                        {view.viewType === "FULL" ? "Perfil completo" : "Resumo"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </section>
-
-          <ProfessionalRecruitmentHistory history={recruitmentHistory} />
         </main>
 
         {/* Direita — conteúdo da aba ativa */}
@@ -800,12 +757,74 @@ export default function DashboardProfissional() {
             scrollbarGutter: "stable",
           }}
         >
-          {abaDireita === "vagas" && <ProfessionalJobSearch />}
+          {abaDireita === "vagas" && (
+            <>
+              {profileData.registrationComplete === false && (
+                <section className="dash-card" role="status" style={{ ...dashCard, padding: 16, boxShadow: DASH.shadow, border: `1px solid ${DASH.gold}` }}>
+                  <h2 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>
+                    Sua conta está criada! Agora complete seu perfil para que as empresas possam encontrar você.
+                  </h2>
+                  <button type="button" onClick={() => router.push("/professional/register")} style={{ ...btnGold, padding: "10px 16px", fontSize: 12 }}>
+                    Completar perfil
+                  </button>
+                </section>
+              )}
+              <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow, display: "flex", gap: 12, alignItems: "center" }}>
+                <div onClick={handleFotoClick} style={{ cursor: "pointer", flexShrink: 0 }} title="Clique para alterar a foto">
+                  {fotoPerfil ? (
+                    <img src={String(fotoPerfil)} alt="Foto do profissional" style={avatarImageStyle(56)} decoding="async" />
+                  ) : (
+                    <div style={{ width: 56, height: 56, borderRadius: "50%", background: DASH.input, border: `1px solid ${DASH.gold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>👤</div>
+                  )}
+                </div>
+                <div>
+                  <p style={{ margin: "0 0 6px", fontWeight: 800, fontSize: 16, color: DASH.title }}>{nomeExibicao}</p>
+                  {typeof profileData.profileCompletion === "number" ? (
+                    <span style={{ ...compatBadgeStyle(profileData.profileCompletion, false), display: "inline-block" }}>
+                      Completude {profileData.profileCompletion}%
+                    </span>
+                  ) : null}
+                </div>
+              </section>
+              <ProfessionalJobSearch />
+            </>
+          )}
 
           {abaDireita === "oportunidades" && (
             <>
               <PlatformVideoCall role="professional" title="Chamada de vídeo" peerLabel="empresa" />
               <ProfessionalOpportunityBoard proposals={proposals} onChanged={() => void reloadProposals()} />
+              <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow, textAlign: "center" }}>
+                <h3 style={{ ...dashTitleProf, margin: "0 0 12px", fontSize: 14 }}>Visualizações da semana</h3>
+                <p style={{ margin: "0 0 4px", fontSize: 28, fontWeight: 800, color: DASH.gold, lineHeight: 1.1 }}>{weekViewsCount}</p>
+                <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.muted }}>
+                  {weekViewsCount === 0 ? textoContagemVisualizacoesSemana(weekViewsCount) : "esta semana"}
+                </p>
+                {lastViewAt ? (
+                  <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.text }}>
+                    Última visualização: <strong>{formatarData(lastViewAt)}</strong>
+                    {lastViewCompany ? <> · <strong>{lastViewCompany}</strong></> : null}
+                  </p>
+                ) : (
+                  <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
+                    Ainda sem visualizações — quando uma empresa abrir seu perfil, a data e o nome aparecem aqui.
+                  </p>
+                )}
+                {!companyNamesHidden && weekViews.length > 0 ? (
+                  <div style={{ textAlign: "left", marginTop: 8 }}>
+                    <p style={{ margin: "0 0 6px", fontSize: 10, fontWeight: 700, color: DASH.muted, textTransform: "uppercase" }}>Empresas que visualizaram</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {weekViews.map((view) => (
+                        <div key={view.id} style={{ padding: "6px 8px", ...dashInnerBox, fontSize: 11 }}>
+                          <strong style={{ color: DASH.title }}>{view.companyName || "Empresa"}</strong>
+                          <span style={{ color: DASH.muted }}> · {formatarDataHoraCurta(view.createdAt)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </section>
+              <ProfessionalRecruitmentHistory history={recruitmentHistory} />
             </>
           )}
 
