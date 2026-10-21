@@ -4,7 +4,7 @@
   padding: 2rem;
   background: #3A3A3A;
   min-height: 100vh;
-  color: #F2F2F2;
+  color: #414141;
   font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
   letter-spacing: normal;
   -webkit-font-smoothing: antialiased;
@@ -45,7 +45,7 @@
   font-size: 0.95em;
   font-weight: 700;
   transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
-  color: #F2F2F2;
+  color: #414141;
   box-shadow: var(--ri-btn-3d-gold-shadow);
 }
 
@@ -126,7 +126,7 @@
   font-size: 0.95em;
   letter-spacing: normal;
   background: #3A3A3A;
-  color: #F2F2F2;
+  color: #414141;
 }
 
 .copyBtn {
@@ -200,7 +200,7 @@
 }
 
 .infoRow strong {
-  color: #F2F2F2;
+  color: #414141;
   font-weight: 600;
 }
 
@@ -229,7 +229,7 @@
   border-radius: 4px;
   font-size: 1em;
   background: #3A3A3A;
-  color: #F2F2F2;
+  color: #414141;
   transition: border-color 0.3s ease;
 }
 
@@ -260,7 +260,7 @@
   padding: 1.5rem;
   border-radius: 8px;
   margin: 1.5rem 0;
-  color: #F2F2F2;
+  color: #414141;
   border: 1px solid #8D6B1F;
 }
 
@@ -320,7 +320,7 @@
   display: flex;
   justify-content: space-between;
   padding: 0.5rem 0;
-  color: #F2F2F2;
+  color: #414141;
 }
 
 .summaryRow:last-child {
@@ -344,7 +344,7 @@
 
 .customerInfo p {
   margin: 0.5rem 0;
-  color: #F2F2F2;
+  color: #414141;
 }
 
 .customerInfo strong {

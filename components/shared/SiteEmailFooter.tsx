@@ -11,14 +11,14 @@ export default function SiteEmailFooter() {
       style={{
         padding: "12px 16px 16px",
         textAlign: "center",
-        background: "#3a3a3a",
+        background: "#FAF7F0",
         borderTop: "1px solid rgba(141, 107, 31, 0.65)",
       }}
     >
       <a
         href="mailto:contato@recrutaindustria.com"
         style={{
-          color: "#c89b3c",
+          color: "#414141",
           fontSize: "0.84rem",
           textDecoration: "none",
         }}

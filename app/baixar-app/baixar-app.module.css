@@ -4,8 +4,8 @@
   align-items: flex-start;
   justify-content: center;
   padding: 28px 16px 48px;
-  background: #3a3a3a;
-  color: #f2f2f2;
+  background: #FAF7F0;
+  color: #414141;
   box-sizing: border-box;
 }
 
@@ -15,7 +15,7 @@
   padding: 28px 22px;
   border-radius: 16px;
   border: 1px solid #c89b3c;
-  background: #2b2b2b;
+  background: #FFFEFB;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
 }
 
@@ -32,7 +32,7 @@
   margin: 0 0 10px;
   font-size: 1.35rem;
   font-weight: 700;
-  color: #f2f2f2;
+  color: #414141;
 }
 
 .text {

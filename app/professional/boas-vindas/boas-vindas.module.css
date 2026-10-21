@@ -1,11 +1,11 @@
 /* Tema industrial — alinhado ao cadastro profissional */
 :root {
-  --primary-color: #C89B3C;
-  --secondary-color: #8D6B1F;
-  --background: #3A3A3A;
-  --card-bg: #2B2B2B;
-  --text-primary: #F2F2F2;
-  --border-color: #8D6B1F;
+  --primary-color: #414141;
+  --secondary-color: #E8E1D5;
+  --background: #FAF7F0;
+  --card-bg: #FFFEFB;
+  --text-primary: #414141;
+  --border-color: #E8E1D5;
   --focus-outline: rgba(200, 155, 60, 0.35);
 }
 
@@ -64,7 +64,7 @@
 }
 
 .messageCard {
-  background-color: #0d0d0d;
+  background-color: #FFFEFB;
   border: 1px solid rgba(200, 155, 60, 0.55);
   border-radius: 12px;
   padding: clamp(14px, 2.5vw, 20px);
@@ -116,7 +116,7 @@
   margin: 0;
   font-size: 11px;
   line-height: 1.4;
-  color: #ddd;
+  color: #414141;
 }
 
 .actions {
@@ -155,7 +155,7 @@
   margin: 14px 0 0;
   text-align: center;
   font-size: 12px;
-  color: #bbb;
+  color: #414141;
   line-height: 1.45;
 }
 

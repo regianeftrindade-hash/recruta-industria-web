@@ -23,7 +23,7 @@
   margin: 0 0 8px;
   font-size: clamp(1rem, 2.2vw, 1.2rem);
   font-weight: 700;
-  color: #f2f2f2;
+  color: #414141;
   line-height: 1.35;
 }
 
@@ -168,7 +168,7 @@
   margin: 0 0 10px;
   font-size: 1.05rem;
   font-weight: 700;
-  color: #f2f2f2;
+  color: #414141;
 }
 
 .modalText {

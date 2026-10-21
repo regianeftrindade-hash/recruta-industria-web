@@ -1,12 +1,12 @@
 /* Tema industrial — alinhado à Home */
 :root {
-  --primary-color: #C89B3C;
-  --secondary-color: #8D6B1F;
-  --background: #3A3A3A;
-  --card-bg: #2B2B2B;
-  --text-primary: #F2F2F2;
-  --text-secondary: #F2F2F2;
-  --border-color: #8D6B1F;
+  --primary-color: #414141;
+  --secondary-color: #E8E1D5;
+  --background: #FAF7F0;
+  --card-bg: #FFFEFB;
+  --text-primary: #414141;
+  --text-secondary: #414141;
+  --border-color: #E8E1D5;
   --focus-outline: rgba(200, 155, 60, 0.35);
   --field-width: 310px;
   --fields-per-row: 4;
@@ -77,7 +77,7 @@
 
 .sectionCard {
   margin: 0;
-  background-color: #3A3A3A;
+  background-color: #FFFEFB;
   border: 1px solid rgba(141, 107, 31, 0.45);
   border-radius: 12px;
   padding: clamp(14px, 2.5vw, 20px) clamp(14px, 2.5vw, 18px);
@@ -90,7 +90,7 @@
   padding: 12px 12px 10px;
   border-radius: 12px;
   border: 1px solid rgba(141, 107, 31, 0.4);
-  background: #3A3A3A;
+  background: #FFFEFB;
 }
 
 .wizardSteps {
@@ -184,7 +184,7 @@
 .wizardNavBtn {
   border: 1px solid rgba(255, 255, 255, 0.22);
   background: transparent;
-  color: #f2f2f2;
+  color: #414141;
 }
 
 .wizardNavBtn:disabled,
@@ -313,7 +313,7 @@
 
 .importCurriculoBtn:hover:not(:disabled) {
   border-color: #c89b3c;
-  color: #fff;
+  color: #414141;
 }
 
 .importCurriculoBtn:disabled {
@@ -387,8 +387,8 @@
   padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid rgba(200, 155, 60, 0.35);
-  background: #3A3A3A;
-  color: #f2f2f2;
+  background: #FFFEFB;
+  color: #414141;
   font-size: 11px;
   line-height: 1.45;
   resize: vertical;
@@ -588,7 +588,7 @@
   padding: 6px 14px;
   border-radius: 999px;
   border: 1px solid #c89b3c;
-  background-color: #2B2B2B;
+  background-color: #F3E6C8;
   letter-spacing: normal;
   width: fit-content;
 }
@@ -618,7 +618,7 @@
   padding: 5px 8px;
   border-radius: 999px;
   border: 1px solid var(--border-color);
-  background-color: #2B2B2B;
+  background-color: #F3E6C8;
   color: var(--text-primary);
   font-size: 11px;
   font-weight: 500;
@@ -675,13 +675,13 @@
 
 .badge_opcional {
   background: #333;
-  color: #F2F2F2;
+  color: #414141;
   border: 1px solid #8D6B1F;
 }
 
 .badge_recomendado {
   background: #5a4512;
-  color: #F2F2F2;
+  color: #414141;
   border: 1px solid #C89B3C;
 }
 
@@ -756,7 +756,7 @@
 }
 
 .completionWrap {
-  background: #3A3A3A;
+  background: #FFFEFB;
   border: 1px solid #C89B3C;
   border-radius: 10px;
   padding: 14px;
@@ -777,14 +777,14 @@
 }
 
 .completionPercent {
-  color: #F2F2F2;
+  color: #414141;
   font-weight: 600;
   font-size: 14px;
 }
 
 .completionTrack {
   height: 10px;
-  background: #3A3A3A;
+  background: #FFFEFB;
   border-radius: 5px;
   overflow: hidden;
   border: 1px solid #8D6B1F;
@@ -840,7 +840,7 @@
 .anexoBox {
   margin-bottom: 8px;
   padding: 12px 14px;
-  background-color: #2B2B2B;
+  background-color: #F3E6C8;
   border: 1px solid var(--border-color);
   border-radius: 8px;
 }
@@ -848,7 +848,7 @@
 .anexoTexto {
   margin: 0 0 8px;
   font-size: 14px;
-  color: #f2f2f2;
+  color: #414141;
   line-height: 1.5;
 }
 
@@ -901,7 +901,7 @@
   border: 1px solid var(--border-color);
   border-radius: 8px;
   overflow: hidden;
-  background-color: #2B2B2B;
+  background-color: #F3E6C8;
 }
 
 .anexoCampoInput {
@@ -914,7 +914,7 @@
 
 .anexoCampoNome {
   font-size: 14px;
-  color: #f2f2f2;
+  color: #414141;
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -999,7 +999,7 @@
 .feedbackBannerSuccess {
   border: 1px solid rgba(200, 155, 60, 0.65);
   background: rgba(200, 155, 60, 0.14);
-  color: #F2F2F2;
+  color: #414141;
 }
 
 .feedbackBanner a {
@@ -1086,7 +1086,7 @@
   width: 100%;
   margin-top: 4px;
   padding: 12px 14px;
-  background-color: #3A3A3A;
+  background-color: #FFFEFB;
   border: 1px solid rgba(141, 107, 31, 0.45);
   border-radius: 8px;
   box-sizing: border-box;
@@ -1100,8 +1100,8 @@
   padding: 6px 14px;
   border-radius: 999px;
   border: 1px solid #c89b3c;
-  background: #2b2b2b;
-  color: #f2f2f2;
+  background: #F3E6C8;
+  color: #414141;
   font-size: 13px;
   font-weight: 600;
   line-height: 1.35;
@@ -1230,7 +1230,7 @@
 .anexoTextoInline {
   margin: 0;
   font-size: 14px;
-  color: #f2f2f2;
+  color: #414141;
   line-height: 1.5;
 }
 
@@ -1273,11 +1273,11 @@
   /* Moldura por fora — a imagem preenche o círculo até a borda */
   border: none;
   box-shadow: 0 0 0 2px #8d6b1f;
-  background: #3A3A3A;
+  background: #FFFEFB;
 }
 
 .logoCircleFilled {
-  background: #3A3A3A;
+  background: #FFFEFB;
 }
 
 .fotoCircle {
@@ -1287,7 +1287,7 @@
   height: 88px;
   z-index: 2;
   border: 3px solid #8d6b1f;
-  background: #3A3A3A;
+  background: #FFFEFB;
   box-shadow: 0 0 0 5px #2b2b2b;
   display: flex;
   align-items: center;
@@ -1383,7 +1383,7 @@
 }
 
 .anexoCard {
-  background-color: #3A3A3A;
+  background-color: #FFFEFB;
   border: 1px solid rgba(141, 107, 31, 0.45);
   border-radius: 12px;
   padding: clamp(12px, 2vw, 16px);
@@ -1395,7 +1395,7 @@
   aspect-ratio: 16 / 9;
   border-radius: 8px;
   object-fit: cover;
-  background: #3A3A3A;
+  background: #FFFEFB;
   border: 1px solid rgba(141, 107, 31, 0.45);
   display: block;
 }
@@ -1404,7 +1404,7 @@
   width: min(200px, 100%);
   aspect-ratio: 16 / 9;
   border-radius: 8px;
-  background: #3A3A3A;
+  background: #FFFEFB;
   border: 1px dashed rgba(141, 107, 31, 0.45);
   display: flex;
   align-items: center;
@@ -1428,7 +1428,7 @@
 }
 
 .formSubCard {
-  background-color: #3A3A3A;
+  background-color: #FFFEFB;
   border: 1px solid rgba(141, 107, 31, 0.45);
   border-radius: 12px;
   padding: clamp(12px, 2vw, 16px);
@@ -1512,10 +1512,10 @@
 .textarea:-webkit-autofill:hover,
 .textarea:-webkit-autofill:focus,
 .textarea:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px #3A3A3A inset !important;
-  box-shadow: 0 0 0 1000px #3A3A3A inset !important;
-  -webkit-text-fill-color: #f2f2f2 !important;
-  caret-color: #f2f2f2;
+  -webkit-box-shadow: 0 0 0 1000px #FFFEFB inset !important;
+  box-shadow: 0 0 0 1000px #FFFEFB inset !important;
+  -webkit-text-fill-color: #414141 !important;
+  caret-color: #414141;
 }
 
 .input[type="month"],
@@ -1525,8 +1525,8 @@
 .input[type="email"],
 .input[type="password"],
 .input[type="number"] {
-  background-color: #3A3A3A !important;
-  color: #f2f2f2 !important;
+  background-color: #FFFEFB !important;
+  color: #414141 !important;
 }
 
 .input[type="month"]::-webkit-datetime-edit,
@@ -1540,7 +1540,7 @@
 .input[type="date"]::-webkit-datetime-edit-day-field,
 .input[type="date"]::-webkit-datetime-edit-month-field,
 .input[type="date"]::-webkit-datetime-edit-year-field {
-  color: #f2f2f2;
+  color: #414141;
 }
 
 .input[type="month"]::-webkit-calendar-picker-indicator,
@@ -1550,8 +1550,8 @@
 
 .input[type="file"] {
   padding: 8px;
-  background-color: #2B2B2B !important;
-  color: #F2F2F2 !important;
+  background-color: #F3E6C8 !important;
+  color: #414141 !important;
   border: 1px solid var(--border-color);
 }
 
@@ -1568,8 +1568,8 @@
 }
 
 .select option {
-  background-color: #2B2B2B;
-  color: #f2f2f2;
+  background-color: #F3E6C8;
+  color: #414141;
 }
 
 .select option[value=""] {
@@ -1579,8 +1579,8 @@
 .textarea {
   resize: vertical;
   min-height: 80px;
-  color: #f2f2f2 !important;
-  background-color: #3A3A3A !important;
+  color: #414141 !important;
+  background-color: #FFFEFB !important;
 }
 
 .input:focus,
@@ -1659,7 +1659,7 @@
 
 .secondaryLinkBtn:hover {
   border-color: var(--accent-color, #c89b3c);
-  color: #fff;
+  color: #414141;
 }
 
 .submitBtn:active {
@@ -1818,37 +1818,37 @@
   margin-top: 4px;
 }
 
-/* Cadastro no painel: escuro um degrau mais claro; claro em creme */
+/* Cadastro no painel acompanha a paleta clara */
 :global(.ri-dashboard[data-theme="dark"]) .containerIncorporado {
-  --background: #7a7a7a;
-  --card-bg: #5c5c5c;
-  --text-primary: #f2f2f2;
-  --text-secondary: #f2f2f2;
+  --background: #FAF7F0;
+  --card-bg: #FFFEFB;
+  --text-primary: #414141;
+  --text-secondary: #414141;
 }
 
 :global(.ri-dashboard[data-theme="dark"]) .card,
 :global(.ri-dashboard[data-theme="dark"]) .completionSticky {
-  background: #5c5c5c;
+  background: #FFFEFB;
 }
 
 :global(.ri-dashboard[data-theme="dark"]) .sectionCard,
 :global(.ri-dashboard[data-theme="dark"]) .formSubCard,
 :global(.ri-dashboard[data-theme="dark"]) .legendaPreenchimentoCard,
 :global(.ri-dashboard[data-theme="dark"]) .completionTrack {
-  background: #3a3a3a;
+  background: #F3E6C8;
 }
 
 :global(.ri-dashboard[data-theme="dark"]) .sectionTitle,
 :global(.ri-dashboard[data-theme="dark"]) .tagChip,
 :global(.ri-dashboard[data-theme="dark"]) .avisoSalvarTag,
 :global(.ri-dashboard[data-theme="dark"]) .completionWrap {
-  background: #5c5c5c;
+  background: #F3E6C8;
 }
 
 :global(.ri-dashboard[data-theme="dark"]) .tagChipActive {
-  background: linear-gradient(180deg, #8d6b1f 0%, #c89b3c 45%, #a87e2e 100%);
-  color: #000;
-  border-color: #c89b3c;
+  background: #D4AF37;
+  color: #414141;
+  border-color: #E8D5A3;
 }
 
 :global(.ri-dashboard[data-theme="dark"]) .input,
@@ -1861,8 +1861,8 @@
 :global(.ri-dashboard[data-theme="dark"]) .input[type="email"],
 :global(.ri-dashboard[data-theme="dark"]) .input[type="password"],
 :global(.ri-dashboard[data-theme="dark"]) .input[type="number"] {
-  background-color: #7a7a7a !important;
-  color: #f2f2f2 !important;
+  background-color: #FFFEFB !important;
+  color: #414141 !important;
 }
 
 :global(.ri-dashboard[data-theme="light"]) .containerIncorporado {

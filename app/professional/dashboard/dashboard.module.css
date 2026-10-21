@@ -5,7 +5,7 @@
   min-height: 100vh;
   padding: clamp(15px, 4vw, 30px);
   font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
-  color: #F2F2F2;
+  color: #414141;
   letter-spacing: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -13,7 +13,7 @@
 
 .header {
   background-color: #2B2B2B;
-  color: #F2F2F2;
+  color: #414141;
   padding: clamp(15px, 4vw, 20px) clamp(20px, 5vw, 40px);
   border-radius: 15px;
   border: 1px solid #8D6B1F;
@@ -153,7 +153,7 @@
 .tagValue {
   font-size: clamp(13px, 3vw, 15px);
   font-weight: bold;
-  color: #F2F2F2;
+  color: #414141;
 }
 
 .sidebar {
@@ -164,7 +164,7 @@
 
 .visitsCard {
   background-color: #2B2B2B;
-  color: #F2F2F2;
+  color: #414141;
   padding: clamp(30px, 5vw, 40px) clamp(15px, 3vw, 20px);
   border-radius: 20px;
   border: 2px solid #C89B3C;
@@ -182,13 +182,13 @@
   font-size: 65px;
   font-weight: 900;
   margin: 10px 0;
-  color: #F2F2F2;
+  color: #414141;
 }
 
 .visitsText {
   margin: 0;
   font-size: 14px;
-  color: #F2F2F2;
+  color: #414141;
 }
 
 .tipsCard {
@@ -211,7 +211,7 @@
   flex-direction: column;
   gap: 12px;
   font-size: 13px;
-  color: #F2F2F2;
+  color: #414141;
   font-style: italic;
 }
 
@@ -238,7 +238,7 @@
 .hiringList {
   font-size: 13px;
   font-weight: bold;
-  color: #F2F2F2;
+  color: #414141;
 }
 
 @media (max-width: 768px) {
