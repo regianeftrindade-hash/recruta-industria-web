@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { CONTRACT_TYPES, WORK_MODES, type AdminJob } from "@/lib/jobs/job-posting";
+import { CONTRACT_TYPES, WORK_MODES, type AdminJob, type ApplicationMode } from "@/lib/jobs/job-posting";
+import ApplicationModeFields from "@/components/jobs/ApplicationModeFields";
 import styles from "@/app/admin/vagas/vagas-admin.module.css";
 
 type FormState = {
@@ -18,6 +19,9 @@ type FormState = {
   description: string;
   observations: string;
   applicationInstructions: string;
+  applicationMode: ApplicationMode;
+  externalApplyUrl: string;
+  applicationEmail: string;
 };
 
 type ApplicationRow = {
@@ -42,6 +46,9 @@ function emptyForm(companyName: string): FormState {
     description: "",
     observations: "",
     applicationInstructions: "",
+    applicationMode: "INTERNAL",
+    externalApplyUrl: "",
+    applicationEmail: "",
   };
 }
 
@@ -59,6 +66,9 @@ function formFromJob(job: AdminJob): FormState {
     description: job.description,
     observations: job.observations ?? "",
     applicationInstructions: job.applicationInstructions ?? "",
+    applicationMode: job.applicationMode,
+    externalApplyUrl: job.externalApplyUrl,
+    applicationEmail: job.applicationEmail,
   };
 }
 
@@ -303,9 +313,21 @@ export default function CompanyVagasPanel() {
             Observações
             <textarea value={form.observations} onChange={(event) => update("observations", event.target.value)} maxLength={4000} placeholder="E-mail, documentos ou instruções. Opcional." />
           </label>
+          <ApplicationModeFields
+            mode={form.applicationMode}
+            url={form.externalApplyUrl}
+            email={form.applicationEmail}
+            onMode={(mode) => update("applicationMode", mode)}
+            onUrl={(value) => update("externalApplyUrl", value)}
+            onEmail={(value) => update("applicationEmail", value)}
+          />
+
           <label className={styles.field}>
             Como se candidatar
             <textarea value={form.applicationInstructions} onChange={(event) => update("applicationInstructions", event.target.value)} maxLength={2000} placeholder="Ex.: Candidate-se pelo Recruta Indústria." />
+            {form.applicationMode === "INTERNAL" ? (
+              <span className={styles.help}>O botão Candidatar-se registra a candidatura no Recruta Indústria.</span>
+            ) : null}
           </label>
 
           <div className={styles.actions}>

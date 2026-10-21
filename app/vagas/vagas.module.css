@@ -157,10 +157,13 @@
   border-top: 1px solid rgba(141, 107, 31, 0.45);
 }
 
-.apply button {
+.apply button,
+.externalLink {
   min-width: 220px;
   padding: 12px 18px;
   font-size: 16px;
+  text-align: center;
+  text-decoration: none;
 }
 
 .note,
@@ -195,7 +198,8 @@
     padding: 18px 14px 48px;
   }
 
-  .apply button {
+  .apply button,
+  .externalLink {
     width: 100%;
   }
 }

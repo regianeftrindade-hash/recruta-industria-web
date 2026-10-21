@@ -19,7 +19,7 @@ export async function POST(request: NextRequest, { params }: Context) {
     const application = await registerJobApplication(id, auth.email);
     return NextResponse.json({
       ok: true,
-      message: "Candidatura registrada.",
+      message: application.message,
       application: {
         id: application.id,
         jobId: application.jobId,

@@ -16,13 +16,21 @@ export const WORK_MODES = [
 
 export const JOB_STATUSES = ["DRAFT", "PUBLISHED", "UNPUBLISHED", "CLOSED"] as const;
 
+export const APPLICATION_MODES = [
+  { value: "EXTERNAL", label: "Candidatar-se no site da empresa" },
+  { value: "EMAIL", label: "Candidatar-se por e-mail automático" },
+  { value: "INTERNAL", label: "Candidatar-se dentro do Recruta Indústria" },
+] as const;
+
 export type ContractType = (typeof CONTRACT_TYPES)[number]["value"];
 export type WorkMode = (typeof WORK_MODES)[number]["value"];
 export type JobStatus = (typeof JOB_STATUSES)[number];
+export type ApplicationMode = (typeof APPLICATION_MODES)[number]["value"];
 
 const CONTRACT_VALUES = new Set<string>(CONTRACT_TYPES.map((item) => item.value));
 const WORK_MODE_VALUES = new Set<string>(WORK_MODES.map((item) => item.value));
 const STATUS_VALUES = new Set<string>(JOB_STATUSES);
+const APPLICATION_MODE_VALUES = new Set<string>(APPLICATION_MODES.map((item) => item.value));
 
 const LIMITS = {
   companyName: 160,
@@ -31,6 +39,8 @@ const LIMITS = {
   description: 8000,
   observations: 4000,
   applicationInstructions: 2000,
+  externalApplyUrl: 500,
+  applicationEmail: 254,
 } as const;
 
 export class JobPostingError extends Error {
@@ -57,6 +67,9 @@ export type JobRecord = {
   description: string;
   observations: string | null;
   applicationInstructions: string | null;
+  applicationMode: string;
+  externalApplyUrl: string | null;
+  applicationEmail: string | null;
   status: string;
   origin: string;
   companyUserId: string | null;
@@ -78,6 +91,8 @@ export type PublicJob = {
   description: string;
   observations: string | null;
   applicationInstructions: string | null;
+  applicationMode: ApplicationMode;
+  externalApplyUrl: string | null;
 };
 
 export type AdminJob = PublicJob & {
@@ -89,6 +104,9 @@ export type AdminJob = PublicJob & {
   contractType: string;
   contractTypeOther: string;
   workMode: string;
+  applicationMode: ApplicationMode;
+  externalApplyUrl: string;
+  applicationEmail: string;
   status: JobStatus;
   statusLabel: string;
   origin: string;
@@ -112,6 +130,9 @@ export type JobWriteData = {
   description: string;
   observations: string | null;
   applicationInstructions: string | null;
+  applicationMode: ApplicationMode;
+  externalApplyUrl: string | null;
+  applicationEmail: string | null;
   status: JobStatus;
 };
 
@@ -134,6 +155,54 @@ export function jobOriginLabel(origin: string): string {
 
 export function isJobStatus(value: string): value is JobStatus {
   return STATUS_VALUES.has(value);
+}
+
+export function isApplicationMode(value: string): value is ApplicationMode {
+  return APPLICATION_MODE_VALUES.has(value);
+}
+
+export function parseExternalApplyUrl(value: unknown): string | null {
+  if (value == null || value === "") return null;
+  if (typeof value !== "string") {
+    throw new JobPostingError("O link de candidatura é inválido.");
+  }
+  const text = value.trim();
+  if (!text) return null;
+  if (text.length > LIMITS.externalApplyUrl) {
+    throw new JobPostingError(`O link de candidatura pode ter no máximo ${LIMITS.externalApplyUrl} caracteres.`);
+  }
+  if (/[<>]/.test(text) || /\s/.test(text)) {
+    throw new JobPostingError("Informe um link HTTP ou HTTPS válido.");
+  }
+
+  let url: URL;
+  try {
+    url = new URL(text);
+  } catch {
+    throw new JobPostingError("Informe um link HTTP ou HTTPS válido.");
+  }
+
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new JobPostingError("O link de candidatura precisa começar com http:// ou https://.");
+  }
+  if (!url.hostname || url.username || url.password) {
+    throw new JobPostingError("Informe um link HTTP ou HTTPS válido.");
+  }
+
+  return url.toString();
+}
+
+export function parseApplicationEmail(value: unknown): string | null {
+  if (value == null || value === "") return null;
+  if (typeof value !== "string") {
+    throw new JobPostingError("O e-mail para candidaturas é inválido.");
+  }
+  const email = value.trim().toLowerCase();
+  if (!email) return null;
+  if (email.length > LIMITS.applicationEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new JobPostingError("Informe um e-mail válido para receber as candidaturas.");
+  }
+  return email;
 }
 
 export function cleanJobText(value: unknown, max: number, label: string): string {
@@ -287,6 +356,11 @@ export function toPublicJob(job: JobRecord): PublicJob {
     applicationInstructions: job.applicationInstructions?.trim()
       ? job.applicationInstructions
       : null,
+    applicationMode: isApplicationMode(job.applicationMode) ? job.applicationMode : "INTERNAL",
+    externalApplyUrl:
+      job.applicationMode === "EXTERNAL" && job.externalApplyUrl
+        ? job.externalApplyUrl
+        : null,
   };
 }
 
@@ -305,6 +379,9 @@ export function toAdminJob(job: JobRecord): AdminJob {
     contractType: job.contractType ?? "",
     contractTypeOther: job.contractTypeOther ?? "",
     workMode: job.workMode ?? "",
+    applicationMode: isApplicationMode(job.applicationMode) ? job.applicationMode : "INTERNAL",
+    externalApplyUrl: job.externalApplyUrl ?? "",
+    applicationEmail: job.applicationEmail ?? "",
     status,
     statusLabel: jobStatusLabel(status),
     origin: job.origin,
@@ -366,6 +443,26 @@ export function parseJobWrite(input: unknown): JobWriteData {
     throw new JobPostingError("Situação da vaga inválida.");
   }
 
+  const modeRaw = typeof body.applicationMode === "string" ? body.applicationMode.trim() : "";
+  if (modeRaw && !isApplicationMode(modeRaw)) {
+    throw new JobPostingError("Selecione uma modalidade de candidatura.");
+  }
+  const applicationMode: ApplicationMode = modeRaw && isApplicationMode(modeRaw) ? modeRaw : "INTERNAL";
+
+  const externalApplyUrl = applicationMode === "EXTERNAL"
+    ? parseExternalApplyUrl(body.externalApplyUrl)
+    : null;
+  const applicationEmail = applicationMode === "EMAIL"
+    ? parseApplicationEmail(body.applicationEmail)
+    : null;
+
+  if (statusRaw === "PUBLISHED" && applicationMode === "EXTERNAL" && !externalApplyUrl) {
+    throw new JobPostingError("Informe o link oficial para candidatura no site da empresa.");
+  }
+  if (statusRaw === "PUBLISHED" && applicationMode === "EMAIL" && !applicationEmail) {
+    throw new JobPostingError("Informe o e-mail da empresa para receber as candidaturas.");
+  }
+
   let salaryCents: number | null = null;
   if (!salaryNegotiable) {
     salaryCents = parseSalaryToCents(typeof body.salary === "string" ? body.salary : "");
@@ -410,6 +507,9 @@ export function parseJobWrite(input: unknown): JobWriteData {
       description,
       observations,
       applicationInstructions,
+      applicationMode,
+      externalApplyUrl,
+      applicationEmail,
       status: statusRaw,
     };
   }
@@ -427,6 +527,9 @@ export function parseJobWrite(input: unknown): JobWriteData {
     description,
     observations,
     applicationInstructions,
+    applicationMode,
+    externalApplyUrl,
+    applicationEmail,
     status: statusRaw,
   };
 }

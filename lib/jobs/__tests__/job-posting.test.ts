@@ -4,6 +4,8 @@ import {
   companyCanReadJobApplications,
   formatPublicationDate,
   isProfessionalAccount,
+  parseApplicationEmail,
+  parseExternalApplyUrl,
   parseJobWrite,
   parseSalaryToCents,
   toAdminJob,
@@ -45,6 +47,9 @@ function recordFrom(data: ReturnType<typeof parseJobWrite>, id = "cjob1234567890
     description: data.description,
     observations: data.observations,
     applicationInstructions: data.applicationInstructions,
+    applicationMode: data.applicationMode,
+    externalApplyUrl: data.externalApplyUrl,
+    applicationEmail: data.applicationEmail,
     status: data.status,
     origin: "ADMIN",
     companyUserId: null,
@@ -172,5 +177,47 @@ describe("publicação de vagas", () => {
       hasProfessional: true,
       hasCompany: false,
     })).toBe(true);
+  });
+
+  it("guarda só uma modalidade de candidatura e valida link e e-mail na publicação", () => {
+    const interna = parseJobWrite(baseInput());
+    expect(interna.applicationMode).toBe("INTERNAL");
+    expect(interna.externalApplyUrl).toBeNull();
+    expect(interna.applicationEmail).toBeNull();
+
+    const externa = parseJobWrite(baseInput({
+      applicationMode: "EXTERNAL",
+      externalApplyUrl: "https://empresa.example/vaga",
+      applicationEmail: "nao-deve-ficar@empresa.example",
+    }));
+    expect(externa.applicationMode).toBe("EXTERNAL");
+    expect(externa.externalApplyUrl).toBe("https://empresa.example/vaga");
+    expect(externa.applicationEmail).toBeNull();
+    expect(toPublicJob(recordFrom(externa)).externalApplyUrl).toBe("https://empresa.example/vaga");
+    expect(toPublicJob(recordFrom(externa))).not.toHaveProperty("applicationEmail");
+
+    const email = parseJobWrite(baseInput({
+      applicationMode: "EMAIL",
+      applicationEmail: "Recrutamento@Empresa.com.br",
+      externalApplyUrl: "https://empresa.example/vaga",
+    }));
+    expect(email.applicationMode).toBe("EMAIL");
+    expect(email.applicationEmail).toBe("recrutamento@empresa.com.br");
+    expect(email.externalApplyUrl).toBeNull();
+    expect(toPublicJob(recordFrom(email)).externalApplyUrl).toBeNull();
+
+    expect(() => parseJobWrite(baseInput({
+      applicationMode: "EXTERNAL",
+      externalApplyUrl: "",
+    }))).toThrow(/link oficial/i);
+    expect(() => parseExternalApplyUrl("javascript:alert(1)")).toThrow(JobPostingError);
+    expect(() => parseExternalApplyUrl("ftp://arquivos.example/cv")).toThrow(JobPostingError);
+    expect(parseExternalApplyUrl("http://empresa.example/vaga")).toBe("http://empresa.example/vaga");
+
+    expect(() => parseJobWrite(baseInput({
+      applicationMode: "EMAIL",
+      applicationEmail: "sem-arroba",
+    }))).toThrow(/e-mail válido/i);
+    expect(parseApplicationEmail(" rh@empresa.example ")).toBe("rh@empresa.example");
   });
 });

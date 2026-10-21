@@ -90,7 +90,27 @@ export default async function VagaPage({ params, searchParams }: Props) {
           </section>
         ) : null}
 
-        <JobApplyButton jobId={job.id} autoApply={query.candidatar === "1"} />
+        {job.applicationMode === "EXTERNAL" && job.externalApplyUrl ? (
+          <div className={styles.apply}>
+            <a
+              className={`${styles.externalLink} ri-btn-3d-gold`}
+              href={job.externalApplyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Candidatar-se no site da empresa
+            </a>
+            <p className={styles.note}>
+              A inscrição é feita no site da empresa e abre em uma nova aba.
+            </p>
+          </div>
+        ) : (
+          <JobApplyButton
+            jobId={job.id}
+            mode={job.applicationMode === "EMAIL" ? "EMAIL" : "INTERNAL"}
+            autoApply={query.candidatar === "1"}
+          />
+        )}
       </article>
     </main>
   );

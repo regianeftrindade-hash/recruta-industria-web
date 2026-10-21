@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { CONTRACT_TYPES, WORK_MODES, type AdminJob } from "@/lib/jobs/job-posting";
+import { CONTRACT_TYPES, WORK_MODES, type AdminJob, type ApplicationMode } from "@/lib/jobs/job-posting";
+import ApplicationModeFields from "@/components/jobs/ApplicationModeFields";
 import shell from "../admin.module.css";
 import styles from "./vagas-admin.module.css";
 
@@ -19,6 +20,9 @@ type FormState = {
   description: string;
   observations: string;
   applicationInstructions: string;
+  applicationMode: ApplicationMode;
+  externalApplyUrl: string;
+  applicationEmail: string;
 };
 
 type ApplicationRow = {
@@ -43,6 +47,9 @@ const EMPTY_FORM: FormState = {
   description: "",
   observations: "",
   applicationInstructions: "",
+  applicationMode: "INTERNAL",
+  externalApplyUrl: "",
+  applicationEmail: "",
 };
 
 function formFromJob(job: AdminJob): FormState {
@@ -59,6 +66,9 @@ function formFromJob(job: AdminJob): FormState {
     description: job.description,
     observations: job.observations ?? "",
     applicationInstructions: job.applicationInstructions ?? "",
+    applicationMode: job.applicationMode,
+    externalApplyUrl: job.externalApplyUrl,
+    applicationEmail: job.applicationEmail,
   };
 }
 
@@ -361,6 +371,15 @@ export default function AdminVagasPage() {
             />
           </label>
 
+          <ApplicationModeFields
+            mode={form.applicationMode}
+            url={form.externalApplyUrl}
+            email={form.applicationEmail}
+            onMode={(mode) => update("applicationMode", mode)}
+            onUrl={(value) => update("externalApplyUrl", value)}
+            onEmail={(value) => update("applicationEmail", value)}
+          />
+
           <label className={styles.field}>
             Como se candidatar
             <textarea
@@ -369,9 +388,11 @@ export default function AdminVagasPage() {
               maxLength={2000}
               placeholder="Ex.: Candidate-se pelo Recruta Indústria ou envie o currículo para o e-mail informado."
             />
-            <span className={styles.help}>
-              O botão Candidatar-se continua na página da vaga mesmo quando o texto pedir envio de currículo por e-mail. A plataforma não envia esse e-mail.
-            </span>
+            {form.applicationMode === "INTERNAL" ? (
+              <span className={styles.help}>
+                O botão Candidatar-se registra a candidatura no Recruta Indústria.
+              </span>
+            ) : null}
           </label>
 
           <div className={styles.actions}>

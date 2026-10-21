@@ -12,9 +12,11 @@ type ApplyState = {
 
 export default function JobApplyButton({
   jobId,
+  mode,
   autoApply,
 }: {
   jobId: string;
+  mode: "INTERNAL" | "EMAIL";
   autoApply: boolean;
 }) {
   const [state, setState] = useState<ApplyState | null>(null);
@@ -50,7 +52,9 @@ export default function JobApplyButton({
       }
 
       if (response.status === 409 || data.alreadyApplied) {
-        setMessage("Você já registrou candidatura nesta vaga.");
+        setMessage(mode === "EMAIL"
+          ? "Você já enviou sua candidatura para esta vaga."
+          : "Você já registrou candidatura nesta vaga.");
         setState({
           authenticated: true,
           applied: true,
@@ -105,10 +109,16 @@ export default function JobApplyButton({
   return (
     <div className={styles.apply}>
       <button type="button" onClick={() => void apply()} disabled={busy || applied || blocked}>
-        {busy ? "Registrando..." : applied ? "Candidatura registrada" : "Candidatar-se"}
+        {busy
+          ? (mode === "EMAIL" ? "Enviando..." : "Registrando...")
+          : applied
+            ? (mode === "EMAIL" ? "Candidatura enviada" : "Candidatura registrada")
+            : (mode === "EMAIL" ? "Candidatar-se por e-mail automático" : "Candidatar-se")}
       </button>
       <p className={styles.note}>
-        O botão registra sua candidatura no Recruta Indústria. Se as instruções pedirem o currículo por e-mail, esse envio é feito por você, à parte.
+        {mode === "EMAIL"
+          ? "Ao clicar, sua candidatura é enviada para o e-mail da empresa. Não é preciso abrir seu programa de e-mail."
+          : "O botão registra sua candidatura no Recruta Indústria. Se as instruções pedirem o currículo por e-mail, esse envio é feito por você, à parte."}
       </p>
       {blocked && state?.blockReason ? <p className={styles.error}>{state.blockReason}</p> : null}
       {message ? <p className={styles.message}>{message}</p> : null}

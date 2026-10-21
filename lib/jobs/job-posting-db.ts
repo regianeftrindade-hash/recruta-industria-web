@@ -15,6 +15,7 @@ import {
   toAdminJob,
   toPublicJob,
 } from "@/lib/jobs/job-posting";
+import { resolveResumeLink, sendJobApplicationEmail } from "@/lib/jobs/job-application-mail";
 
 function asRecord(job: JobPosting, applicationCount = 0): JobRecord {
   return {
@@ -31,6 +32,9 @@ function asRecord(job: JobPosting, applicationCount = 0): JobRecord {
     description: job.description,
     observations: job.observations,
     applicationInstructions: job.applicationInstructions,
+    applicationMode: job.applicationMode,
+    externalApplyUrl: job.externalApplyUrl,
+    applicationEmail: job.applicationEmail,
     status: job.status,
     origin: job.origin,
     companyUserId: job.companyUserId,
@@ -76,6 +80,9 @@ function writeData(data: JobWriteData, current?: { publishedAt: Date | null; clo
     description: data.description,
     observations: data.observations,
     applicationInstructions: data.applicationInstructions,
+    applicationMode: data.applicationMode,
+    externalApplyUrl: data.externalApplyUrl,
+    applicationEmail: data.applicationEmail,
     status: data.status,
     ...statusTimestamps(data.status, current),
   };
@@ -346,10 +353,12 @@ export async function registerJobApplication(jobId: string, email: string) {
     where: { email },
     select: {
       id: true,
+      name: true,
+      email: true,
       role: true,
       professional: { select: { id: true } },
       company: { select: { id: true } },
-      profile: { select: { id: true } },
+      profile: { select: { id: true, title: true, curricoURL: true } },
     },
   });
 
@@ -367,10 +376,50 @@ export async function registerJobApplication(jobId: string, email: string) {
 
   const job = await prisma.jobPosting.findFirst({
     where: { id, status: "PUBLISHED" },
-    select: { id: true },
+    select: {
+      id: true,
+      title: true,
+      companyName: true,
+      confidential: true,
+      applicationMode: true,
+      applicationEmail: true,
+    },
   });
   if (!job) {
     throw new JobPostingError("Esta vaga não está aberta para candidatura.", 404);
+  }
+
+  if (job.applicationMode === "EXTERNAL") {
+    throw new JobPostingError("Esta vaga recebe a candidatura no site da empresa.", 400);
+  }
+
+  if (job.applicationMode === "EMAIL") {
+    if (!job.applicationEmail) {
+      throw new JobPostingError("Esta vaga não tem e-mail para receber candidaturas.", 400);
+    }
+
+    const alreadySent = await prisma.jobApplication.findUnique({
+      where: { jobId_userId: { jobId: id, userId: user.id } },
+      select: { id: true },
+    });
+    if (alreadySent) {
+      throw new JobPostingError("Você já enviou sua candidatura para esta vaga.", 409);
+    }
+
+    const resumeUrl = await resolveResumeLink(user.profile?.curricoURL);
+    const sent = await sendJobApplicationEmail({
+      to: job.applicationEmail,
+      jobTitle: job.title,
+      confidential: job.confidential,
+      companyName: job.companyName,
+      professionalName: user.name,
+      professionalEmail: user.email,
+      profileTitle: user.profile?.title ?? null,
+      resumeUrl,
+    });
+    if (!sent.ok) {
+      throw new JobPostingError(sent.error, 502);
+    }
   }
 
   try {
@@ -396,6 +445,9 @@ export async function registerJobApplication(jobId: string, email: string) {
       userId: saved.userId,
       profileId: saved.profileId,
       createdAt: saved.createdAt.toISOString(),
+      message: job.applicationMode === "EMAIL"
+        ? "Candidatura enviada para o e-mail da empresa."
+        : "Candidatura registrada.",
     };
   } catch (error) {
     if (error instanceof JobPostingError) throw error;
