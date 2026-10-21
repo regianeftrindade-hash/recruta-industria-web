@@ -225,6 +225,9 @@ describe.skipIf(!canRun)("gravação de vagas e candidaturas", () => {
       status: "CLOSED",
     });
     expect(await db.getPublicJob(openSalary.id)).toBeNull();
+    const closedView = await db.getPublicJobView(openSalary.id);
+    expect(closedView).toEqual({ availability: "unavailable", title: "Mecânico Industrial" });
+    expect(JSON.stringify(closedView)).not.toContain("Indústria Teste Recruta");
     const publicAfterClose = await db.listPublicJobs();
     expect(publicAfterClose.some((job) => job.id === openSalary.id)).toBe(false);
     expect(publicAfterClose.some((job) => job.id === confidential.id)).toBe(true);

@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import { JobPostingError } from "@/lib/jobs/job-posting";
-import { getPublicJob } from "@/lib/jobs/job-posting-db";
+import { getPublicJobView } from "@/lib/jobs/job-posting-db";
+import { jobSocialMetadata, publicJobUrl } from "@/lib/jobs/public-job-link";
 import JobApplyButton from "../JobApplyButton";
 import styles from "../vagas.module.css";
 
@@ -17,8 +18,36 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const { id } = await params;
-    const job = await getPublicJob(id);
-    return { title: job?.title || "Vaga" };
+    const view = await getPublicJobView(id);
+    if (!view) return { title: "Vaga", robots: { index: false, follow: false } };
+    if (view.availability === "unavailable") {
+      return {
+        title: view.title,
+        description: "Esta vaga não está mais disponível para candidatura.",
+        robots: { index: false, follow: false },
+      };
+    }
+    const social = jobSocialMetadata(view.job);
+    const path = `/vagas/${view.job.id}`;
+    return {
+      title: social.title,
+      description: social.description,
+      alternates: { canonical: path },
+      openGraph: {
+        type: "website",
+        url: path,
+        title: social.title,
+        description: social.description,
+        siteName: "Recruta Indústria",
+        locale: "pt_BR",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: social.title,
+        description: social.description,
+      },
+      robots: { index: true, follow: true },
+    };
   } catch {
     return { title: "Vaga" };
   }
@@ -34,13 +63,42 @@ function Fact({ label, value }: { label: string; value: string | null }) {
   );
 }
 
+function jobPostingJsonLd(job: {
+  id: string;
+  title: string;
+  description: string;
+  companyLabel: string;
+  publicationDate: string | null;
+  workplace: string | null;
+  contractLabel: string | null;
+}) {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "JobPosting",
+    title: job.title,
+    description: job.description,
+    datePosted: job.publicationDate,
+    hiringOrganization: {
+      "@type": "Organization",
+      name: job.companyLabel,
+    },
+    jobLocation: job.workplace
+      ? { "@type": "Place", address: job.workplace }
+      : undefined,
+    employmentType: job.contractLabel,
+    url: publicJobUrl(job.id),
+    directApply: true,
+  };
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
 export default async function VagaPage({ params, searchParams }: Props) {
   const { id } = await params;
   const query = await searchParams;
 
-  let job: Awaited<ReturnType<typeof getPublicJob>> = null;
+  let view: Awaited<ReturnType<typeof getPublicJobView>> = null;
   try {
-    job = await getPublicJob(id);
+    view = await getPublicJobView(id);
   } catch (error) {
     if (error instanceof JobPostingError && error.status === 404) {
       notFound();
@@ -48,7 +106,7 @@ export default async function VagaPage({ params, searchParams }: Props) {
     throw error;
   }
 
-  if (!job) notFound();
+  if (!view) notFound();
 
   return (
     <main className={styles.page}>
@@ -61,58 +119,69 @@ export default async function VagaPage({ params, searchParams }: Props) {
         </Link>
       </div>
 
-      <article className={styles.article}>
-        <p className={styles.company}>{job.companyLabel}</p>
-        <h1 className={styles.title}>{job.title}</h1>
-        <div className={styles.facts}>
-          <Fact label="Data da publicação" value={job.publicationDate} />
-          <Fact label="Salário" value={job.salaryLabel} />
-          <Fact label="Contratação" value={job.contractLabel} />
-          <Fact label="Modalidade" value={job.workModeLabel} />
-          <Fact label="Local de trabalho" value={job.workplace} />
-        </div>
-
-        <section className={styles.section}>
-          <h2>Descrição da vaga</h2>
-          <p className={styles.text}>{job.description}</p>
-        </section>
-
-        {job.observations ? (
-          <section className={styles.section}>
-            <h2>Observações</h2>
-            <p className={styles.text}>{job.observations}</p>
-          </section>
-        ) : null}
-
-        {job.applicationInstructions ? (
-          <section className={styles.section}>
-            <h2>Como se candidatar</h2>
-            <p className={styles.text}>{job.applicationInstructions}</p>
-          </section>
-        ) : null}
-
-        {job.applicationMode === "EXTERNAL" && job.externalApplyUrl ? (
-          <div className={styles.apply}>
-            <a
-              className={`${styles.externalLink} ri-btn-3d-gold`}
-              href={job.externalApplyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Candidatar-se no site da empresa
-            </a>
-            <p className={styles.note}>
-              A inscrição é feita no site da empresa e abre em uma nova aba.
-            </p>
-          </div>
-        ) : (
-          <JobApplyButton
-            jobId={job.id}
-            mode={job.applicationMode === "EMAIL" ? "EMAIL" : "INTERNAL"}
-            autoApply={query.candidatar === "1"}
+      {view.availability === "unavailable" ? (
+        <article className={styles.article}>
+          <h1 className={styles.title}>{view.title}</h1>
+          <p className={styles.error}>Esta vaga não está mais disponível para candidatura.</p>
+        </article>
+      ) : (
+        <article className={styles.article}>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: jobPostingJsonLd(view.job) }}
           />
-        )}
-      </article>
+          <p className={styles.company}>{view.job.companyLabel}</p>
+          <h1 className={styles.title}>{view.job.title}</h1>
+          <div className={styles.facts}>
+            <Fact label="Data da publicação" value={view.job.publicationDate} />
+            <Fact label="Salário" value={view.job.salaryLabel} />
+            <Fact label="Contratação" value={view.job.contractLabel} />
+            <Fact label="Modalidade" value={view.job.workModeLabel} />
+            <Fact label="Local de trabalho" value={view.job.workplace} />
+          </div>
+
+          <section className={styles.section}>
+            <h2>Descrição da vaga</h2>
+            <p className={styles.text}>{view.job.description}</p>
+          </section>
+
+          {view.job.observations ? (
+            <section className={styles.section}>
+              <h2>Observações</h2>
+              <p className={styles.text}>{view.job.observations}</p>
+            </section>
+          ) : null}
+
+          {view.job.applicationInstructions ? (
+            <section className={styles.section}>
+              <h2>Como se candidatar</h2>
+              <p className={styles.text}>{view.job.applicationInstructions}</p>
+            </section>
+          ) : null}
+
+          {view.job.applicationMode === "EXTERNAL" && view.job.externalApplyUrl ? (
+            <div className={styles.apply}>
+              <a
+                className={`${styles.externalLink} ri-btn-3d-gold`}
+                href={view.job.externalApplyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Candidatar-se no site da empresa
+              </a>
+              <p className={styles.note}>
+                A inscrição é feita no site da empresa e abre em uma nova aba.
+              </p>
+            </div>
+          ) : (
+            <JobApplyButton
+              jobId={view.job.id}
+              mode={view.job.applicationMode === "EMAIL" ? "EMAIL" : "INTERNAL"}
+              autoApply={query.candidatar === "1"}
+            />
+          )}
+        </article>
+      )}
     </main>
   );
 }

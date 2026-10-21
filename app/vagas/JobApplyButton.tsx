@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { safeJobReturnPath } from "@/lib/jobs/public-job-link";
 import styles from "./vagas.module.css";
 
 type ApplyState = {
@@ -24,7 +25,10 @@ export default function JobApplyButton({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const loginHref = `/login?tipo=profissional&redirect=${encodeURIComponent(`/vagas/${jobId}?candidatar=1`)}`;
+  const jobReturn = safeJobReturnPath(`/vagas/${jobId}`);
+  const loginHref = jobReturn
+    ? `/login?tipo=profissional&redirect=${encodeURIComponent(jobReturn)}`
+    : "/login?tipo=profissional";
 
   async function loadState() {
     const response = await fetch(`/api/vagas/${jobId}/candidatura`, { credentials: "include" });
@@ -113,12 +117,12 @@ export default function JobApplyButton({
           ? (mode === "EMAIL" ? "Enviando..." : "Registrando...")
           : applied
             ? (mode === "EMAIL" ? "Candidatura enviada" : "Candidatura registrada")
-            : (mode === "EMAIL" ? "Candidatar-se por e-mail automático" : "Candidatar-se")}
+            : (mode === "EMAIL" ? "Candidatar-se por e-mail automático" : "Candidatar-se pelo Recruta Indústria")}
       </button>
       <p className={styles.note}>
         {mode === "EMAIL"
           ? "Ao clicar, sua candidatura é enviada para o e-mail da empresa. Não é preciso abrir seu programa de e-mail."
-          : "O botão registra sua candidatura no Recruta Indústria. Se as instruções pedirem o currículo por e-mail, esse envio é feito por você, à parte."}
+          : "O botão registra sua candidatura no Recruta Indústria. Sem conta, o cadastro de profissional devolve você para esta mesma vaga."}
       </p>
       {blocked && state?.blockReason ? <p className={styles.error}>{state.blockReason}</p> : null}
       {message ? <p className={styles.message}>{message}</p> : null}

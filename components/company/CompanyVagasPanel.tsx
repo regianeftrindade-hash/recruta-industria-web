@@ -12,6 +12,7 @@ import {
   type ApplicationStage,
 } from "@/lib/jobs/job-posting";
 import ApplicationModeFields from "@/components/jobs/ApplicationModeFields";
+import { facebookShareUrl, publicJobUrl, whatsAppShareUrl } from "@/lib/jobs/public-job-link";
 import fields from "@/app/admin/vagas/vagas-admin.module.css";
 import styles from "./company-vagas.module.css";
 
@@ -423,12 +424,21 @@ export default function CompanyVagasPanel({
               <input type="date" value={form.publicationDate} onChange={(event) => update("publicationDate", event.target.value)} />
               <span className={fields.help}>Data de publicação. Não é a data de encerramento.</span>
             </label>
-            <label className={`${fields.check} ${styles.span}`}>
-              <input type="checkbox" checked={form.confidential} onChange={(event) => update("confidential", event.target.checked)} />
-              Vaga confidencial
-            </label>
+            <fieldset className={`${fields.field} ${styles.span}`}>
+              <legend>Como deseja divulgar esta vaga?</legend>
+              <div className={fields.choices} role="radiogroup" aria-label="Como deseja divulgar esta vaga?">
+                <button type="button" className={`${fields.choice} ${form.confidential ? "" : fields.choiceOn}`} aria-pressed={!form.confidential} onClick={() => update("confidential", false)}>
+                  Publicar com o nome da empresa
+                </button>
+                <button type="button" className={`${fields.choice} ${form.confidential ? fields.choiceOn : ""}`} aria-pressed={form.confidential} onClick={() => update("confidential", true)}>
+                  Publicar anonimamente
+                </button>
+              </div>
+            </fieldset>
             <p className={`${fields.help} ${styles.span}`}>
-              Na página pública aparece somente “Empresa confidencial”. O nome informado continua salvo aqui.
+              {form.confidential
+                ? "Na página pública e no compartilhamento aparece somente “Empresa confidencial”. O nome real continua salvo aqui."
+                : "O nome da empresa aparece na página pública. E-mail, telefone e documentos não são divulgados."}
             </p>
             <label className={fields.field}>
               Cargo
@@ -531,8 +541,9 @@ export default function CompanyVagasPanel({
                       <span className={styles.badge}>{statusLabel(job.status)}</span>
                     </h2>
                     <p className={styles.meta}>
-                      {job.confidential ? "Vaga confidencial" : (job.companyName || "Empresa")}
-                      {showOrigin ? ` · ${job.originLabel}` : ""}
+                      {showOrigin
+                        ? `${job.companyName || "Sem empresa"} · ${job.confidential ? "Anônima" : "Identificada"} · ${job.originLabel}`
+                        : (job.confidential ? "Vaga confidencial" : (job.companyName || "Empresa"))}
                       {job.contractLabel ? ` · ${job.contractLabel}` : ""}
                       {job.workModeLabel ? ` · ${job.workModeLabel}` : ""}
                       {job.workplace ? ` · ${job.workplace}` : ""}
@@ -582,6 +593,42 @@ export default function CompanyVagasPanel({
                       >
                         Encerrar vaga
                       </button>
+                    ) : null}
+                    {showOrigin && job.status === "PUBLISHED" ? (
+                      <details className={styles.more}>
+                        <summary>Compartilhar vaga</summary>
+                        <div className={`${styles.moreMenu} ${styles.shareMenu}`}>
+                          <button
+                            type="button"
+                            className={styles.ghost}
+                            onClick={() => {
+                              const url = publicJobUrl(job.id);
+                              if (!navigator.clipboard?.writeText) {
+                                setError("Não foi possível copiar o link da vaga.");
+                                return;
+                              }
+                              void navigator.clipboard.writeText(url).then(
+                                () => {
+                                  setError("");
+                                  setMessage("Link da vaga copiado com sucesso");
+                                },
+                                () => setError("Não foi possível copiar o link da vaga."),
+                              );
+                            }}
+                          >
+                            Copiar link da vaga
+                          </button>
+                          <a className={styles.ghost} href={facebookShareUrl(job.id)} target="_blank" rel="noopener noreferrer">
+                            Compartilhar no Facebook
+                          </a>
+                          <a className={styles.ghost} href={whatsAppShareUrl(job.title, job.id)} target="_blank" rel="noopener noreferrer">
+                            Compartilhar no WhatsApp
+                          </a>
+                          <a className={styles.ghost} href={publicJobUrl(job.id)} target="_blank" rel="noopener noreferrer">
+                            Visualizar página pública
+                          </a>
+                        </div>
+                      </details>
                     ) : null}
                     <details className={styles.more}>
                       <summary>Mais</summary>

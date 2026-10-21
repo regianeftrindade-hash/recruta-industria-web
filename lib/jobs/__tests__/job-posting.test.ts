@@ -111,6 +111,7 @@ describe("publicação de vagas", () => {
     const pub = toPublicJob(stored);
     const admin = toAdminJob(stored);
 
+    expect(pub.anonymous).toBe(true);
     expect(pub.companyLabel).toBe("Empresa confidencial");
     expect(JSON.stringify(pub)).not.toContain("MetalurgicaSigilosaXYZ");
     expect(admin.companyName).toBe("MetalurgicaSigilosaXYZ");

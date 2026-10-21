@@ -210,6 +210,21 @@
   background: #111;
 }
 
+.shareMenu {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  min-width: 240px;
+}
+
+.shareMenu a,
+.shareMenu button {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+}
+
 .back {
   margin-bottom: 12px;
 }

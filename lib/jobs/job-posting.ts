@@ -94,6 +94,7 @@ export type JobRecord = {
 
 export type PublicJob = {
   id: string;
+  anonymous: boolean;
   companyLabel: string;
   publicationDate: string | null;
   title: string;
@@ -376,6 +377,7 @@ export function publicSalaryLabel(job: {
 export function toPublicJob(job: JobRecord): PublicJob {
   return {
     id: job.id,
+    anonymous: job.confidential,
     companyLabel: publicCompanyLabel(job),
     publicationDate: formatPublicationDate(job.publicationDate),
     title: job.title,

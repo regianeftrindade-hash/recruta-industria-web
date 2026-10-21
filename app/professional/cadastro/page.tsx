@@ -9,6 +9,7 @@ import PageLoader from "@/app/components/PageLoader";
 import ProfessionalVitrinePitch from "@/components/auth/ProfessionalVitrinePitch";
 import loginStyles from "@/app/login/login.module.css";
 import { validatePasswordStrength } from "@/lib/password-strength";
+import { safeJobReturnPath } from "@/lib/jobs/public-job-link";
 
 const SIMPLE_STORAGE_KEY = "dadosCadastroSimples";
 
@@ -100,11 +101,15 @@ export default function CadastroSimplesProfissionalPage() {
           "Conta criada, mas o login automático falhou. Entre com seu e-mail e senha.",
         );
         setLoading(false);
-        router.push("/login?tipo=profissional");
+        const back = safeJobReturnPath(new URLSearchParams(window.location.search).get("redirect"));
+        router.push(back
+          ? `/login?tipo=profissional&redirect=${encodeURIComponent(back)}`
+          : "/login?tipo=profissional");
         return;
       }
 
-      router.replace("/professional/dashboard");
+      const back = safeJobReturnPath(new URLSearchParams(window.location.search).get("redirect"));
+      router.replace(back ?? "/professional/dashboard");
     } catch {
       setErrorMessage("Erro ao criar conta. Tente novamente.");
       setLoading(false);

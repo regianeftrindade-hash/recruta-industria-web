@@ -14,6 +14,7 @@ import ProfessionalVitrinePitch from '@/components/auth/ProfessionalVitrinePitch
 import CompanyVitrinePitch from '@/components/auth/CompanyVitrinePitch';
 import GoogleSignInButton from '@/app/components/GoogleSignInButton';
 import styles from './login.module.css';
+import { safeJobReturnPath } from '@/lib/jobs/public-job-link';
 
 function LoginContent() {
   const router = useRouter();
@@ -188,7 +189,14 @@ function LoginContent() {
       setErrorMessage('Para acessar o admin, entre com o e-mail de administrador. Não use criar conta.');
       return;
     }
-    router.push(tipoLogin === 'company' ? '/company/cadastro' : '/professional/cadastro');
+    if (tipoLogin === 'company') {
+      router.push('/company/cadastro');
+      return;
+    }
+    const jobReturn = safeJobReturnPath(redirectTo);
+    router.push(jobReturn
+      ? `/professional/cadastro?redirect=${encodeURIComponent(jobReturn)}`
+      : '/professional/cadastro');
   };
 
   return (

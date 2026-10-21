@@ -345,6 +345,25 @@ export async function getPublicJob(id: string): Promise<PublicJob | null> {
   return toPublicJob(asRecord(row));
 }
 
+export type PublicJobView =
+  | { availability: "open"; job: PublicJob }
+  | { availability: "unavailable"; title: string };
+
+export async function getPublicJobView(id: string): Promise<PublicJobView | null> {
+  const jobId = assertJobId(id);
+  const row = await prisma.jobPosting.findUnique({
+    where: { id: jobId },
+    select: { status: true, title: true },
+  });
+  if (!row || row.status === "DRAFT") return null;
+  if (row.status !== "PUBLISHED") {
+    return { availability: "unavailable", title: row.title };
+  }
+  const job = await getPublicJob(jobId);
+  if (!job) return { availability: "unavailable", title: row.title };
+  return { availability: "open", job };
+}
+
 export type ApplicationView = {
   id: string;
   jobId: string;
