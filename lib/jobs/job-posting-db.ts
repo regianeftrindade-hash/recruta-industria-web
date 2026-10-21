@@ -21,6 +21,7 @@ import {
   loadOwnedResumePdf,
   sendJobApplicationEmail,
 } from "@/lib/jobs/job-application-mail";
+import { publicJobWhere, type JobSearchFilters } from "@/lib/jobs/job-search";
 
 function asRecord(job: JobPosting, applicationCount = 0): JobRecord {
   return {
@@ -332,12 +333,24 @@ export async function updateAdminApplicationStage(
   return { id: saved.id, stage: saved.stage };
 }
 
-export async function listPublicJobs(): Promise<PublicJob[]> {
+export async function searchPublicJobs(filters: JobSearchFilters): Promise<PublicJob[]> {
   const rows = await prisma.jobPosting.findMany({
-    where: { status: "PUBLISHED" },
+    where: publicJobWhere(filters),
     orderBy: [{ publicationDate: "desc" }, { createdAt: "desc" }],
   });
   return rows.map((row) => toPublicJob(asRecord(row)));
+}
+
+export async function listPublicJobs(): Promise<PublicJob[]> {
+  return searchPublicJobs({
+    q: "",
+    contractType: null,
+    workMode: null,
+    workplace: "",
+    salary: "",
+    publishedFrom: null,
+    publishedTo: null,
+  });
 }
 
 export async function getPublicJob(id: string): Promise<PublicJob | null> {

@@ -27,6 +27,7 @@ import {
 } from "@/lib/teste-comportamental";
 import { AVISO_RETENCAO_INBOX } from "@/lib/profile/inbox-retention";
 import CarreiraTimeline from "@/components/professional/CarreiraTimeline";
+import ProfessionalJobSearch from "@/components/professional/ProfessionalJobSearch";
 import ProfessionalOpportunityBoard from "@/components/professional/ProfessionalOpportunityBoard";
 import ProfessionalRecruitmentHistory, {
   type RecruitmentHistoryCounts,
@@ -141,7 +142,7 @@ export default function DashboardProfissional() {
   const [mensagemAbertaId, setMensagemAbertaId] = useState<string | null>(null);
   const [respostaTexto, setRespostaTexto] = useState<Record<string, string>>({});
   const [enviandoRespostaId, setEnviandoRespostaId] = useState<string | null>(null);
-  const [abaDireita, setAbaDireita] = useState<"oportunidades" | "dicas" | "mensagens">("oportunidades");
+  const [abaDireita, setAbaDireita] = useState<"vagas" | "oportunidades" | "dicas" | "mensagens">("oportunidades");
   const [weekViewsCount, setWeekViewsCount] = useState(0);
   const [lastViewAt, setLastViewAt] = useState<string | null>(null);
   const [lastViewCompany, setLastViewCompany] = useState<string | null>(null);
@@ -516,6 +517,7 @@ export default function DashboardProfissional() {
         >
           {(
             [
+              { id: "vagas" as const, label: "Buscar vagas", badge: 0 },
               { id: "oportunidades" as const, label: "Oportunidades", badge: proposals.filter((p) => p.status === "SENT" || p.status === "MORE_INFO" || p.status === "INTERVIEW_PENDING").length },
               { id: "dicas" as const, label: "Dicas", badge: tips.length },
               { id: "mensagens" as const, label: "Mensagens", badge: inboxMessages.length },
@@ -797,6 +799,8 @@ export default function DashboardProfissional() {
             scrollbarGutter: "stable",
           }}
         >
+          {abaDireita === "vagas" && <ProfessionalJobSearch />}
+
           {abaDireita === "oportunidades" && (
             <>
               <PlatformVideoCall role="professional" title="Chamada de vídeo" peerLabel="empresa" />

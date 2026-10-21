@@ -1,0 +1,153 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  color: var(--dash-title, #c89b3c);
+  font-size: 16px;
+}
+
+.lead,
+.count {
+  margin: 0;
+  color: var(--dash-text-muted, #cfcfcf);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.filters label,
+.fieldWide {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--dash-text, #f2f2f2);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.fieldWide {
+  grid-column: 1 / -1;
+}
+
+.filters input,
+.filters select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--dash-border, #8d6b1f);
+  border-radius: 8px;
+  background: var(--dash-input-bg, #1c1c1c);
+  color: var(--dash-text, #f2f2f2);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: end;
+}
+
+.actions button,
+.card a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--dash-gold, #c89b3c);
+  background: var(--dash-gold, #c89b3c);
+  color: #111;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ghost {
+  background: transparent;
+  color: var(--dash-gold, #c89b3c);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card {
+  padding: 12px;
+  border: 1px solid rgba(200, 155, 60, 0.45);
+  border-radius: 12px;
+  background: var(--dash-inner, #2b2b2b);
+}
+
+.card h3 {
+  margin: 0;
+  color: var(--dash-text, #fff);
+  font-size: 15px;
+}
+
+.company {
+  margin: 4px 0 8px;
+  color: var(--dash-gold, #c89b3c);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.card ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.card li {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(200, 155, 60, 0.12);
+  color: var(--dash-text, #f2f2f2);
+  font-size: 11px;
+}
+
+.excerpt {
+  margin: 0 0 10px;
+  color: var(--dash-text-muted, #d6d6d6);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.empty,
+.error {
+  margin: 0;
+  font-size: 13px;
+}
+
+.error {
+  color: #fca5a5;
+}
+
+.empty {
+  padding: 12px;
+  border: 1px dashed rgba(200, 155, 60, 0.55);
+  border-radius: 12px;
+  color: var(--dash-text-muted, #d6d6d6);
+}
+
+@media (max-width: 720px) {
+  .filters {
+    grid-template-columns: 1fr;
+  }
+}
