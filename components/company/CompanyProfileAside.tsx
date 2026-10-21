@@ -54,7 +54,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
             borderRadius: "50%",
             overflow: "hidden",
             flexShrink: 0,
-            border: `2px solid ${companyProfile?.logoUrl ? DASH.gold : "#ef4444"}`,
+            border: `2px solid ${DASH.gold}`,
             background: companyProfile?.logoUrl ? "#0d0d0d" : DASH.input,
           }}
         >
@@ -71,11 +71,11 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
           <p style={{ margin: "0 0 6px", fontWeight: 800, fontSize: 16, color: DASH.title }}>
             {companyProfile?.razaoSocial || "Empresa"}
           </p>
-          <span
+            <span
             style={{
               display: "inline-block",
               padding: "2px 8px",
-              borderRadius: 999,
+              borderRadius: 8,
               border: `1px solid ${DASH.gold}`,
               color: DASH.gold,
               fontSize: 10,
@@ -208,32 +208,56 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
             <p style={{ margin: "0 0 4px", fontSize: 10, fontWeight: 800, letterSpacing: "0.04em", color: DASH.gold }}>
               CADASTRO {completude}%
             </p>
-            <div style={{ height: 14, borderRadius: 999, border: "1px solid #ef4444", background: "#3a1515", overflow: "hidden" }}>
+            <div style={{ height: 10, borderRadius: 8, border: `1px solid ${DASH.gold}`, background: "#222", overflow: "hidden" }}>
               <div
                 style={{
                   width: `${completude}%`,
                   height: "100%",
-                  background: completude >= 100 ? "#4ade80" : "linear-gradient(90deg, #ef4444, #c89b3c)",
+                  background: completude >= 100 ? "#4ade80" : "linear-gradient(90deg, #8d6b1f, #c89b3c)",
                 }}
               />
+            </div>
+          </div>
+
+          <div
+            style={{
+              margin: "0 0 12px",
+              padding: "12px 14px",
+              background: "#0d0d0d",
+              border: "1px solid rgba(141, 107, 31, 0.45)",
+              borderRadius: 8,
+            }}
+          >
+            <p style={{ margin: "0 0 10px", textAlign: "center", fontSize: 13, fontWeight: 700, color: DASH.gold, letterSpacing: "0.06em" }}>
+              PREENCHIMENTO
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "10px 22px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#ddd" }}>
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#e53935", flexShrink: 0 }} />
+                Preenchimento obrigatório
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#ddd" }}>
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#C89B3C", flexShrink: 0 }} />
+                Preenchimento recomendado
+              </div>
             </div>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 6 }}>
           {(
             [
-              ["Razão social", companyProfile.razaoSocial],
-              ["CNPJ", companyProfile.cnpj],
-              ["Responsável", companyProfile.responsavelNome],
-              ["CPF", companyProfile.responsavelCpf],
-              ["E-mail de login", companyProfile.email],
-              ["E-mail corporativo", companyProfile.emailCorporativo],
-              ["Telefone", companyProfile.telefone],
-              ["Endereço", companyProfile.endereco],
-              ["E-mail verificado", companyProfile.emailCorporativoVerificado ? "Sim" : ""],
-              ["Cartão CNPJ", companyProfile.cartaoCnpjUrl],
+              ["Razão social", companyProfile.razaoSocial, true],
+              ["CNPJ", companyProfile.cnpj, true],
+              ["Responsável", companyProfile.responsavelNome, true],
+              ["CPF", companyProfile.responsavelCpf, true],
+              ["E-mail de login", companyProfile.email, false],
+              ["E-mail corporativo", companyProfile.emailCorporativo, false],
+              ["Telefone", companyProfile.telefone, true],
+              ["Endereço", companyProfile.endereco, true],
+              ["E-mail verificado", companyProfile.emailCorporativoVerificado ? "Sim" : "", false],
+              ["Cartão CNPJ", companyProfile.cartaoCnpjUrl, false],
             ] as const
-          ).map(([label, val]) => {
+          ).map(([label, val, obrigatorio]) => {
             const texto = typeof val === "string" ? val.trim() : "";
             const falta = !texto;
             return (
@@ -242,18 +266,31 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
               style={{
                 padding: "4px 8px",
                 ...dashInnerBox,
-                border: `1px solid ${falta ? "#ef4444" : DASH.gold}`,
-                borderRadius: 999,
+                border: `1px solid ${DASH.gold}`,
+                borderRadius: 8,
               }}
             >
-              <p style={{ ...dashLabel, margin: "0 0 2px", fontSize: 9, textTransform: "uppercase" }}>{label}</p>
-              <p style={{ color: falta ? "#fca5a5" : DASH.text, margin: 0, fontSize: 11, wordBreak: "break-word" }}>
+              <p style={{ ...dashLabel, margin: "0 0 2px", fontSize: 9, textTransform: "uppercase", display: "flex", alignItems: "center", gap: 6 }}>
+                {falta ? (
+                  <span
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      background: obrigatorio ? "#e53935" : "#C89B3C",
+                      flexShrink: 0,
+                    }}
+                  />
+                ) : null}
+                {label}
+              </p>
+              <p style={{ color: DASH.text, margin: 0, fontSize: 11, wordBreak: "break-word" }}>
                 {typeof val === "string" && /^https?:\/\//i.test(val) ? (
                   <a href={val} target="_blank" rel="noopener noreferrer" style={{ color: DASH.gold, fontWeight: 700 }}>
                     Abrir arquivo
                   </a>
                 ) : (
-                  texto || "Falta"
+                  texto || "—"
                 )}
               </p>
             </div>
