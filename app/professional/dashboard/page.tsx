@@ -576,32 +576,26 @@ export default function DashboardProfissional() {
             gap: 14,
           }}
         >
-          <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow, overflow: "visible", alignSelf: "stretch" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
-              <h3 style={{ ...dashTitleProf, margin: 0, fontSize: 14 }}>Perfil</h3>
-              <div style={{ display: "flex", gap: 8, alignItems: "flex-start", flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                <button
-                  type="button"
-                  onClick={() => setPerfilEditando(true)}
-                  disabled={perfilEditando}
-                  style={{ ...btnGold, padding: "6px 10px", fontSize: 10, flexShrink: 0, opacity: perfilEditando ? 0.7 : 1 }}
-                >
-                  {perfilEditando ? "Campos liberados" : "Editar perfil"}
-                </button>
-                <DeleteAccountControl variant="card" />
-              </div>
-            </div>
-            <p style={{ margin: "0 0 12px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
-              O cadastro fica travado. Clique em Editar perfil para alterar os campos.
-            </p>
-            {abaDireita === "perfil" && (
-              <CadastroProfissional
-                incorporado
-                travado={!perfilEditando}
-                onSalvo={() => setPerfilEditando(false)}
-              />
-            )}
-          </section>
+          {abaDireita === "perfil" && (
+            <CadastroProfissional
+              incorporado
+              travado={!perfilEditando}
+              onSalvo={() => setPerfilEditando(false)}
+              acoes={
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setPerfilEditando(true)}
+                    disabled={perfilEditando}
+                    style={{ ...btnGold, padding: "6px 10px", fontSize: 10, flexShrink: 0, opacity: perfilEditando ? 0.7 : 1 }}
+                  >
+                    {perfilEditando ? "Campos liberados" : "Editar perfil"}
+                  </button>
+                  <DeleteAccountControl variant="compact" />
+                </>
+              }
+            />
+          )}
         </main>
 
         {/* Direita — conteúdo da aba ativa */}

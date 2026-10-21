@@ -406,10 +406,12 @@ export default function CadastroProfissional({
   incorporado = false,
   travado = false,
   onSalvo,
+  acoes,
 }: {
   incorporado?: boolean;
   travado?: boolean;
   onSalvo?: () => void;
+  acoes?: React.ReactNode;
 } = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -1435,13 +1437,21 @@ export default function CadastroProfissional({
     <div className={`${styles.container} ${incorporado ? styles.containerIncorporado : ""} ri-readable`}>
       <AuthAtmosphere intensity="strong" />
       {submitting && <PageLoader message="Salvando cadastro..." mode="overlay" />}
-      <div className={styles.card} role="main" aria-labelledby="register-title">
+      <div className={`${styles.card} ${acoes ? styles.cardComAcoes : ""}`} role="main" aria-labelledby="register-title">
+        {acoes ? <div className={styles.cardAcoes}>{acoes}</div> : null}
+        {incorporado ? (
+          <h1 id="register-title" className={styles.title} style={{ marginTop: 0, marginBottom: 8 }}>
+            PERFIL
+          </h1>
+        ) : null}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
           <LogoRecruta size="sm" as="div" depth />
         </div>
+        {!incorporado ? (
         <h1 id="register-title" className={styles.title}>
           {isEditMode ? 'Atualizar cadastro' : 'Complete seu perfil'}
         </h1>
+        ) : null}
         {formFeedback && (
           <div
             className={`${styles.feedbackBanner} ${
@@ -1456,11 +1466,9 @@ export default function CadastroProfissional({
             )}
           </div>
         )}
-        {isEditMode && (
+        {isEditMode && !(incorporado && travado) && (
           <p style={{ color: '#F2F2F2', marginTop: 0, marginBottom: 20, fontSize: 15 }}>
-            {incorporado && travado
-              ? "Cadastro travado. Clique em Editar perfil para alterar os campos."
-              : "Seus dados foram carregados. Altere o que precisar e clique em salvar."}
+            Seus dados foram carregados. Altere o que precisar e clique em salvar.
           </p>
         )}
 
