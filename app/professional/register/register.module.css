@@ -13,6 +13,17 @@
   --field-gap: 20px;
 }
 
+.containerIncorporado {
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.cadastroTravado {
+  pointer-events: none;
+  user-select: text;
+}
+
 .container {
   position: relative;
   background-color: var(--background);

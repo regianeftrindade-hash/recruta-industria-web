@@ -402,11 +402,19 @@ function CampoArquivoAnexo({
   );
 }
 
-export default function CadastroProfissional() {
+export default function CadastroProfissional({
+  incorporado = false,
+  travado = false,
+  onSalvo,
+}: {
+  incorporado?: boolean;
+  travado?: boolean;
+  onSalvo?: () => void;
+} = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status: sessionStatus } = useSession();
-  const isEditMode = searchParams.get('edit') === '1';
+  const isEditMode = incorporado || searchParams.get('edit') === '1';
   const [profileLoaded, setProfileLoaded] = useState(!isEditMode);
   /** Só bloqueia a tela quando há sessão autenticada para checar. Visitante vê o form na hora. */
   const [checkingRegistration, setCheckingRegistration] = useState(false);
@@ -711,13 +719,15 @@ export default function CadastroProfissional() {
       })
       .catch((err) => {
         console.error('Erro ao carregar perfil para edição:', err);
-        alert('Não foi possível carregar seus dados. Tente novamente pelo painel.');
-        router.push('/professional/dashboard');
+        if (!incorporado) {
+          alert('Não foi possível carregar seus dados. Tente novamente pelo painel.');
+          router.push('/professional/dashboard');
+        }
       })
       .finally(() => {
         setProfileLoaded(true);
       });
-  }, [isEditMode, router]);
+  }, [isEditMode, incorporado, router]);
 
   // Carrega dados do cadastro simples quando a página abre (novo cadastro)
   useEffect(() => {
@@ -1214,7 +1224,8 @@ export default function CadastroProfissional() {
             if (mensagemSucesso) {
               setFormFeedback({ tone: 'success', message: mensagemSucesso });
             }
-            router.push('/professional/dashboard');
+            if (incorporado) onSalvo?.();
+            else router.push('/professional/dashboard');
           } else {
             reportProfessionalSignupConversion();
             router.push('/professional/boas-vindas');
@@ -1421,7 +1432,7 @@ export default function CadastroProfissional() {
   }
 
   return (
-    <div className={`${styles.container} ri-readable`}>
+    <div className={`${styles.container} ${incorporado ? styles.containerIncorporado : ""} ri-readable`}>
       <AuthAtmosphere intensity="strong" />
       {submitting && <PageLoader message="Salvando cadastro..." mode="overlay" />}
       <div className={styles.card} role="main" aria-labelledby="register-title">
@@ -1447,7 +1458,9 @@ export default function CadastroProfissional() {
         )}
         {isEditMode && (
           <p style={{ color: '#F2F2F2', marginTop: 0, marginBottom: 20, fontSize: 15 }}>
-            Seus dados foram carregados. Altere o que precisar e clique em salvar.
+            {incorporado && travado
+              ? "Cadastro travado. Clique em Editar perfil para alterar os campos."
+              : "Seus dados foram carregados. Altere o que precisar e clique em salvar."}
           </p>
         )}
 
@@ -1485,6 +1498,7 @@ export default function CadastroProfissional() {
           </div>
         )}
 
+        <div inert={travado ? true : undefined} className={travado ? styles.cadastroTravado : undefined}>
         <form onSubmit={handleSubmit} className={styles.form} noValidate>
 
           {showWizardStep(0) && (
@@ -3094,6 +3108,7 @@ export default function CadastroProfissional() {
           </div>
           )}
         </form>
+        </div>
       </div>
     </div>
   );

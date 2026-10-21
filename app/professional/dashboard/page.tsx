@@ -22,8 +22,7 @@ import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 import { type ResultadoTesteComportamental } from "@/lib/teste-comportamental";
 import { AVISO_RETENCAO_INBOX } from "@/lib/profile/inbox-retention";
 import ProfessionalJobSearch from "@/components/professional/ProfessionalJobSearch";
-import CompanyCandidateProfileDetails from "@/components/company/CompanyCandidateProfileDetails";
-import type { Resumo } from "@/components/company/company-candidate-profile-types";
+import CadastroProfissional from "@/app/professional/register/page";
 import ProfessionalOpportunityBoard from "@/components/professional/ProfessionalOpportunityBoard";
 import ProfessionalRecruitmentHistory, {
   type RecruitmentHistoryCounts,
@@ -138,12 +137,13 @@ export default function DashboardProfissional() {
   const [respostaTexto, setRespostaTexto] = useState<Record<string, string>>({});
   const [enviandoRespostaId, setEnviandoRespostaId] = useState<string | null>(null);
   const [abaDireita, setAbaDireita] = useState<"vagas" | "oportunidades" | "dicas" | "perfil" | "mensagens">("vagas");
+  const [perfilEditando, setPerfilEditando] = useState(false);
   const [weekViewsCount, setWeekViewsCount] = useState(0);
   const [lastViewAt, setLastViewAt] = useState<string | null>(null);
   const [lastViewCompany, setLastViewCompany] = useState<string | null>(null);
   const [weekViews, setWeekViews] = useState<ProfileViewItem[]>([]);
   const [companyNamesHidden, setCompanyNamesHidden] = useState(true);
-  const [testeComportamental, setTesteComportamental] = useState<ResultadoTesteComportamental | null>(null);
+  const [, setTesteComportamental] = useState<ResultadoTesteComportamental | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -371,13 +371,6 @@ export default function DashboardProfissional() {
 
   const edit = formEdit ?? profileData.formEdit ?? null;
   const fd = edit?.formData ?? {};
-  const valor = (chave: string, alternativo?: unknown) => {
-    const v = fd[chave];
-    if (v !== undefined && v !== null && v !== "") return v;
-    if (alternativo !== undefined && alternativo !== null && alternativo !== "") return alternativo;
-    return VAZIO;
-  };
-
   const fotoPerfil = fd.fotoPerfil || profileData.fotoPerfil || profileData.avatar;
 
   const nomeExibicao = (() => {
@@ -385,14 +378,6 @@ export default function DashboardProfissional() {
     if (n && String(n) !== "" && String(n) !== VAZIO) return String(n);
     return profileData.email?.split("@")[0] || "Usuário";
   })();
-
-  const cargoResumo = String(valor("cargoDesejado", profileData.cargoDesejado || profileData.profissao));
-  const areaResumo = String(valor("areaInteresse", fd.areaInteresse));
-  const localResumo = [fd.cidade, fd.estado].filter(Boolean).join(", ") || String(profileData.localizacao || VAZIO);
-  const escolaridadeResumo = String(valor("escolaridade", fd.escolaridade));
-  const turnoResumo = String(valor("turnoDisponivel", fd.turnoDisponivel));
-  const experienciaResumo = String(valor("tempoExperiencia", profileData.experiencia));
-  const recolocacaoResumo = String(valor("recolocacao", fd.recolocacao));
 
   const toggleMensagemAberta = (id: string) => {
     setMensagemAbertaId((atual) => (atual === id ? null : id));
@@ -597,108 +582,25 @@ export default function DashboardProfissional() {
               <div style={{ display: "flex", gap: 8, alignItems: "flex-start", flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
                 <button
                   type="button"
-                  onClick={() =>
-                    router.push(
-                      profileData.registrationComplete === false
-                        ? "/professional/register"
-                        : "/professional/register?edit=1",
-                    )
-                  }
-                  style={{ ...btnGold, padding: "6px 10px", fontSize: 10, flexShrink: 0 }}
+                  onClick={() => setPerfilEditando(true)}
+                  disabled={perfilEditando}
+                  style={{ ...btnGold, padding: "6px 10px", fontSize: 10, flexShrink: 0, opacity: perfilEditando ? 0.7 : 1 }}
                 >
-                  Editar perfil
+                  {perfilEditando ? "Campos liberados" : "Editar perfil"}
                 </button>
                 <DeleteAccountControl variant="card" />
               </div>
             </div>
             <p style={{ margin: "0 0 12px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
-              É assim que as empresas veem seu perfil antes de liberar o contato.
+              O cadastro fica travado. Clique em Editar perfil para alterar os campos.
             </p>
-
-            <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 10 }}>
-              <div onClick={handleFotoClick} style={{ cursor: "pointer", flexShrink: 0 }} title="Clique para alterar a foto">
-                {fotoPerfil ? (
-                  <img
-                    src={String(fotoPerfil)}
-                    alt="Prévia da foto"
-                    style={avatarImageStyle(56)}
-                    decoding="async"
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: 56,
-                      height: 56,
-                      borderRadius: "50%",
-                      background: DASH.input,
-                      border: "2px solid #ef4444",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 22,
-                    }}
-                  >
-                    👤
-                  </div>
-                )}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: DASH.title }}>
-                  {nomeExibicao}
-                </p>
-                <p style={{ margin: "0 0 3px", fontSize: 11, color: DASH.text }}>
-                  {cargoResumo} · {areaResumo}
-                </p>
-                <p style={{ margin: 0, fontSize: 10, color: DASH.muted, lineHeight: 1.4 }}>
-                  {localResumo} · {escolaridadeResumo} · {turnoResumo} · Exp. {experienciaResumo}
-                  {recolocacaoResumo !== VAZIO ? ` · Recol. ${recolocacaoResumo}` : ""}
-                </p>
-                  <div style={{ marginTop: 10, maxWidth: 280 }}>
-                    <p style={{ margin: "0 0 4px", fontSize: 10, fontWeight: 800, letterSpacing: "0.04em", color: DASH.gold }}>
-                      CADASTRO {typeof profileData.profileCompletion === "number" ? profileData.profileCompletion : 0}%
-                    </p>
-                    <div style={{ height: 14, borderRadius: 999, border: "1px solid #ef4444", background: "#3a1515", overflow: "hidden" }}>
-                      <div
-                        style={{
-                          width: `${Math.max(0, Math.min(100, typeof profileData.profileCompletion === "number" ? profileData.profileCompletion : 0))}%`,
-                          height: "100%",
-                          background: (profileData.profileCompletion ?? 0) >= 100 ? "#4ade80" : "linear-gradient(90deg, #ef4444, #c89b3c)",
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-            </div>
-            <CompanyCandidateProfileDetails
-              resumo={{
-                id: profileData.email || "meu-perfil",
-                nome: nomeExibicao,
-                cargo: cargoResumo === VAZIO ? "" : cargoResumo,
-                area: areaResumo === VAZIO ? "" : areaResumo,
-                local: localResumo === VAZIO ? "" : localResumo,
-                escolaridade: escolaridadeResumo === VAZIO ? "" : escolaridadeResumo,
-                turno: turnoResumo === VAZIO ? "" : turnoResumo,
-                experiencia: experienciaResumo === VAZIO ? "" : experienciaResumo,
-                bloqueado: false,
-                profileCompletion: typeof profileData.profileCompletion === "number" ? profileData.profileCompletion : 0,
-                avatar: fotoPerfil ? String(fotoPerfil) : null,
-              } satisfies Resumo}
-              formEdit={edit ?? {
-                formData: {},
-                cpf: "",
-                telefone: "",
-                telefone2: "",
-                pretensaoSalarial: "",
-                dataNascimentoDisplay: "",
-                cursos: [],
-                empresas: [],
-              }}
-              sobreMim={null}
-              sobreMimPreenchido={false}
-              testeComportamental={testeComportamental}
-              documentos={[]}
-              destacarVazios
-            />
+            {abaDireita === "perfil" && (
+              <CadastroProfissional
+                incorporado
+                travado={!perfilEditando}
+                onSalvo={() => setPerfilEditando(false)}
+              />
+            )}
           </section>
         </main>
 
