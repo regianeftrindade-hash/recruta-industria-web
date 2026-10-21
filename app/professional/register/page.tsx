@@ -190,20 +190,27 @@ function parseJsonSafe(res: Response): Promise<Record<string, unknown>> {
   });
 }
 
-function LegendaPreenchimento() {
+function LegendaPreenchimento({ avisoSalvar = false }: { avisoSalvar?: boolean }) {
   return (
-    <div className={styles.legendaPreenchimentoCard}>
-      <h3 className={styles.legendaPreenchimentoTitulo}>PREENCHIMENTO</h3>
-      <div className={styles.legendaPreenchimentoLista}>
-        <div className={styles.legendaPreenchimentoItem}>
-          <span className={`${styles.legendaBolinha} ${styles.legendaBolinhaVermelha}`} aria-hidden />
-          <span>Preenchimento obrigatório</span>
-        </div>
-        <div className={styles.legendaPreenchimentoItem}>
-          <span className={`${styles.legendaBolinha} ${styles.legendaBolinhaAmarela}`} aria-hidden />
-          <span>Preenchimento recomendado</span>
+    <div>
+      <div className={styles.legendaPreenchimentoCard}>
+        <h3 className={styles.legendaPreenchimentoTitulo}>PREENCHIMENTO</h3>
+        <div className={styles.legendaPreenchimentoLista}>
+          <div className={styles.legendaPreenchimentoItem}>
+            <span className={`${styles.legendaBolinha} ${styles.legendaBolinhaVermelha}`} aria-hidden />
+            <span>Preenchimento obrigatório</span>
+          </div>
+          <div className={styles.legendaPreenchimentoItem}>
+            <span className={`${styles.legendaBolinha} ${styles.legendaBolinhaAmarela}`} aria-hidden />
+            <span>Preenchimento recomendado</span>
+          </div>
         </div>
       </div>
+      {avisoSalvar ? (
+        <p className={styles.avisoSalvarTag}>
+          Seus dados foram carregados. Altere o que precisar e clique em salvar.
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -212,10 +219,12 @@ function CampoFotoPerfil({
   value,
   onFileSelect,
   centered = false,
+  avisoSalvar = false,
 }: {
   value: string | null;
   onFileSelect: (file: File) => Promise<void> | void;
   centered?: boolean;
+  avisoSalvar?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const temFoto = isFotoPerfilPreviewable(value);
@@ -237,7 +246,7 @@ function CampoFotoPerfil({
               Trocar foto
             </button>
           </div>
-          {centered && <LegendaPreenchimento />}
+          {centered && <LegendaPreenchimento avisoSalvar={avisoSalvar} />}
         </div>
       )}
       {!temFoto && (
@@ -251,7 +260,7 @@ function CampoFotoPerfil({
               Selecionar foto
             </button>
           </div>
-          {centered && <LegendaPreenchimento />}
+          {centered && <LegendaPreenchimento avisoSalvar={avisoSalvar} />}
         </div>
       )}
       <input
@@ -1465,11 +1474,6 @@ export default function CadastroProfissional({
             )}
           </div>
         )}
-        {isEditMode && !(incorporado && travado) && (
-          <p style={{ color: '#F2F2F2', marginTop: 0, marginBottom: 20, fontSize: 15 }}>
-            Seus dados foram carregados. Altere o que precisar e clique em salvar.
-          </p>
-        )}
 
         {!incorporado ? (
         <div className={styles.completionSticky}>
@@ -1514,6 +1518,7 @@ export default function CadastroProfissional({
           <>
           <CampoFotoPerfil
             centered
+            avisoSalvar={isEditMode}
             value={formData.fotoPerfil}
             onFileSelect={async (file) => {
               const reader = new FileReader();
