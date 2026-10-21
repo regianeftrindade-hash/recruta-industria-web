@@ -83,6 +83,63 @@ function excerpt(value: string): string {
   return `${plain.slice(0, 137).trimEnd()}...`;
 }
 
+const BUSCAS_KEY = "ri-profissional-buscas-vagas";
+const MAX_BUSCAS = 6;
+
+type BuscaSalva = { id: string; form: SearchState; label: string };
+
+function temFiltro(form: SearchState): boolean {
+  return Object.values(form).some((value) => value.trim() !== "");
+}
+
+function rotuloBusca(form: SearchState): string {
+  const partes: string[] = [];
+  if (form.q.trim()) partes.push(form.q.trim());
+  if (form.estado) partes.push(form.estado);
+  if (form.cidade) partes.push(form.cidade);
+  const faixa = FAIXAS_SALARIO.find((item) => item.id === form.faixa);
+  if (faixa) partes.push(faixa.label);
+  if (form.periodo === "24h") partes.push("24 horas");
+  else if (form.periodo) partes.push(`${form.periodo} dias`);
+  const contrato = CONTRACT_TYPES.find((item) => item.value === form.contrato);
+  if (contrato) partes.push(contractOptionLabel(contrato.value, contrato.label));
+  const modo = WORK_MODES.find((item) => item.value === form.modalidade);
+  if (modo) partes.push(modeOptionLabel(modo.value, modo.label));
+  return partes.join(" · ");
+}
+
+function buscaValida(value: unknown): value is BuscaSalva {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Partial<BuscaSalva>;
+  if (typeof item.id !== "string" || typeof item.label !== "string" || !item.form) return false;
+  const form = item.form;
+  return (Object.keys(EMPTY) as Array<keyof SearchState>).every((key) => typeof form[key] === "string");
+}
+
+function lerBuscas(): BuscaSalva[] {
+  try {
+    const raw = localStorage.getItem(BUSCAS_KEY);
+    const data = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(data)) return [];
+    return data.filter(buscaValida).slice(0, MAX_BUSCAS);
+  } catch {
+    return [];
+  }
+}
+
+function guardarBusca(form: SearchState): BuscaSalva[] {
+  if (!temFiltro(form)) return lerBuscas();
+  try {
+    const atual: BuscaSalva = { id: String(Date.now()), form, label: rotuloBusca(form) };
+    const anteriores = lerBuscas().filter((item) => JSON.stringify(item.form) !== JSON.stringify(form));
+    const proximas = [atual, ...anteriores].slice(0, MAX_BUSCAS);
+    localStorage.setItem(BUSCAS_KEY, JSON.stringify(proximas));
+    return proximas;
+  } catch {
+    return lerBuscas();
+  }
+}
+
 function ListaFlutuante({
   label,
   value,
@@ -126,29 +183,43 @@ function ListaFlutuante({
   return (
     <label className={styles.field} ref={rootRef}>
       {label}
-      <input
-        className={styles.control}
-        value={texto}
-        placeholder={placeholder}
-        role="combobox"
-        aria-expanded={aberto}
-        aria-controls={listId}
-        autoComplete="off"
-        onFocus={() => setAberto(true)}
-        onChange={(event) => {
-          setTexto(event.target.value);
-          setAberto(true);
-          if (!event.target.value.trim()) onChange("");
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "Escape") setAberto(false);
-          if (event.key === "Enter" && filtradas[0]) {
-            event.preventDefault();
-            onChange(filtradas[0].id);
-            setAberto(false);
-          }
-        }}
-      />
+      <span className={styles.combo}>
+        <input
+          className={styles.control}
+          value={texto}
+          placeholder={placeholder}
+          role="combobox"
+          aria-expanded={aberto}
+          aria-controls={listId}
+          autoComplete="off"
+          onFocus={() => setAberto(true)}
+          onChange={(event) => {
+            setTexto(event.target.value);
+            setAberto(true);
+            if (!event.target.value.trim()) onChange("");
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") setAberto(false);
+            if (event.key === "Enter" && filtradas[0]) {
+              event.preventDefault();
+              onChange(filtradas[0].id);
+              setAberto(false);
+            }
+          }}
+        />
+        <button
+          type="button"
+          className={styles.arrow}
+          data-open={aberto ? "true" : "false"}
+          aria-label={aberto ? "Fechar lista" : "Abrir lista"}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => setAberto((atual) => !atual)}
+        >
+          <svg width="12" height="8" viewBox="0 0 12 8" aria-hidden="true">
+            <path d="M1 1.5 L6 6.5 L11 1.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+        </button>
+      </span>
       {aberto ? (
         <ul id={listId} className={styles.menu} role="listbox">
           {filtradas.length === 0 ? (
@@ -182,6 +253,8 @@ export default function ProfessionalJobSearch() {
   const [cidades, setCidades] = useState<string[]>([]);
   const [carregandoCidades, setCarregandoCidades] = useState(false);
   const [jobs, setJobs] = useState<PublicJob[]>([]);
+  const [consulta, setConsulta] = useState<SearchState>(EMPTY);
+  const [buscas, setBuscas] = useState<BuscaSalva[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -209,9 +282,14 @@ export default function ProfessionalJobSearch() {
     };
   }, [form.estado]);
 
-  async function load(next: SearchState) {
+  useEffect(() => {
+    setBuscas(lerBuscas());
+  }, []);
+
+  async function load(next: SearchState, salvar = false) {
     setLoading(true);
     setError("");
+    setConsulta(next);
     const params = new URLSearchParams();
     const faixa = FAIXAS_SALARIO.find((item) => item.id === next.faixa);
     if (next.q.trim()) params.set("q", next.q.trim());
@@ -233,6 +311,7 @@ export default function ProfessionalJobSearch() {
         return;
       }
       setJobs(Array.isArray(data.jobs) ? data.jobs : []);
+      if (salvar) setBuscas(guardarBusca(next));
     } catch {
       setError("Não foi possível buscar as vagas.");
       setJobs([]);
@@ -259,12 +338,12 @@ export default function ProfessionalJobSearch() {
   return (
     <section className={styles.panel}>
       <h2 className={styles.title}>Buscar vagas</h2>
-      <p className={styles.lead}>Vagas publicadas no Recruta Indústria. O nome de uma empresa confidencial não aparece nesta busca.</p>
+      <p className={styles.lead}>Todas as vagas publicadas no Recruta Indústria aparecem aqui, tanto as cadastradas pelo site quanto as das empresas. Use os filtros para ver só o que interessa. O nome de uma empresa confidencial não aparece.</p>
       <form
         className={styles.filters}
         onSubmit={(event) => {
           event.preventDefault();
-          void load(form);
+          void load(form, true);
         }}
       >
         <label className={styles.fieldWide}>
@@ -338,13 +417,38 @@ export default function ProfessionalJobSearch() {
         </div>
       </form>
 
+      {buscas.length > 0 ? (
+        <div className={styles.history}>
+          <p>Últimas buscas</p>
+          <div>
+            {buscas.map((busca) => (
+              <button
+                key={busca.id}
+                type="button"
+                onClick={() => {
+                  setForm(busca.form);
+                  void load(busca.form, true);
+                }}
+              >
+                {busca.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       {error ? <p className={styles.error}>{error}</p> : null}
       {loading ? <p className={styles.lead}>Buscando vagas...</p> : null}
       {!loading && !error ? (
-        <p className={styles.count}>{jobs.length === 1 ? "1 vaga" : `${jobs.length} vagas`}</p>
+        <p className={styles.count}>
+          {jobs.length === 1 ? "1 vaga publicada" : `${jobs.length} vagas publicadas`}
+          {temFiltro(consulta) ? " com esses filtros" : ""}
+        </p>
       ) : null}
       {!loading && !error && jobs.length === 0 ? (
-        <p className={styles.empty}>Nenhuma vaga encontrada com esses filtros.</p>
+        <p className={styles.empty}>
+          {temFiltro(consulta) ? "Nenhuma vaga encontrada com esses filtros." : "Nenhuma vaga publicada no momento."}
+        </p>
       ) : null}
 
       <div className={styles.list}>
