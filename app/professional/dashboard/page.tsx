@@ -600,34 +600,6 @@ export default function DashboardProfissional() {
             scrollbarGutter: "stable",
           }}
         >
-          {profileData.registrationComplete === false && (
-            <section
-              className="dash-card"
-              role="status"
-              style={{
-                ...dashCard,
-                padding: 16,
-                boxShadow: DASH.shadow,
-                border: `1px solid ${DASH.gold}`,
-                background: "linear-gradient(180deg, rgba(200,155,60,0.18) 0%, rgba(43,43,43,0.96) 100%)",
-              }}
-            >
-              <h2 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>
-                Sua conta está criada! Agora complete seu perfil para que as empresas possam encontrar você.
-              </h2>
-              <p style={{ margin: "0 0 12px", fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>
-                Nome e e-mail já estão salvos. Falta preencher o restante do cadastro para aparecer na vitrine.
-              </p>
-              <button
-                type="button"
-                onClick={() => router.push("/professional/register")}
-                style={{ ...btnGold, padding: "10px 16px", fontSize: 12 }}
-              >
-                Completar perfil
-              </button>
-            </section>
-          )}
-
           <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
               <h3 style={{ ...dashTitleProf, margin: 0, fontSize: 14 }}>Perfil</h3>
@@ -759,21 +731,7 @@ export default function DashboardProfissional() {
         >
           {abaDireita === "vagas" && (
             <>
-              {profileData.registrationComplete === false && (
-                <section className="dash-card" role="status" style={{ ...dashCard, padding: "16px 16px 22px", overflow: "visible", boxShadow: DASH.shadow, border: `1px solid ${DASH.gold}` }}>
-                  <h2 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>
-                    Sua conta está criada! Agora complete seu perfil para que as empresas possam encontrar você.
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={() => router.push("/professional/register")}
-                    style={{ ...btnGold, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "10px 16px", fontSize: 12, lineHeight: 1.2, whiteSpace: "nowrap", marginBottom: 6, overflow: "visible" }}
-                  >
-                    Completar perfil
-                  </button>
-                </section>
-              )}
-              <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow, display: "flex", gap: 12, alignItems: "center" }}>
+              <section className="dash-card" style={{ ...dashCard, padding: "14px 14px 18px", overflow: "visible", boxShadow: DASH.shadow, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
                 <div onClick={handleFotoClick} style={{ cursor: "pointer", flexShrink: 0 }} title="Clique para alterar a foto">
                   {fotoPerfil ? (
                     <img src={String(fotoPerfil)} alt="Foto do profissional" style={avatarImageStyle(56)} decoding="async" />
@@ -781,14 +739,21 @@ export default function DashboardProfissional() {
                     <div style={{ width: 56, height: 56, borderRadius: "50%", background: DASH.input, border: `1px solid ${DASH.gold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>👤</div>
                   )}
                 </div>
-                <div>
+                <div style={{ flex: "1 1 140px", minWidth: 0 }}>
                   <p style={{ margin: "0 0 6px", fontWeight: 800, fontSize: 16, color: DASH.title }}>{nomeExibicao}</p>
-                  {typeof profileData.profileCompletion === "number" ? (
-                    <span style={{ ...compatBadgeStyle(profileData.profileCompletion, false), display: "inline-block" }}>
-                      Completude {profileData.profileCompletion}%
-                    </span>
-                  ) : null}
+                  <span style={{ ...compatBadgeStyle(typeof profileData.profileCompletion === "number" ? profileData.profileCompletion : 0, false), display: "inline-block" }}>
+                    {typeof profileData.profileCompletion === "number" ? profileData.profileCompletion : 0}%
+                  </span>
                 </div>
+                {profileData.registrationComplete === false ? (
+                  <button
+                    type="button"
+                    onClick={() => router.push("/professional/register")}
+                    style={{ ...btnGold, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, padding: "10px 16px", fontSize: 12, lineHeight: 1.2, whiteSpace: "nowrap" }}
+                  >
+                    Completar perfil
+                  </button>
+                ) : null}
               </section>
               <ProfessionalJobSearch />
             </>
