@@ -46,7 +46,7 @@ type ApplicationRow = {
   createdAt: string;
 };
 
-const RETURN_KEY = "ri-company-vagas-return";
+const COMPANY_RETURN_KEY = "ri-company-vagas-return";
 
 function emptyForm(companyName: string): FormState {
   return {
@@ -106,7 +106,17 @@ function isStage(value: string): value is ApplicationStage {
   return APPLICATION_STAGES.some((item) => item.value === value);
 }
 
-export default function CompanyVagasPanel() {
+export default function CompanyVagasPanel({
+  apiBase = "/api/company/vagas",
+  profilePath = (profileId: string) => `/company/professional/${encodeURIComponent(profileId)}`,
+  returnKey = COMPANY_RETURN_KEY,
+  showOrigin = false,
+}: {
+  apiBase?: string;
+  profilePath?: ((profileId: string) => string) | null;
+  returnKey?: string;
+  showOrigin?: boolean;
+} = {}) {
   const router = useRouter();
   const restored = useRef(false);
   const [companyName, setCompanyName] = useState("");
@@ -134,16 +144,16 @@ export default function CompanyVagasPanel() {
 
   const loadApplications = useCallback(async (jobId: string) => {
     setLoadingApplications(true);
-    const response = await fetch(`/api/company/vagas/${jobId}/candidaturas`, { credentials: "include" });
+    const response = await fetch(`${apiBase}/${jobId}/candidaturas`, { credentials: "include" });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       throw new Error(data.error || "Não foi possível carregar as candidaturas.");
     }
     setApplications(data.applications || []);
-  }, []);
+  }, [apiBase]);
 
   useEffect(() => {
-    void fetch("/api/company/vagas", { credentials: "include" })
+    void fetch(apiBase, { credentials: "include" })
       .then(async (response) => {
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.error || "Não foi possível carregar as vagas.");
@@ -156,19 +166,19 @@ export default function CompanyVagasPanel() {
         setError(loadError instanceof Error ? loadError.message : "Não foi possível carregar as vagas.");
       })
       .finally(() => setLoading(false));
-  }, [rememberForm]);
+  }, [apiBase, rememberForm]);
 
   useEffect(() => {
     if (loading || restored.current) return;
     restored.current = true;
     let memory: { screen?: string; jobId?: string; query?: string } | null = null;
     try {
-      const raw = sessionStorage.getItem(RETURN_KEY);
+      const raw = sessionStorage.getItem(returnKey);
       if (raw) memory = JSON.parse(raw) as { screen?: string; jobId?: string; query?: string };
     } catch {
       memory = null;
     }
-    sessionStorage.removeItem(RETURN_KEY);
+    sessionStorage.removeItem(returnKey);
 
     if (memory?.screen === "applications" && memory.jobId && jobs.some((job) => job.id === memory?.jobId)) {
       setSelectedId(memory.jobId);
@@ -180,8 +190,8 @@ export default function CompanyVagasPanel() {
       }).finally(() => setLoadingApplications(false));
       return;
     }
-    setScreen(jobs.length === 0 ? "form" : "list");
-  }, [jobs, loadApplications, loading]);
+    setScreen("list");
+  }, [jobs, loadApplications, loading, returnKey]);
 
   function confirmLeave(): boolean {
     if (!dirty) return true;
@@ -247,7 +257,7 @@ export default function CompanyVagasPanel() {
     setError("");
     setMessage("");
     try {
-      const response = await fetch(selectedId ? `/api/company/vagas/${selectedId}` : "/api/company/vagas", {
+      const response = await fetch(selectedId ? `${apiBase}/${selectedId}` : apiBase, {
         method: selectedId ? "PATCH" : "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -281,7 +291,7 @@ export default function CompanyVagasPanel() {
     setError("");
     setMessage("");
     try {
-      const response = await fetch(`/api/company/vagas/${job.id}`, {
+      const response = await fetch(`${apiBase}/${job.id}`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -310,7 +320,7 @@ export default function CompanyVagasPanel() {
     setError("");
     setMessage("");
     try {
-      const response = await fetch(`/api/company/vagas/${job.id}`, {
+      const response = await fetch(`${apiBase}/${job.id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -334,7 +344,7 @@ export default function CompanyVagasPanel() {
     setBusy(true);
     setError("");
     try {
-      const response = await fetch(`/api/company/vagas/${selectedId}/candidaturas/${application.id}`, {
+      const response = await fetch(`${apiBase}/${selectedId}/candidaturas/${application.id}`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -356,13 +366,13 @@ export default function CompanyVagasPanel() {
   }
 
   function openProfile(application: ApplicationRow) {
-    if (!application.profileId || !selectedId) return;
-    sessionStorage.setItem(RETURN_KEY, JSON.stringify({
+    if (!profilePath || !application.profileId || !selectedId) return;
+    sessionStorage.setItem(returnKey, JSON.stringify({
       screen: "applications",
       jobId: selectedId,
       query: candidateQuery,
     }));
-    router.push(`/company/professional/${encodeURIComponent(application.profileId)}`);
+    router.push(profilePath(application.profileId));
   }
 
   const visibleApplications = applications.filter((application) => {
@@ -387,11 +397,11 @@ export default function CompanyVagasPanel() {
           </div>
         </div>
         <div className={styles.tabs} role="tablist" aria-label="Publicação de vagas">
-          <button type="button" className={`${styles.tab} ${screen === "form" ? styles.tabOn : ""}`} onClick={openNew}>
-            + Nova vaga
-          </button>
           <button type="button" className={`${styles.tab} ${screen !== "form" ? styles.tabOn : ""}`} onClick={openList}>
             Vagas publicadas ({jobs.length})
+          </button>
+          <button type="button" className={`${styles.tab} ${screen === "form" ? styles.tabOn : ""}`} onClick={openNew}>
+            + Nova vaga
           </button>
         </div>
         {error ? <p className={styles.bad} role="alert">{error}</p> : null}
@@ -527,6 +537,7 @@ export default function CompanyVagasPanel() {
                     </h2>
                     <p className={styles.meta}>
                       {job.confidential ? "Vaga confidencial" : (job.companyName || "Empresa")}
+                      {showOrigin ? ` · ${job.originLabel}` : ""}
                       {job.contractLabel ? ` · ${job.contractLabel}` : ""}
                       {job.workModeLabel ? ` · ${job.workModeLabel}` : ""}
                       {job.workplace ? ` · ${job.workplace}` : ""}
@@ -616,7 +627,7 @@ export default function CompanyVagasPanel() {
             return (
               <div key={application.id} className={styles.candidate}>
                 <div>
-                  {application.profileId ? (
+                  {profilePath && application.profileId ? (
                     <button type="button" className={styles.name} onClick={() => openProfile(application)}>
                       {application.name || "Nome não informado"}
                     </button>

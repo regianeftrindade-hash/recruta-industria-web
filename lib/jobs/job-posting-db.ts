@@ -233,6 +233,29 @@ export async function deleteCompanyJob(companyOwnerUserId: string, id: string): 
   }
 }
 
+export async function deleteAdminJob(id: string): Promise<void> {
+  const jobId = assertJobId(id);
+  const current = await prisma.jobPosting.findUnique({
+    where: { id: jobId },
+    select: { id: true, _count: { select: { applications: true } } },
+  });
+  if (!current) {
+    throw new JobPostingError("Vaga não encontrada.", 404);
+  }
+  if (current._count.applications > 0) {
+    throw new JobPostingError(
+      "Esta vaga tem candidaturas e não pode ser excluída. Encerre a vaga para manter o histórico. Os candidatos não serão apagados.",
+      409,
+    );
+  }
+
+  await prisma.jobPosting.delete({ where: { id: jobId } });
+  const stillThere = await prisma.jobPosting.findUnique({ where: { id: jobId }, select: { id: true } });
+  if (stillThere) {
+    throw new JobPostingError("A exclusão da vaga não foi confirmada no banco de dados.", 500);
+  }
+}
+
 export async function updateCompanyApplicationStage(
   companyOwnerUserId: string,
   jobId: string,
@@ -252,6 +275,38 @@ export async function updateCompanyApplicationStage(
   if (!job || !companyCanReadJobApplications(job, companyOwnerUserId)) {
     throw new JobPostingError("Você não pode alterar as candidaturas desta vaga.", 403);
   }
+
+  const updated = await prisma.jobApplication.updateMany({
+    where: { id: applicationId, jobId: id },
+    data: { stage: nextStage },
+  });
+  if (updated.count !== 1) {
+    throw new JobPostingError("Candidatura não encontrada.", 404);
+  }
+
+  const saved = await prisma.jobApplication.findUnique({
+    where: { id: applicationId },
+    select: { id: true, stage: true, jobId: true },
+  });
+  if (!saved || saved.stage !== nextStage || saved.jobId !== id) {
+    throw new JobPostingError("A etapa não foi confirmada no banco de dados.", 500);
+  }
+  return { id: saved.id, stage: saved.stage };
+}
+
+export async function updateAdminApplicationStage(
+  jobId: string,
+  applicationId: string,
+  stage: unknown,
+): Promise<{ id: string; stage: string }> {
+  const id = assertJobId(jobId);
+  const nextStage = parseApplicationStage(stage);
+  if (!/^[a-z0-9]{8,40}$/i.test(applicationId)) {
+    throw new JobPostingError("Candidatura não encontrada.", 404);
+  }
+
+  const job = await prisma.jobPosting.findUnique({ where: { id }, select: { id: true } });
+  if (!job) throw new JobPostingError("Vaga não encontrada.", 404);
 
   const updated = await prisma.jobApplication.updateMany({
     where: { id: applicationId, jobId: id },
