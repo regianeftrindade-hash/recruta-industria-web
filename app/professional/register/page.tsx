@@ -1437,18 +1437,13 @@ export default function CadastroProfissional({
     <div className={`${styles.container} ${incorporado ? styles.containerIncorporado : ""} ri-readable`}>
       <AuthAtmosphere intensity="strong" />
       {submitting && <PageLoader message="Salvando cadastro..." mode="overlay" />}
-      <div className={styles.card} role="main" aria-labelledby="register-title">
+      <div className={styles.card} role="main" aria-labelledby={incorporado ? undefined : "register-title"}>
         {incorporado ? (
           <div className={styles.completionSticky}>
             <ProfileCompletionBar percent={completionPercent} />
           </div>
         ) : null}
         {acoes ? <div className={styles.cardAcoes}>{acoes}</div> : null}
-        {incorporado ? (
-          <h1 id="register-title" className={styles.title} style={{ marginTop: 0, marginBottom: 8 }}>
-            PERFIL
-          </h1>
-        ) : null}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
           <LogoRecruta size="sm" as="div" depth />
         </div>
