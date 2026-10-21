@@ -75,10 +75,12 @@ function jobDataForUpdate(
 ) {
   const payload = writeData(data, current);
   if (!input || typeof input !== "object" || Array.isArray(input)) return payload;
-  const next = { ...payload };
-  if (!("workplace" in input)) delete next.workplace;
-  if (!("applicationInstructions" in input)) delete next.applicationInstructions;
-  return next;
+  const { workplace, applicationInstructions, ...rest } = payload;
+  return {
+    ...rest,
+    ...("workplace" in input ? { workplace } : {}),
+    ...("applicationInstructions" in input ? { applicationInstructions } : {}),
+  };
 }
 
 function writeData(data: JobWriteData, current?: { publishedAt: Date | null; closedAt: Date | null }) {
