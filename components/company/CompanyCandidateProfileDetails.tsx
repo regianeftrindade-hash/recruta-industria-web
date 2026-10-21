@@ -19,6 +19,7 @@ import CarreiraTimeline from "@/components/professional/CarreiraTimeline";
 import {
   CAMPOS_SOBRE_MIM,
   CardSecaoPerfil,
+  DestacarVaziosProvider,
   PerfilTextoCorrido,
   goldTitle,
   labelStyle,
@@ -48,7 +49,8 @@ export default function CompanyCandidateProfileDetails({
   sobreMimPreenchido,
   testeComportamental,
   documentos,
-}: Props) {
+  destacarVazios = false,
+}: Props & { destacarVazios?: boolean }) {
   const fd = formEdit?.formData ?? {};
   const valor = (chave: string, alt?: unknown): string => {
     const v = fd[chave];
@@ -72,6 +74,7 @@ export default function CompanyCandidateProfileDetails({
   const carreiraTimeline = buildCareerTimeline(empresas);
 
   return (
+    <DestacarVaziosProvider ativo={destacarVazios}>
     <>
       {!resumo.bloqueado && formEdit ? (
         <CardSecaoPerfil
@@ -404,5 +407,6 @@ export default function CompanyCandidateProfileDetails({
         )}
       </section>
     </>
+    </DestacarVaziosProvider>
   );
 }

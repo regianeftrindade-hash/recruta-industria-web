@@ -17,25 +17,19 @@ import {
   dashHeader,
   dashInnerBox,
   dashSectionTitle,
-  compatBadgeStyle,
 } from "@/lib/dashboard-theme";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
-import {
-  PERFIL_INFO,
-  TOTAL_PERGUNTAS_TESTE,
-  type ResultadoTesteComportamental,
-} from "@/lib/teste-comportamental";
+import { type ResultadoTesteComportamental } from "@/lib/teste-comportamental";
 import { AVISO_RETENCAO_INBOX } from "@/lib/profile/inbox-retention";
-import CarreiraTimeline from "@/components/professional/CarreiraTimeline";
-import ProfessionalCadastroCompleto from "@/components/professional/ProfessionalCadastroCompleto";
 import ProfessionalJobSearch from "@/components/professional/ProfessionalJobSearch";
+import CompanyCandidateProfileDetails from "@/components/company/CompanyCandidateProfileDetails";
+import type { Resumo } from "@/components/company/company-candidate-profile-types";
 import ProfessionalOpportunityBoard from "@/components/professional/ProfessionalOpportunityBoard";
 import ProfessionalRecruitmentHistory, {
   type RecruitmentHistoryCounts,
 } from "@/components/professional/ProfessionalRecruitmentHistory";
 import PlatformVideoCall from "@/components/shared/PlatformVideoCall";
 import DeleteAccountControl from "@/components/shared/DeleteAccountControl";
-import { buildCareerTimeline } from "@/lib/professional/career-timeline";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
 
 const VAZIO = "—";
@@ -399,8 +393,6 @@ export default function DashboardProfissional() {
   const turnoResumo = String(valor("turnoDisponivel", fd.turnoDisponivel));
   const experienciaResumo = String(valor("tempoExperiencia", profileData.experiencia));
   const recolocacaoResumo = String(valor("recolocacao", fd.recolocacao));
-  const empresasTimeline = edit?.empresas ?? [];
-  const temLinhaTempo = buildCareerTimeline(empresasTimeline).length > 0;
 
   const toggleMensagemAberta = (id: string) => {
     setMensagemAbertaId((atual) => (atual === id ? null : id));
@@ -615,7 +607,7 @@ export default function DashboardProfissional() {
                   }
                   style={{ ...btnGold, padding: "6px 10px", fontSize: 10, flexShrink: 0 }}
                 >
-                  {profileData.registrationComplete === false ? "Completar perfil" : "Editar perfil"}
+                  Editar perfil
                 </button>
                 <DeleteAccountControl variant="card" />
               </div>
@@ -640,7 +632,7 @@ export default function DashboardProfissional() {
                       height: 56,
                       borderRadius: "50%",
                       background: DASH.input,
-                      border: `1px solid ${DASH.gold}`,
+                      border: "2px solid #ef4444",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -662,56 +654,52 @@ export default function DashboardProfissional() {
                   {localResumo} · {escolaridadeResumo} · {turnoResumo} · Exp. {experienciaResumo}
                   {recolocacaoResumo !== VAZIO ? ` · Recol. ${recolocacaoResumo}` : ""}
                 </p>
-                {typeof profileData.profileCompletion === "number" && (
-                  <span style={{ ...compatBadgeStyle(profileData.profileCompletion, false), marginTop: 8, display: "inline-block" }}>
-                    Completude {profileData.profileCompletion}%
-                  </span>
-                )}
-              </div>
-            </div>
-            {temLinhaTempo && (
-              <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${DASH.border}` }}>
-                <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 700, color: DASH.muted, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                  Linha do tempo
-                </p>
-                <CarreiraTimeline experiencias={empresasTimeline} compact />
-              </div>
-            )}
-
-            <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${DASH.border}` }}>
-              <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 700, color: DASH.muted, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                Perfil pessoal
-              </p>
-              {testeComportamental ? (
-                (() => {
-                  const info = PERFIL_INFO[testeComportamental.perfilPrincipal];
-                  return (
-                    <div>
-                      <p style={{ margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: DASH.title, lineHeight: 1.35 }}>
-                        {info.emoji} Perfil predominante: {info.titulo}
-                      </p>
-                      <p style={{ margin: 0, fontSize: 11, lineHeight: 1.5, color: DASH.text }}>
-                        {info.paraCandidato}
-                      </p>
+                  <div style={{ marginTop: 10, maxWidth: 280 }}>
+                    <p style={{ margin: "0 0 4px", fontSize: 10, fontWeight: 800, letterSpacing: "0.04em", color: DASH.gold }}>
+                      CADASTRO {typeof profileData.profileCompletion === "number" ? profileData.profileCompletion : 0}%
+                    </p>
+                    <div style={{ height: 14, borderRadius: 999, border: "1px solid #ef4444", background: "#3a1515", overflow: "hidden" }}>
+                      <div
+                        style={{
+                          width: `${Math.max(0, Math.min(100, typeof profileData.profileCompletion === "number" ? profileData.profileCompletion : 0))}%`,
+                          height: "100%",
+                          background: (profileData.profileCompletion ?? 0) >= 100 ? "#4ade80" : "linear-gradient(90deg, #ef4444, #c89b3c)",
+                        }}
+                      />
                     </div>
-                  );
-                })()
-              ) : (
-                <div>
-                  <p style={{ margin: "0 0 10px", fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>
-                    Descubra como você age no dia a dia com {TOTAL_PERGUNTAS_TESTE} afirmações pessoais. Preencha uma única vez para ver seu perfil aqui no painel.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => router.push("/professional/dashboard/teste-comportamental")}
-                    style={{ ...btnGold, padding: "8px 16px", fontSize: 12 }}
-                  >
-                    Iniciar
-                  </button>
+                  </div>
                 </div>
-              )}
             </div>
-            <ProfessionalCadastroCompleto edit={edit} />
+            <CompanyCandidateProfileDetails
+              resumo={{
+                id: profileData.email || "meu-perfil",
+                nome: nomeExibicao,
+                cargo: cargoResumo === VAZIO ? "" : cargoResumo,
+                area: areaResumo === VAZIO ? "" : areaResumo,
+                local: localResumo === VAZIO ? "" : localResumo,
+                escolaridade: escolaridadeResumo === VAZIO ? "" : escolaridadeResumo,
+                turno: turnoResumo === VAZIO ? "" : turnoResumo,
+                experiencia: experienciaResumo === VAZIO ? "" : experienciaResumo,
+                bloqueado: false,
+                profileCompletion: typeof profileData.profileCompletion === "number" ? profileData.profileCompletion : 0,
+                avatar: fotoPerfil ? String(fotoPerfil) : null,
+              } satisfies Resumo}
+              formEdit={edit ?? {
+                formData: {},
+                cpf: "",
+                telefone: "",
+                telefone2: "",
+                pretensaoSalarial: "",
+                dataNascimentoDisplay: "",
+                cursos: [],
+                empresas: [],
+              }}
+              sobreMim={null}
+              sobreMimPreenchido={false}
+              testeComportamental={testeComportamental}
+              documentos={[]}
+              destacarVazios
+            />
           </section>
         </main>
 
@@ -741,19 +729,21 @@ export default function DashboardProfissional() {
                 </div>
                 <div style={{ flex: "1 1 140px", minWidth: 0 }}>
                   <p style={{ margin: "0 0 6px", fontWeight: 800, fontSize: 16, color: DASH.title }}>{nomeExibicao}</p>
-                  <span style={{ ...compatBadgeStyle(typeof profileData.profileCompletion === "number" ? profileData.profileCompletion : 0, false), display: "inline-block" }}>
-                    {typeof profileData.profileCompletion === "number" ? profileData.profileCompletion : 0}%
+                  <span
+                    style={{
+                      display: "inline-block",
+                      padding: "2px 8px",
+                      borderRadius: 999,
+                      border: `1px solid ${DASH.gold}`,
+                      color: DASH.gold,
+                      fontSize: 10,
+                      fontWeight: 800,
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    CADASTRO {typeof profileData.profileCompletion === "number" ? profileData.profileCompletion : 0}%
                   </span>
                 </div>
-                {profileData.registrationComplete === false ? (
-                  <button
-                    type="button"
-                    onClick={() => router.push("/professional/register")}
-                    style={{ ...btnGold, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, padding: "10px 16px", fontSize: 12, lineHeight: 1.2, whiteSpace: "nowrap" }}
-                  >
-                    Completar perfil
-                  </button>
-                ) : null}
               </section>
               <ProfessionalJobSearch />
             </>

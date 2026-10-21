@@ -64,21 +64,44 @@ export function Campo({ label, value, span = 1 }: { label: string; value?: unkno
   );
 }
 
+const DestacarVaziosContext = React.createContext(false);
+
+export function DestacarVaziosProvider({
+  ativo,
+  children,
+}: {
+  ativo: boolean;
+  children: React.ReactNode;
+}) {
+  return <DestacarVaziosContext.Provider value={ativo}>{children}</DestacarVaziosContext.Provider>;
+}
+
+function valorVazio(value: unknown): boolean {
+  if (value === undefined || value === null || value === "" || value === "—") return true;
+  if (Array.isArray(value)) return !value.some((item) => String(item || "").trim());
+  return String(value).trim().length === 0;
+}
+
+function textoValor(value: unknown): string {
+  if (Array.isArray(value)) return value.map(String).filter(Boolean).join(" · ");
+  return String(value ?? "").trim();
+}
+
 export function PerfilTextoCorrido({
   pares,
 }: {
   pares: Array<{ label: string; value?: unknown }>;
 }) {
+  const destacarVazios = React.useContext(DestacarVaziosContext);
   const partes = pares
     .map(({ label, value }) => {
-      if (value === undefined || value === null || value === "") return null;
-      const texto = Array.isArray(value)
-        ? value.map(String).filter(Boolean).join(" · ")
-        : String(value).trim();
-      if (!texto || texto === "—") return null;
-      return { label, texto };
+      const vazio = valorVazio(value);
+      if (vazio && !destacarVazios) return null;
+      const texto = vazio ? "" : textoValor(value);
+      if (!vazio && (!texto || texto === "—")) return null;
+      return { label, texto, vazio };
     })
-    .filter(Boolean) as Array<{ label: string; texto: string }>;
+    .filter(Boolean) as Array<{ label: string; texto: string; vazio: boolean }>;
 
   if (partes.length === 0) {
     return <p style={{ ...valueStyle, color: DASH.muted }}>Sem dados para exibir.</p>;
@@ -116,6 +139,26 @@ export function PerfilTextoCorrido({
       }}
     >
       {partes.map((item) => {
+        if (item.vazio) {
+          return (
+            <span
+              key={item.label}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "3px 10px",
+                border: "1px solid #ef4444",
+                borderRadius: 999,
+                color: "#fca5a5",
+                fontSize: 12,
+                fontWeight: 700,
+                lineHeight: 1.3,
+              }}
+            >
+              {item.label}
+            </span>
+          );
+        }
         const full = linhaInteira(item.label, item.texto);
         return (
           <p
@@ -150,12 +193,9 @@ export function CardSecaoPerfil({
   titulo: string;
   pares: Array<{ label: string; value?: unknown }>;
 }) {
-  const temDados = pares.some(({ value }) => {
-    if (value === undefined || value === null || value === "" || value === "—") return false;
-    if (Array.isArray(value)) return value.some((v) => String(v || "").trim());
-    return String(value).trim().length > 0;
-  });
-  if (!temDados) return null;
+  const destacarVazios = React.useContext(DestacarVaziosContext);
+  const temDados = pares.some(({ value }) => !valorVazio(value));
+  if (!temDados && !destacarVazios) return null;
 
   return (
     <section data-perfil-card="1" style={{ ...dashCard, padding: 18 }}>

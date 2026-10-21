@@ -305,17 +305,10 @@ export default function CompanyDashboardInicioPage() {
               <h2 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>
                 Sua conta está criada! Agora complete o cadastro da empresa para acessar a vitrine.
               </h2>
-              <p style={{ margin: "0 0 12px", fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>
+              <p style={{ margin: 0, fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>
                 Nenhum perfil profissional é exibido até o cadastro estar completo e a verificação
                 da empresa ser aprovada.
               </p>
-              <button
-                type="button"
-                onClick={() => router.push("/company/register")}
-                style={{ ...btnGold, padding: "10px 16px", fontSize: 12 }}
-              >
-                Completar cadastro
-              </button>
             </section>
           )}
 

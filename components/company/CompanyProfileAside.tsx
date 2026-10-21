@@ -1,11 +1,9 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 import { useCompanyDashboardData } from "@/components/company/CompanyDashboardDataContext";
 import type { CompanyChromeProfile } from "@/components/company/CompanyDashboardDataContext";
-import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import {
   DASH,
   dashAside,
@@ -36,7 +34,6 @@ function completudeEmpresa(profile: CompanyChromeProfile): number {
  */
 export default function CompanyProfileAside({ compact = false }: { compact?: boolean }) {
   const dash = useCompanyDashboardData();
-  const router = useRouter();
 
   useEffect(() => {
     void dash.ensureChrome();
@@ -45,57 +42,56 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
   const companyProfile = dash.companyProfile;
   const slotsLabel = dash.slotsRestantes === null ? "∞" : String(dash.slotsRestantes ?? "…");
   const completude = companyProfile ? completudeEmpresa(companyProfile) : 0;
-  const cadastroIncompleto = Boolean(companyProfile) && completude < 100;
 
   if (compact) {
+    const pct = companyProfile ? completude : 0;
     return (
-      <section style={{ ...dashCard, padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
-        {cadastroIncompleto ? (
-          <div role="status">
-            <h2 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>
-              Sua conta está criada! Agora complete o cadastro da empresa.
-            </h2>
-            <button type="button" onClick={() => router.push("/company/register")} style={{ ...btnGold, padding: "10px 16px", fontSize: 12 }}>
-              Completar cadastro
-            </button>
-          </div>
-        ) : null}
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <div
+      <section style={{ ...dashCard, padding: 14, display: "flex", gap: 12, alignItems: "center" }}>
+        <div
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: "50%",
+            overflow: "hidden",
+            flexShrink: 0,
+            border: `2px solid ${companyProfile?.logoUrl ? DASH.gold : "#ef4444"}`,
+            background: companyProfile?.logoUrl ? "#0d0d0d" : DASH.input,
+          }}
+        >
+          {companyProfile?.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={companyProfile.logoUrl} alt="Logotipo da empresa" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <span style={{ display: "flex", width: "100%", height: "100%", alignItems: "center", justifyContent: "center", color: DASH.gold, fontSize: 9, fontWeight: 700 }}>
+              Logo
+            </span>
+          )}
+        </div>
+        <div>
+          <p style={{ margin: "0 0 6px", fontWeight: 800, fontSize: 16, color: DASH.title }}>
+            {companyProfile?.razaoSocial || "Empresa"}
+          </p>
+          <span
             style={{
-              width: 56,
-              height: 56,
-              borderRadius: "50%",
-              overflow: "hidden",
-              flexShrink: 0,
-              border: `2px solid ${DASH.gold}`,
-              background: companyProfile?.logoUrl ? "#0d0d0d" : DASH.input,
+              display: "inline-block",
+              padding: "2px 8px",
+              borderRadius: 999,
+              border: `1px solid ${DASH.gold}`,
+              color: DASH.gold,
+              fontSize: 10,
+              fontWeight: 800,
+              letterSpacing: "0.04em",
             }}
           >
-            {companyProfile?.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={companyProfile.logoUrl} alt="Logotipo da empresa" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            ) : (
-              <span style={{ display: "flex", width: "100%", height: "100%", alignItems: "center", justifyContent: "center", color: DASH.gold, fontSize: 9, fontWeight: 700 }}>
-                Logo
-              </span>
-            )}
-          </div>
-          <div>
-            <p style={{ margin: "0 0 6px", fontWeight: 800, fontSize: 16, color: DASH.title }}>
-              {companyProfile?.razaoSocial || "Empresa"}
-            </p>
-            <span style={{ display: "inline-block", fontSize: 11, fontWeight: 800, color: DASH.gold }}>
-              Completude {companyProfile ? completude : 0}%
-            </span>
-          </div>
+            CADASTRO {pct}%
+          </span>
         </div>
       </section>
     );
   }
 
   return (
-    <aside style={{ ...dashAside, borderRight: "none", maxWidth: 720 }}>
+    <aside style={{ ...dashAside, borderRight: "none", width: "100%", maxWidth: "none" }}>
       <h3 style={{ ...dashSectionTitle, margin: "0 0 12px", fontSize: 14 }}>
         🏢 Perfil da Empresa
         {dash.companyVerified ? (
@@ -208,6 +204,22 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
             </div>
           </div>
 
+          <div style={{ margin: "0 0 12px" }}>
+            <p style={{ margin: "0 0 4px", fontSize: 10, fontWeight: 800, letterSpacing: "0.04em", color: DASH.gold }}>
+              CADASTRO {completude}%
+            </p>
+            <div style={{ height: 14, borderRadius: 999, border: "1px solid #ef4444", background: "#3a1515", overflow: "hidden" }}>
+              <div
+                style={{
+                  width: `${completude}%`,
+                  height: "100%",
+                  background: completude >= 100 ? "#4ade80" : "linear-gradient(90deg, #ef4444, #c89b3c)",
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 6 }}>
           {(
             [
               ["Razão social", companyProfile.razaoSocial],
@@ -218,31 +230,36 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
               ["E-mail corporativo", companyProfile.emailCorporativo],
               ["Telefone", companyProfile.telefone],
               ["Endereço", companyProfile.endereco],
-              ["E-mail corporativo verificado", companyProfile.emailCorporativoVerificado ? "Sim" : "Não"],
+              ["E-mail verificado", companyProfile.emailCorporativoVerificado ? "Sim" : ""],
               ["Cartão CNPJ", companyProfile.cartaoCnpjUrl],
             ] as const
-          ).map(([label, val]) => (
+          ).map(([label, val]) => {
+            const texto = typeof val === "string" ? val.trim() : "";
+            const falta = !texto;
+            return (
             <div
               key={label}
               style={{
-                marginBottom: 8,
-                padding: "6px 8px",
+                padding: "4px 8px",
                 ...dashInnerBox,
-                border: `1px solid ${DASH.gold}`,
+                border: `1px solid ${falta ? "#ef4444" : DASH.gold}`,
+                borderRadius: 999,
               }}
             >
-              <p style={{ ...dashLabel, margin: "0 0 2px", fontSize: 10, textTransform: "uppercase" }}>{label}</p>
-              <p style={{ color: DASH.text, margin: 0, fontSize: 12, wordBreak: "break-word" }}>
+              <p style={{ ...dashLabel, margin: "0 0 2px", fontSize: 9, textTransform: "uppercase" }}>{label}</p>
+              <p style={{ color: falta ? "#fca5a5" : DASH.text, margin: 0, fontSize: 11, wordBreak: "break-word" }}>
                 {typeof val === "string" && /^https?:\/\//i.test(val) ? (
                   <a href={val} target="_blank" rel="noopener noreferrer" style={{ color: DASH.gold, fontWeight: 700 }}>
                     Abrir arquivo
                   </a>
                 ) : (
-                  val || "—"
+                  texto || "Falta"
                 )}
               </p>
             </div>
-          ))}
+            );
+          })}
+          </div>
 
           <div style={{ marginTop: 12, ...dashPlanBox }}>
             <p style={{ ...dashPlanAccent, margin: "0 0 4px", fontSize: 10, fontWeight: "bold" }}>Plano atual</p>
