@@ -11,6 +11,7 @@ import {
   assertJobId,
   companyCanReadJobApplications,
   isProfessionalAccount,
+  parseApplicationStage,
   parseJobWrite,
   toAdminJob,
   toPublicJob,
@@ -29,6 +30,7 @@ function asRecord(job: JobPosting, applicationCount = 0): JobRecord {
     contractType: job.contractType,
     contractTypeOther: job.contractTypeOther,
     workMode: job.workMode,
+    workplace: job.workplace,
     description: job.description,
     observations: job.observations,
     applicationInstructions: job.applicationInstructions,
@@ -66,6 +68,19 @@ function statusTimestamps(status: JobStatus, current?: { publishedAt: Date | nul
   };
 }
 
+function jobDataForUpdate(
+  input: unknown,
+  data: JobWriteData,
+  current?: { publishedAt: Date | null; closedAt: Date | null },
+) {
+  const payload = writeData(data, current);
+  if (!input || typeof input !== "object" || Array.isArray(input) || !("workplace" in input)) {
+    const { workplace: _workplace, ...rest } = payload;
+    return rest;
+  }
+  return payload;
+}
+
 function writeData(data: JobWriteData, current?: { publishedAt: Date | null; closedAt: Date | null }) {
   return {
     companyName: data.companyName,
@@ -77,6 +92,7 @@ function writeData(data: JobWriteData, current?: { publishedAt: Date | null; clo
     contractType: data.contractType,
     contractTypeOther: data.contractTypeOther,
     workMode: data.workMode,
+    workplace: data.workplace,
     description: data.description,
     observations: data.observations,
     applicationInstructions: data.applicationInstructions,
@@ -124,7 +140,7 @@ export async function updateAdminJob(id: string, input: unknown): Promise<AdminJ
   const data = parseJobWrite(input);
   await prisma.jobPosting.update({
     where: { id: jobId },
-    data: writeData(data, current),
+    data: jobDataForUpdate(input, data, current),
   });
 
   const saved = await prisma.jobPosting.findUnique({
@@ -181,7 +197,7 @@ export async function updateCompanyJob(
   const data = parseJobWrite(input);
   await prisma.jobPosting.update({
     where: { id: jobId },
-    data: writeData(data, current),
+    data: jobDataForUpdate(input, data, current),
   });
 
   const saved = await prisma.jobPosting.findUnique({
@@ -192,6 +208,67 @@ export async function updateCompanyJob(
     throw new JobPostingError("A alteração da vaga não foi confirmada no banco de dados.", 500);
   }
   return toAdminJob(asRecord(saved, saved._count.applications));
+}
+
+export async function deleteCompanyJob(companyOwnerUserId: string, id: string): Promise<void> {
+  const jobId = assertJobId(id);
+  const current = await prisma.jobPosting.findUnique({
+    where: { id: jobId },
+    select: { companyUserId: true, _count: { select: { applications: true } } },
+  });
+  if (!current || current.companyUserId !== companyOwnerUserId) {
+    throw new JobPostingError("Você não pode excluir esta vaga.", 403);
+  }
+  if (current._count.applications > 0) {
+    throw new JobPostingError(
+      "Esta vaga tem candidaturas e não pode ser excluída. Encerre a vaga para manter o histórico. Os candidatos não serão apagados.",
+      409,
+    );
+  }
+
+  await prisma.jobPosting.delete({ where: { id: jobId } });
+  const stillThere = await prisma.jobPosting.findUnique({ where: { id: jobId }, select: { id: true } });
+  if (stillThere) {
+    throw new JobPostingError("A exclusão da vaga não foi confirmada no banco de dados.", 500);
+  }
+}
+
+export async function updateCompanyApplicationStage(
+  companyOwnerUserId: string,
+  jobId: string,
+  applicationId: string,
+  stage: unknown,
+): Promise<{ id: string; stage: string }> {
+  const id = assertJobId(jobId);
+  const nextStage = parseApplicationStage(stage);
+  if (!/^[a-z0-9]{8,40}$/i.test(applicationId)) {
+    throw new JobPostingError("Candidatura não encontrada.", 404);
+  }
+
+  const job = await prisma.jobPosting.findUnique({
+    where: { id },
+    select: { companyUserId: true },
+  });
+  if (!job || !companyCanReadJobApplications(job, companyOwnerUserId)) {
+    throw new JobPostingError("Você não pode alterar as candidaturas desta vaga.", 403);
+  }
+
+  const updated = await prisma.jobApplication.updateMany({
+    where: { id: applicationId, jobId: id },
+    data: { stage: nextStage },
+  });
+  if (updated.count !== 1) {
+    throw new JobPostingError("Candidatura não encontrada.", 404);
+  }
+
+  const saved = await prisma.jobApplication.findUnique({
+    where: { id: applicationId },
+    select: { id: true, stage: true, jobId: true },
+  });
+  if (!saved || saved.stage !== nextStage || saved.jobId !== id) {
+    throw new JobPostingError("A etapa não foi confirmada no banco de dados.", 500);
+  }
+  return { id: saved.id, stage: saved.stage };
 }
 
 export async function listPublicJobs(): Promise<PublicJob[]> {
@@ -216,6 +293,7 @@ export type ApplicationView = {
   jobId: string;
   userId: string;
   profileId: string | null;
+  stage: string;
   createdAt: string;
   name: string | null;
   email: string;
@@ -241,6 +319,7 @@ export async function listJobApplicationsForAdmin(jobId: string): Promise<Applic
     jobId: row.jobId,
     userId: row.userId,
     profileId: row.profileId,
+    stage: row.stage,
     createdAt: row.createdAt.toISOString(),
     name: row.user.name,
     email: row.user.email,

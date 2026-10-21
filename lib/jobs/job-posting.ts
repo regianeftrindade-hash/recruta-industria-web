@@ -16,6 +16,14 @@ export const WORK_MODES = [
 
 export const JOB_STATUSES = ["DRAFT", "PUBLISHED", "UNPUBLISHED", "CLOSED"] as const;
 
+export const APPLICATION_STAGES = [
+  { value: "NEW", label: "Novo candidato" },
+  { value: "REVIEW", label: "Em análise" },
+  { value: "INTERVIEW", label: "Entrevista" },
+  { value: "APPROVED", label: "Aprovado" },
+  { value: "REJECTED", label: "Reprovado" },
+] as const;
+
 export const APPLICATION_MODES = [
   { value: "EXTERNAL", label: "Candidatar-se no site da empresa" },
   { value: "EMAIL", label: "Candidatar-se por e-mail automático" },
@@ -26,11 +34,13 @@ export type ContractType = (typeof CONTRACT_TYPES)[number]["value"];
 export type WorkMode = (typeof WORK_MODES)[number]["value"];
 export type JobStatus = (typeof JOB_STATUSES)[number];
 export type ApplicationMode = (typeof APPLICATION_MODES)[number]["value"];
+export type ApplicationStage = (typeof APPLICATION_STAGES)[number]["value"];
 
 const CONTRACT_VALUES = new Set<string>(CONTRACT_TYPES.map((item) => item.value));
 const WORK_MODE_VALUES = new Set<string>(WORK_MODES.map((item) => item.value));
 const STATUS_VALUES = new Set<string>(JOB_STATUSES);
 const APPLICATION_MODE_VALUES = new Set<string>(APPLICATION_MODES.map((item) => item.value));
+const APPLICATION_STAGE_VALUES = new Set<string>(APPLICATION_STAGES.map((item) => item.value));
 
 const LIMITS = {
   companyName: 160,
@@ -41,6 +51,7 @@ const LIMITS = {
   applicationInstructions: 2000,
   externalApplyUrl: 500,
   applicationEmail: 254,
+  workplace: 120,
 } as const;
 
 export class JobPostingError extends Error {
@@ -64,6 +75,7 @@ export type JobRecord = {
   contractType: string | null;
   contractTypeOther: string | null;
   workMode: string | null;
+  workplace: string | null;
   description: string;
   observations: string | null;
   applicationInstructions: string | null;
@@ -88,6 +100,7 @@ export type PublicJob = {
   salaryLabel: string | null;
   contractLabel: string | null;
   workModeLabel: string | null;
+  workplace: string | null;
   description: string;
   observations: string | null;
   applicationInstructions: string | null;
@@ -104,6 +117,7 @@ export type AdminJob = PublicJob & {
   contractType: string;
   contractTypeOther: string;
   workMode: string;
+  workplace: string;
   applicationMode: ApplicationMode;
   externalApplyUrl: string;
   applicationEmail: string;
@@ -127,6 +141,7 @@ export type JobWriteData = {
   contractType: ContractType | null;
   contractTypeOther: string | null;
   workMode: WorkMode | null;
+  workplace: string | null;
   description: string;
   observations: string | null;
   applicationInstructions: string | null;
@@ -159,6 +174,22 @@ export function isJobStatus(value: string): value is JobStatus {
 
 export function isApplicationMode(value: string): value is ApplicationMode {
   return APPLICATION_MODE_VALUES.has(value);
+}
+
+export function isApplicationStage(value: string): value is ApplicationStage {
+  return APPLICATION_STAGE_VALUES.has(value);
+}
+
+export function parseApplicationStage(value: unknown): ApplicationStage {
+  const stage = typeof value === "string" ? value.trim() : "";
+  if (!isApplicationStage(stage)) {
+    throw new JobPostingError("Selecione uma etapa válida do processo seletivo.");
+  }
+  return stage;
+}
+
+export function applicationStageLabel(stage: string): string {
+  return APPLICATION_STAGES.find((item) => item.value === stage)?.label ?? "Novo candidato";
 }
 
 export function parseExternalApplyUrl(value: unknown): string | null {
@@ -351,6 +382,7 @@ export function toPublicJob(job: JobRecord): PublicJob {
     salaryLabel: publicSalaryLabel(job),
     contractLabel: contractLabel(job.contractType, job.contractTypeOther),
     workModeLabel: workModeLabel(job.workMode),
+    workplace: job.workplace?.trim() ? job.workplace.trim() : null,
     description: job.description,
     observations: job.observations?.trim() ? job.observations : null,
     applicationInstructions: job.applicationInstructions?.trim()
@@ -379,6 +411,7 @@ export function toAdminJob(job: JobRecord): AdminJob {
     contractType: job.contractType ?? "",
     contractTypeOther: job.contractTypeOther ?? "",
     workMode: job.workMode ?? "",
+    workplace: job.workplace ?? "",
     applicationMode: isApplicationMode(job.applicationMode) ? job.applicationMode : "INTERNAL",
     externalApplyUrl: job.externalApplyUrl ?? "",
     applicationEmail: job.applicationEmail ?? "",
@@ -437,6 +470,9 @@ export function parseJobWrite(input: unknown): JobWriteData {
     throw new JobPostingError("Selecione uma modalidade de trabalho válida.");
   }
   const workMode = (workRaw || null) as WorkMode | null;
+  const workplace = optionalBlank(
+    cleanJobText(body.workplace ?? "", LIMITS.workplace, "O local de trabalho"),
+  );
 
   const statusRaw = typeof body.status === "string" ? body.status.trim() : "DRAFT";
   if (!isJobStatus(statusRaw)) {
@@ -504,6 +540,7 @@ export function parseJobWrite(input: unknown): JobWriteData {
       contractType,
       contractTypeOther: null,
       workMode,
+      workplace,
       description,
       observations,
       applicationInstructions,
@@ -524,6 +561,7 @@ export function parseJobWrite(input: unknown): JobWriteData {
     contractType,
     contractTypeOther,
     workMode,
+    workplace,
     description,
     observations,
     applicationInstructions,

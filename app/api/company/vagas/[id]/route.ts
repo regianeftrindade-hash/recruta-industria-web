@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jsonError } from "@/lib/jobs/job-api";
-import { updateCompanyJob } from "@/lib/jobs/job-posting-db";
+import { deleteCompanyJob, updateCompanyJob } from "@/lib/jobs/job-posting-db";
 import { resolveCompanyPublisher } from "@/lib/jobs/company-publisher";
 
 type Context = { params: Promise<{ id: string }> };
@@ -16,5 +16,18 @@ export async function PATCH(request: NextRequest, { params }: Context) {
     return NextResponse.json({ job });
   } catch (error) {
     return jsonError(error, "Não foi possível atualizar a vaga.");
+  }
+}
+
+export async function DELETE(request: NextRequest, { params }: Context) {
+  const access = await resolveCompanyPublisher(request);
+  if ("error" in access) return access.error;
+
+  try {
+    const { id } = await params;
+    await deleteCompanyJob(access.ownerUserId, id);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return jsonError(error, "Não foi possível excluir a vaga.");
   }
 }

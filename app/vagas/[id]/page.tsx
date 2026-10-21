@@ -69,6 +69,7 @@ export default async function VagaPage({ params, searchParams }: Props) {
           <Fact label="Salário" value={job.salaryLabel} />
           <Fact label="Contratação" value={job.contractLabel} />
           <Fact label="Modalidade" value={job.workModeLabel} />
+          <Fact label="Local de trabalho" value={job.workplace} />
         </div>
 
         <section className={styles.section}>

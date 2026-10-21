@@ -44,6 +44,7 @@ function recordFrom(data: ReturnType<typeof parseJobWrite>, id = "cjob1234567890
     contractType: data.contractType,
     contractTypeOther: data.contractTypeOther,
     workMode: data.workMode,
+    workplace: data.workplace,
     description: data.description,
     observations: data.observations,
     applicationInstructions: data.applicationInstructions,
@@ -219,5 +220,17 @@ describe("publicação de vagas", () => {
       applicationEmail: "sem-arroba",
     }))).toThrow(/e-mail válido/i);
     expect(parseApplicationEmail(" rh@empresa.example ")).toBe("rh@empresa.example");
+  });
+
+  it("guarda o local de trabalho e não exige salário quando está a combinar", () => {
+    const data = parseJobWrite(baseInput({
+      workplace: "Joinville/SC",
+      salaryNegotiable: true,
+      salary: "",
+    }));
+    expect(data.workplace).toBe("Joinville/SC");
+    expect(data.salaryCents).toBeNull();
+    expect(toPublicJob(recordFrom(data)).workplace).toBe("Joinville/SC");
+    expect(toAdminJob(recordFrom({ ...data, confidential: true })).companyLabel).toBe("Empresa confidencial");
   });
 });

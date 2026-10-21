@@ -970,6 +970,8 @@ model JobPosting {
   contractTypeOther        String?
   /// HOME_OFFICE | PRESENCIAL | HIBRIDO
   workMode                 String?
+  /// Cidade e UF informadas pela empresa. Não substitui a modalidade de trabalho.
+  workplace                String?
   description              String    @default("")
   observations             String?
   applicationInstructions  String?
@@ -1004,6 +1006,8 @@ model JobApplication {
   jobId     String
   userId    String
   profileId String?
+  /// NEW | REVIEW | INTERVIEW | APPROVED | REJECTED
+  stage     String   @default("NEW")
   createdAt DateTime @default(now())
 
   job     JobPosting @relation(fields: [jobId], references: [id], onDelete: Restrict)
