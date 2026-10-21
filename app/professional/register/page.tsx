@@ -1437,7 +1437,12 @@ export default function CadastroProfissional({
     <div className={`${styles.container} ${incorporado ? styles.containerIncorporado : ""} ri-readable`}>
       <AuthAtmosphere intensity="strong" />
       {submitting && <PageLoader message="Salvando cadastro..." mode="overlay" />}
-      <div className={`${styles.card} ${acoes ? styles.cardComAcoes : ""}`} role="main" aria-labelledby="register-title">
+      <div className={styles.card} role="main" aria-labelledby="register-title">
+        {incorporado ? (
+          <div className={styles.completionSticky}>
+            <ProfileCompletionBar percent={completionPercent} />
+          </div>
+        ) : null}
         {acoes ? <div className={styles.cardAcoes}>{acoes}</div> : null}
         {incorporado ? (
           <h1 id="register-title" className={styles.title} style={{ marginTop: 0, marginBottom: 8 }}>
@@ -1472,9 +1477,11 @@ export default function CadastroProfissional({
           </p>
         )}
 
+        {!incorporado ? (
         <div className={styles.completionSticky}>
           <ProfileCompletionBar percent={completionPercent} />
         </div>
+        ) : null}
         {!isEditMode && (
           <p className={styles.formHint}>
             Cadastro em 4 etapas. Comece pelos campos com marcador{" "}

@@ -38,20 +38,12 @@
 }
 
 .cardAcoes {
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  z-index: 3;
   display: flex;
   gap: 8px;
   align-items: flex-start;
   justify-content: flex-end;
   flex-wrap: wrap;
-  max-width: min(420px, calc(100% - 28px));
-}
-
-.cardComAcoes {
-  padding-top: 52px;
+  margin: 0 0 12px;
 }
 
 .card {
