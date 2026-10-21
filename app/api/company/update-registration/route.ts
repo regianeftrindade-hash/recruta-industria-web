@@ -5,9 +5,11 @@ import { prisma } from '@/lib/db'
 import { isValidCNPJ, isValidCPF, formatCPF, isValidPhoneBR } from '@/lib/security'
 import {
   corporateEmailError,
+  getAppBaseUrl,
   normalizeCorporateEmail,
 } from '@/lib/company/corporate-email'
-import { isCorporateEmailVerified } from '@/lib/company/corporate-email-confirmation'
+import { createCorporateEmailConfirmation, isCorporateEmailVerified } from '@/lib/company/corporate-email-confirmation'
+import { isEmailConfigured, sendEmail } from '@/lib/email'
 import {
   findCompanyByCnpj,
   findCompanyByResponsavelCpf,
@@ -91,17 +93,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'CPF inválido.' }, { status: 400 })
       }
 
-      if (!telefone) {
-        return NextResponse.json({ error: 'Informe o telefone da empresa.' }, { status: 400 })
-      }
-
-      if (!isValidPhoneBR(telefone)) {
+      if (telefone && !isValidPhoneBR(telefone)) {
         return NextResponse.json({ error: 'Informe um telefone válido com DDD.' }, { status: 400 })
       }
+    }
 
-      if (!endereco || endereco.length < 5) {
-        return NextResponse.json({ error: 'Informe o endereço da empresa.' }, { status: 400 })
-      }
+    if (!isTestBypass && !emailCorporativo) {
+      return NextResponse.json({ error: 'Informe o e-mail corporativo.' }, { status: 400 })
     }
 
     if (emailCorporativo) {
@@ -180,6 +178,25 @@ export async function POST(request: NextRequest) {
 
     if (Object.keys(extraUpdate).length > 0) {
       await saveCompanyExtraData(user.id, extraUpdate)
+    }
+
+    if (emailCorporativo && !emailCorporativoVerificado) {
+      try {
+        const { token, cooldownActive } = await createCorporateEmailConfirmation(emailCorporativo)
+        if (!cooldownActive) {
+          const confirmUrl = `${getAppBaseUrl()}/api/company/confirm-corporate-email?token=${token}`
+          const subject = 'Confirme seu e-mail corporativo — Recruta Indústria'
+          const text = `Confirme seu e-mail corporativo no Recruta Indústria: ${confirmUrl}`
+          const html = `<p>Confirme seu e-mail corporativo para seguirmos com a análise da empresa.</p><p><a href="${confirmUrl}">Confirmar e-mail</a></p>`
+          if (isEmailConfigured()) {
+            await sendEmail({ to: emailCorporativo, subject, html, text })
+          } else if (process.env.NODE_ENV === 'development') {
+            console.info(`[DEV] Confirmação corporativa para ${emailCorporativo}: ${confirmUrl}`)
+          }
+        }
+      } catch (err) {
+        console.error('Falha ao enviar confirmação do e-mail corporativo:', err)
+      }
     }
 
     return NextResponse.json({

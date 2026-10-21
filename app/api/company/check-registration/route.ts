@@ -103,8 +103,7 @@ export async function GET(_request: NextRequest) {
       extra?.cnpj?.trim() &&
       extra?.responsavelNome?.trim() &&
       extra?.responsavelCpf?.trim() &&
-      extra?.telefone?.trim() &&
-      extra?.endereco?.trim()
+      extra?.emailCorporativo?.trim()
     )
 
     const isRegistrationComplete = isTestBypass || isTeamMember || fieldsComplete

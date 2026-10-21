@@ -525,15 +525,12 @@ function CadastroEmpresaContent() {
         faltando.push({ id: 'empresa-email', label: 'E-mail de acesso' });
         precisaContato = true;
       }
-      if (!telefoneValue.trim()) {
-        faltando.push({ id: 'empresa-telefone', label: 'Telefone da empresa' });
-        precisaContato = true;
-      } else if (!isValidPhoneBR(telefoneValue)) {
-        faltando.push({ id: 'empresa-telefone', label: 'Telefone válido com DDD' });
+      if (usuarioLogado && !emailCorporativo.trim()) {
+        faltando.push({ id: 'empresa-email', label: 'E-mail corporativo' });
         precisaContato = true;
       }
-      if (!formData.endereco.trim() || formData.endereco.trim().length < 5) {
-        faltando.push({ id: 'empresa-endereco', label: 'Endereço da empresa' });
+      if (telefoneValue.trim() && !isValidPhoneBR(telefoneValue)) {
+        faltando.push({ id: 'empresa-telefone', label: 'Telefone válido com DDD' });
         precisaContato = true;
       }
       if (!usuarioLogado) {
@@ -622,9 +619,7 @@ function CadastroEmpresaContent() {
         }
 
         setSuccessMessage(
-          isEditMode
-            ? 'Cadastro atualizado com sucesso! Redirecionando...'
-            : 'Cadastro salvo! Você já pode usar a vitrine. Contatos e dados sensíveis liberam após confirmar o e-mail corporativo e aprovação do cartão CNPJ.',
+          'Cadastro salvo. Ele permanece em análise até a verificação da empresa. Se o e-mail corporativo ainda não foi confirmado, enviamos um link de confirmação.',
         );
         router.push(isEditMode ? '/company/dashboard-empresa' : '/company/boas-vindas');
         return;
@@ -659,7 +654,12 @@ function CadastroEmpresaContent() {
         return;
       }
 
-      setSuccessMessage('Cadastro finalizado com sucesso! Redirecionando...');
+      setSuccessMessage('Cadastro salvo. Ele permanece em análise até a verificação da empresa. Enviamos um e-mail para confirmar o endereço corporativo.');
+      void fetch('/api/company/send-corporate-email-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailCorpFinal }),
+      }).catch(() => undefined);
       router.push('/company/boas-vindas');
     } catch (err) {
       console.error('Erro no cadastro empresa:', err);
@@ -1003,7 +1003,7 @@ function CadastroEmpresaContent() {
               </div>
               <small style={{ color: '#ccc', display: 'block', marginTop: 6 }}>
                 {usuarioLogado
-                  ? 'Opcional no cadastro. Contatos só liberam após confirmar este e-mail.'
+                  ? 'Obrigatório. Enviamos um e-mail de confirmação. O cadastro fica em análise até a verificação da empresa.'
                   : 'E-mail de acesso da conta. Tem que ser corporativo (não Gmail/Hotmail). Se já usa esse e-mail no site, teste com alias: nome+teste@suaempresa.com.br'}
               </small>
               {emailMensagem && (
@@ -1019,7 +1019,7 @@ function CadastroEmpresaContent() {
 
             {!usuarioLogado ? (
               <div>
-                <label className={styles.label}>TELEFONE (DDD) {isTestBypass ? '' : '*'}</label>
+                <label className={styles.label}>TELEFONE (DDD)</label>
                 <input
                   id="empresa-telefone"
                   type="tel"
@@ -1027,14 +1027,14 @@ function CadastroEmpresaContent() {
                   placeholder="(00) 00000-0000"
                   value={telefoneValue}
                   onChange={(e) => setTelefoneValue(formatarTelefone(e.target.value))}
-                  required={!isTestBypass}
+                  required={false}
                 />
               </div>
             ) : null}
 
             {usuarioLogado ? (
               <div>
-                <label className={styles.label}>TELEFONE (DDD) {isTestBypass ? '' : '*'}</label>
+                <label className={styles.label}>TELEFONE (DDD)</label>
                 <input
                   id="empresa-telefone"
                   type="tel"
@@ -1042,13 +1042,13 @@ function CadastroEmpresaContent() {
                   placeholder="(00) 00000-0000"
                   value={telefoneValue}
                   onChange={(e) => setTelefoneValue(formatarTelefone(e.target.value))}
-                  required={!isTestBypass}
+                  required={false}
                 />
               </div>
             ) : null}
 
             <div>
-              <label className={styles.label}>ENDEREÇO {isTestBypass ? '' : '*'}</label>
+              <label className={styles.label}>ENDEREÇO</label>
               <textarea
                 id="empresa-endereco"
                 className={styles.input}
@@ -1056,7 +1056,7 @@ function CadastroEmpresaContent() {
                 value={formData.endereco}
                 onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
                 style={{ minHeight: 88, resize: 'vertical' }}
-                required={!isTestBypass}
+                required={false}
               />
             </div>
           </div>

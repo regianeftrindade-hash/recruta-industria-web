@@ -253,18 +253,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'CPF do responsável já cadastrado' }, { status: 409 })
       }
       const telefoneEmpresa = String(telefone || '').trim()
-      const enderecoEmpresa = String(endereco || '').trim()
-      if (!telefoneEmpresa) {
-        incrementRegisterAttempts(ip)
-        return NextResponse.json({ error: 'Telefone da empresa é obrigatório' }, { status: 400 })
-      }
-      if (!isValidPhoneBR(telefoneEmpresa)) {
+      if (telefoneEmpresa && !isValidPhoneBR(telefoneEmpresa)) {
         incrementRegisterAttempts(ip)
         return NextResponse.json({ error: 'Telefone inválido. Informe DDD + número.' }, { status: 400 })
-      }
-      if (!enderecoEmpresa || enderecoEmpresa.length < 5) {
-        incrementRegisterAttempts(ip)
-        return NextResponse.json({ error: 'Endereço da empresa é obrigatório' }, { status: 400 })
       }
       const emailCorporativo = normalizeCorporateEmail(String(email || ''))
       if (emailCorporativo) {

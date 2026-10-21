@@ -18,18 +18,23 @@ import {
   dashSectionTitle,
 } from "@/lib/dashboard-theme";
 
-const CAMPOS_CADASTRO = [
+const CAMPOS_OBRIGATORIOS = [
   "razaoSocial",
   "cnpj",
   "responsavelNome",
   "responsavelCpf",
-  "telefone",
-  "endereco",
+  "email",
+  "emailCorporativo",
+  "cartaoCnpjUrl",
 ] as const;
 
 function completudeEmpresa(profile: CompanyChromeProfile): number {
-  const preenchidos = CAMPOS_CADASTRO.filter((chave) => String(profile[chave] || "").trim()).length;
-  return Math.round((preenchidos / CAMPOS_CADASTRO.length) * 100);
+  const valores = [
+    ...CAMPOS_OBRIGATORIOS.map((chave) => String(profile[chave] || "").trim()),
+    profile.emailCorporativoVerificado ? "ok" : "",
+  ];
+  const preenchidos = valores.filter(Boolean).length;
+  return Math.round((preenchidos / valores.length) * 100);
 }
 
 /**
@@ -248,16 +253,20 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
             <p style={{ margin: "0 0 10px", textAlign: "center", fontSize: 13, fontWeight: 700, color: DASH.gold, letterSpacing: "0.06em" }}>
               PREENCHIMENTO
             </p>
-            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "10px 22px" }}>
+            <div style={{ display: "flex", justifyContent: "center" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#ddd" }}>
                 <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#e53935", flexShrink: 0 }} />
                 Preenchimento obrigatório
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#ddd" }}>
-                <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#C89B3C", flexShrink: 0 }} />
-                Preenchimento recomendado
-              </div>
             </div>
+            {!dash.companyVerified ? (
+              <p style={{ margin: "10px 0 0", textAlign: "center", fontSize: 12, fontWeight: 800, color: "#fca5a5" }}>
+                Cadastro em análise até a verificação da empresa.
+              </p>
+            ) : null}
+            <p style={{ margin: "8px 0 0", textAlign: "center", fontSize: 11, color: "#ddd", lineHeight: 1.45 }}>
+              Essa checagem existe porque muitos golpistas usam sites de vagas para aplicar golpes e coletar dados pessoais de profissionais.
+            </p>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 6 }}>
@@ -267,12 +276,12 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
               ["CNPJ", companyProfile.cnpj, true],
               ["Responsável", companyProfile.responsavelNome, true],
               ["CPF", companyProfile.responsavelCpf, true],
-              ["E-mail de login", companyProfile.email, false],
-              ["E-mail corporativo", companyProfile.emailCorporativo, false],
-              ["Telefone", companyProfile.telefone, true],
-              ["Endereço", companyProfile.endereco, true],
-              ["E-mail verificado", companyProfile.emailCorporativoVerificado ? "Sim" : "", false],
-              ["Cartão CNPJ", companyProfile.cartaoCnpjUrl, false],
+              ["E-mail de login", companyProfile.email, true],
+              ["E-mail corporativo", companyProfile.emailCorporativo, true],
+              ["Telefone", companyProfile.telefone, false],
+              ["Endereço", companyProfile.endereco, false],
+              ["E-mail verificado", companyProfile.emailCorporativoVerificado ? "Sim" : "", true],
+              ["Cartão CNPJ", companyProfile.cartaoCnpjUrl, true],
             ] as const
           ).map(([label, val, obrigatorio]) => {
             const texto = typeof val === "string" ? val.trim() : "";
@@ -288,13 +297,13 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
               }}
             >
               <p style={{ ...dashLabel, margin: "0 0 2px", fontSize: 9, textTransform: "uppercase", display: "flex", alignItems: "center", gap: 6 }}>
-                {falta ? (
+                {falta && obrigatorio ? (
                   <span
                     style={{
                       width: 8,
                       height: 8,
                       borderRadius: "50%",
-                      background: obrigatorio ? "#e53935" : "#C89B3C",
+                      background: "#e53935",
                       flexShrink: 0,
                     }}
                   />
