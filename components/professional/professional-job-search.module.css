@@ -67,6 +67,7 @@
 
 .combo .control {
   padding-right: 32px;
+  cursor: default;
 }
 
 .arrow {
