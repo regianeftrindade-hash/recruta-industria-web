@@ -191,7 +191,8 @@
 }
 
 .message {
-  color: #86efac;
+  color: #000;
+  font-weight: 700;
 }
 
 .error {

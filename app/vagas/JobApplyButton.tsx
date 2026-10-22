@@ -57,6 +57,12 @@ export default function JobApplyButton({
         return;
       }
 
+      if (response.status === 403 && String(data.error || "").includes("conta de profissional")) {
+        const back = jobReturn || `/vagas/${jobId}?candidatar=1`;
+        window.location.href = `/api/auth/logout?redirect=${encodeURIComponent(back)}`;
+        return;
+      }
+
       if (data.code === "RESUME_REQUIRED") {
         setNeedsResume(true);
         setError(data.error || "Para se candidatar a esta vaga por e-mail, anexe seu currículo em PDF ao seu perfil.");
@@ -105,7 +111,7 @@ export default function JobApplyButton({
     void (async () => {
       try {
         const current = await loadState();
-        if (cancelled || mode === "EMAIL" || !autoApply || current.applied || current.canApply === false) return;
+        if (cancelled || !autoApply || current.applied || current.canApply === false) return;
         await apply();
       } catch (loadError) {
         if (!cancelled) {
@@ -129,7 +135,9 @@ export default function JobApplyButton({
         type="button"
         onClick={() => {
           if (blocked) {
-            setError(state?.blockReason || "A candidatura é feita com uma conta de profissional.");
+            setBusy(true);
+            const back = jobReturn || `/vagas/${jobId}?candidatar=1`;
+            window.location.href = `/api/auth/logout?redirect=${encodeURIComponent(back)}`;
             return;
           }
           void apply();

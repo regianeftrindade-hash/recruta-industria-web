@@ -179,7 +179,7 @@ export default async function VagaPage({ params, searchParams }: Props) {
             <JobApplyButton
               jobId={view.job.id}
               mode={view.job.applicationMode === "EMAIL" ? "EMAIL" : "INTERNAL"}
-              autoApply={view.job.applicationMode !== "EMAIL" && query.candidatar === "1"}
+              autoApply={query.candidatar === "1"}
             />
           )}
         </article>
