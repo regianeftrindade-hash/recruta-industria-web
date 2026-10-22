@@ -747,17 +747,8 @@ export default function CompanyVagasPanel({
         </form>
       ) : null}
 
-      {screen === "list" ? (
-        <div className={styles.card}>
-          {jobs.length === 0 ? (
-            <div>
-              <p className={styles.empty}>Você ainda não publicou nenhuma vaga.</p>
-              <div className={styles.actions}>
-                <button type="button" onClick={openNew}>Publicar primeira vaga</button>
-              </div>
-            </div>
-          ) : (
-            <div className={styles.rows}>
+      {screen === "list" && jobs.length > 0 ? (
+        <div className={styles.rows}>
               {jobs.map((job) => (
                 <article key={job.id} className={styles.row}>
                   <div>
@@ -866,8 +857,6 @@ export default function CompanyVagasPanel({
                   </div>
                 </article>
               ))}
-            </div>
-          )}
         </div>
       ) : null}
 

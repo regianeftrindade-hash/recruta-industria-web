@@ -4,7 +4,7 @@
   min-width: 0;
   background: var(--dash-card, #E8D5A3);
   border: 2px solid var(--dash-border, #8D6B1F);
-  border-radius: 40px !important;
+  border-radius: 32px;
 }
 
 .header {
@@ -34,11 +34,10 @@
 }
 
 .stat {
-  min-width: 140px;
-  padding: 10px 14px;
-  border: 2px solid var(--dash-border, #8D6B1F);
-  border-radius: 16px;
-  background: var(--dash-card, #E8D5A3);
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
 }
 
 .stat span {
@@ -94,19 +93,17 @@
 }
 
 .card {
-  margin-top: 20px;
-  padding: 22px 20px;
-  border: 2px solid var(--dash-border, #8D6B1F);
-  border-radius: 36px !important;
-  background: var(--dash-card, #E8D5A3);
+  margin-top: 4px;
+  padding: 0;
+  border: none;
+  background: transparent;
 }
 
-.card fieldset {
-  border: 2px solid #8D6B1F;
-  border-radius: 28px !important;
-  margin: 0 0 14px;
-  padding: 14px 14px 4px;
-  overflow: hidden;
+.page fieldset {
+  border: 0;
+  margin: 0 0 12px;
+  padding: 0;
+  min-inline-size: 0;
 }
 
 .cardTitle {
@@ -149,10 +146,10 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px 16px;
   align-items: center;
-  padding: 14px;
-  border: 2px solid var(--dash-border, #8D6B1F);
-  border-radius: 18px;
-  background: var(--dash-card, #E8D5A3);
+  padding: 12px 0;
+  border: none;
+  border-bottom: 1px solid rgba(141, 107, 31, 0.35);
+  background: transparent;
 }
 
 .jobTitle {
