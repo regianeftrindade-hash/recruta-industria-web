@@ -303,12 +303,31 @@
   transition: transform 0.12s ease, box-shadow 0.12s ease !important;
 }
 
-.ri-dash-prof button:active:not(:disabled),
+.ri-dash-prof button:active:not(:disabled):not([role="tab"]):not([role="option"]):not([data-combo-arrow]),
 .ri-dash-prof input[type="submit"]:active:not(:disabled),
 .ri-dash-prof input[type="button"]:active:not(:disabled),
 .ri-dash-prof input[type="file"]::file-selector-button:active {
   transform: translateY(3px) !important;
   box-shadow: var(--ri-btn-3d-gold-active) !important;
+}
+
+.ri-dash-prof button:not([role="tab"]):not([role="option"]):not([data-combo-arrow]),
+.ri-dash-prof input[type="submit"],
+.ri-dash-prof input[type="button"],
+.ri-dash-prof input[type="file"]::file-selector-button,
+.ri-company-dash button:not([role="tab"]):not([role="option"]):not([data-combo-arrow]),
+.ri-company-dash input[type="submit"],
+.ri-company-dash input[type="button"],
+.ri-company-dash input[type="file"]::file-selector-button {
+  border-radius: 999px !important;
+}
+
+.ri-dashboard button[role="tab"],
+.ri-dashboard button[role="tab"]:active,
+.ri-dashboard button[role="tab"]:hover {
+  box-shadow: none !important;
+  transform: none !important;
+  border-radius: 14px 14px 0 0 !important;
 }
 
 .ri-dash-prof button[data-combo-arrow],

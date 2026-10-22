@@ -89,12 +89,12 @@ export function CompanyDashboardNav({
       style={{
         display: "flex",
         flexWrap: "wrap",
-        gap: 6,
-        alignItems: "center",
+        gap: 4,
+        alignItems: "flex-end",
         justifyContent: "flex-end",
-        paddingTop: 8,
-        paddingBottom: 12,
-        marginBottom: 16,
+        paddingTop: 10,
+        borderBottom: "2px solid #8D6B1F",
+        marginBottom: 12,
       }}
     >
       {COMPANY_DASH_TABS.map((tab) => {
@@ -106,24 +106,27 @@ export function CompanyDashboardNav({
           <button
             key={tab.id}
             type="button"
-            aria-current={ativo ? "page" : undefined}
+            role="tab"
+            aria-selected={ativo}
             onClick={() => setActiveTab(tabId)}
             style={{
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
               gap: 5,
-              padding: "5px 12px",
+              padding: "8px 16px",
               fontSize: 11,
               fontWeight: 700,
               letterSpacing: "0.02em",
               textDecoration: "none",
               whiteSpace: "nowrap",
-              color: "#414141",
+              color: "#000",
               background: ativo ? "#E8C56A" : "#F3E6C8",
               border: "2px solid #8D6B1F",
-              borderRadius: 14,
-              boxShadow: ativo ? "0 2px 0 #5a4512" : "none",
+              borderBottom: ativo ? "2px solid var(--dash-bg)" : "2px solid #8D6B1F",
+              borderRadius: "14px 14px 0 0",
+              marginBottom: -2,
+              boxShadow: "none",
               cursor: "pointer",
               lineHeight: 1.2,
               fontFamily: "inherit",
