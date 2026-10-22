@@ -146,17 +146,18 @@ export default function Home() {
               <div className={styles.cardSideBody}>
                 <div className={styles.proLeadBlock}>
                   <h2 className={styles.proLeadTitle}>
-                    Não procure vagas. Deixe as melhores empresas encontrarem você.
+                    Oportunidades de carreira feitas para quem é da indústria.
                   </h2>
                 </div>
                 <div className={styles.proCopy}>
                   <p>
-                    No Recruta, o seu perfil é a sua vitrine. Você expõe suas conquistas, projetos e
-                    competências diretamente para recrutadores e líderes da indústria que estão
-                    ativamente buscando profissionais.
+                    Encontre vagas do setor industrial, apresente suas qualificações e destaque sua
+                    experiência para empresas que buscam profissionais. No Recruta Indústria, você
+                    encontra um ambiente especializado, com oportunidades e conexões voltadas
+                    exclusivamente ao mercado industrial.
                   </p>
                   <p className={styles.proCopyGold}>
-                    Cadastre-se e descubra a revolução no recrutamento.
+                    Cadastre-se gratuitamente, encontre vagas da sua área e dê o próximo passo na sua carreira!
                   </p>
                 </div>
               </div>
