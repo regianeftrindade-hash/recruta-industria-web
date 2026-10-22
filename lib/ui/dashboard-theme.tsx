@@ -122,15 +122,15 @@ export const dashSectionTitle: CSSProperties = {
 };
 
 export const dashLabel: CSSProperties = {
-  color: DASH.gold,
+  color: "#414141",
   fontSize: 11,
-  fontWeight: 600,
+  fontWeight: 700,
   textTransform: "uppercase",
 };
 
 /** Dourado — somente plano / destaque de marca */
 export const dashPlanAccent: CSSProperties = {
-  color: DASH.gold,
+  color: "#414141",
 };
 
 export const dashPlanBox: CSSProperties = {

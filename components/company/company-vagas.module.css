@@ -1,5 +1,5 @@
 .page {
-  padding: 8px 16px 32px;
+  padding: 18px 16px 32px;
   min-width: 0;
 }
 
@@ -9,9 +9,7 @@
 
 .title {
   margin: 0 0 6px;
-  color: #D4AF37;
-  -webkit-text-stroke: 0.4px #000;
-  paint-order: stroke fill;
+  color: #414141;
   font-size: 28px;
   line-height: 1.15;
 }
@@ -47,9 +45,7 @@
 .stat strong {
   display: block;
   margin-top: 2px;
-  color: #D4AF37;
-  -webkit-text-stroke: 0.4px #000;
-  paint-order: stroke fill;
+  color: #414141;
   font-size: 22px;
 }
 
@@ -57,6 +53,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-bottom: 18px;
 }
 
 .tab,
@@ -91,18 +88,16 @@
 }
 
 .card {
-  margin-top: 16px;
+  margin-top: 8px;
   padding: 18px;
   border: 2px solid #8D6B1F;
-  border-radius: 16px;
+  border-radius: 22px;
   background: #E8D5A3;
 }
 
 .cardTitle {
   margin: 0 0 4px;
-  color: #D4AF37;
-  -webkit-text-stroke: 0.4px #000;
-  paint-order: stroke fill;
+  color: #414141;
   font-size: 18px;
 }
 
@@ -164,10 +159,9 @@
   margin-left: 8px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(200, 155, 60, 0.16);
-  color: #D4AF37;
-  -webkit-text-stroke: 0.4px #000;
-  paint-order: stroke fill;
+  border: 2px solid #8D6B1F;
+  background: #E8C56A;
+  color: #414141;
   font-size: 12px;
   font-weight: 800;
   vertical-align: middle;

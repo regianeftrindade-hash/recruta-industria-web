@@ -36,9 +36,7 @@
   flex-direction: column;
   gap: 3px;
   min-width: 0;
-  color: var(--dash-gold, #D4AF37);
-  -webkit-text-stroke: 0.4px #000;
-  paint-order: stroke fill;
+  color: #414141;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -88,9 +86,7 @@
   border-radius: 999px;
   background: transparent;
   box-shadow: none;
-  color: var(--dash-gold, #D4AF37);
-  -webkit-text-stroke: 0.4px #000;
-  paint-order: stroke fill;
+  color: #414141;
   cursor: pointer;
 }
 
@@ -105,9 +101,7 @@
 
 .history p {
   margin: 0 0 6px;
-  color: var(--dash-gold, #D4AF37);
-  -webkit-text-stroke: 0.4px #000;
-  paint-order: stroke fill;
+  color: #414141;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -236,9 +230,7 @@
 
 .company {
   margin: 4px 0 8px;
-  color: var(--dash-gold, #D4AF37);
-  -webkit-text-stroke: 0.4px #000;
-  paint-order: stroke fill;
+  color: #414141;
   font-size: 12px;
   font-weight: 700;
 }

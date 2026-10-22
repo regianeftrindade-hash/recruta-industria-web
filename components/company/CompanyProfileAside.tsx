@@ -11,7 +11,6 @@ import {
   DASH,
   dashAside,
   dashCard,
-  dashInnerBox,
   dashLabel,
   dashPlanAccent,
   dashPlanBox,
@@ -71,7 +70,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
             // eslint-disable-next-line @next/next/no-img-element
             <img src={companyProfile.logoUrl} alt="Logotipo da empresa" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           ) : (
-            <span style={{ display: "flex", width: "100%", height: "100%", alignItems: "center", justifyContent: "center", color: DASH.gold, fontSize: 9, fontWeight: 700 }}>
+            <span style={{ display: "flex", width: "100%", height: "100%", alignItems: "center", justifyContent: "center", color: "#414141", fontSize: 9, fontWeight: 700 }}>
               Logo
             </span>
           )}
@@ -84,9 +83,10 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
             style={{
               display: "inline-block",
               padding: "2px 8px",
-              borderRadius: 8,
-              border: `2px solid #8D6B1F`,
-              color: DASH.gold,
+              borderRadius: 14,
+              border: "2px solid #8D6B1F",
+              background: "#E8C56A",
+              color: "#414141",
               fontSize: 10,
               fontWeight: 800,
               letterSpacing: "0.04em",
@@ -201,7 +201,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
                     height: "100%",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: DASH.gold,
+                    color: "#414141",
                     fontSize: 9,
                     fontWeight: 700,
                     textTransform: "uppercase",
@@ -214,7 +214,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
           </div>
 
           <div style={{ margin: "0 0 12px" }}>
-            <p style={{ margin: "0 0 4px", fontSize: 10, fontWeight: 800, letterSpacing: "0.04em", color: DASH.gold }}>
+            <p style={{ margin: "0 0 4px", fontSize: 10, fontWeight: 800, letterSpacing: "0.04em", color: "#414141" }}>
               CADASTRO {completude}%
             </p>
             <div style={{ height: 10, borderRadius: 8, border: `2px solid #8D6B1F`, background: "#E8D5A3", overflow: "hidden" }}>
@@ -250,21 +250,21 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
               borderRadius: 8,
             }}
           >
-            <p style={{ margin: "0 0 10px", textAlign: "center", fontSize: 13, fontWeight: 700, color: DASH.gold, letterSpacing: "0.06em" }}>
+            <p style={{ margin: "0 0 10px", textAlign: "center", fontSize: 13, fontWeight: 700, color: "#414141", letterSpacing: "0.06em" }}>
               PREENCHIMENTO
             </p>
             <div style={{ display: "flex", justifyContent: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#ddd" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#414141", fontWeight: 700 }}>
                 <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#e53935", flexShrink: 0 }} />
                 Preenchimento obrigatório
               </div>
             </div>
             {!dash.companyVerified ? (
-              <p style={{ margin: "10px 0 0", textAlign: "center", fontSize: 12, fontWeight: 800, color: "#fca5a5" }}>
+              <p style={{ margin: "10px 0 0", textAlign: "center", fontSize: 12, fontWeight: 800, color: "#8B1E1E" }}>
                 Cadastro em análise até a verificação da empresa.
               </p>
             ) : null}
-            <p style={{ margin: "8px 0 0", textAlign: "center", fontSize: 11, color: "#ddd", lineHeight: 1.45 }}>
+            <p style={{ margin: "8px 0 0", textAlign: "center", fontSize: 11, color: "#414141", lineHeight: 1.45 }}>
               Essa checagem existe porque muitos golpistas usam sites de vagas para aplicar golpes e coletar dados pessoais de profissionais.
             </p>
           </div>
@@ -290,10 +290,10 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
             <div
               key={label}
               style={{
-                padding: "4px 8px",
-                ...dashInnerBox,
-                border: `2px solid #8D6B1F`,
-                borderRadius: 8,
+                padding: "8px 10px",
+                background: "#E8C56A",
+                border: "2px solid #8D6B1F",
+                borderRadius: 14,
               }}
             >
               <p style={{ ...dashLabel, margin: "0 0 2px", fontSize: 9, textTransform: "uppercase", display: "flex", alignItems: "center", gap: 6 }}>
@@ -312,7 +312,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
               </p>
               <p style={{ color: DASH.text, margin: 0, fontSize: 11, wordBreak: "break-word" }}>
                 {typeof val === "string" && /^https?:\/\//i.test(val) ? (
-                  <a href={val} target="_blank" rel="noopener noreferrer" style={{ color: DASH.gold, fontWeight: 700 }}>
+                  <a href={val} target="_blank" rel="noopener noreferrer" style={{ color: "#414141", fontWeight: 700, textDecoration: "underline" }}>
                     Abrir arquivo
                   </a>
                 ) : (

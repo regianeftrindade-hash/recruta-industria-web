@@ -92,7 +92,9 @@ export function CompanyDashboardNav({
         gap: 6,
         alignItems: "center",
         justifyContent: "flex-end",
-        paddingTop: 2,
+        paddingTop: 8,
+        paddingBottom: 10,
+        marginBottom: 8,
       }}
     >
       {COMPANY_DASH_TABS.map((tab) => {
@@ -120,7 +122,7 @@ export function CompanyDashboardNav({
               color: "#414141",
               background: ativo ? "#E8C56A" : "#F3E6C8",
               border: "2px solid #8D6B1F",
-              borderRadius: "10px 10px 0 0",
+              borderRadius: 14,
               boxShadow: ativo ? "0 2px 0 #5a4512" : "none",
               cursor: "pointer",
               lineHeight: 1.2,
