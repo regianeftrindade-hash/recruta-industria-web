@@ -1513,7 +1513,7 @@ export default function CadastroProfissional({
 
         <div inert={travado ? true : undefined} className={travado ? styles.cadastroTravado : undefined}>
         <form onSubmit={handleSubmit} className={styles.form} noValidate>
-          {(isEditMode || showWizardStep(2)) && (
+          {(isEditMode || (sessionStatus === "authenticated" && showWizardStep(lastWizardStep))) && (
             <section className={styles.sectionCard}>
               <RegisterSectionHeader emoji="📄" title="Meu currículo" />
               <MeuCurriculo
