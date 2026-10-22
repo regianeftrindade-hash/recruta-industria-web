@@ -10,7 +10,7 @@
 .page input,
 .page select,
 .page textarea {
-  background-color: #FFFEFB !important;
+  background-color: #F3E6C8 !important;
   box-shadow: none !important;
 }
 
@@ -34,11 +34,11 @@
   margin-bottom: 16px;
 }
 
-.title {
+.page .title {
   margin: 0 0 6px;
-  color: var(--dash-gold, #D4AF37);
-  -webkit-text-stroke: 1.5px #000 !important;
-  paint-order: stroke fill;
+  color: #000 !important;
+  -webkit-text-stroke: 0 !important;
+  paint-order: normal;
   font-size: 28px;
   line-height: 1.15;
 }
@@ -131,7 +131,9 @@
 }
 
 .page fieldset {
-  border: 0;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
   margin: 0 0 12px;
   padding: 0;
   min-inline-size: 0;
@@ -383,7 +385,7 @@
   padding: 0 36px 0 12px;
   border: 2px solid #8D6B1F !important;
   border-radius: 999px !important;
-  background: #FFFEFB !important;
+  background: #F3E6C8 !important;
   color: #000 !important;
   font-size: 14px;
   font-weight: 600;
@@ -441,7 +443,7 @@
   list-style: none;
   border: 2px solid #8D6B1F;
   border-radius: 16px;
-  background: #FFFEFB;
+  background: #F3E6C8;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
