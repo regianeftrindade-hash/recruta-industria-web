@@ -70,11 +70,32 @@
 .filters select {
   appearance: none;
   padding-right: 32px;
-  background-color: #FFFEFB;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 L6 6.5 L11 1.5' fill='none' stroke='%23414141' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 12px 8px;
+}
+
+.filters label:has(select)::after,
+.combo::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #414141;
+  border-bottom: 2px solid #414141;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.filters label:has(select)::after {
+  bottom: 12px;
+}
+
+.combo::after {
+  top: 11px;
+}
+
+.combo:has(.arrow[data-open="true"])::after {
+  transform: rotate(225deg);
+  top: 15px;
 }
 
 .combo .control {
@@ -104,7 +125,7 @@
 
 .arrow svg {
   display: block;
-  transition: transform 0.15s ease;
+  opacity: 0;
 }
 
 .arrow:active {
