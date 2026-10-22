@@ -23,13 +23,13 @@ function UpgradePageContent() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#3A3A3A',
-      color: '#F2F2F2',
+      backgroundColor: '#FAF7F0',
+      color: '#414141',
     }}>
       {/* CABEÇALHO */}
       <div style={{
-        backgroundColor: '#2B2B2B',
-        color: '#F2F2F2',
+        backgroundColor: '#FFFEFB',
+        color: '#414141',
         borderBottom: '1px solid #8D6B1F',
         padding: '20px 40px',
         display: 'flex',
@@ -40,7 +40,7 @@ function UpgradePageContent() {
           <h1 style={{ margin: '0 0 5px 0', fontSize: '28px' }}>
             Upgrade para Premium
           </h1>
-          <p style={{ margin: 0, fontSize: '14px', color: '#F2F2F2' }}>
+          <p style={{ margin: 0, fontSize: '14px', color: '#414141' }}>
             Desbloqueia todos os recursos
           </p>
         </div>
@@ -49,7 +49,7 @@ function UpgradePageContent() {
       {/* CONTEÚDO */}
       <div style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto' }}>
         <div style={{
-          backgroundColor: '#2B2B2B',
+          backgroundColor: '#FFFEFB',
           padding: '40px',
           borderRadius: '15px',
           border: '1px solid #8D6B1F',
@@ -62,25 +62,25 @@ function UpgradePageContent() {
 
           {/* CARD DE PREÇO */}
           <div style={{
-            backgroundColor: '#3A3A3A',
+            backgroundColor: '#FAF7F0',
             padding: '40px',
             borderRadius: '15px',
             border: '1px solid #8D6B1F',
             borderLeft: '6px solid #C89B3C',
             marginBottom: '40px'
           }}>
-            <p style={{ color: '#F2F2F2', fontSize: '16px', margin: '0 0 10px 0' }}>
+            <p style={{ color: '#414141', fontSize: '16px', margin: '0 0 10px 0' }}>
               Invista no seu futuro
             </p>
             <p style={{
-              color: '#F2F2F2',
+              color: '#414141',
               fontSize: '48px',
               fontWeight: 'bold',
               margin: '0 0 10px 0'
             }}>
               R$ 19,90
             </p>
-            <p style={{ color: '#F2F2F2', fontSize: '14px', margin: 0 }}>
+            <p style={{ color: '#414141', fontSize: '14px', margin: 0 }}>
               por mês (renovação automática)
             </p>
           </div>
@@ -98,7 +98,7 @@ function UpgradePageContent() {
               </h3>
               <ul style={{
                 textAlign: 'left',
-                color: '#F2F2F2',
+                color: '#414141',
                 lineHeight: '2',
                 fontSize: '14px',
                 listStyle: 'none',
@@ -118,7 +118,7 @@ function UpgradePageContent() {
               </h3>
               <ul style={{
                 textAlign: 'left',
-                color: '#F2F2F2',
+                color: '#414141',
                 lineHeight: '2',
                 fontSize: '14px',
                 listStyle: 'none',
@@ -177,7 +177,7 @@ function UpgradePageContent() {
 
           {/* GARANTIA */}
           <p style={{
-            color: '#F2F2F2',
+            color: '#414141',
             fontSize: '13px',
             fontStyle: 'italic'
           }}>

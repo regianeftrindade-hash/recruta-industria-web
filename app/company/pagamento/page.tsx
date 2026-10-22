@@ -30,7 +30,7 @@ type PaymentData = {
 export default function PagamentoEmpresaPage() {
   return (
     <Suspense fallback={
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#3A3A3A", color: "#F2F2F2" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FAF7F0", color: "#414141" }}>
         Carregando...
       </div>
     }>
@@ -238,14 +238,14 @@ function PagamentoEmpresa() {
 
   if (status === "loading") {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#3A3A3A", color: "#F2F2F2" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FAF7F0", color: "#414141" }}>
         Carregando...
       </div>
     );
   }
 
   return (
-    <div style={{ position: "relative", minHeight: "100vh", background: "#3A3A3A", color: "#F2F2F2", padding: "32px 20px", overflow: "hidden" }}>
+    <div style={{ position: "relative", minHeight: "100vh", background: "#FAF7F0", color: "#414141", padding: "32px 20px", overflow: "hidden" }}>
       <AuthAtmosphere />
       <div style={{ position: "relative", zIndex: 1, maxWidth: 900, margin: "0 auto" }}>
         <button
@@ -269,7 +269,7 @@ function PagamentoEmpresa() {
         )}
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
-          <div style={{ background: "rgba(43,43,43,0.94)", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
+          <div style={{ background: "#FFFEFB", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
             <p style={{ color: "#C89B3C", fontWeight: "bold", fontSize: 28, margin: "0 0 4px" }}>
               {priceLabel.price}<span style={{ fontSize: 14, color: "#aaa" }}>{priceLabel.period}</span>
             </p>
@@ -290,7 +290,7 @@ function PagamentoEmpresa() {
             )}
           </div>
 
-          <div style={{ background: "rgba(43,43,43,0.94)", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
+          <div style={{ background: "#FFFEFB", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
             {!paymentData ? (
               <>
                 <h2 style={{ color: "#C89B3C", margin: "0 0 16px", fontSize: 16 }}>Pagamento</h2>

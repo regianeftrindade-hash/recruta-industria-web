@@ -11,10 +11,10 @@
   --ri-dourado-escuro: #E8E1D5;
   --ri-branco: #414141;
   --ri-texto-suave: #414141;
-  --ri-gold-gradient: #D4AF37;
+  --ri-gold-gradient: #E8C56A;
   --ri-letter-spacing: normal;
-  --ri-btn-3d-gold-shadow: inset 0 1px 0 rgba(200, 155, 60, 0.45), inset 0 -2px 0 rgba(74, 50, 12, 0.42), 0 3px 0 #5a4512, 0 4px 10px rgba(0, 0, 0, 0.45);
-  --ri-btn-3d-gold-active: inset 0 2px 5px rgba(0, 0, 0, 0.42), 0 1px 0 #5a4512;
+  --ri-btn-3d-gold-shadow: inset 0 1px 0 #fff6d8, 0 4px 0 #6b5218, 0 8px 16px rgba(90, 67, 14, 0.38);
+  --ri-btn-3d-gold-active: inset 0 2px 4px rgba(90, 67, 14, 0.28), 0 1px 0 #6b5218;
   --ri-btn-3d-outline-shadow: inset 0 1px 0 rgba(200, 155, 60, 0.2), 0 2px 0 rgba(0, 0, 0, 0.38), 0 3px 8px rgba(0, 0, 0, 0.32);
   --ri-btn-3d-dark-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 0 rgba(0, 0, 0, 0.5), 0 3px 8px rgba(0, 0, 0, 0.35);
 }
@@ -52,9 +52,9 @@ input[type="file"] {
 }
 
 input[type="file"]::file-selector-button {
-  background: #D4AF37;
+  background: #E8C56A;
   color: #414141;
-  border: 1px solid #E8D5A3;
+  border: 2px solid #8D6B1F;
   border-radius: 6px;
   padding: 8px 14px;
   font-weight: 700;
@@ -142,9 +142,9 @@ input[type="submit"],
 input[type="button"],
 .ri-btn-3d-gold {
   display: inline-block;
-  background: #D4AF37;
+  background: #E8C56A;
   color: #414141;
-  border: 1px solid #E8D5A3;
+  border: 2px solid #8D6B1F;
   font-family: inherit;
   font-weight: 700;
   letter-spacing: inherit;
@@ -158,7 +158,7 @@ button:active:not(:disabled),
 input[type="submit"]:active:not(:disabled),
 input[type="button"]:active:not(:disabled),
 .ri-btn-3d-gold:active {
-  transform: translateY(2px);
+  transform: translateY(3px);
   box-shadow: var(--ri-btn-3d-gold-active);
 }
 

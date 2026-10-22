@@ -66,7 +66,7 @@ export default function AdminCompaniesPage() {
   };
 
   return (
-    <div style={{ padding: 24, color: '#f2f2f2', maxWidth: 1100, margin: '0 auto' }}>
+    <div style={{ padding: 24, color: '#414141', maxWidth: 1100, margin: '0 auto' }}>
       <h1 style={{ color: '#C89B3C' }}>Verificação de empresas</h1>
       <p style={{ color: '#ccc' }}>Analise o cartão CNPJ e aprove ou recuse o cadastro.</p>
 
@@ -79,7 +79,7 @@ export default function AdminCompaniesPage() {
 
       <div style={{ display: 'grid', gap: 16, marginTop: 20 }}>
         {companies.map((company) => (
-          <div key={company.userId} style={{ border: '1px solid #8D6B1F', borderRadius: 12, padding: 16, background: '#111' }}>
+          <div key={company.userId} style={{ border: '1px solid #8D6B1F', borderRadius: 12, padding: 16, background: '#FAF7F0' }}>
             <h2 style={{ margin: '0 0 8px', fontSize: 18 }}>{company.razaoSocial}</h2>
             <p style={{ margin: '4px 0', fontSize: 13 }}>CNPJ: {company.cnpj || '—'}</p>
             <p style={{ margin: '4px 0', fontSize: 13 }}>Responsável: {company.responsavelNome || '—'}</p>

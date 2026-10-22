@@ -13,13 +13,13 @@ export default function SubscriptionPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#3A3A3A',
-      color: '#F2F2F2',
+      backgroundColor: '#FAF7F0',
+      color: '#414141',
     }}>
       {/* CABEÇALHO */}
       <div style={{
-        backgroundColor: '#2B2B2B',
-        color: '#F2F2F2',
+        backgroundColor: '#FFFEFB',
+        color: '#414141',
         borderBottom: '1px solid #8D6B1F',
         padding: '20px 40px',
         display: 'flex',
@@ -30,7 +30,7 @@ export default function SubscriptionPage() {
           <h1 style={{ margin: '0 0 5px 0', fontSize: '28px' }}>
             Gerenciar Assinatura
           </h1>
-          <p style={{ margin: 0, fontSize: '14px', color: '#F2F2F2' }}>
+          <p style={{ margin: 0, fontSize: '14px', color: '#414141' }}>
             Sua assinatura Premium
           </p>
         </div>
@@ -55,7 +55,7 @@ export default function SubscriptionPage() {
       {/* CONTEÚDO */}
       <div style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto' }}>
         <div style={{
-          backgroundColor: '#2B2B2B',
+          backgroundColor: '#FFFEFB',
           padding: '40px',
           borderRadius: '15px',
           border: '1px solid #8D6B1F',
@@ -67,20 +67,20 @@ export default function SubscriptionPage() {
 
           {/* STATUS DA ASSINATURA */}
           <div style={{
-            backgroundColor: '#3A3A3A',
+            backgroundColor: '#FAF7F0',
             padding: '25px',
             borderRadius: '12px',
             border: '1px solid #8D6B1F',
             borderLeft: '6px solid #C89B3C',
             marginBottom: '30px'
           }}>
-            <p style={{ color: '#F2F2F2', fontSize: '16px', fontWeight: 'bold', margin: '0 0 15px 0' }}>
+            <p style={{ color: '#414141', fontSize: '16px', fontWeight: 'bold', margin: '0 0 15px 0' }}>
               ✓ Assinatura Ativa
             </p>
-            <p style={{ color: '#F2F2F2', margin: '0 0 8px 0' }}>
+            <p style={{ color: '#414141', margin: '0 0 8px 0' }}>
               <strong style={{ color: '#C89B3C' }}>Próxima renovação:</strong> 02 de Fevereiro, 2026
             </p>
-            <p style={{ color: '#F2F2F2', margin: 0 }}>
+            <p style={{ color: '#414141', margin: 0 }}>
               <strong style={{ color: '#C89B3C' }}>Valor mensal:</strong> R$ 19,90
             </p>
           </div>
@@ -128,14 +128,14 @@ export default function SubscriptionPage() {
 
           {/* CANCELAR ASSINATURA */}
           <div style={{
-            backgroundColor: '#3A3A3A',
+            backgroundColor: '#FAF7F0',
             padding: '25px',
             borderRadius: '12px',
             border: '1px solid #8D6B1F',
             borderLeft: '6px solid #C89B3C',
             marginBottom: '30px'
           }}>
-            <p style={{ color: '#F2F2F2', fontSize: '14px', marginBottom: '15px', margin: 0 }}>
+            <p style={{ color: '#414141', fontSize: '14px', marginBottom: '15px', margin: 0 }}>
               Quer cancelar sua assinatura? Você pode fazer isso a qualquer momento sem penalidades.
             </p>
             <button

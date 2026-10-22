@@ -9,14 +9,14 @@ export default function UpgradeSuccessPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#3A3A3A',
-      color: '#F2F2F2',
+      backgroundColor: '#FAF7F0',
+      color: '#414141',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center'
     }}>
       <div style={{
-        backgroundColor: '#2B2B2B',
+        backgroundColor: '#FFFEFB',
         padding: '60px',
         borderRadius: '20px',
         border: '1px solid #8D6B1F',
@@ -40,16 +40,16 @@ export default function UpgradeSuccessPage() {
         </h1>
 
         <p style={{
-          color: '#F2F2F2',
+          color: '#414141',
           fontSize: '18px',
           marginBottom: '30px',
           lineHeight: '1.6'
         }}>
-          Parabéns! Você agora é um membro <strong style={{ color: '#F2F2F2' }}>Premium</strong>. Todos os recursos estão disponíveis para você.
+          Parabéns! Você agora é um membro <strong style={{ color: '#414141' }}>Premium</strong>. Todos os recursos estão disponíveis para você.
         </p>
 
         <div style={{
-          backgroundColor: '#3A3A3A',
+          backgroundColor: '#FAF7F0',
           padding: '20px',
           borderRadius: '12px',
           border: '1px solid #8D6B1F',
@@ -60,7 +60,7 @@ export default function UpgradeSuccessPage() {
             ✓ Agora você tem acesso a:
           </h3>
           <ul style={{
-            color: '#F2F2F2',
+            color: '#414141',
             lineHeight: '2',
             margin: 0,
             paddingLeft: '20px'
@@ -74,17 +74,17 @@ export default function UpgradeSuccessPage() {
         </div>
 
         <div style={{
-          backgroundColor: '#3A3A3A',
+          backgroundColor: '#FAF7F0',
           padding: '15px',
           borderRadius: '8px',
           border: '1px solid #8D6B1F',
           marginBottom: '30px',
           fontSize: '14px',
-          color: '#F2F2F2'
+          color: '#414141'
         }}>
-          <strong style={{ color: '#F2F2F2' }}>📋 Recibos:</strong> Você receberá um recibo por email para cada renovação mensal.
+          <strong style={{ color: '#414141' }}>📋 Recibos:</strong> Você receberá um recibo por email para cada renovação mensal.
           <br/>
-          <strong style={{ color: '#F2F2F2' }}>❌ Cancelamento:</strong> Você pode cancelar a qualquer momento sem penalidades.
+          <strong style={{ color: '#414141' }}>❌ Cancelamento:</strong> Você pode cancelar a qualquer momento sem penalidades.
         </div>
 
         <div style={{

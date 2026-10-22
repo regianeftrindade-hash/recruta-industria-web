@@ -134,7 +134,7 @@ export default function Pagamento() {
     <div style={{ position: "relative", minHeight: "100vh", background: COLORS.preto, padding: "30px", color: COLORS.branco, overflow: "hidden" }}>
       <AuthAtmosphere />
       <div style={{ position: "relative", zIndex: 1, maxWidth: "1100px", margin: "0 auto", display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "24px" }}>
-        <div style={{ background: "rgba(43,43,43,0.94)", borderRadius: "16px", padding: "28px", boxShadow: "0 16px 40px rgba(0,0,0,0.45)", border: "1px solid rgba(200,155,60,0.7)" }}>
+        <div style={{ background: "#FFFEFB", borderRadius: "16px", padding: "28px", boxShadow: "0 16px 40px rgba(0,0,0,0.45)", border: "1px solid rgba(200,155,60,0.7)" }}>
           <span style={{ display: "inline-block", fontWeight: 900, color: COLORS.dourado, background: "rgba(200, 155, 60, 0.15)", padding: "8px 14px", borderRadius: "999px", marginBottom: "12px", fontSize: "12px", border: `1px solid ${COLORS.douradoEscuro}` }}>PREMIUM PROFISSIONAL</span>
           <h1 style={{ margin: "0 0 8px 0", fontSize: "28px", color: COLORS.dourado }}>Plano completo do profissional</h1>
           <p style={{ margin: "0 0 18px 0", color: "rgba(242,242,242,0.82)", lineHeight: 1.6 }}>Acesse todas as funcionalidades do site, desbloqueie dicas premium, histórico de visitas e visibilidade ampliada para empresas.</p>
@@ -170,7 +170,7 @@ export default function Pagamento() {
           </div>
         </div>
 
-        <div style={{ background: "rgba(43,43,43,0.94)", borderRadius: "16px", padding: "24px", boxShadow: "0 16px 40px rgba(0,0,0,0.45)", border: "1px solid rgba(200,155,60,0.7)" }}>
+        <div style={{ background: "#FFFEFB", borderRadius: "16px", padding: "24px", boxShadow: "0 16px 40px rgba(0,0,0,0.45)", border: "1px solid rgba(200,155,60,0.7)" }}>
           <h2 style={{ margin: "0 0 12px 0", color: COLORS.dourado, fontSize: "20px" }}>Pagamento</h2>
           <p style={{ margin: "0 0 18px 0", color: "rgba(242,242,242,0.82)", fontSize: "14px" }}>Escolha o método e conclua a assinatura Premium.</p>
 

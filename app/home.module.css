@@ -148,7 +148,7 @@
   box-sizing: border-box;
   padding: 10px 12px;
   border-radius: 18px;
-  border: 1px solid #E8E1D5;
+  border: 2px solid #8D6B1F;
   background: #FFFEFB;
   box-shadow: inset 0 1px 0 rgba(240, 215, 140, 0.08), 0 8px 20px rgba(0, 0, 0, 0.28);
 }
@@ -180,7 +180,7 @@
   flex: 0 0 auto;
   padding: 6px 12px;
   border-radius: 999px;
-  border: 1px solid #E8E1D5;
+  border: 2px solid #8D6B1F;
   background: #F3E6C8;
   color: #414141;
   font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
@@ -213,8 +213,8 @@
   flex: 0 0 auto;
   padding: 6px 14px;
   border-radius: 999px;
-  border: 1px solid #E8D5A3;
-  background: #D4AF37;
+  border: 2px solid #8D6B1F;
+  background: #E8C56A;
   color: #414141;
   font-size: 0.68rem;
   text-decoration: none;
@@ -305,7 +305,7 @@
 }
 
 .homeAccessGoogle:active:not(:disabled) {
-  transform: translateY(2px);
+  transform: translateY(3px);
   box-shadow: var(--ri-btn-3d-gold-active);
 }
 
@@ -383,7 +383,7 @@
   margin-right: -2px;
   padding: clamp(8px, 1vh, 12px) clamp(8px, 1vw, 12px);
   border-radius: 18px;
-  border: 1px solid #E8E1D5;
+  border: 2px solid #8D6B1F;
   background: #FFFEFB;
   box-shadow: inset 0 1px 0 rgba(240, 215, 140, 0.08), 0 8px 20px rgba(0, 0, 0, 0.28);
   align-items: stretch;
@@ -399,7 +399,7 @@
   margin: 0 0 4px;
   padding: 6px 14px;
   border-radius: 999px;
-  border: 1px solid #E8E1D5;
+  border: 2px solid #8D6B1F;
   background: #F3E6C8;
   text-align: center;
   color: #414141;
@@ -532,7 +532,7 @@
   margin: 0;
   padding: 3px 8px;
   border-radius: 999px;
-  border: 1px solid #E8E1D5;
+  border: 2px solid #8D6B1F;
   background: #F3E6C8;
   color: #414141;
   font-size: 0.6rem;
@@ -585,8 +585,8 @@
   box-sizing: border-box;
   padding: 8px 16px;
   border-radius: 999px;
-  border: 1px solid #E8D5A3;
-  background: #D4AF37;
+  border: 2px solid #8D6B1F;
+  background: #E8C56A;
   color: #414141;
   font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
   font-weight: 700;
@@ -613,7 +613,7 @@
 .proLoginAcessarTag:active:not(:disabled),
 .proLoginRegisterTag:active,
 .homeForgotLink:active {
-  transform: translateY(2px);
+  transform: translateY(3px);
   box-shadow: var(--ri-btn-3d-gold-active);
 }
 
@@ -669,7 +669,7 @@
   text-decoration: none;
   color: var(--ri-text);
   background: #FFFEFB;
-  border: 1px solid #E8E1D5;
+  border: 2px solid #8D6B1F;
   border-radius: 12px;
   padding: 10px;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.38);
@@ -757,12 +757,12 @@
   font-family: var(--font-oswald), "Oswald", "Bebas Neue", "Teko", Impact, sans-serif;
   padding: 8px 18px;
   border-radius: 7px;
-  background: #D4AF37;
+  background: #E8C56A;
   color: #414141;
   font-weight: 700;
   font-size: clamp(0.7rem, 0.95vw, 0.82rem);
   text-transform: uppercase;
-  border: 1px solid #E8D5A3;
+  border: 2px solid #8D6B1F;
   box-shadow: var(--ri-btn-3d-gold-shadow);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
@@ -772,7 +772,7 @@
 .proLoginRegisterTag:hover,
 .homeAccessEmpresa .homeAccessRegister:hover,
 .homeForgotLink:hover {
-  background: #E8D5A3;
+  background: #F3E0A6;
   color: #414141;
   filter: none;
 }
@@ -787,10 +787,14 @@
 .proLoginAcessarTag:active:not(:disabled),
 .proLoginRegisterTag:active,
 .homeAccessEmpresa .homeAccessRegister:active,
-.homeForgotLink:active,
-.proLoginGoogleIconOnly button:active:not(:disabled) {
-  transform: translateY(2px);
+.homeForgotLink:active {
+  transform: translateY(3px);
   box-shadow: var(--ri-btn-3d-gold-active);
+}
+
+.proLoginGoogleIconOnly button:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: none;
 }
 
 .homeBottom {

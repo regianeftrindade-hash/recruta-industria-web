@@ -141,7 +141,7 @@
   list-style: none;
   border: 1px solid var(--dash-gold, #c89b3c);
   border-radius: 14px;
-  background: var(--dash-card, #2b2b2b);
+  background: var(--dash-card, #FFFEFB);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
 }
 
@@ -217,7 +217,7 @@
   padding: 12px;
   border: 1px solid rgba(200, 155, 60, 0.45);
   border-radius: 12px;
-  background: var(--dash-inner, #2b2b2b);
+  background: var(--dash-inner, #F3E6C8);
 }
 
 .card h3 {

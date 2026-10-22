@@ -2014,7 +2014,7 @@ export default function CadastroProfissional({
             )}
 
             {cadastroComGoogle && (
-              <p style={{ color: '#F2F2F2', fontSize: 13, margin: '0 0 12px' }}>
+              <p style={{ color: '#414141', fontSize: 13, margin: '0 0 12px' }}>
                 Sua conta já está criada. Nome e e-mail permanecem preenchidos — complete o restante do perfil
                 para as empresas te encontrarem.
               </p>
@@ -2738,7 +2738,7 @@ export default function CadastroProfissional({
                     <div
                       key={index}
                       className={index === 0 ? blocoErro('experiencias') : undefined}
-                      style={{ border: '1px solid #8D6B1F', padding: '15px', borderRadius: '4px', backgroundColor: '#2B2B2B' }}
+                      style={{ border: '1px solid #8D6B1F', padding: '15px', borderRadius: '4px', backgroundColor: '#FFFEFB' }}
                     >
                       <p style={{ margin: '0 0 10px', fontWeight: 'bold', color: '#C89B3C' }}>Empresa {index + 1}</p>
                       <div className={styles.fieldsRow}>

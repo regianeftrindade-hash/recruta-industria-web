@@ -299,7 +299,7 @@ export default function CompanyDashboardInicioPage() {
                 margin: "0 0 10px",
                 padding: 16,
                 border: `1px solid ${DASH.gold}`,
-                background: "linear-gradient(180deg, rgba(200,155,60,0.18) 0%, rgba(43,43,43,0.96) 100%)",
+                background: "linear-gradient(180deg, rgba(200,155,60,0.18) 0%, #FFFEFB 100%)",
               }}
             >
               <h2 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>

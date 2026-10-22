@@ -99,7 +99,7 @@ export default function PlatformVideoCallVideoGrid({
           borderRadius: overlayPip ? 8 : 10,
           overflow: "hidden",
           border: `1px solid ${DASH.gold}`,
-          background: "#111",
+          background: "#FAF7F0",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

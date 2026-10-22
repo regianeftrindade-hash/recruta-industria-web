@@ -689,9 +689,9 @@ function CadastroEmpresaContent() {
 
   if (contaProfissional && session?.user) {
     return (
-      <div style={{ position: 'relative', minHeight: '100vh', backgroundColor: '#3A3A3A', padding: '40px 20px', color: '#F2F2F2', overflow: 'hidden', ...READABLE_TEXT_STYLE }} className="ri-readable">
+      <div style={{ position: 'relative', minHeight: '100vh', backgroundColor: '#FAF7F0', padding: '40px 20px', color: '#414141', overflow: 'hidden', ...READABLE_TEXT_STYLE }} className="ri-readable">
         <AuthAtmosphere intensity="strong" />
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: '560px', margin: '0 auto', background: 'rgba(43,43,43,0.94)', padding: '40px', borderRadius: '16px', border: '1px solid rgba(200,155,60,0.7)', boxShadow: '0 16px 40px rgba(0,0,0,0.5)', textAlign: 'center' }}>
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '560px', margin: '0 auto', background: '#FFFEFB', padding: '40px', borderRadius: '16px', border: '1px solid rgba(200,155,60,0.7)', boxShadow: '0 16px 40px rgba(0,0,0,0.5)', textAlign: 'center' }}>
           <h1 style={{ color: '#C89B3C', marginTop: 0 }}>Conta profissional detectada</h1>
           <p style={{ lineHeight: 1.6 }}>
             O e-mail <strong>{session.user.email}</strong> já está cadastrado como <strong>profissional</strong>
@@ -711,7 +711,7 @@ function CadastroEmpresaContent() {
             <button
               type="button"
               onClick={() => { window.location.href = '/api/auth/logout'; }}
-              style={{ padding: '12px', background: 'transparent', color: '#F2F2F2', border: '1px solid #8D6B1F', borderRadius: 8, fontWeight: 'bold', cursor: 'pointer' }}
+              style={{ padding: '12px', background: 'transparent', color: '#414141', border: '1px solid #8D6B1F', borderRadius: 8, fontWeight: 'bold', cursor: 'pointer' }}
             >
               Sair e usar outro e-mail
             </button>
@@ -781,7 +781,7 @@ function CadastroEmpresaContent() {
             background: 'rgba(200,155,60,0.12)',
             textAlign: 'center',
           }}>
-            <p style={{ margin: '0 0 10px', color: '#F2F2F2', fontSize: 13, lineHeight: 1.45 }}>
+            <p style={{ margin: '0 0 10px', color: '#414141', fontSize: 13, lineHeight: 1.45 }}>
               Conta de teste <strong>paizaonacozinha</strong>: preenchimento opcional.
             </p>
             <button
@@ -801,7 +801,7 @@ function CadastroEmpresaContent() {
         )}
 
         {usuarioLogado && !isEditMode && (
-          <p style={{ color: '#F2F2F2', fontSize: 13, textAlign: 'center', marginBottom: 16 }}>
+          <p style={{ color: '#414141', fontSize: 13, textAlign: 'center', marginBottom: 16 }}>
             Você entrou com Google. Complete os dados da empresa abaixo — não é necessário criar senha.
           </p>
         )}
@@ -882,7 +882,7 @@ function CadastroEmpresaContent() {
             </div>
           )}
           {successMessage && (
-            <div style={{ background: '#3A3A3A', color: '#F2F2F2', padding: '10px', borderRadius: '8px', fontWeight: 'bold', border: '1px solid #8D6B1F' }}>
+            <div style={{ background: '#FAF7F0', color: '#414141', padding: '10px', borderRadius: '8px', fontWeight: 'bold', border: '1px solid #8D6B1F' }}>
               {successMessage}
             </div>
           )}
@@ -970,7 +970,7 @@ function CadastroEmpresaContent() {
                       border: 'none',
                       outline: 'none',
                       background: 'transparent',
-                      color: '#f2f2f2',
+                      color: '#414141',
                       fontSize: 14,
                       lineHeight: 1.4,
                       padding: 0,
@@ -1007,7 +1007,7 @@ function CadastroEmpresaContent() {
                   : 'E-mail de acesso da conta. Tem que ser corporativo (não Gmail/Hotmail). Se já usa esse e-mail no site, teste com alias: nome+teste@suaempresa.com.br'}
               </small>
               {emailMensagem && (
-                <div style={{ marginTop: 10, background: '#3A3A3A', color: '#F2F2F2', padding: 10, borderRadius: 8, border: '1px solid #8D6B1F', fontSize: 13, lineHeight: 1.5 }}>
+                <div style={{ marginTop: 10, background: '#FAF7F0', color: '#414141', padding: 10, borderRadius: 8, border: '1px solid #8D6B1F', fontSize: 13, lineHeight: 1.5 }}>
                   {emailMensagem}
                 </div>
               )}
@@ -1102,7 +1102,7 @@ function CadastroEmpresaContent() {
               {cartaoCnpjUrl && !enviandoCartao && (
                 <small style={{ color: '#C89B3C', display: 'block', marginTop: 6 }}>
                   ✓ Arquivo enviado{' '}
-                  <a href={cartaoCnpjUrl} target="_blank" rel="noreferrer" style={{ color: '#F2F2F2' }}>ver arquivo</a>
+                  <a href={cartaoCnpjUrl} target="_blank" rel="noreferrer" style={{ color: '#414141' }}>ver arquivo</a>
                 </small>
               )}
             </div>
@@ -1121,7 +1121,7 @@ function CadastroEmpresaContent() {
                   <label className={styles.label}>SENHA {isTestBypass ? '' : '*'}</label>
                   <input id="empresa-senha" type="password" className={styles.input} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} required={!isTestBypass} minLength={isTestBypass ? undefined : 8} />
                   {!isTestBypass && (
-                    <small style={{ color: '#F2F2F2' }}>Mínimo 8 caracteres, com letras maiúsculas, minúsculas, números e símbolo.</small>
+                    <small style={{ color: '#414141' }}>Mínimo 8 caracteres, com letras maiúsculas, minúsculas, números e símbolo.</small>
                   )}
                 </div>
                 <div>
@@ -1148,12 +1148,12 @@ function CadastroEmpresaContent() {
               <button
                 type="button"
                 onClick={() => router.push('/company/dashboard-empresa')}
-                style={{ fontSize: '13px', color: '#F2F2F2', background: 'transparent', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}
+                style={{ fontSize: '13px', color: '#414141', background: 'transparent', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}
               >
                 Voltar ao painel
               </button>
             ) : (
-              <Link href="/login?tipo=empresa" style={{ fontSize: '13px', color: '#F2F2F2', textDecoration: 'underline' }}>
+              <Link href="/login?tipo=empresa" style={{ fontSize: '13px', color: '#414141', textDecoration: 'underline' }}>
                 Já tem conta? Entrar
               </Link>
             )}

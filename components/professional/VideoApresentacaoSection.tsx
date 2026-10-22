@@ -446,7 +446,7 @@ export default function VideoApresentacaoSection({
     width: "min(200px, 100%)",
     aspectRatio: "16 / 9",
     borderRadius: 8,
-    background: "#3A3A3A",
+    background: "#FAF7F0",
     border: "1px dashed rgba(141, 107, 31, 0.45)",
     display: "flex",
     alignItems: "center",

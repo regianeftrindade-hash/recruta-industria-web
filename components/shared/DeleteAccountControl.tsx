@@ -126,8 +126,8 @@ export default function DeleteAccountControl({ variant = "card" }: Props) {
               padding: "8px 10px",
               borderRadius: 8,
               border: `1px solid ${DASH.border}`,
-              background: "#111",
-              color: "#F2F2F2",
+              background: "#FAF7F0",
+              color: "#414141",
               fontSize: 13,
               marginBottom: 8,
             }}

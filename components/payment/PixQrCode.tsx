@@ -64,7 +64,7 @@ export function PixQrCode({ copyPasteKey, qrCodeDataUrl, expiresAt }: PixQrCodeP
         style={{
           fontSize: 10,
           wordBreak: "break-all",
-          background: "#2B2B2B",
+          background: "#FFFEFB",
           padding: 10,
           borderRadius: 6,
           marginTop: 12,
