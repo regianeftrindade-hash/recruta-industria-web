@@ -585,7 +585,7 @@ export default function CompanyVagasPanel({
 
   return (
     <section className={styles.page}>
-      <header className={styles.header}>
+      <div className={styles.header}>
         <h1 className={styles.title}>Publicar vagas</h1>
         <p className={styles.subtitle}>Cadastre, divulgue e acompanhe suas oportunidades em um só lugar.</p>
         <div className={styles.stats}>
@@ -608,7 +608,7 @@ export default function CompanyVagasPanel({
         </div>
         {error ? <p className={styles.bad} role="alert">{error}</p> : null}
         {message ? <p className={styles.ok} role="status">{message}</p> : null}
-      </header>
+      </div>
 
       {loading || screen === null ? <p className={styles.cardText}>Carregando vagas...</p> : null}
 

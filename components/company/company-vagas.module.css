@@ -30,8 +30,13 @@
   box-shadow: var(--ri-btn-3d-gold-active) !important;
 }
 
-.header {
+.page .header {
   margin-bottom: 16px;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0 !important;
 }
 
 .page .title {
