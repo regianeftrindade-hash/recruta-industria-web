@@ -11,6 +11,37 @@ export const APPLICATION_EMAIL_SUCCESS =
 export const APPLICATION_PROFILE_EMAIL_SUCCESS =
   "Candidatura enviada com sucesso! Seu perfil do Recruta Indústria foi encaminhado para o processo seletivo desta vaga.";
 
+export const APPLICATION_WHATSAPP_SUCCESS =
+  "Abra o WhatsApp para enviar seu currículo ao número da empresa.";
+
+export function whatsAppApplyUrl(phoneDigits: string, text: string): string {
+  return `https://wa.me/${phoneDigits}?text=${encodeURIComponent(text)}`;
+}
+
+export function buildWhatsAppResumeText(input: {
+  jobTitle: string;
+  professionalName: string | null;
+  professionalEmail: string;
+  profile: ApplicationProfileMail | null;
+  hasPdf: boolean;
+}): string {
+  const title = input.jobTitle.trim() || "Vaga";
+  const name = input.professionalName?.trim() || "Profissional";
+  const lines = [
+    "Candidatura pelo Recruta Indústria",
+    `Vaga: ${title}`,
+    `Nome: ${name}`,
+    `E-mail: ${input.professionalEmail}`,
+  ];
+  if (input.profile) lines.push(...applicationProfileLines(input.profile));
+  if (input.hasPdf) {
+    lines.push("Este profissional também tem currículo em PDF salvo no Recruta Indústria.");
+  } else if (!input.profile) {
+    lines.push("Currículo informado no cadastro do site.");
+  }
+  return lines.join("\n").slice(0, 1500);
+}
+
 export type ApplicationProfileMail = {
   cargo: string | null;
   area: string | null;

@@ -20,6 +20,7 @@ export async function POST(request: NextRequest, { params }: Context) {
     return NextResponse.json({
       ok: true,
       message: application.message,
+      whatsappUrl: "whatsappUrl" in application ? application.whatsappUrl : null,
       application: {
         id: application.id,
         jobId: application.jobId,

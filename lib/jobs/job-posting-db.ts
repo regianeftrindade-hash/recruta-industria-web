@@ -19,7 +19,10 @@ import {
 import {
   APPLICATION_EMAIL_SUCCESS,
   APPLICATION_PROFILE_EMAIL_SUCCESS,
+  APPLICATION_WHATSAPP_SUCCESS,
+  buildWhatsAppResumeText,
   sendJobApplicationEmail,
+  whatsAppApplyUrl,
   tryLoadOwnedResumePdf,
   type ApplicationProfileMail,
 } from "@/lib/jobs/job-application-mail";
@@ -46,6 +49,7 @@ function asRecord(job: JobPosting, applicationCount = 0): JobRecord {
     applicationMode: job.applicationMode,
     externalApplyUrl: job.externalApplyUrl,
     applicationEmail: job.applicationEmail,
+    applicationPhone: job.applicationPhone,
     status: job.status,
     origin: job.origin,
     companyUserId: job.companyUserId,
@@ -110,6 +114,7 @@ function writeData(data: JobWriteData, current?: { publishedAt: Date | null; clo
     applicationMode: data.applicationMode,
     externalApplyUrl: data.externalApplyUrl,
     applicationEmail: data.applicationEmail,
+    applicationPhone: data.applicationPhone,
     status: data.status,
     ...statusTimestamps(data.status, current),
   };
@@ -726,6 +731,7 @@ export async function registerJobApplication(jobId: string, email: string) {
       title: true,
       applicationMode: true,
       applicationEmail: true,
+      applicationPhone: true,
     },
   });
   if (!job) {
@@ -736,16 +742,71 @@ export async function registerJobApplication(jobId: string, email: string) {
     throw new JobPostingError("Esta vaga recebe a candidatura no site da empresa.", 400);
   }
 
+  const resume = job.applicationMode === "INTERNAL"
+    ? null
+    : await tryLoadOwnedResumePdf(user.email, user.profile?.curricoURL).catch((error) => {
+      if (error instanceof JobPostingError && error.code === "RESUME_REQUIRED") return null;
+      throw error;
+    });
+  const profileMail = user.profile ? perfilParaEmail(user.profile) : null;
+
+  if (job.applicationMode === "WHATSAPP") {
+    if (!job.applicationPhone) {
+      throw new JobPostingError("Esta vaga não tem WhatsApp para receber candidaturas.", 400);
+    }
+    await prisma.jobApplication.upsert({
+      where: { jobId_userId: { jobId: id, userId: user.id } },
+      update: { profileId: user.profile?.id ?? null },
+      create: {
+        jobId: id,
+        userId: user.id,
+        profileId: user.profile?.id ?? null,
+      },
+    });
+    const saved = await prisma.jobApplication.findUnique({
+      where: { jobId_userId: { jobId: id, userId: user.id } },
+      select: { id: true, jobId: true, userId: true, profileId: true, createdAt: true },
+    });
+    if (!saved || saved.userId !== user.id || saved.jobId !== id) {
+      throw new JobPostingError("A candidatura não foi confirmada no banco de dados.", 500);
+    }
+    const text = buildWhatsAppResumeText({
+      jobTitle: job.title,
+      professionalName: user.name,
+      professionalEmail: user.email,
+      profile: profileMail,
+      hasPdf: Boolean(resume),
+    });
+    return {
+      id: saved.id,
+      jobId: saved.jobId,
+      userId: saved.userId,
+      profileId: saved.profileId,
+      createdAt: saved.createdAt.toISOString(),
+      message: APPLICATION_WHATSAPP_SUCCESS,
+      whatsappUrl: whatsAppApplyUrl(job.applicationPhone, text),
+    };
+  }
+
   if (job.applicationMode === "EMAIL") {
     if (!job.applicationEmail) {
       throw new JobPostingError("Esta vaga não tem e-mail para receber candidaturas.", 400);
     }
 
-    const resume = await tryLoadOwnedResumePdf(user.email, user.profile?.curricoURL);
-    const profileMail = resume || !user.profile ? null : perfilParaEmail(user.profile);
-    if (!resume && !profileMail) {
-      throw new JobPostingError("Complete seu perfil de profissional para se candidatar.", 400);
-    }
+    const profileForMail = profileMail ?? {
+      cargo: null,
+      area: null,
+      local: null,
+      escolaridade: null,
+      turno: null,
+      experiencia: null,
+      experiencias: null,
+      recolocacao: null,
+      pretensaoSalarial: null,
+      mensagem: `${user.name?.trim() || "Profissional"} se candidatou pelo cadastro do Recruta Indústria.`,
+      habilidades: null,
+      profileUrl: null,
+    };
     const claim = await claimEmailApplication(id, user.id, user.profile?.id ?? null);
     if (claim === "already") {
       throw new JobPostingError("Você já enviou sua candidatura para esta vaga.", 409, "ALREADY_APPLIED");
@@ -760,7 +821,7 @@ export async function registerJobApplication(jobId: string, email: string) {
       professionalName: user.name,
       professionalEmail: user.email,
       resume,
-      profile: profileMail,
+      profile: resume ? null : profileForMail,
     });
     if (!sent.ok) {
       await prisma.jobApplication.updateMany({

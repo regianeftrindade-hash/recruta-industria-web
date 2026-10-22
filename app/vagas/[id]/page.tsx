@@ -5,16 +5,14 @@ import LogoRecruta from "@/app/components/LogoRecruta";
 import { JobPostingError } from "@/lib/jobs/job-posting";
 import { getPublicJobView } from "@/lib/jobs/job-posting-db";
 import { jobSocialMetadata, publicJobUrl } from "@/lib/jobs/public-job-link";
-import JobShareActions from "@/components/jobs/JobShareActions";
-import JobApplyButton from "../JobApplyButton";
 import JobBackButton from "../JobBackButton";
+import JobCandidatar from "../JobCandidatar";
 import styles from "../vagas.module.css";
 
 export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ candidatar?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -94,9 +92,8 @@ function jobPostingJsonLd(job: {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
-export default async function VagaPage({ params, searchParams }: Props) {
+export default async function VagaPage({ params }: Props) {
   const { id } = await params;
-  const query = await searchParams;
 
   let view: Awaited<ReturnType<typeof getPublicJobView>> = null;
   try {
@@ -164,27 +161,11 @@ export default async function VagaPage({ params, searchParams }: Props) {
             </section>
           ) : null}
 
-          <JobShareActions jobId={view.job.id} title={view.job.title} className={styles.share} />
-
-          {view.job.applicationMode === "EXTERNAL" && view.job.externalApplyUrl ? (
-            <div className={styles.apply}>
-              <a
-                className={`${styles.externalLink} ri-btn-3d-gold`}
-                href={view.job.externalApplyUrl}
-              >
-                Candidatar-se
-              </a>
-              <p className={styles.note}>
-                Esta vaga encaminha a inscrição para a página da empresa.
-              </p>
-            </div>
-          ) : (
-            <JobApplyButton
-              jobId={view.job.id}
-              mode={view.job.applicationMode === "EMAIL" ? "EMAIL" : "INTERNAL"}
-              autoApply={query.candidatar === "1"}
-            />
-          )}
+          <JobCandidatar
+            jobId={view.job.id}
+            mode={view.job.applicationMode}
+            externalApplyUrl={view.job.externalApplyUrl}
+          />
         </article>
       )}
     </main>

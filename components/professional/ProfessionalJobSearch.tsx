@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import JobShareActions from "@/components/jobs/JobShareActions";
 import ProfessionalApplyButton from "@/components/jobs/ProfessionalApplyButton";
 import { CONTRACT_TYPES, WORK_MODES, type PublicJob } from "@/lib/jobs/job-posting";
 import { applyTarget } from "@/lib/jobs/public-job-link";
@@ -268,16 +267,20 @@ function JobCardActions({ job }: { job: PublicJob }) {
       {target.kind === "external" ? (
         <a href={target.href} title={target.href}>Candidatar-se</a>
       ) : (
-        <ProfessionalApplyButton jobId={job.id} mode={target.kind === "email" ? "EMAIL" : "INTERNAL"} />
+        <ProfessionalApplyButton
+          jobId={job.id}
+          mode={target.kind === "email" ? "EMAIL" : target.kind === "whatsapp" ? "WHATSAPP" : "INTERNAL"}
+        />
       )}
       <a href={`/vagas/${job.id}`}>Ver vaga</a>
-      <JobShareActions jobId={job.id} title={job.title} className={styles.share} />
       <p className={styles.applyNote}>
         {target.kind === "external"
           ? `Abre o site da empresa${host ? `: ${host}` : ""}.`
           : target.kind === "email"
-            ? "Envia a candidatura para o e-mail cadastrado nesta vaga. O endereço não aparece aqui."
-            : "A candidatura fica registrada aqui no Recruta Indústria."}
+            ? "Envia o currículo para o e-mail da empresa."
+            : target.kind === "whatsapp"
+              ? "Envia o currículo para o WhatsApp da empresa."
+              : "A candidatura fica somente na página da empresa."}
       </p>
     </div>
   );

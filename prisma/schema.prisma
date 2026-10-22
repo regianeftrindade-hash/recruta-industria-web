@@ -979,6 +979,8 @@ model JobPosting {
   applicationMode          String    @default("INTERNAL")
   externalApplyUrl         String?
   applicationEmail         String?
+  /// Telefone da empresa para receber o currículo no WhatsApp. Não aparece na página pública.
+  applicationPhone         String?
   /// DRAFT | PUBLISHED | UNPUBLISHED | CLOSED
   status                   String    @default("DRAFT")
   /// ADMIN = cadastrada pelo Recruta | COMPANY = publicada pela empresa

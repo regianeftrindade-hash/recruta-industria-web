@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { publicSignupPath } from "@/lib/jobs/public-job-link";
 import styles from "./vagas.module.css";
 
 type ApplyState = {
@@ -16,7 +17,7 @@ export default function JobApplyButton({
   autoApply,
 }: {
   jobId: string;
-  mode: "INTERNAL" | "EMAIL";
+  mode: "INTERNAL" | "EMAIL" | "WHATSAPP";
   autoApply: boolean;
 }) {
   const [state, setState] = useState<ApplyState | null>(null);
@@ -47,7 +48,20 @@ export default function JobApplyButton({
       });
       const data = await response.json().catch(() => ({}));
 
-      if (response.status === 401 || response.status === 403) {
+      if (response.status === 401) {
+        window.location.href = publicSignupPath(jobId);
+        return;
+      }
+
+      if (response.ok && typeof data.whatsappUrl === "string" && data.whatsappUrl.startsWith("https://wa.me/")) {
+        const text = data.message || "Abra o WhatsApp para enviar seu currículo.";
+        setMessage(text);
+        setOutcome(text);
+        window.location.href = data.whatsappUrl;
+        return;
+      }
+
+      if (response.status === 403) {
         const text = data.error || "A candidatura é feita com uma conta de profissional.";
         setError(text);
         setOutcome(text);
@@ -142,17 +156,19 @@ export default function JobApplyButton({
         disabled={busy || applied}
       >
         {busy
-          ? (mode === "EMAIL" ? "Enviando..." : "Registrando...")
+          ? (mode === "EMAIL" ? "Enviando..." : mode === "WHATSAPP" ? "Abrindo WhatsApp..." : "Registrando...")
           : outcome
             ? outcome
             : applied
-              ? (mode === "EMAIL" ? "Candidatura enviada" : "Candidatura registrada")
+              ? (mode === "EMAIL" ? "Candidatura enviada" : mode === "WHATSAPP" ? "Currículo pronto para o WhatsApp" : "Candidatura registrada")
               : "Candidatar-se"}
       </button>
       <p className={styles.note}>
         {mode === "EMAIL"
-          ? "Ao clicar, o currículo em PDF é enviado para o processo seletivo. Se não houver PDF salvo, o perfil do site é enviado por e-mail. O e-mail da empresa não aparece aqui."
-          : "A candidatura fica registrada aqui no Recruta Indústria."}
+          ? "Ao clicar, o currículo em PDF é enviado por e-mail. Se não houver PDF, o cadastro do site é enviado. O e-mail da empresa não aparece aqui."
+          : mode === "WHATSAPP"
+            ? "Ao clicar, o currículo do site abre no WhatsApp da empresa. O número não aparece nesta página."
+            : "A candidatura fica somente na página da empresa."}
       </p>
       {needsResume ? (
         <p className={styles.note}>

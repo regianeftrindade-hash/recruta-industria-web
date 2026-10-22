@@ -9,7 +9,7 @@ export default function ProfessionalApplyButton({
   mode,
 }: {
   jobId: string;
-  mode: Extract<ApplicationMode, "EMAIL" | "INTERNAL">;
+  mode: Extract<ApplicationMode, "EMAIL" | "INTERNAL" | "WHATSAPP">;
 }) {
   const [label, setLabel] = useState("Candidatar-se");
   const [busy, setBusy] = useState(false);
@@ -24,6 +24,10 @@ export default function ProfessionalApplyButton({
         credentials: "include",
       });
       const data = await response.json().catch(() => ({}));
+      if (response.ok && typeof data.whatsappUrl === "string" && data.whatsappUrl.startsWith("https://wa.me/")) {
+        window.location.href = data.whatsappUrl;
+        return;
+      }
       const text = String(data.message || data.error || "");
       if (response.ok || response.status === 409) {
         setDone(true);
@@ -40,7 +44,7 @@ export default function ProfessionalApplyButton({
 
   return (
     <button type="button" onClick={() => void apply()} disabled={busy || done}>
-      {busy ? (mode === "EMAIL" ? "Enviando..." : "Registrando...") : label}
+      {busy ? (mode === "WHATSAPP" ? "Abrindo WhatsApp..." : mode === "EMAIL" ? "Enviando..." : "Registrando...") : label}
     </button>
   );
 }

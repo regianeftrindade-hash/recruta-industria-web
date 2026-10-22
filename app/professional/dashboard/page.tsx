@@ -22,13 +22,12 @@ import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 import { type ResultadoTesteComportamental } from "@/lib/teste-comportamental";
 import { AVISO_RETENCAO_INBOX } from "@/lib/profile/inbox-retention";
 import ProfessionalJobSearch from "@/components/professional/ProfessionalJobSearch";
-import CadastroProfissional from "@/app/professional/register/page";
+import PerfilCadastroPreenchido from "@/components/professional/PerfilCadastroPreenchido";
 import ProfessionalOpportunityBoard from "@/components/professional/ProfessionalOpportunityBoard";
 import ProfessionalRecruitmentHistory, {
   type RecruitmentHistoryCounts,
 } from "@/components/professional/ProfessionalRecruitmentHistory";
 import PlatformVideoCall from "@/components/shared/PlatformVideoCall";
-import DeleteAccountControl from "@/components/shared/DeleteAccountControl";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
 
 const VAZIO = "—";
@@ -137,7 +136,6 @@ export default function DashboardProfissional() {
   const [respostaTexto, setRespostaTexto] = useState<Record<string, string>>({});
   const [enviandoRespostaId, setEnviandoRespostaId] = useState<string | null>(null);
   const [abaDireita, setAbaDireita] = useState<"vagas" | "oportunidades" | "dicas" | "perfil" | "mensagens">("vagas");
-  const [perfilEditando, setPerfilEditando] = useState(false);
   const [weekViewsCount, setWeekViewsCount] = useState(0);
   const [lastViewAt, setLastViewAt] = useState<string | null>(null);
   const [lastViewCompany, setLastViewCompany] = useState<string | null>(null);
@@ -581,23 +579,16 @@ export default function DashboardProfissional() {
           }}
         >
           {abaDireita === "perfil" && (
-            <CadastroProfissional
-              incorporado
-              travado={!perfilEditando}
-              onSalvo={() => setPerfilEditando(false)}
-              acoes={
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setPerfilEditando(true)}
-                    disabled={perfilEditando}
-                    style={{ ...btnGold, padding: "6px 10px", fontSize: 10, flexShrink: 0, opacity: perfilEditando ? 0.7 : 1 }}
-                  >
-                    {perfilEditando ? "Campos liberados" : "Editar perfil"}
-                  </button>
-                  <DeleteAccountControl variant="compact" />
-                </>
-              }
+            <PerfilCadastroPreenchido
+              nome={nomeExibicao}
+              email={String(profileData.email || "")}
+              campos={[
+                { label: "Cargo", value: String(fd.cargoDesejado || fd.title || "") },
+                { label: "Cidade", value: String(fd.cidade || "") },
+                { label: "Estado", value: String(fd.estado || "") },
+                { label: "WhatsApp", value: String(fd.whatsapp || "") },
+                { label: "Telefone", value: String(fd.telefone || "") },
+              ]}
             />
           )}
         </main>

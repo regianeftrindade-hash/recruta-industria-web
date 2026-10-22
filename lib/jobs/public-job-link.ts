@@ -24,6 +24,7 @@ export function facebookShareUrl(jobId: string): string {
 export type ApplyTarget =
   | { kind: "external"; href: string }
   | { kind: "email" }
+  | { kind: "whatsapp" }
   | { kind: "internal" };
 
 /** Destino do botão Candidatar-se. O e-mail da empresa não entra no link público. */
@@ -36,6 +37,7 @@ export function applyTarget(job: {
     if (href) return { kind: "external", href };
   }
   if (job.applicationMode === "EMAIL") return { kind: "email" };
+  if (job.applicationMode === "WHATSAPP") return { kind: "whatsapp" };
   return { kind: "internal" };
 }
 
@@ -62,7 +64,11 @@ export function safeJobReturnPath(value: string | null | undefined): string | nu
   const candidatar = url.searchParams.get("candidatar");
   if (candidatar != null && candidatar !== "1") return null;
 
-  return `/vagas/${match[1]}?candidatar=1`;
+  return `/vagas/${match[1]}`;
+}
+
+export function publicSignupPath(jobId: string): string {
+  return `/cadastro?redirect=${encodeURIComponent(`/vagas/${jobId}`)}`;
 }
 
 function publicExcerpt(text: string): string {
