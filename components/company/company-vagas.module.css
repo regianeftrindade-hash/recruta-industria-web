@@ -25,9 +25,22 @@
 }
 
 .page button:not([data-combo-arrow]):not([role="option"]):active:not(:disabled),
-.page summary:active {
+.page summary:active,
+.page button[aria-pressed="true"] {
   transform: translateY(3px) !important;
   box-shadow: var(--ri-btn-3d-gold-active) !important;
+}
+
+.page [role="radiogroup"] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.page [role="radiogroup"] button {
+  width: auto !important;
+  flex: 0 0 auto;
 }
 
 .page .header {
