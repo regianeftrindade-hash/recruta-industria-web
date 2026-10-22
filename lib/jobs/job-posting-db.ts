@@ -610,6 +610,8 @@ function perfilParaEmail(profile: {
   };
 }
 
+const EMAIL_CLAIM_MS = 2 * 60 * 1000;
+
 async function claimEmailApplication(
   jobId: string,
   userId: string,
