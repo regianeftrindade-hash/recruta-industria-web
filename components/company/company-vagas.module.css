@@ -4,7 +4,7 @@
   min-width: 0;
   background: var(--dash-card, #E8D5A3);
   border: 2px solid var(--dash-border, #8D6B1F);
-  border-radius: 64px !important;
+  border-radius: 32px !important;
 }
 
 .header {
@@ -38,7 +38,7 @@
   padding: 10px 14px;
   border: 2px solid var(--dash-border, #8D6B1F);
   border-radius: 16px;
-  background: var(--dash-inner, #F3E6C8);
+  background: var(--dash-card, #E8D5A3);
 }
 
 .stat span {
@@ -97,8 +97,8 @@
   margin-top: 20px;
   padding: 22px 20px;
   border: 2px solid var(--dash-border, #8D6B1F);
-  border-radius: 40px !important;
-  background: var(--dash-inner, #F3E6C8);
+  border-radius: 24px !important;
+  background: var(--dash-card, #E8D5A3);
 }
 
 .card fieldset {
@@ -151,7 +151,7 @@
   padding: 14px;
   border: 2px solid var(--dash-border, #8D6B1F);
   border-radius: 18px;
-  background: var(--dash-inner, #F3E6C8);
+  background: var(--dash-card, #E8D5A3);
 }
 
 .jobTitle {

@@ -562,7 +562,7 @@ export default function DashboardProfissional() {
           display: "grid",
           gridTemplateColumns: "1fr",
           width: "100%",
-          minHeight: "calc(100vh - 90px)",
+          minHeight: abaDireita === "oportunidades" ? 0 : "calc(100vh - 90px)",
           alignItems: "stretch",
         }}
       >
@@ -606,14 +606,14 @@ export default function DashboardProfissional() {
         <aside
           style={{
             padding: "12px 12px 12px 10px",
-            overflowY: "auto",
-            maxHeight: "calc(100vh - 90px)",
+            overflowY: abaDireita === "oportunidades" ? "visible" : "auto",
+            maxHeight: abaDireita === "oportunidades" ? "none" : "calc(100vh - 90px)",
             minHeight: 0,
             display: abaDireita === "perfil" ? "none" : "flex",
             flexDirection: "column",
             gap: 10,
             minWidth: 0,
-            scrollbarGutter: "stable",
+            scrollbarGutter: abaDireita === "oportunidades" ? "auto" : "stable",
           }}
         >
           {abaDireita === "vagas" && (

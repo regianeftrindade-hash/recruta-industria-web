@@ -43,7 +43,7 @@ function trackingOf(p: JobProposalDTO) {
 const chip = (active: boolean): React.CSSProperties => ({
   padding: "5px 8px",
   fontSize: 10,
-  fontWeight: 700,
+  fontWeight: 400,
   borderRadius: 8,
   cursor: "pointer",
   whiteSpace: "nowrap",
@@ -61,7 +61,7 @@ const btnGhost: React.CSSProperties = {
   borderRadius: 8,
   padding: "5px 8px",
   fontSize: 10,
-  fontWeight: 600,
+  fontWeight: 400,
   cursor: "pointer",
   whiteSpace: "nowrap",
   flexShrink: 0,
@@ -141,12 +141,12 @@ export default function CompanyEntrevistaCard({
         Excluir
       </button>
       <div style={{ flex: "1 1 180px", minWidth: 0 }}>
-        <p
-          style={{
-            margin: 0,
-            fontSize: 11,
-            fontWeight: 800,
-            color: DASH.gold,
+          <p
+            style={{
+              margin: 0,
+              fontSize: 11,
+              fontWeight: 400,
+              color: DASH.gold,
             textTransform: "uppercase",
             whiteSpace: "nowrap",
             overflow: "hidden",
@@ -161,14 +161,14 @@ export default function CompanyEntrevistaCard({
         <p style={{ margin: "2px 0 0", fontSize: 10, color: DASH.text }}>{comprovante.localLabel}</p>
         {p.interview.observacoes?.trim() ? (
           <p style={{ margin: "6px 0 0", fontSize: 11, color: DASH.text, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
-            <strong style={{ color: DASH.gold }}>Observação:</strong> {p.interview.observacoes.trim()}
+            <strong style={{ color: DASH.gold, fontWeight: 400 }}>Observação:</strong> {p.interview.observacoes.trim()}
           </p>
         ) : null}
         <p
           style={{
             margin: "6px 0 0",
             fontSize: 11,
-            fontWeight: 800,
+            fontWeight: 400,
             display: "inline-block",
             padding: "3px 8px",
             borderRadius: 6,
@@ -243,7 +243,7 @@ export default function CompanyEntrevistaCard({
 
       {cancelOpen && cancelMode === "menu" && (
         <div style={{ width: "100%", marginTop: 8, ...nestedCard }}>
-          <p style={{ margin: "0 0 8px", fontSize: 12, color: DASH.text, fontWeight: 700 }}>
+          <p style={{ margin: "0 0 8px", fontSize: 12, color: DASH.text, fontWeight: 400 }}>
             Cancelar entrevista — escolha uma opção:
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -272,7 +272,7 @@ export default function CompanyEntrevistaCard({
 
       {cancelOpen && cancelMode === "justify" && (
         <div style={{ width: "100%", marginTop: 8, ...nestedCard }}>
-          <p style={{ margin: "0 0 6px", fontSize: 12, fontWeight: 700, color: DASH.text }}>
+          <p style={{ margin: "0 0 6px", fontSize: 12, fontWeight: 400, color: DASH.text }}>
             Justificativa do cancelamento
           </p>
           <p style={{ margin: "0 0 6px", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
@@ -319,7 +319,7 @@ export default function CompanyEntrevistaCard({
 
       {cancelOpen && cancelMode === "reschedule" && (
         <div style={{ width: "100%", marginTop: 8, ...nestedCard, display: "grid", gap: 8 }}>
-          <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: DASH.text }}>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 400, color: DASH.text }}>
             Reagendar entrevista
           </p>
           <p style={{ margin: 0, fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>

@@ -279,7 +279,7 @@ export default function CompanyEntrevistasBoard() {
     borderRadius: 8,
     padding: "5px 8px",
     fontSize: 10,
-    fontWeight: 600,
+    fontWeight: 400,
     cursor: "pointer",
     whiteSpace: "nowrap",
     flexShrink: 0,
@@ -308,7 +308,7 @@ export default function CompanyEntrevistasBoard() {
             style={{
               margin: 0,
               fontSize: 11,
-              fontWeight: 800,
+              fontWeight: 400,
               color: DASH.gold,
               textTransform: "uppercase",
               whiteSpace: "nowrap",
@@ -382,7 +382,7 @@ export default function CompanyEntrevistasBoard() {
             style={{
               margin: 0,
               fontSize: 11,
-              fontWeight: 800,
+              fontWeight: 400,
               color: DASH.gold,
               textTransform: "uppercase",
               whiteSpace: "nowrap",
@@ -439,7 +439,7 @@ export default function CompanyEntrevistasBoard() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
-        <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 6px", fontSize: 14 }}>
+        <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 6px", fontSize: 14, fontWeight: 400 }}>
           📅 Entrevistas e acompanhamento
         </h3>
         <p style={{ margin: "0 0 12px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
@@ -462,7 +462,7 @@ export default function CompanyEntrevistasBoard() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={nestedCard}>
-            <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 800, color: DASH.gold }}>
+            <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 400, color: DASH.gold }}>
               Propostas ativas ({listas.propostas.length})
             </h4>
             {listas.propostas.length === 0 ? (
@@ -475,7 +475,7 @@ export default function CompanyEntrevistasBoard() {
           </div>
 
           <div style={nestedCard}>
-            <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 800, color: DASH.gold }}>
+            <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 400, color: DASH.gold }}>
               Entrevistas agendadas ({listas.entrevistas.length})
             </h4>
             {listas.entrevistas.length === 0 ? (
@@ -510,7 +510,7 @@ export default function CompanyEntrevistasBoard() {
           </div>
 
           <div style={nestedCard}>
-            <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 800, color: DASH.gold }}>
+            <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 400, color: DASH.gold }}>
               Arquivadas ({listas.arquivadas.length})
             </h4>
             {listas.arquivadas.length === 0 ? (
