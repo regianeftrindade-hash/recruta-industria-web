@@ -68,7 +68,7 @@ export default function AdminCompaniesPage() {
   return (
     <div style={{ padding: 24, color: '#414141', maxWidth: 1100, margin: '0 auto' }}>
       <h1 style={{ color: '#C89B3C' }}>Verificação de empresas</h1>
-      <p style={{ color: '#ccc' }}>Analise o cartão CNPJ e aprove ou recuse o cadastro.</p>
+      <p style={{ color: 'var(--dash-text, #414141)' }}>Analise o cartão CNPJ e aprove ou recuse o cadastro.</p>
 
       {loading && <p>Carregando...</p>}
       {error && <p style={{ color: '#f87171' }}>{error}</p>}

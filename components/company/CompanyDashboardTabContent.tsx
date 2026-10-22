@@ -39,7 +39,7 @@ export default function CompanyDashboardTabContent() {
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: 12,
+        gap: 22,
         minHeight: "calc(100vh - 90px)",
       }}
     >

@@ -7,8 +7,7 @@
   -moz-osx-font-smoothing: auto;
 }
 
-/* Modo escuro — alinhado à home polida */
-.ri-dashboard[data-theme="dark"],
+/* Modo claro — creme e dourado */
 .ri-dashboard[data-theme="light"] {
   --dash-bg: #F3E6C8;
   --dash-sidebar: #F3E6C8;
@@ -18,7 +17,7 @@
   --dash-tag-bg: #F3E6C8;
   --dash-text: #414141;
   --dash-title: #414141;
-  --dash-text-muted: #6b6458;
+  --dash-text-muted: #414141;
   --dash-border: #8D6B1F;
   --dash-compat-low: #F3E6C8;
   --dash-compat-low-text: #414141;
@@ -26,6 +25,28 @@
   background-color: #F3E6C8;
   background-image: radial-gradient(ellipse 70% 36% at 50% -8%, rgba(243, 230, 200, 0.85), transparent 58%);
   background-attachment: fixed;
+  color: #414141;
+}
+
+/* Modo escuro — só quando o tema escuro está selecionado */
+.ri-dashboard[data-theme="dark"] {
+  --dash-bg: #2A241C;
+  --dash-sidebar: #322B22;
+  --dash-card: #3D3428;
+  --dash-inner: #4A4034;
+  --dash-input-bg: #241F1A;
+  --dash-tag-bg: #E8C56A;
+  --dash-text: #F3E6C8;
+  --dash-title: #F3E6C8;
+  --dash-text-muted: #E4D3B0;
+  --dash-border: #C4A15A;
+  --dash-compat-low: #4A4034;
+  --dash-compat-low-text: #F3E6C8;
+  --dash-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  --dash-gold: #E8C56A;
+  background-color: #2A241C;
+  background-image: none;
+  color: #F3E6C8;
 }
 
 .ri-dashboard .dash-theme-toggle {
@@ -45,6 +66,8 @@
   border-color: var(--dash-gold);
   background: var(--dash-gold-soft);
   color: var(--dash-gold);
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
 }
 
 .ri-dashboard header,
@@ -91,8 +114,8 @@
 .ri-dashboard .dash-card,
 .ri-dashboard [data-card="1"],
 .ri-dashboard [data-perfil-card="1"] {
-  border: 2px solid #8D6B1F !important;
-  border-radius: 14px !important;
+  border: 2px solid var(--dash-border, #8D6B1F) !important;
+  border-radius: 22px !important;
   overflow: hidden;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
@@ -117,7 +140,7 @@
 /* Hierarquia: gold só em h1/destaque; seções usam título do tema */
 .ri-dashboard h1 {
   color: var(--dash-gold) !important;
-  -webkit-text-stroke: 0.4px #000;
+  -webkit-text-stroke: 0.75px #000;
   paint-order: stroke fill;
   font-weight: 700;
   text-decoration: none;
@@ -420,4 +443,18 @@
     min-width: 0;
     overflow-x: hidden;
   }
+}
+
+.ri-dashboard[data-theme="dark"] input,
+.ri-dashboard[data-theme="dark"] select,
+.ri-dashboard[data-theme="dark"] textarea {
+  background: #241F1A !important;
+  color: #F3E6C8 !important;
+  border: 2px solid #C4A15A !important;
+  color-scheme: dark;
+}
+
+.ri-dashboard[data-theme="dark"] select option {
+  background: #241F1A;
+  color: #F3E6C8;
 }

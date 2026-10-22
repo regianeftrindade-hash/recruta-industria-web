@@ -27,6 +27,8 @@
 .formTitle {
   margin: 0 0 12px;
   color: #c89b3c;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
   font-size: 16px;
 }
 
@@ -38,7 +40,8 @@
   text-align: left;
   background: #E8D5A3;
   color: #414141;
-  border: 1px solid rgba(141, 107, 31, 0.45);
+  border: 2px solid #8D6B1F;
+  border-radius: 16px;
   box-shadow: none;
 }
 
@@ -56,7 +59,7 @@
 .jobMeta {
   display: block;
   margin-top: 4px;
-  color: #cfcfcf;
+  color: var(--dash-text, #414141);
   font-size: 12px;
   font-weight: 600;
 }
@@ -72,11 +75,14 @@
 }
 
 .field input,
+.field select,
 .field textarea {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #8d6b1f;
-  border-radius: 8px;
+  border: 2px solid #8D6B1F;
+  border-radius: 12px;
+  background: #FFFEFB;
+  color: #414141;
   font-weight: 600;
 }
 
@@ -87,9 +93,9 @@
 }
 
 .help {
-  color: #bdbdbd;
+  color: var(--dash-text, #414141);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .check {
@@ -111,14 +117,16 @@
 .choices {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
+  margin: 4px 0 8px;
 }
 
 .choice {
-  padding: 8px 12px;
-  background: #E8D5A3;
+  padding: 8px 14px;
+  background: #F3E6C8;
   color: #414141;
-  border: 1px solid rgba(141, 107, 31, 0.7);
+  border: 2px solid #8D6B1F;
+  border-radius: 16px;
   box-shadow: none;
 }
 
@@ -155,6 +163,8 @@
 
 .publicLink {
   color: #c89b3c;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
 }
 
 .tableWrap {
@@ -178,6 +188,8 @@
 
 .table th {
   color: #c89b3c;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
   font-size: 12px;
   text-transform: uppercase;
 }

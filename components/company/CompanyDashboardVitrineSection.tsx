@@ -266,7 +266,7 @@ function CardPerfil({
 
       <div style={{ gridColumn: isFull ? "1 / -1" : undefined }}>
         {p.ultimaAtualizacao && (
-          <p style={{ margin: "8px 0 0", fontSize: isFull ? 12 : 10, color: "#999" }}>
+          <p style={{ margin: "8px 0 0", fontSize: isFull ? 12 : 10, color: "var(--dash-text, #414141)" }}>
             Atualizado: {new Date(p.ultimaAtualizacao).toLocaleDateString("pt-BR")}
           </p>
         )}
@@ -361,8 +361,8 @@ function CardPerfil({
         <div style={{ flex: 1, minWidth: 0, paddingRight: isFull ? 40 : 0 }}>
           <p style={{ color: DASH.gold, margin: "0 0 6px", fontWeight: "bold", fontSize: isFull ? 22 : 14 }}>{p.nome}</p>
           <p style={{ color: DASH.text, margin: "0 0 4px", fontSize: isFull ? 15 : 12 }}>{p.cargo} · {p.area}</p>
-          <p style={{ color: "#bbb", margin: 0, fontSize: isFull ? 13 : 11 }}>{p.local} · {p.escolaridade} · {p.turno}</p>
-          <p style={{ color: "#999", margin: "6px 0 0", fontSize: isFull ? 13 : 11 }}>
+          <p style={{ color: "var(--dash-text, #414141)", margin: 0, fontSize: isFull ? 13 : 11 }}>{p.local} · {p.escolaridade} · {p.turno}</p>
+          <p style={{ color: "var(--dash-text, #414141)", margin: "6px 0 0", fontSize: isFull ? 13 : 11 }}>
             Exp: {p.experiencia}
             {!p.bloqueado && p.pretensaoSalarial && p.pretensaoSalarial !== "—" ? ` · ${p.pretensaoSalarial}` : ""}
           </p>

@@ -138,6 +138,8 @@
   font-weight: 700;
   background: rgba(200, 155, 60, 0.2);
   color: var(--primary-color, #c89b3c);
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
 }
 
 .wizardStepLabel {
@@ -262,7 +264,7 @@
   border-radius: 10px;
   border: 1px solid rgba(200, 155, 60, 0.35);
   background: rgba(200, 155, 60, 0.08);
-  color: rgba(242, 242, 242, 0.88);
+  color: var(--text-primary);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -277,6 +279,8 @@
   font-size: 15px;
   font-weight: 700;
   color: #c89b3c;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
   letter-spacing: 0.02em;
 }
 
@@ -284,7 +288,7 @@
   margin: 0 0 10px;
   font-size: 11px;
   line-height: 1.4;
-  color: rgba(242, 242, 242, 0.72);
+  color: var(--text-primary);
 }
 
 .importCurriculoHiddenInput {
@@ -302,7 +306,7 @@
   background: transparent;
   border: 1px solid rgba(200, 155, 60, 0.45);
   border-radius: 8px;
-  color: rgba(242, 242, 242, 0.92);
+  color: var(--text-primary);
   padding: 6px 10px;
   font-size: 11px;
   font-weight: 600;
@@ -340,7 +344,7 @@
   flex: 1 1 140px;
   min-width: 0;
   font-size: 11px;
-  color: rgba(242, 242, 242, 0.88);
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -398,7 +402,7 @@
 .importCurriculoPreview summary {
   cursor: pointer;
   font-size: 11px;
-  color: rgba(242, 242, 242, 0.75);
+  color: var(--text-primary);
   margin-bottom: 6px;
 }
 
@@ -597,7 +601,7 @@
   width: 100%;
   padding: clamp(8px, 2vw, 10px) clamp(10px, 2vw, 12px);
   border-radius: 8px;
-  border: 2px solid var(--border-color);
+  border: 2px solid #8D6B1F !important;
   background-color: var(--background);
   box-sizing: border-box;
   display: flex;
@@ -617,7 +621,7 @@
 .tagChip {
   padding: 5px 8px;
   border-radius: 999px;
-  border: 2px solid var(--border-color);
+  border: 2px solid #8D6B1F !important;
   background-color: #F3E6C8;
   color: var(--text-primary);
   font-size: 11px;
@@ -650,7 +654,8 @@
   display: block;
   margin-bottom: 8px;
   font-size: clamp(13px, 2vw, 15px);
-  color: var(--text-secondary);
+  color: var(--text-primary);
+  font-weight: 700;
   line-height: 1.45;
 }
 
@@ -688,20 +693,20 @@
 
 .sectionHint {
   font-size: 12px;
-  color: #aaa;
+  color: var(--text-primary);
   margin: 6px 0 0;
   font-style: italic;
 }
 
 .fieldOptional {
   font-size: 10px;
-  color: #888;
+  color: var(--text-primary);
   font-weight: normal;
   text-transform: none;
 }
 
 .checkboxFieldset {
-  border: 2px solid var(--border-color);
+  border: 2px solid #8D6B1F !important;
   border-radius: 8px;
   padding: 12px;
   margin: 10px 0;
@@ -773,6 +778,8 @@
 
 .completionTitle {
   color: #C89B3C;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
   font-weight: 600;
   font-size: 15px;
 }
@@ -805,17 +812,19 @@
 }
 
 .milestone {
-  color: #666;
+  color: var(--text-primary);
 }
 
 .milestoneActive {
   color: #C89B3C;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
   font-weight: bold;
 }
 
 .completionNote {
   font-size: 12px;
-  color: #aaa;
+  color: var(--text-primary);
   margin: 10px 0 0;
   line-height: 1.5;
 }
@@ -823,6 +832,8 @@
 .completionHighlight {
   font-size: 12px;
   color: #C89B3C;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
   margin: 10px 0 0;
   font-weight: 600;
 }
@@ -832,7 +843,7 @@
   height: 128px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--border-color);
+  border: 2px solid #8D6B1F !important;
   image-rendering: auto;
   flex-shrink: 0;
   display: block;
@@ -842,7 +853,7 @@
   margin-bottom: 8px;
   padding: 12px 14px;
   background-color: #F3E6C8;
-  border: 2px solid var(--border-color);
+  border: 2px solid #8D6B1F !important;
   border-radius: 8px;
 }
 
@@ -899,7 +910,7 @@
   display: flex;
   align-items: stretch;
   width: 100%;
-  border: 2px solid var(--border-color);
+  border: 2px solid #8D6B1F !important;
   border-radius: 8px;
   overflow: hidden;
   background-color: #F3E6C8;
@@ -925,7 +936,7 @@
 
 .anexoCampoPlaceholder {
   font-size: 14px;
-  color: #888;
+  color: var(--text-primary);
   line-height: 1.4;
 }
 
@@ -1005,6 +1016,8 @@
 
 .feedbackBanner a {
   color: #C89B3C;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
   font-weight: 700;
 }
 
@@ -1213,6 +1226,8 @@
   font-size: clamp(13px, 2vw, 15px);
   font-weight: 600;
   color: #C89B3C;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
   line-height: 1.45;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -1220,6 +1235,8 @@
 
 .termoTituloLink:hover {
   color: #C89B3C;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
 }
 
 .termoTituloLink:focus {
@@ -1326,6 +1343,8 @@
   align-items: center;
   justify-content: center;
   color: #c89b3c;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
   text-shadow: none;
   margin: 0;
   background: linear-gradient(160deg, #C89B3C 0%, #8D6B1F 55%, #6b5218 100%);
@@ -1334,6 +1353,8 @@
 
 .circlePlaceholder {
   color: #c89b3c;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
   font-size: 12px;
   font-weight: 700;
   text-align: center;
@@ -1354,7 +1375,7 @@
 .brandHint {
   margin: 0;
   font-size: 12px;
-  color: #ccc;
+  color: var(--text-primary);
   text-align: center;
   line-height: 1.45;
   max-width: 420px;
@@ -1379,6 +1400,8 @@
   margin: 0 0 8px;
   font-size: 12px;
   color: #C89B3C;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
   line-height: 1.45;
   font-weight: 600;
 }
@@ -1411,7 +1434,7 @@
   align-items: center;
   justify-content: center;
   font-size: 28px;
-  color: #666;
+  color: var(--text-primary);
 }
 
 .videoApresentacaoWrap {
@@ -1459,7 +1482,7 @@
 
 .sobreMimContador {
   font-size: 11px;
-  color: #aaa;
+  color: var(--text-primary);
   flex-shrink: 0;
 }
 
@@ -1468,6 +1491,8 @@
   font-size: clamp(13px, 2.5vw, 15px);
   font-weight: 700;
   color: #C89B3C;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
 }
 
 .cursoItem {
@@ -1487,7 +1512,7 @@
   width: 100%;
   padding: clamp(10px, 2vw, 12px);
   border-radius: 8px;
-  border: 2px solid var(--border-color);
+  border: 2px solid #8D6B1F !important;
   font-weight: 500;
   font-size: clamp(15px, 3vw, 16px);
   color: var(--text-primary) !important;
@@ -1553,7 +1578,7 @@
   padding: 8px;
   background-color: #F3E6C8 !important;
   color: #414141 !important;
-  border: 2px solid var(--border-color);
+  border: 2px solid #8D6B1F !important;
 }
 
 .input[type="file"]::file-selector-button {
@@ -1574,7 +1599,7 @@
 }
 
 .select option[value=""] {
-  color: #888888;
+  color: #414141;
 }
 
 .textarea {
@@ -1649,7 +1674,7 @@
   background: transparent;
   border: 1px solid rgba(200, 155, 60, 0.55);
   border-radius: 10px;
-  color: rgba(242, 242, 242, 0.95);
+  color: var(--text-primary);
   padding: 14px 16px;
   font-size: 15px;
   font-weight: 600;
@@ -1819,37 +1844,58 @@
   margin-top: 4px;
 }
 
-/* Cadastro no painel acompanha a paleta clara */
+/* Cadastro no painel acompanha o tema escuro quando ele está selecionado */
 :global(.ri-dashboard[data-theme="dark"]) .containerIncorporado {
-  --background: #F3E6C8;
-  --card-bg: #E8D5A3;
-  --text-primary: #414141;
-  --text-secondary: #414141;
+  --background: #2A241C;
+  --card-bg: #3D3428;
+  --text-primary: #F3E6C8;
+  --text-secondary: #F3E6C8;
+  --border-color: #C4A15A;
+  color: #F3E6C8;
 }
 
 :global(.ri-dashboard[data-theme="dark"]) .card,
 :global(.ri-dashboard[data-theme="dark"]) .completionSticky {
-  background: #E8D5A3;
+  background: #3D3428;
+  color: #F3E6C8;
+  border: 2px solid #C4A15A;
 }
 
 :global(.ri-dashboard[data-theme="dark"]) .sectionCard,
 :global(.ri-dashboard[data-theme="dark"]) .formSubCard,
 :global(.ri-dashboard[data-theme="dark"]) .legendaPreenchimentoCard,
 :global(.ri-dashboard[data-theme="dark"]) .completionTrack {
-  background: #F3E6C8;
+  background: #3D3428;
+  color: #F3E6C8;
+  border: 2px solid #C4A15A;
 }
 
 :global(.ri-dashboard[data-theme="dark"]) .sectionTitle,
-:global(.ri-dashboard[data-theme="dark"]) .tagChip,
 :global(.ri-dashboard[data-theme="dark"]) .avisoSalvarTag,
-:global(.ri-dashboard[data-theme="dark"]) .completionWrap {
-  background: #F3E6C8;
+:global(.ri-dashboard[data-theme="dark"]) .completionWrap,
+:global(.ri-dashboard[data-theme="dark"]) .label,
+:global(.ri-dashboard[data-theme="dark"]) .checkboxLabel,
+:global(.ri-dashboard[data-theme="dark"]) .completionNote,
+:global(.ri-dashboard[data-theme="dark"]) .sectionHint,
+:global(.ri-dashboard[data-theme="dark"]) .fieldOptional,
+:global(.ri-dashboard[data-theme="dark"]) .milestone,
+:global(.ri-dashboard[data-theme="dark"]) .legendaPreenchimentoTitulo,
+:global(.ri-dashboard[data-theme="dark"]) .legendaPreenchimentoItem {
+  color: #F3E6C8 !important;
+}
+
+:global(.ri-dashboard[data-theme="dark"]) .tagChip,
+:global(.ri-dashboard[data-theme="dark"]) .sectionTitle,
+:global(.ri-dashboard[data-theme="dark"]) .tagFieldBox {
+  background: #E8C56A;
+  color: #414141 !important;
+  border: 2px solid #8D6B1F !important;
 }
 
 :global(.ri-dashboard[data-theme="dark"]) .tagChipActive {
   background: #D4AF37;
-  color: #414141;
-  border-color: #E8D5A3;
+  color: #414141 !important;
+  border: 2px solid #8D6B1F !important;
 }
 
 :global(.ri-dashboard[data-theme="dark"]) .input,
@@ -1862,8 +1908,9 @@
 :global(.ri-dashboard[data-theme="dark"]) .input[type="email"],
 :global(.ri-dashboard[data-theme="dark"]) .input[type="password"],
 :global(.ri-dashboard[data-theme="dark"]) .input[type="number"] {
-  background-color: #F3E6C8 !important;
-  color: #414141 !important;
+  background-color: #241F1A !important;
+  color: #F3E6C8 !important;
+  border: 2px solid #C4A15A !important;
 }
 
 :global(.ri-dashboard[data-theme="light"]) .containerIncorporado {

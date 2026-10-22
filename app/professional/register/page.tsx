@@ -2237,7 +2237,7 @@ export default function CadastroProfissional({
 
               <div className={styles.formSubCard}>
                 <TextoMarcador marcador="recomendado">Cursos</TextoMarcador>
-                <p style={{ margin: 0, fontSize: 11, color: '#999', lineHeight: 1.45 }}>
+                <p style={{ margin: 0, fontSize: 11, color: 'var(--dash-text, #414141)', lineHeight: 1.45 }}>
                   Preencha os cursos que você concluiu. O upload do certificado é opcional.
                 </p>
                 <datalist id="cursosIndustriaisSugeridos">
@@ -2730,7 +2730,7 @@ export default function CadastroProfissional({
 
             <>
                 <TextoMarcador marcador="obrigatorio">Experiências profissionais</TextoMarcador>
-                <p style={{ margin: '0 0 10px', fontSize: 12, color: '#bbb', lineHeight: 1.45 }}>
+                <p style={{ margin: '0 0 10px', fontSize: 12, color: 'var(--dash-text, #414141)', lineHeight: 1.45 }}>
                   Informe ao menos uma empresa com nome, cargo e período (mês/ano de início). Deixe o fim em branco se ainda trabalha lá.
                 </p>
                 <div className={blocoErro('experiencias')} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>

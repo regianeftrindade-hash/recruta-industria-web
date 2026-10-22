@@ -697,7 +697,7 @@ function CadastroEmpresaContent() {
             O e-mail <strong>{session.user.email}</strong> já está cadastrado como <strong>profissional</strong>
             {session.user.name ? ` (${session.user.name})` : ''}.
           </p>
-          <p style={{ lineHeight: 1.6, color: '#ccc' }}>
+          <p style={{ lineHeight: 1.6, color: 'var(--dash-text, #414141)' }}>
             Para acessar como empresa, saia e entre com outro e-mail Google ou crie uma conta empresa com e-mail diferente.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 24 }}>
@@ -795,7 +795,7 @@ function CadastroEmpresaContent() {
         )}
 
         {isEditMode && (
-          <p style={{ color: '#ccc', fontSize: 13, textAlign: 'center', marginBottom: 16, lineHeight: 1.5 }}>
+          <p style={{ color: 'var(--dash-text, #414141)', fontSize: 13, textAlign: 'center', marginBottom: 16, lineHeight: 1.5 }}>
             Atualize os dados da sua empresa. As alterações aparecerão no painel após salvar.
           </p>
         )}
@@ -948,7 +948,7 @@ function CadastroEmpresaContent() {
               <div>
                 <label className={styles.label}>E-MAIL DE LOGIN</label>
                 <input type="email" className={styles.input} value={emailLogin || formData.email} style={{ opacity: 0.75 }} readOnly disabled />
-                <small style={{ color: '#ccc' }}>E-mail usado para entrar na plataforma.</small>
+                <small style={{ color: 'var(--dash-text, #414141)' }}>E-mail usado para entrar na plataforma.</small>
               </div>
             ) : null}
 
@@ -1001,7 +1001,7 @@ function CadastroEmpresaContent() {
                         : 'Confirmar'}
                 </button>
               </div>
-              <small style={{ color: '#ccc', display: 'block', marginTop: 6 }}>
+              <small style={{ color: 'var(--dash-text, #414141)', display: 'block', marginTop: 6 }}>
                 {usuarioLogado
                   ? 'Obrigatório. Enviamos um e-mail de confirmação. O cadastro fica em análise até a verificação da empresa.'
                   : 'E-mail de acesso da conta. Tem que ser corporativo (não Gmail/Hotmail). Se já usa esse e-mail no site, teste com alias: nome+teste@suaempresa.com.br'}
@@ -1096,7 +1096,7 @@ function CadastroEmpresaContent() {
                 style={{ display: 'none' }}
                 onChange={(e) => void handleCartaoCnpjUpload(e)}
               />
-              <small style={{ color: '#ccc', display: 'block', marginTop: 6 }}>
+              <small style={{ color: 'var(--dash-text, #414141)', display: 'block', marginTop: 6 }}>
                 Opcional no cadastro. Contatos só liberam após enviar e o admin aprovar o cartão CNPJ.
               </small>
               {cartaoCnpjUrl && !enviandoCartao && (

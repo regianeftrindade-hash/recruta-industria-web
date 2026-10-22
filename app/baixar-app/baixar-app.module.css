@@ -26,6 +26,8 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #c89b3c;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
 }
 
 .title {
@@ -57,5 +59,7 @@
 
 .back a {
   color: #c89b3c;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
   font-weight: 600;
 }

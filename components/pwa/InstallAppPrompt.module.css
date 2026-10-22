@@ -17,6 +17,8 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #c89b3c;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
 }
 
 .bannerTitle {
@@ -43,6 +45,8 @@
 
 .guideLink {
   color: #c89b3c;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
   font-weight: 600;
   text-decoration: underline;
 }
@@ -114,6 +118,8 @@
   font-size: 12px;
   font-weight: 700;
   color: #c89b3c;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }

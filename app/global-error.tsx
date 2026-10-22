@@ -37,7 +37,7 @@ export default function GlobalError({
           <h1 style={{ color: "#C89B3C", fontSize: 22, margin: "0 0 12px" }}>
             Algo deu errado
           </h1>
-          <p style={{ margin: "0 0 20px", fontSize: 14, lineHeight: 1.5, color: "#ddd" }}>
+          <p style={{ margin: "0 0 20px", fontSize: 14, lineHeight: 1.5, color: "var(--dash-text, #414141)" }}>
             Não conseguimos carregar esta página. Tente de novo. Se o problema
             continuar, volte mais tarde ou fale com o suporte.
           </p>

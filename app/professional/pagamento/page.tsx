@@ -260,12 +260,12 @@ function PagamentoProfissional() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
           <div style={{ background: "#E8D5A3", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
             <p style={{ color: "#C89B3C", fontWeight: "bold", fontSize: 28, margin: "0 0 4px" }}>
-              {priceLabel.price}<span style={{ fontSize: 14, color: "#aaa" }}>{priceLabel.period}</span>
+              {priceLabel.price}<span style={{ fontSize: 14, color: "var(--dash-text, #414141)" }}>{priceLabel.period}</span>
             </p>
             {priceLabel.savings && (
               <p style={{ color: "#8D6B1F", fontSize: 11, margin: "0 0 12px" }}>{priceLabel.savings}</p>
             )}
-            <p style={{ color: "#aaa", fontSize: 12, margin: "0 0 16px" }}>Inclui:</p>
+            <p style={{ color: "var(--dash-text, #414141)", fontSize: 12, margin: "0 0 16px" }}>Inclui:</p>
             <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, lineHeight: 1.7 }}>
               {planDef.inclui.map((item) => <li key={item}>✅ {item}</li>)}
             </ul>

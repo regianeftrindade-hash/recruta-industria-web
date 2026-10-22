@@ -59,7 +59,7 @@ export default function ImprovePresentationSuggest({ text, onApplySuggestion }: 
       <button type="button" onClick={() => void run()} disabled={loading || !text.trim()}>
         {loading ? "Gerando…" : "Sugerir melhorias com IA"}
       </button>
-      {notice ? <p style={{ fontSize: 13, color: "#666" }}>{notice}</p> : null}
+      {notice ? <p style={{ fontSize: 13, color: "var(--dash-text, #414141)" }}>{notice}</p> : null}
       {error ? <p style={{ fontSize: 13, color: "#b00020" }}>{error}</p> : null}
       {suggestions.length > 0 ? (
         <ul style={{ marginTop: 8, paddingLeft: 18 }}>

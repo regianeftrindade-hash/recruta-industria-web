@@ -33,7 +33,7 @@
   margin: 0;
   font-size: 15px;
   line-height: 1.6;
-  color: #ddd;
+  color: var(--dash-text, #414141);
 }
 
 .backLink {

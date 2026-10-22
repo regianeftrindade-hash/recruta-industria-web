@@ -42,7 +42,7 @@ export function BillingOptions({
 }: BillingOptionsProps) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <p style={{ color: "#aaa", fontSize: 12, margin: "0 0 8px", fontWeight: 600 }}>
+      <p style={{ color: "var(--dash-text, #414141)", fontSize: 12, margin: "0 0 8px", fontWeight: 600 }}>
         1. Periodicidade
       </p>
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
@@ -61,7 +61,7 @@ export function BillingOptions({
 
       {recurringSupported ? (
         <>
-          <p style={{ color: "#aaa", fontSize: 12, margin: "0 0 8px", fontWeight: 600 }}>
+          <p style={{ color: "var(--dash-text, #414141)", fontSize: 12, margin: "0 0 8px", fontWeight: 600 }}>
             2. Forma de cobrança
           </p>
           <div style={{ display: "flex", gap: 8, flexDirection: "column", marginBottom: 4 }}>

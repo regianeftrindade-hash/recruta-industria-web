@@ -63,15 +63,15 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
             overflow: "hidden",
             flexShrink: 0,
             border: `2px solid ${DASH.gold}`,
-            background: companyProfile?.logoUrl ? "#E8D5A3" : DASH.input,
+            background: companyProfile?.fotoResponsavelUrl ? "#E8D5A3" : DASH.input,
           }}
         >
-          {companyProfile?.logoUrl ? (
+          {companyProfile?.fotoResponsavelUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={companyProfile.logoUrl} alt="Logotipo da empresa" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img src={companyProfile.fotoResponsavelUrl} alt="Foto do responsável" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           ) : (
             <span style={{ display: "flex", width: "100%", height: "100%", alignItems: "center", justifyContent: "center", color: "#414141", fontSize: 9, fontWeight: 700 }}>
-              Logo
+              Foto
             </span>
           )}
         </div>

@@ -83,7 +83,7 @@ export default function SecureVideoPlayer({ src, className, style }: Props) {
 
   if (loading) {
     return (
-      <p style={{ margin: 0, fontSize: 11, color: "#9a9a9a", padding: "12px 0" }}>
+      <p style={{ margin: 0, fontSize: 11, color: "var(--dash-text, #414141)", padding: "12px 0" }}>
         Carregando vídeo...
       </p>
     );

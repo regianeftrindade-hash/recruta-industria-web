@@ -8,7 +8,7 @@
 .title {
   margin: 0;
   color: var(--dash-title, #D4AF37);
-  -webkit-text-stroke: 0.4px #000;
+  -webkit-text-stroke: 0.75px #000;
   paint-order: stroke fill;
   font-size: 16px;
 }
@@ -141,7 +141,7 @@
   padding: 4px;
   overflow: auto;
   list-style: none;
-  border: 1px solid var(--dash-gold, #c89b3c);
+  border: 2px solid #8D6B1F;
   border-radius: 14px;
   background: var(--dash-card, #E8D5A3);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
@@ -155,7 +155,7 @@
   border-radius: 10px;
   background: transparent;
   box-shadow: none;
-  color: #414141;
+  color: var(--dash-text, #414141);
   font-size: 12px;
   font-weight: 600;
   text-align: left;

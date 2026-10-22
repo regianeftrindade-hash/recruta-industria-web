@@ -84,7 +84,7 @@ export default function CertificadoCursoUpload({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#ddd", cursor: "pointer" }}>
+      <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-primary, #414141)", fontWeight: 700, cursor: "pointer" }}>
         <input
           type="checkbox"
           checked={curso.possuiCertificado === true}
@@ -145,7 +145,7 @@ export default function CertificadoCursoUpload({
           </div>
 
           {anexado ? (
-            <div style={{ fontSize: 12, color: "#ddd" }}>
+            <div style={{ fontSize: 12, color: "var(--text-primary, #414141)", fontWeight: 700 }}>
               <p style={{ margin: "0 0 6px" }}>
                 {noServidor ? "✓ Certificado anexado:" : "⚠ Rascunho local:"}{" "}
                 <strong>{nomeArquivoAnexado(curso.certificadoUrl!)}</strong>
@@ -156,7 +156,7 @@ export default function CertificadoCursoUpload({
                     href={curso.certificadoUrl!}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ fontSize: 11, color: "#C89B3C", textDecoration: "underline" }}
+                    style={{ fontSize: 11, color: "#C89B3C", WebkitTextStroke: "0.75px #000", paintOrder: "stroke fill", textDecoration: "underline" }}
                   >
                     Ver certificado
                   </a>

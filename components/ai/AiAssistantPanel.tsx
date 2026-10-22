@@ -110,12 +110,12 @@ export default function AiAssistantPanel({
       <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
         <h3 style={{ margin: 0, fontSize: 14, color: "#C89B3C" }}>{title}</h3>
         {usage ? (
-          <span style={{ fontSize: 11, color: "#bdbdbd" }}>
+          <span style={{ fontSize: 11, color: "var(--dash-text, #414141)" }}>
             {usage.usage.remaining}/{usage.usage.limit} usos no mês · {usage.planLabel}
           </span>
         ) : null}
       </div>
-      <p style={{ margin: "0 0 10px", fontSize: 11, color: "#bdbdbd", lineHeight: 1.45 }}>
+      <p style={{ margin: "0 0 10px", fontSize: 11, color: "var(--dash-text, #414141)", lineHeight: 1.45 }}>
         A IA sugere e organiza. Decisões (convidar, classificar, contratar) são sempre suas.
       </p>
 

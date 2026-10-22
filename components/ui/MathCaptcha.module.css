@@ -23,6 +23,8 @@
   font-size: 15px;
   font-weight: 600;
   color: #c89b3c;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
   letter-spacing: normal;
 }
 

@@ -37,7 +37,8 @@ select,
 textarea {
   background: #FFFEFB !important;
   color: #414141 !important;
-  border: 2px solid #8D6B1F;
+  border: 2px solid #8D6B1F !important;
+  border-radius: 12px;
   color-scheme: light;
   font-family: inherit;
   letter-spacing: inherit;
@@ -49,7 +50,7 @@ input[type="file"] {
   color-scheme: light;
   background-color: #FFFEFB !important;
   color: #414141 !important;
-  border: 2px solid #8D6B1F;
+  border: 2px solid #8D6B1F !important;
 }
 
 input[type="file"]::file-selector-button {
@@ -80,7 +81,7 @@ select option {
 
 input::placeholder,
 textarea::placeholder {
-  color: #888888;
+  color: var(--dash-text, #414141);
   opacity: 1;
 }
 
@@ -135,7 +136,7 @@ select option {
 }
 
 select option[value=""] {
-  color: #888888;
+  color: #414141;
 }
 
 button,
@@ -227,13 +228,13 @@ video {
   height: 128px;
 }
 
-/* Texto dourado com contorno preto fino, para não sumir no amarelo */
+/* Texto dourado com contorno preto, para não sumir no amarelo */
 [style*="--dash-gold"],
 [style*="--ri-gold"],
 [style*="#D4AF37"],
 [style*="#d4af37"],
 [style*="#C89B3C"],
 [style*="#c89b3c"] {
-  -webkit-text-stroke: 0.4px #000;
+  -webkit-text-stroke: 0.75px #000;
   paint-order: stroke fill;
 }

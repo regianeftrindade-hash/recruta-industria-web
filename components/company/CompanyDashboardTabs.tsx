@@ -93,8 +93,8 @@ export function CompanyDashboardNav({
         alignItems: "center",
         justifyContent: "flex-end",
         paddingTop: 8,
-        paddingBottom: 10,
-        marginBottom: 8,
+        paddingBottom: 12,
+        marginBottom: 16,
       }}
     >
       {COMPANY_DASH_TABS.map((tab) => {

@@ -452,7 +452,7 @@ export default function VideoApresentacaoSection({
     alignItems: "center",
     justifyContent: "center",
     fontSize: 28,
-    color: "#666",
+    color: "var(--dash-text, #414141)",
     marginInline: compact ? "auto" : undefined,
   };
 
@@ -502,7 +502,7 @@ export default function VideoApresentacaoSection({
       )}
 
       {compact && (
-        <p style={{ margin: "0 0 8px", fontSize: 11, color: "#bbb", lineHeight: 1.45, textAlign: "right" }}>
+        <p style={{ margin: "0 0 8px", fontSize: 11, color: "var(--dash-text, #414141)", lineHeight: 1.45, textAlign: "right" }}>
           Vídeo curto de até 30 segundos (MP4, MOV ou WebM).
         </p>
       )}

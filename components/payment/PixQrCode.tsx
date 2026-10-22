@@ -68,14 +68,14 @@ export function PixQrCode({ copyPasteKey, qrCodeDataUrl, expiresAt }: PixQrCodeP
           padding: 10,
           borderRadius: 6,
           marginTop: 12,
-          color: "#aaa",
+          color: "var(--dash-text, #414141)",
           lineHeight: 1.4,
         }}
       >
         {copyPasteKey}
       </p>
       {expiresAt && (
-        <p style={{ fontSize: 11, color: "#888", marginTop: 8 }}>
+        <p style={{ fontSize: 11, color: "var(--dash-text, #414141)", marginTop: 8 }}>
           Válido até: {new Date(expiresAt).toLocaleString("pt-BR")}
         </p>
       )}
