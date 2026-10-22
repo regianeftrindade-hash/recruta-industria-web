@@ -54,12 +54,36 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
   if (compact) {
     const pct = companyProfile ? completude : 0;
     return (
-      <section style={{ ...dashCard, padding: 14 }}>
+      <section style={{ ...dashCard, padding: 14, display: "flex", gap: 12, alignItems: "center" }}>
+        <div
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: "50%",
+            overflow: "hidden",
+            flexShrink: 0,
+            border: "2px solid #8D6B1F",
+            background: "#E8D5A3",
+          }}
+        >
+          {companyProfile?.fotoResponsavelUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={companyProfile.fotoResponsavelUrl}
+              alt="Foto do perfil"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            <span style={{ display: "flex", width: "100%", height: "100%", alignItems: "center", justifyContent: "center", color: "#414141", fontSize: 9, fontWeight: 700 }}>
+              Foto
+            </span>
+          )}
+        </div>
         <div>
           <p style={{ margin: "0 0 6px", fontWeight: 800, fontSize: 16, color: DASH.title }}>
             {companyProfile?.razaoSocial || "Empresa"}
           </p>
-            <span
+          <span
             style={{
               display: "inline-block",
               padding: "2px 8px",
