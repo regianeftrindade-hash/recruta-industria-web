@@ -155,7 +155,7 @@ export default function CompanyDashboardVitrineSearchFilters({
   onLimpar,
 }: CompanyDashboardVitrineSearchFiltersProps) {
   return (
-    <section style={{ marginBottom: 10 }}>
+    <section className="ri-cream-field" style={{ marginBottom: 10 }}>
       <h3 style={{ ...dashSectionTitle, margin: "0 0 4px", fontSize: 12 }}>Busca rápida</h3>
       <div data-card="1" className="dash-card" style={{ padding: 10, ...dashCard }}>
         <div style={filtersGridStyle}>

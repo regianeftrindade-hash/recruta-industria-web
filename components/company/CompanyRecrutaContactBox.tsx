@@ -68,6 +68,7 @@ export function CompanyRecrutaContactBox({ unlocked = false }: Props) {
 
   return (
     <div
+      className="ri-cream-field"
       style={{
         marginTop: 14,
         paddingTop: 12,

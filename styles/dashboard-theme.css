@@ -517,3 +517,9 @@
   background: #241F1A;
   color: #F3E6C8;
 }
+
+.ri-dashboard .ri-cream-field input,
+.ri-dashboard .ri-cream-field select,
+.ri-dashboard .ri-cream-field textarea {
+  background-color: var(--dash-card, #E8D5A3) !important;
+}
