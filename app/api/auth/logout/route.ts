@@ -19,8 +19,8 @@ async function handleLogout(request: NextRequest) {
 
   const redirectParam = request.nextUrl.searchParams.get('redirect');
 
-  // Após excluir cadastro: limpa cookies e vai para a home
-  if (redirectParam === '/') {
+  // Sem destino interno: home. /login?tipo=profissional não é mais página de saída.
+  if (!redirectParam?.startsWith('/') || redirectParam === '/') {
     const response = NextResponse.redirect(new URL('/', request.url), { status: 302 });
     response.cookies.delete('next-auth.session-token');
     response.cookies.delete('next-auth.callback-url');
@@ -31,12 +31,7 @@ async function handleLogout(request: NextRequest) {
   }
 
   const loginUrl = new URL('/login', request.url);
-
-  if (redirectParam?.startsWith('/')) {
-    loginUrl.searchParams.set('redirect', redirectParam);
-  } else {
-    loginUrl.searchParams.set('tipo', 'profissional');
-  }
+  loginUrl.searchParams.set('redirect', redirectParam);
 
   const response = NextResponse.redirect(loginUrl, {
     status: 302,
@@ -57,7 +52,7 @@ export async function POST(request: NextRequest) {
     return handleLogout(request);
   } catch (error) {
     console.error('Erro no logout:', error);
-    return NextResponse.redirect(new URL('/login?tipo=profissional', request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
 }
 
@@ -66,6 +61,6 @@ export async function GET(request: NextRequest) {
     return handleLogout(request);
   } catch (error) {
     console.error('Erro no logout:', error);
-    return NextResponse.redirect(new URL('/login?tipo=profissional', request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
 }

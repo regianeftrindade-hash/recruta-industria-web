@@ -22,8 +22,11 @@ test.describe("smoke público", () => {
     await expect(page.getByRole("button", { name: /fazer cadastro/i })).toBeVisible();
   });
 
-  test("login: Fazer cadastro abre o registro do tipo", async ({ page }) => {
+  test("login profissional sem tipo nao existe e o cadastro abre pelo login", async ({ page }) => {
     await page.goto("/login?tipo=profissional");
+    await expect(page).toHaveURL(/\/$/);
+
+    await page.goto("/login");
     await page.getByRole("button", { name: /fazer cadastro/i }).click();
     await expect(page).toHaveURL(/\/professional\/register/);
 
@@ -33,7 +36,7 @@ test.describe("smoke público", () => {
   });
 
   test("login profissional e empresa abrem", async ({ page }) => {
-    await page.goto("/login?tipo=profissional");
+    await page.goto("/login");
     await expect(page.getByText(/acesso profissional|profissional/i).first()).toBeVisible();
 
     await page.goto("/login?tipo=empresa");

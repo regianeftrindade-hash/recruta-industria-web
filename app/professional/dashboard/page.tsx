@@ -336,7 +336,7 @@ export default function DashboardProfissional() {
     } catch {
       /* ignore */
     }
-    window.location.href = "/api/auth/logout";
+    window.location.href = "/api/auth/logout?redirect=/";
   };
 
   if (loading) {

@@ -35,6 +35,10 @@ function LoginContent() {
 
   React.useEffect(() => {
     const tipo = searchParams.get('tipo');
+    if (tipo === 'profissional' && !searchParams.get('redirect')) {
+      router.replace('/');
+      return;
+    }
     if (tipo === 'empresa') {
       setTipoLogin('company');
     } else if (tipo === 'profissional') {
@@ -155,11 +159,12 @@ function LoginContent() {
 
   const preserveLoginQuery = (tipo: 'profissional' | 'empresa') => {
     const params = new URLSearchParams();
-    params.set('tipo', tipo);
+    if (tipo === 'empresa') params.set('tipo', 'empresa');
     if (redirectTo?.startsWith('/')) {
       params.set('redirect', redirectTo);
     }
-    router.replace(`/login?${params.toString()}`);
+    const qs = params.toString();
+    router.replace(qs ? `/login?${qs}` : '/login');
   };
 
   const handleGoogleSignIn = () => {

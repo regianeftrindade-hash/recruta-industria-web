@@ -110,7 +110,7 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
   };
 
   const handleLogout = () => {
-    window.location.href = "/api/auth/logout";
+    window.location.href = "/api/auth/logout?redirect=/";
   };
 
   if (!mounted || status === "loading") {
