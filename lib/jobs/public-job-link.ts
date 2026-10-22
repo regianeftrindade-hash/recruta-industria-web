@@ -67,6 +67,23 @@ export function safeJobReturnPath(value: string | null | undefined): string | nu
   return `/vagas/${match[1]}`;
 }
 
+/** Link wa.me gerado pelo servidor, só com número brasileiro e texto codificado. */
+export function isWhatsAppApplyUrl(value: unknown): value is string {
+  if (typeof value !== "string" || value.length > 4000) return false;
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return false;
+  }
+  return url.protocol === "https:"
+    && url.hostname === "wa.me"
+    && /^\/55\d{10,11}$/.test(url.pathname)
+    && url.searchParams.has("text")
+    && url.username === ""
+    && url.password === "";
+}
+
 export function publicSignupPath(jobId: string): string {
   return `/cadastro?redirect=${encodeURIComponent(`/vagas/${jobId}`)}`;
 }

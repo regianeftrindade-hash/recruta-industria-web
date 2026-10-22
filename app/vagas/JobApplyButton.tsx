@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { publicSignupPath } from "@/lib/jobs/public-job-link";
+import WhatsAppApplyHandoff from "@/components/jobs/WhatsAppApplyHandoff";
+import { isWhatsAppApplyUrl, publicSignupPath } from "@/lib/jobs/public-job-link";
 import styles from "./vagas.module.css";
 
 type ApplyState = {
@@ -23,6 +24,7 @@ export default function JobApplyButton({
   const [needsResume, setNeedsResume] = useState(false);
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState("");
+  const [whatsapp, setWhatsapp] = useState<{ url: string; hasResume: boolean } | null>(null);
 
   async function loadState() {
     const response = await fetch(`/api/vagas/${jobId}/candidatura`, { credentials: "include" });
@@ -50,8 +52,8 @@ export default function JobApplyButton({
         return;
       }
 
-      if (response.ok && typeof data.whatsappUrl === "string" && data.whatsappUrl.startsWith("https://wa.me/")) {
-        window.location.href = data.whatsappUrl;
+      if (response.ok && isWhatsAppApplyUrl(data.whatsappUrl)) {
+        setWhatsapp({ url: data.whatsappUrl, hasResume: data.hasResume === true });
         return;
       }
 
@@ -126,6 +128,14 @@ export default function JobApplyButton({
 
   return (
     <div className={styles.apply}>
+      {whatsapp ? (
+        <WhatsAppApplyHandoff
+          jobId={jobId}
+          url={whatsapp.url}
+          hasResume={whatsapp.hasResume}
+          onClose={() => setWhatsapp(null)}
+        />
+      ) : (
       <button
         type="button"
         onClick={() => {
@@ -135,6 +145,7 @@ export default function JobApplyButton({
       >
         {busy ? "Enviando..." : outcome || (applied ? "Candidatura enviada" : "Candidatar-se")}
       </button>
+      )}
       {needsResume ? (
         <p className={styles.note}>
           <a className={styles.resumeLink} href={`/vagas/${jobId}/curriculo`}>Anexar currículo em PDF</a>

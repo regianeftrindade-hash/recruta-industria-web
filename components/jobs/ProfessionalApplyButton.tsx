@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import WhatsAppApplyHandoff from "@/components/jobs/WhatsAppApplyHandoff";
+import { isWhatsAppApplyUrl } from "@/lib/jobs/public-job-link";
 
 /** O destino fica no servidor, conforme a vaga. O botão não mostra e-mail nem WhatsApp. */
 export default function ProfessionalApplyButton({
@@ -11,6 +13,7 @@ export default function ProfessionalApplyButton({
   const [label, setLabel] = useState("Candidatar-se");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  const [whatsapp, setWhatsapp] = useState<{ url: string; hasResume: boolean } | null>(null);
 
   async function apply() {
     if (busy || done) return;
@@ -21,8 +24,8 @@ export default function ProfessionalApplyButton({
         credentials: "include",
       });
       const data = await response.json().catch(() => ({}));
-      if (response.ok && typeof data.whatsappUrl === "string" && data.whatsappUrl.startsWith("https://wa.me/")) {
-        window.location.href = data.whatsappUrl;
+      if (response.ok && isWhatsAppApplyUrl(data.whatsappUrl)) {
+        setWhatsapp({ url: data.whatsappUrl, hasResume: data.hasResume === true });
         return;
       }
       if (response.ok || response.status === 409) {
@@ -36,6 +39,17 @@ export default function ProfessionalApplyButton({
     } finally {
       setBusy(false);
     }
+  }
+
+  if (whatsapp) {
+    return (
+      <WhatsAppApplyHandoff
+        jobId={jobId}
+        url={whatsapp.url}
+        hasResume={whatsapp.hasResume}
+        onClose={() => setWhatsapp(null)}
+      />
+    );
   }
 
   return (

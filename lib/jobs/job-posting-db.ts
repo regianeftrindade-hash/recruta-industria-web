@@ -12,6 +12,7 @@ import {
   companyCanReadJobApplications,
   isProfessionalAccount,
   parseApplicationStage,
+  parseApplicationPhone,
   parseJobWrite,
   toAdminJob,
   toPublicJob,
@@ -19,8 +20,9 @@ import {
 import {
   APPLICATION_EMAIL_SUCCESS,
   APPLICATION_PROFILE_EMAIL_SUCCESS,
-  APPLICATION_WHATSAPP_SUCCESS,
+  APPLICATION_WHATSAPP_READY,
   buildWhatsAppResumeText,
+  extractJobCode,
   sendJobApplicationEmail,
   whatsAppApplyUrl,
   tryLoadOwnedResumePdf,
@@ -448,7 +450,7 @@ export async function getOwnApplicationState(jobId: string, email: string | null
   const id = assertJobId(jobId);
   const open = await prisma.jobPosting.findFirst({
     where: { id, status: "PUBLISHED" },
-    select: { id: true },
+    select: { id: true, applicationMode: true },
   });
   if (!open) throw new JobPostingError("Vaga não encontrada.", 404);
 
@@ -493,6 +495,16 @@ export async function getOwnApplicationState(jobId: string, email: string | null
       appliedAt: null,
       canApply: false,
       blockReason: "A candidatura é feita com uma conta de profissional.",
+    };
+  }
+
+  if (open.applicationMode === "WHATSAPP") {
+    return {
+      authenticated: true,
+      applied: false,
+      appliedAt: null,
+      canApply: true,
+      blockReason: null,
     };
   }
 
@@ -729,6 +741,7 @@ export async function registerJobApplication(jobId: string, email: string) {
     select: {
       id: true,
       title: true,
+      observations: true,
       applicationMode: true,
       applicationEmail: true,
       applicationPhone: true,
@@ -751,40 +764,31 @@ export async function registerJobApplication(jobId: string, email: string) {
   const profileMail = user.profile ? perfilParaEmail(user.profile) : null;
 
   if (job.applicationMode === "WHATSAPP") {
-    if (!job.applicationPhone) {
-      throw new JobPostingError("Esta vaga não tem WhatsApp para receber candidaturas.", 400);
+    let phone: string | null = null;
+    try {
+      phone = parseApplicationPhone(job.applicationPhone);
+    } catch {
+      phone = null;
     }
-    await prisma.jobApplication.upsert({
-      where: { jobId_userId: { jobId: id, userId: user.id } },
-      update: { profileId: user.profile?.id ?? null },
-      create: {
-        jobId: id,
-        userId: user.id,
-        profileId: user.profile?.id ?? null,
-      },
-    });
-    const saved = await prisma.jobApplication.findUnique({
-      where: { jobId_userId: { jobId: id, userId: user.id } },
-      select: { id: true, jobId: true, userId: true, profileId: true, createdAt: true },
-    });
-    if (!saved || saved.userId !== user.id || saved.jobId !== id) {
-      throw new JobPostingError("A candidatura não foi confirmada no banco de dados.", 500);
+    if (!phone) {
+      throw new JobPostingError("Não foi possível preparar o WhatsApp desta vaga.", 400);
     }
+    const hasResume = Boolean(resume);
     const text = buildWhatsAppResumeText({
       jobTitle: job.title,
       professionalName: user.name,
-      professionalEmail: user.email,
-      profile: profileMail,
-      hasPdf: Boolean(resume),
+      jobCode: extractJobCode(job.observations),
+      hasPdf: hasResume,
     });
     return {
-      id: saved.id,
-      jobId: saved.jobId,
-      userId: saved.userId,
-      profileId: saved.profileId,
-      createdAt: saved.createdAt.toISOString(),
-      message: APPLICATION_WHATSAPP_SUCCESS,
-      whatsappUrl: whatsAppApplyUrl(job.applicationPhone, text),
+      id: null,
+      jobId: job.id,
+      userId: user.id,
+      profileId: user.profile?.id ?? null,
+      createdAt: null,
+      message: APPLICATION_WHATSAPP_READY,
+      whatsappUrl: whatsAppApplyUrl(phone, text),
+      hasResume,
     };
   }
 

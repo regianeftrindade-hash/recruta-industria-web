@@ -89,7 +89,7 @@ export default function ApplicationModeFields({
             placeholder="11 98888-7777"
           />
           <span className={styles.help}>
-            Obrigatório para publicar. O número não aparece na página pública. O profissional envia o currículo do site, ou o aviso do PDF salvo, para este WhatsApp.
+            Obrigatório para publicar. O número não aparece na página pública. O candidato abre o WhatsApp, revisa a mensagem e anexa o currículo PDF antes de enviar.
           </span>
         </label>
       ) : null}
