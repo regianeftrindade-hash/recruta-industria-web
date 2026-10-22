@@ -4,13 +4,12 @@ import React, { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { isValidCPF, isValidPhoneBR } from '@/lib/security';
+import { isValidCPF } from '@/lib/security';
 import PageLoader from '@/app/components/PageLoader';
 import { READABLE_TEXT_STYLE } from '@/lib/theme';
 import styles from '@/app/professional/register/register.module.css';
 import { matchesCompanyTestBypass } from '@/lib/company/company-test-bypass-shared';
 import { AuthAtmosphere } from '@/components/shared/AuthAtmosphere';
-import { focarCampoCadastro } from '@/lib/ui/focar-campo-cadastro';
 import LogoRecruta from '@/app/components/LogoRecruta';
 import RegisterCollapsibleSection from '@/components/ui/RegisterCollapsibleSection';
 
@@ -42,7 +41,6 @@ function CadastroEmpresaContent() {
   const [contaJaCompleta, setContaJaCompleta] = useState(false);
   const [sessionWaitTimedOut, setSessionWaitTimedOut] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [faltandoCampos, setFaltandoCampos] = useState<{ id: string; label: string }[]>([]);
   const [openDadosEmpresa, setOpenDadosEmpresa] = useState(true);
   const [openContato, setOpenContato] = useState(true);
   const [openDocumentos, setOpenDocumentos] = useState(false);
@@ -54,6 +52,7 @@ function CadastroEmpresaContent() {
   const [emailLogin, setEmailLogin] = useState('');
   const [emailCorporativo, setEmailCorporativo] = useState('');
   const [emailVerificado, setEmailVerificado] = useState(false);
+  const [cadastroAprovado, setCadastroAprovado] = useState(false);
   const [emailEnviado, setEmailEnviado] = useState(false);
   const [enviandoEmail, setEnviandoEmail] = useState(false);
   const [emailMensagem, setEmailMensagem] = useState('');
@@ -179,6 +178,7 @@ function CadastroEmpresaContent() {
 
         setUsuarioLogado(true);
         const userData = data?.user;
+        setCadastroAprovado(data?.verification?.verificationStatus === 'VERIFIED');
         setEmailLogin(user.email || '');
         setFormData((prev) => ({
           ...prev,
@@ -486,7 +486,6 @@ function CadastroEmpresaContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
-    setFaltandoCampos([]);
     setSuccessMessage('');
 
     const cnpjLimpo = cnpjValue.replace(/\D/g, '');
@@ -498,70 +497,6 @@ function CadastroEmpresaContent() {
         userName: formData.responsavelNome || session?.user?.name,
         companyName: formData.nome,
       });
-
-    if (!bypass) {
-      const faltando: { id: string; label: string }[] = [];
-      let precisaEmpresa = false;
-      let precisaContato = false;
-      let precisaSenha = false;
-
-      if (!cnpjLimpo || cnpjLimpo.length !== 14) {
-        faltando.push({ id: 'empresa-cnpj', label: 'CNPJ válido (14 dígitos)' });
-        precisaEmpresa = true;
-      }
-      if (!formData.nome.trim()) {
-        faltando.push({ id: 'empresa-razao', label: 'Razão social' });
-        precisaEmpresa = true;
-      }
-      if (!formData.responsavelNome.trim()) {
-        faltando.push({ id: 'empresa-responsavel', label: 'Nome do responsável' });
-        precisaEmpresa = true;
-      }
-      if (!cpfLimpo || cpfLimpo.length !== 11 || !isValidCPF(cpfLimpo)) {
-        faltando.push({ id: 'empresa-cpf', label: 'CPF do responsável válido' });
-        precisaEmpresa = true;
-      }
-      if (!formData.email.trim() && !usuarioLogado) {
-        faltando.push({ id: 'empresa-email', label: 'E-mail de acesso' });
-        precisaContato = true;
-      }
-      if (usuarioLogado && !emailCorporativo.trim()) {
-        faltando.push({ id: 'empresa-email', label: 'E-mail corporativo' });
-        precisaContato = true;
-      }
-      if (telefoneValue.trim() && !isValidPhoneBR(telefoneValue)) {
-        faltando.push({ id: 'empresa-telefone', label: 'Telefone válido com DDD' });
-        precisaContato = true;
-      }
-      if (!usuarioLogado) {
-        if (!formData.password) {
-          faltando.push({ id: 'empresa-senha', label: 'Senha' });
-          precisaSenha = true;
-        } else if (formData.password.length < 8) {
-          faltando.push({ id: 'empresa-senha', label: 'Senha com no mínimo 8 caracteres' });
-          precisaSenha = true;
-        }
-        if (!formData.confirmPassword) {
-          faltando.push({ id: 'empresa-senha-confirma', label: 'Confirmar senha' });
-          precisaSenha = true;
-        } else if (formData.password && formData.password !== formData.confirmPassword) {
-          faltando.push({ id: 'empresa-senha-confirma', label: 'Senha e confirmação iguais' });
-          precisaSenha = true;
-        }
-      }
-
-      if (faltando.length > 0) {
-        if (precisaEmpresa) setOpenDadosEmpresa(true);
-        if (precisaContato) setOpenContato(true);
-        if (precisaSenha) setOpenSenha(true);
-        setFaltandoCampos(faltando);
-        setErrorMessage('Complete os campos obrigatórios abaixo.');
-        window.setTimeout(() => {
-          focarCampoCadastro(faltando[0]?.id);
-        }, 120);
-        return;
-      }
-    }
 
     const emailCorpFinal = (usuarioLogado ? emailCorporativo : formData.email).trim();
 
@@ -618,9 +553,7 @@ function CadastroEmpresaContent() {
           return;
         }
 
-        setSuccessMessage(
-          'Cadastro salvo. Ele permanece em análise até a verificação da empresa. Se o e-mail corporativo ainda não foi confirmado, enviamos um link de confirmação.',
-        );
+        setSuccessMessage('Cadastro salvo.');
         router.push(isEditMode ? '/company/dashboard-empresa' : '/company/boas-vindas');
         return;
       }
@@ -654,7 +587,7 @@ function CadastroEmpresaContent() {
         return;
       }
 
-      setSuccessMessage('Cadastro salvo. Ele permanece em análise até a verificação da empresa. Enviamos um e-mail para confirmar o endereço corporativo.');
+      setSuccessMessage('Cadastro salvo. Enviamos um e-mail para confirmar o endereço corporativo.');
       void fetch('/api/company/send-corporate-email-confirmation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -869,18 +802,6 @@ function CadastroEmpresaContent() {
               {errorMessage}
             </div>
           )}
-          {faltandoCampos.length > 0 && (
-            <div id="aviso-empresa-obrigatorios" className={styles.avisoObrigatoriosCard} role="alert" aria-live="polite">
-              <p className={styles.avisoObrigatoriosTitulo}>
-                Complete os campos obrigatórios:
-              </p>
-              <ul className={styles.avisoObrigatoriosLista}>
-                {faltandoCampos.map((campo) => (
-                  <li key={`${campo.id}-${campo.label}`}>{campo.label}</li>
-                ))}
-              </ul>
-            </div>
-          )}
           {successMessage && (
             <div style={{ background: '#F3E6C8', color: '#414141', padding: '10px', borderRadius: '8px', fontWeight: 'bold', border: '2px solid #8D6B1F' }}>
               {successMessage}
@@ -896,17 +817,17 @@ function CadastroEmpresaContent() {
           >
           <div className={styles.fieldsRow} style={twoCols}>
             <div>
-              <label className={styles.label}>CNPJ {isTestBypass ? '' : '*'}</label>
-              <input id="empresa-cnpj" type="text" className={styles.input} placeholder="00.000.000/0000-00" value={cnpjValue} onChange={handleCnpjChange} required={!isTestBypass} />
+              <label className={styles.label}>CNPJ</label>
+              <input id="empresa-cnpj" type="text" className={styles.input} placeholder="00.000.000/0000-00" value={cnpjValue} onChange={handleCnpjChange} />
             </div>
 
             <div>
-              <label className={styles.label}>RAZÃO SOCIAL {isTestBypass ? '' : '*'}</label>
-              <input id="empresa-razao" type="text" className={styles.input} value={formData.nome} onChange={(e) => setFormData({ ...formData, nome: e.target.value })} required={!isTestBypass} />
+              <label className={styles.label}>RAZÃO SOCIAL</label>
+              <input id="empresa-razao" type="text" className={styles.input} value={formData.nome} onChange={(e) => setFormData({ ...formData, nome: e.target.value })} />
             </div>
 
             <div>
-              <label className={styles.label}>NOME DO RESPONSÁVEL {isTestBypass ? '' : '*'}</label>
+              <label className={styles.label}>NOME DO RESPONSÁVEL</label>
               <input
                 id="empresa-responsavel"
                 type="text"
@@ -914,12 +835,11 @@ function CadastroEmpresaContent() {
                 placeholder="Pessoa que utiliza a plataforma"
                 value={formData.responsavelNome}
                 onChange={(e) => setFormData({ ...formData, responsavelNome: e.target.value })}
-                required={!isTestBypass}
               />
             </div>
 
             <div>
-              <label className={styles.label}>CPF DO RESPONSÁVEL {isTestBypass ? '' : '*'}</label>
+              <label className={styles.label}>CPF DO RESPONSÁVEL</label>
               <input
                 id="empresa-cpf"
                 type="text"
@@ -928,7 +848,6 @@ function CadastroEmpresaContent() {
                 value={cpfValue}
                 onChange={handleCpfChange}
                 style={{ borderColor: cpfError ? '#dc3545' : cpfValidado ? '#C89B3C' : undefined }}
-                required={!isTestBypass}
               />
               {cpfError && <small style={{ color: '#dc3545' }}>{cpfError}</small>}
               {cpfValidado && !cpfError && <small style={{ color: '#C89B3C' }}>✓ CPF válido</small>}
@@ -954,7 +873,10 @@ function CadastroEmpresaContent() {
 
             <div>
               <label className={styles.label}>
-                E-MAIL CORPORATIVO {usuarioLogado ? '(opcional)' : '*'}
+                {emailVerificado ? (
+                  <span aria-label="E-mail verificado" style={{ color: "#1b7a32", marginRight: 6 }}>✓</span>
+                ) : null}
+                E-MAIL CORPORATIVO
               </label>
               <div className={styles.anexoCampoInline}>
                 <div className={styles.anexoCampoInput}>
@@ -964,7 +886,6 @@ function CadastroEmpresaContent() {
                     placeholder="contato@suaempresa.com.br"
                     value={usuarioLogado ? emailCorporativo : formData.email}
                     onChange={(e) => atualizarEmailCorporativo(e.target.value)}
-                    required={!usuarioLogado && !isTestBypass}
                     style={{
                       width: '100%',
                       border: 'none',
@@ -1003,7 +924,7 @@ function CadastroEmpresaContent() {
               </div>
               <small style={{ color: 'var(--dash-text, #414141)', display: 'block', marginTop: 6 }}>
                 {usuarioLogado
-                  ? 'Obrigatório. Enviamos um e-mail de confirmação. O cadastro fica em análise até a verificação da empresa.'
+                  ? 'Enviamos um e-mail de confirmação quando você pedir.'
                   : 'E-mail de acesso da conta. Tem que ser corporativo (não Gmail/Hotmail). Se já usa esse e-mail no site, teste com alias: nome+teste@suaempresa.com.br'}
               </small>
               {emailMensagem && (
@@ -1012,9 +933,6 @@ function CadastroEmpresaContent() {
                 </div>
               )}
               {emailErro && <small style={{ color: '#dc3545', display: 'block', marginTop: 8 }}>{emailErro}</small>}
-              {emailVerificado && !emailErro && (
-                <small style={{ color: '#C89B3C', display: 'block', marginTop: 8 }}>✓ E-mail corporativo confirmado</small>
-              )}
             </div>
 
             {!usuarioLogado ? (
@@ -1097,7 +1015,7 @@ function CadastroEmpresaContent() {
                 onChange={(e) => void handleCartaoCnpjUpload(e)}
               />
               <small style={{ color: 'var(--dash-text, #414141)', display: 'block', marginTop: 6 }}>
-                Opcional no cadastro. Contatos só liberam após enviar e o admin aprovar o cartão CNPJ.
+                A publicação de vagas só é permitida depois da aprovação do cadastro. Essa aprovação depende do cartão CNPJ e da confirmação do e-mail corporativo.
               </small>
               {cartaoCnpjUrl && !enviandoCartao && (
                 <small style={{ color: '#C89B3C', display: 'block', marginTop: 6 }}>
@@ -1118,15 +1036,15 @@ function CadastroEmpresaContent() {
             >
               <div className={styles.fieldsRow} style={twoCols}>
                 <div>
-                  <label className={styles.label}>SENHA {isTestBypass ? '' : '*'}</label>
-                  <input id="empresa-senha" type="password" className={styles.input} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} required={!isTestBypass} minLength={isTestBypass ? undefined : 8} />
+                  <label className={styles.label}>SENHA</label>
+                  <input id="empresa-senha" type="password" className={styles.input} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
                   {!isTestBypass && (
                     <small style={{ color: '#414141' }}>Mínimo 8 caracteres, com letras maiúsculas, minúsculas, números e símbolo.</small>
                   )}
                 </div>
                 <div>
-                  <label className={styles.label}>CONFIRMAR SENHA {isTestBypass ? '' : '*'}</label>
-                  <input id="empresa-senha-confirma" type="password" className={styles.input} value={formData.confirmPassword} onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} required={!isTestBypass} minLength={isTestBypass ? undefined : 8} />
+                  <label className={styles.label}>CONFIRMAR SENHA</label>
+                  <input id="empresa-senha-confirma" type="password" className={styles.input} value={formData.confirmPassword} onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} />
                 </div>
               </div>
             </RegisterCollapsibleSection>
@@ -1157,6 +1075,39 @@ function CadastroEmpresaContent() {
                 Já tem conta? Entrar
               </Link>
             )}
+          </div>
+          <p style={{ margin: "16px 0 10px", fontSize: 13, lineHeight: 1.5, color: "#414141" }}>
+            Só é permitido publicar vagas com a aprovação do cadastro. A aprovação depende do cartão CNPJ e da confirmação do e-mail corporativo.
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
+            <span
+              style={{
+                display: "inline-block",
+                padding: "6px 12px",
+                borderRadius: 999,
+                border: "2px solid #8D6B1F",
+                background: cadastroAprovado ? "#F3E6C8" : "#E8C56A",
+                color: "#000",
+                fontSize: 12,
+                fontWeight: 700,
+              }}
+            >
+              Em aprovação
+            </span>
+            <span
+              style={{
+                display: "inline-block",
+                padding: "6px 12px",
+                borderRadius: 999,
+                border: "2px solid #8D6B1F",
+                background: cadastroAprovado ? "#E8C56A" : "#F3E6C8",
+                color: "#000",
+                fontSize: 12,
+                fontWeight: 700,
+              }}
+            >
+              {cadastroAprovado ? "✓ Aprovado" : "Aprovado"}
+            </span>
           </div>
         </form>
       </div>

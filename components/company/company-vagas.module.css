@@ -7,6 +7,28 @@
   border-radius: 32px;
 }
 
+.page,
+.page * {
+  box-shadow: none !important;
+}
+
+.page input,
+.page select,
+.page textarea,
+.page button,
+.page summary,
+.page .tab,
+.page .tabOn,
+.page .ghost,
+.page .danger,
+.page .moreMenu,
+.page .badge,
+.page .menu {
+  background: var(--dash-card, #E8D5A3) !important;
+  background-color: var(--dash-card, #E8D5A3) !important;
+  box-shadow: none !important;
+}
+
 .header {
   margin-bottom: 16px;
 }

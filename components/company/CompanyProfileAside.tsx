@@ -226,46 +226,33 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
               margin: "0 0 12px",
               padding: "12px 14px",
               background: "#E8D5A3",
-              border: "1px solid rgba(141, 107, 31, 0.45)",
-              borderRadius: 8,
+              border: "2px solid #8D6B1F",
+              borderRadius: 14,
             }}
           >
-            <p style={{ margin: "0 0 10px", textAlign: "center", fontSize: 13, fontWeight: 700, color: "#414141", letterSpacing: "0.06em" }}>
-              PREENCHIMENTO
+            <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 800, color: "#000", lineHeight: 1.35 }}>
+              Verificação de empresas: proteção para todos
             </p>
-            <div style={{ display: "flex", justifyContent: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#414141", fontWeight: 700 }}>
-                <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#e53935", flexShrink: 0 }} />
-                Preenchimento obrigatório
-              </div>
-            </div>
-            {!dash.companyVerified ? (
-              <p style={{ margin: "10px 0 0", textAlign: "center", fontSize: 12, fontWeight: 800, color: "#8B1E1E" }}>
-                Cadastro em análise até a verificação da empresa.
-              </p>
-            ) : null}
-            <p style={{ margin: "8px 0 0", textAlign: "center", fontSize: 11, color: "#414141", lineHeight: 1.45 }}>
-              Essa checagem existe porque muitos golpistas usam sites de vagas para aplicar golpes e coletar dados pessoais de profissionais.
+            <p style={{ margin: 0, fontSize: 12, color: "#414141", lineHeight: 1.5 }}>
+              Golpistas podem utilizar nomes de empresas reais sem autorização para publicar falsas vagas e aplicar golpes. A verificação documental ajuda a proteger os candidatos contra fraudes e as empresas contra o uso indevido de seus nomes e identidades, tornando o Recruta Indústria um ambiente mais seguro e confiável.
             </p>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 6 }}>
           {(
             [
-              ["Razão social", companyProfile.razaoSocial, true],
-              ["CNPJ", companyProfile.cnpj, true],
-              ["Responsável", companyProfile.responsavelNome, true],
-              ["CPF", companyProfile.responsavelCpf, true],
-              ["E-mail de login", companyProfile.email, true],
-              ["E-mail corporativo", companyProfile.emailCorporativo, true],
-              ["Telefone", companyProfile.telefone, false],
-              ["Endereço", companyProfile.endereco, false],
-              ["E-mail verificado", companyProfile.emailCorporativoVerificado ? "Sim" : "", true],
-              ["Cartão CNPJ", companyProfile.cartaoCnpjUrl, true],
+              ["Razão social", companyProfile.razaoSocial],
+              ["CNPJ", companyProfile.cnpj],
+              ["Responsável", companyProfile.responsavelNome],
+              ["CPF", companyProfile.responsavelCpf],
+              ["E-mail de login", companyProfile.email],
+              ["E-mail corporativo", companyProfile.emailCorporativo],
+              ["Telefone", companyProfile.telefone],
+              ["Endereço", companyProfile.endereco],
+              ["Cartão CNPJ", companyProfile.cartaoCnpjUrl],
             ] as const
-          ).map(([label, val, obrigatorio]) => {
+          ).map(([label, val]) => {
             const texto = typeof val === "string" ? val.trim() : "";
-            const falta = !texto;
             return (
             <div
               key={label}
@@ -277,16 +264,8 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
               }}
             >
               <p style={{ ...dashLabel, margin: "0 0 2px", fontSize: 9, textTransform: "uppercase", display: "flex", alignItems: "center", gap: 6 }}>
-                {falta && obrigatorio ? (
-                  <span
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: "50%",
-                      background: "#e53935",
-                      flexShrink: 0,
-                    }}
-                  />
+                {label === "E-mail corporativo" && companyProfile.emailCorporativoVerificado ? (
+                  <span aria-label="E-mail verificado" style={{ color: "#1b7a32", fontSize: 12, lineHeight: 1 }}>✓</span>
                 ) : null}
                 {label}
               </p>
