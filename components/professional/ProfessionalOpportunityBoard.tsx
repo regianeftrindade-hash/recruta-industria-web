@@ -545,7 +545,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
             margin: "0 0 12px",
             padding: "10px 12px",
             borderRadius: 10,
-            border: `1px solid ${DASH.gold}`,
+            border: `2px solid #8D6B1F`,
             background: "rgba(200,155,60,0.14)",
           }}
         >

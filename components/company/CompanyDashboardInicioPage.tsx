@@ -298,8 +298,8 @@ export default function CompanyDashboardInicioPage() {
                 ...dashCard,
                 margin: "0 0 10px",
                 padding: 16,
-                border: `1px solid ${DASH.gold}`,
-                background: "linear-gradient(180deg, rgba(200,155,60,0.18) 0%, #FFFEFB 100%)",
+                border: `2px solid #8D6B1F`,
+                background: "linear-gradient(180deg, rgba(200,155,60,0.18) 0%, #E8D5A3 100%)",
               }}
             >
               <h2 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>
@@ -329,7 +329,7 @@ export default function CompanyDashboardInicioPage() {
                 ...dashCard,
                 margin: "0 0 10px",
                 padding: 14,
-                border: `1px solid ${DASH.gold}`,
+                border: `2px solid #8D6B1F`,
               }}
             >
               <p style={{ margin: 0, fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>

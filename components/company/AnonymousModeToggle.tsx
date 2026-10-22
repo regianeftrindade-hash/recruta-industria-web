@@ -54,7 +54,7 @@ export default function AnonymousModeToggle({
           width: 64,
           height: 28,
           borderRadius: 999,
-          border: `1px solid ${DASH.gold}`,
+          border: `2px solid #8D6B1F`,
           padding: 0,
           cursor: disabled ? "wait" : "pointer",
           opacity: disabled ? 0.7 : 1,

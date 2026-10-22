@@ -14,7 +14,7 @@ export function AuthAtmosphere({
         style={{
           position: "absolute",
           inset: 0,
-          background: "#FAF7F0",
+          background: "#F3E6C8",
           opacity: 1,
           pointerEvents: "none",
           zIndex: 0,

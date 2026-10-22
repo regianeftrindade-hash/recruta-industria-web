@@ -121,7 +121,7 @@ export default function Home() {
             .${styles.homeAccessEmpresa} .${styles.cardCta},
             .${styles.homeAccessEmpresa} .${styles.cardCta}:active,
             .${styles.proHomeCard} .${styles.proLoginAcessarTag},
-            .${styles.proHomeCard} .${styles.proLoginAcessarTag}:active{width:auto!important;min-width:max-content!important;max-width:none!important;flex:0 0 auto!important;height:28px!important;padding:0 14px!important;font-size:0.68rem!important;line-height:1!important;color:#414141!important;overflow:visible!important}
+            .${styles.proHomeCard} .${styles.proLoginAcessarTag}:active{width:auto!important;min-width:96px!important;max-width:none!important;flex:0 0 auto!important;height:28px!important;padding:0 14px!important;font-size:0.68rem!important;line-height:1!important;color:#414141!important;overflow:visible!important;border-radius:999px!important}
             .${styles.proHomeCard} .${styles.proLoginGoogleIconOnly} button svg,
             .${styles.homeAccessEmpresa} .${styles.proLoginGoogleIconOnly} button svg{width:16px!important;height:16px!important}
             .${styles.proHomeCard} .${styles.proLoginAcessarTag},

@@ -281,7 +281,7 @@ export default function CompanyTeamPage() {
                   key={m.id}
                   style={{
                     ...dashInnerBox,
-                    border: `1px solid ${DASH.gold}`,
+                    border: `2px solid #8D6B1F`,
                     padding: "10px 12px",
                     display: "flex",
                     justifyContent: "space-between",

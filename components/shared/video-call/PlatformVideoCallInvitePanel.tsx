@@ -43,7 +43,7 @@ export default function PlatformVideoCallInvitePanel({
   return (
     <div
       style={{
-        border: `1px solid ${DASH.gold}`,
+        border: `2px solid #8D6B1F`,
         borderRadius: 8,
         padding: 8,
         marginBottom: 10,
@@ -148,7 +148,7 @@ export default function PlatformVideoCallInvitePanel({
                         gap: 8,
                         alignItems: "center",
                         padding: "6px 8px",
-                        border: `1px solid ${DASH.gold}`,
+                        border: `2px solid #8D6B1F`,
                         borderRadius: 10,
                         background: DASH.inner,
                         color: DASH.text,

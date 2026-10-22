@@ -134,8 +134,8 @@ export default function Pagamento() {
     <div style={{ position: "relative", minHeight: "100vh", background: COLORS.preto, padding: "30px", color: COLORS.branco, overflow: "hidden" }}>
       <AuthAtmosphere />
       <div style={{ position: "relative", zIndex: 1, maxWidth: "1100px", margin: "0 auto", display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "24px" }}>
-        <div style={{ background: "#FFFEFB", borderRadius: "16px", padding: "28px", boxShadow: "0 16px 40px rgba(0,0,0,0.45)", border: "1px solid rgba(200,155,60,0.7)" }}>
-          <span style={{ display: "inline-block", fontWeight: 900, color: COLORS.dourado, background: "rgba(200, 155, 60, 0.15)", padding: "8px 14px", borderRadius: "999px", marginBottom: "12px", fontSize: "12px", border: `1px solid ${COLORS.douradoEscuro}` }}>PREMIUM PROFISSIONAL</span>
+        <div style={{ background: "#E8D5A3", borderRadius: "16px", padding: "28px", boxShadow: "0 16px 40px rgba(0,0,0,0.45)", border: "1px solid rgba(200,155,60,0.7)" }}>
+          <span style={{ display: "inline-block", fontWeight: 900, color: COLORS.dourado, background: "rgba(200, 155, 60, 0.15)", padding: "8px 14px", borderRadius: "999px", marginBottom: "12px", fontSize: "12px", border: `2px solid ${COLORS.douradoEscuro}` }}>PREMIUM PROFISSIONAL</span>
           <h1 style={{ margin: "0 0 8px 0", fontSize: "28px", color: COLORS.dourado }}>Plano completo do profissional</h1>
           <p style={{ margin: "0 0 18px 0", color: "rgba(242,242,242,0.82)", lineHeight: 1.6 }}>Acesse todas as funcionalidades do site, desbloqueie dicas premium, histórico de visitas e visibilidade ampliada para empresas.</p>
 
@@ -154,7 +154,7 @@ export default function Pagamento() {
               "Perfil em destaque para empresas",
               "Suporte prioritário"
             ].map((item) => (
-              <div key={item} style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(200, 155, 60, 0.08)", padding: "10px 12px", borderRadius: "10px", border: `1px solid ${COLORS.douradoEscuro}` }}>
+              <div key={item} style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(200, 155, 60, 0.08)", padding: "10px 12px", borderRadius: "10px", border: `2px solid ${COLORS.douradoEscuro}` }}>
                 <span style={{ color: COLORS.branco, fontWeight: "bold" }}>✓</span>
                 <span style={{ color: COLORS.branco, fontWeight: 600 }}>{item}</span>
               </div>
@@ -170,7 +170,7 @@ export default function Pagamento() {
           </div>
         </div>
 
-        <div style={{ background: "#FFFEFB", borderRadius: "16px", padding: "24px", boxShadow: "0 16px 40px rgba(0,0,0,0.45)", border: "1px solid rgba(200,155,60,0.7)" }}>
+        <div style={{ background: "#E8D5A3", borderRadius: "16px", padding: "24px", boxShadow: "0 16px 40px rgba(0,0,0,0.45)", border: "1px solid rgba(200,155,60,0.7)" }}>
           <h2 style={{ margin: "0 0 12px 0", color: COLORS.dourado, fontSize: "20px" }}>Pagamento</h2>
           <p style={{ margin: "0 0 18px 0", color: "rgba(242,242,242,0.82)", fontSize: "14px" }}>Escolha o método e conclua a assinatura Premium.</p>
 
@@ -178,18 +178,18 @@ export default function Pagamento() {
             <button
               type="button"
               onClick={() => setMethod('card')}
-              style={{ flex: 1, padding: '10px', borderRadius: '10px', border: method === 'card' ? '2px solid #C89B3C' : '1px solid #8D6B1F', background: method === 'card' ? 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)' : 'linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8D6B1F 100%)', fontWeight: 800, color: method === 'card' ? '#000' : '#F2F2F2', cursor: 'pointer' }}
+              style={{ flex: 1, padding: '10px', borderRadius: '10px', border: method === 'card' ? '2px solid #C89B3C' : '2px solid #8D6B1F', background: method === 'card' ? 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)' : 'linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8D6B1F 100%)', fontWeight: 800, color: method === 'card' ? '#000' : '#F2F2F2', cursor: 'pointer' }}
             >Cartão</button>
             <button
               type="button"
               onClick={() => setMethod('pix')}
-              style={{ flex: 1, padding: '10px', borderRadius: '10px', border: method === 'pix' ? '2px solid #C89B3C' : '1px solid #8D6B1F', background: method === 'pix' ? 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)' : 'linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8D6B1F 100%)', fontWeight: 800, color: method === 'pix' ? '#000' : '#F2F2F2', cursor: 'pointer' }}
+              style={{ flex: 1, padding: '10px', borderRadius: '10px', border: method === 'pix' ? '2px solid #C89B3C' : '2px solid #8D6B1F', background: method === 'pix' ? 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)' : 'linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8D6B1F 100%)', fontWeight: 800, color: method === 'pix' ? '#000' : '#F2F2F2', cursor: 'pointer' }}
             >Pix</button>
           </div>
 
           {method === "card" ? (
             <div style={{ display: "grid", gap: "12px" }}>
-              <div style={{ background: "rgba(200, 155, 60, 0.12)", border: `1px solid ${COLORS.douradoEscuro}`, borderRadius: "10px", padding: "12px", color: COLORS.branco, fontWeight: 700 }}>
+              <div style={{ background: "rgba(200, 155, 60, 0.12)", border: `2px solid ${COLORS.douradoEscuro}`, borderRadius: "10px", padding: "12px", color: COLORS.branco, fontWeight: 700 }}>
                 Cartão ficará disponível em breve. Use Pix para concluir agora.
               </div>
               <button
@@ -204,16 +204,16 @@ export default function Pagamento() {
             <div style={{ display: "grid", gap: "12px" }}>
               <div>
                 <label htmlFor="nome" style={{ display: "block", fontWeight: 700, marginBottom: "6px", color: COLORS.dourado }}>Nome completo</label>
-                <input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} required style={{ width: "100%", padding: "12px", borderRadius: "10px", border: `1px solid ${COLORS.douradoEscuro}`, fontSize: "14px", background: COLORS.preto, color: COLORS.branco }} />
+                <input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} required style={{ width: "100%", padding: "12px", borderRadius: "10px", border: `2px solid ${COLORS.douradoEscuro}`, fontSize: "14px", background: COLORS.preto, color: COLORS.branco }} />
               </div>
               <div>
                 <label htmlFor="email" style={{ display: "block", fontWeight: 700, marginBottom: "6px", color: COLORS.dourado }}>E-mail</label>
-                <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ width: "100%", padding: "12px", borderRadius: "10px", border: `1px solid ${COLORS.douradoEscuro}`, fontSize: "14px", background: COLORS.preto, color: COLORS.branco }} />
+                <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ width: "100%", padding: "12px", borderRadius: "10px", border: `2px solid ${COLORS.douradoEscuro}`, fontSize: "14px", background: COLORS.preto, color: COLORS.branco }} />
               </div>
 
               {paymentData ? (
                 method === 'pix' ? (
-                  <div style={{ background: COLORS.preto, border: `1px solid ${COLORS.douradoEscuro}`, borderRadius: "12px", padding: "16px", maxWidth: "320px", margin: "0 auto" }}>
+                  <div style={{ background: COLORS.preto, border: `2px solid ${COLORS.douradoEscuro}`, borderRadius: "12px", padding: "16px", maxWidth: "320px", margin: "0 auto" }}>
                     {paymentData.copyPasteKey && (
                       <PixQrCode
                         copyPasteKey={paymentData.copyPasteKey}
@@ -223,7 +223,7 @@ export default function Pagamento() {
                     )}
                   </div>
                 ) : method === 'boleto' ? (
-                  <div style={{ background: COLORS.preto, border: `1px solid ${COLORS.douradoEscuro}`, borderRadius: "12px", padding: "16px", textAlign: "center" }}>
+                  <div style={{ background: COLORS.preto, border: `2px solid ${COLORS.douradoEscuro}`, borderRadius: "12px", padding: "16px", textAlign: "center" }}>
                     <div style={{ fontWeight: 800, color: COLORS.branco, marginBottom: "6px" }}>Boleto gerado</div>
                     {paymentData.line && <div style={{ marginBottom: '8px', fontWeight: 700, color: COLORS.branco }}>{paymentData.line}</div>}
                     {paymentData.boletoUrl && <a href={paymentData.boletoUrl} target="_blank" rel="noreferrer" style={{ color: COLORS.branco }}>Abrir boleto</a>}
@@ -232,7 +232,7 @@ export default function Pagamento() {
                     )}
                   </div>
                 ) : (
-                  <div style={{ background: COLORS.preto, border: `1px solid ${COLORS.douradoEscuro}`, borderRadius: "12px", padding: "16px", textAlign: "center" }}>
+                  <div style={{ background: COLORS.preto, border: `2px solid ${COLORS.douradoEscuro}`, borderRadius: "12px", padding: "16px", textAlign: "center" }}>
                     <div style={{ fontWeight: 800, color: COLORS.branco, marginBottom: "6px" }}>Checkout</div>
                     {paymentData.checkoutUrl && <a href={paymentData.checkoutUrl} target="_blank" rel="noreferrer" style={{ color: COLORS.branco }}>Abrir checkout</a>}
                   </div>
@@ -249,7 +249,7 @@ export default function Pagamento() {
               </button>
 
               {statusMessage && (
-                <div style={{ background: "rgba(200, 155, 60, 0.12)", border: `1px solid ${COLORS.douradoEscuro}`, borderRadius: "10px", padding: "10px", color: COLORS.branco, fontWeight: 700 }}>
+                <div style={{ background: "rgba(200, 155, 60, 0.12)", border: `2px solid ${COLORS.douradoEscuro}`, borderRadius: "10px", padding: "10px", color: COLORS.branco, fontWeight: 700 }}>
                   {statusMessage}
                 </div>
               )}

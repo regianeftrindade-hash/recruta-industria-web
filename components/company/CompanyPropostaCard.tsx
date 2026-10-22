@@ -79,7 +79,7 @@ export default function CompanyPropostaCard({
   return (
     <div
       style={{
-        border: `1px solid ${DASH.gold}`,
+        border: `2px solid #8D6B1F`,
         borderRadius: 10,
         padding: 12,
         background: DASH.inner,
@@ -144,7 +144,7 @@ export default function CompanyPropostaCard({
             margin: "8px 0 12px",
             padding: 12,
             borderRadius: 10,
-            border: `1px solid ${DASH.gold}`,
+            border: `2px solid #8D6B1F`,
             background: "rgba(200,155,60,0.08)",
           }}
         >

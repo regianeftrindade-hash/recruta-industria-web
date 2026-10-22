@@ -3,13 +3,13 @@ import type { CSSProperties } from "react";
 /** Paleta alinhada à home: página cinza claro, cards mais escuros */
 export const COLORS = {
   /** Fundo de página (cinza claro) */
-  preto: "#FAF7F0",
+  preto: "#F3E6C8",
   /** Fundo de cards / painéis */
-  cardBg: "#FFFEFB",
+  cardBg: "#E8D5A3",
   /** Texto em botões dourados — não usar como fundo */
   tinta: "#414141",
   dourado: "#D4AF37",
-  douradoEscuro: "#E8E1D5",
+  douradoEscuro: "#8D6B1F",
   branco: "#414141",
   textoSuave: "#414141",
 } as const;
@@ -40,18 +40,16 @@ export const goldTextGradient: CSSProperties = {
   WebkitTextFillColor: "transparent",
 };
 
-export const GOLD_GRADIENT = "#D4AF37";
+export const GOLD_GRADIENT = "#E8C56A";
 
-export const GOLD_GRADIENT_MUTED =
-  "linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8D6B1F 100%)";
+export const GOLD_GRADIENT_MUTED = "#E8C56A";
 
-export const GOLD_GRADIENT_DISABLED =
-  "linear-gradient(180deg, #4a3810 0%, #5a4512 45%, #6b5218 100%)";
+export const GOLD_GRADIENT_DISABLED = "#E8C56A";
 
 export const goldButtonStyle: CSSProperties = {
   background: GOLD_GRADIENT,
   color: COLORS.tinta,
-  border: "1px solid #E8D5A3",
+  border: "2px solid #8D6B1F",
   fontWeight: 700,
   cursor: "pointer",
   boxShadow:
@@ -61,8 +59,8 @@ export const goldButtonStyle: CSSProperties = {
 export const inputStyle: CSSProperties = {
   padding: "12px",
   borderRadius: 0,
-  border: `1px solid ${COLORS.douradoEscuro}`,
-  background: COLORS.preto,
+  border: "2px solid #8D6B1F",
+  background: "#FFFEFB",
   color: COLORS.branco,
   fontFamily: READABLE_FONT_STACK,
   fontSize: "15px",
@@ -73,7 +71,7 @@ export const inputStyle: CSSProperties = {
 
 export const cardStyle: CSSProperties = {
   background: COLORS.cardBg,
-  border: `1px solid ${COLORS.douradoEscuro}`,
+  border: "2px solid #8D6B1F",
   borderRadius: "8px",
   color: COLORS.branco,
 };

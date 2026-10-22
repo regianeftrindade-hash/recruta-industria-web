@@ -183,7 +183,7 @@ export default function SecurityDashboard() {
                 width: '100%',
                 borderCollapse: 'collapse',
                 backgroundColor: COLORS.cardBg,
-                border: `1px solid ${COLORS.douradoEscuro}`,
+                border: `2px solid ${COLORS.douradoEscuro}`,
               }}
             >
               <thead>
@@ -197,7 +197,7 @@ export default function SecurityDashboard() {
               </thead>
               <tbody>
                 {logs.map(log => (
-                  <tr key={log.id} style={{ borderBottom: `1px solid ${COLORS.douradoEscuro}`, color: COLORS.textoSuave }}>
+                  <tr key={log.id} style={{ borderBottom: `2px solid ${COLORS.douradoEscuro}`, color: COLORS.textoSuave }}>
                     <td style={{ padding: '12px' }}>
                       {new Date(log.timestamp).toLocaleString('pt-BR')}
                     </td>

@@ -294,7 +294,7 @@ function CardPerfil({
       className="dash-card"
       style={{
       backgroundColor: DASH.card,
-      border: `1px solid ${DASH.gold}`,
+      border: `2px solid #8D6B1F`,
       borderRadius: 16,
       overflow: "hidden",
       padding: isFull ? 24 : 14,
@@ -350,7 +350,7 @@ function CardPerfil({
             height: avatarSize,
             borderRadius: "50%",
             background: DASH.inner,
-            border: `1px solid ${DASH.gold}`,
+            border: `2px solid #8D6B1F`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -469,7 +469,7 @@ function BarraPaginacaoPerfis({
       : {
           background: "transparent",
           color: DASH.text,
-          border: `1px solid ${DASH.gold}`,
+          border: `2px solid #8D6B1F`,
           boxShadow: "none",
         }),
   });

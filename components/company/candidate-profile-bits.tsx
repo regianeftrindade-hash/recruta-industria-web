@@ -34,7 +34,7 @@ export const CAMPOS_SOBRE_MIM: Array<{ key: keyof SobreMimData; label: string }>
 const fieldBox: React.CSSProperties = {
   padding: "10px 12px",
   ...dashInnerBox,
-  border: `1px solid ${DASH.gold}`,
+  border: `2px solid #8D6B1F`,
   borderRadius: 8,
   minHeight: 40,
   background: DASH.inner,
@@ -400,7 +400,7 @@ export function SimNaoToggle({
                 : {
                     background: "transparent",
                     color: DASH.text,
-                    border: `1px solid ${DASH.gold}`,
+                    border: `2px solid #8D6B1F`,
                     boxShadow: "none",
                   }),
             }}

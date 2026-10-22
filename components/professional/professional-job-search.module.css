@@ -141,7 +141,7 @@
   list-style: none;
   border: 1px solid var(--dash-gold, #c89b3c);
   border-radius: 14px;
-  background: var(--dash-card, #FFFEFB);
+  background: var(--dash-card, #E8D5A3);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
 }
 

@@ -1,7 +1,7 @@
 /* 🔒 BLOQUEADO (06/07/2026) — não editar sem pedido explícito. Ver .cursor/rules/dashboard-page-lock.mdc */
 /* Tema industrial — alinhado à Home */
 .container {
-  background-color: #FAF7F0;
+  background-color: #F3E6C8;
   min-height: 100vh;
   padding: clamp(15px, 4vw, 30px);
   font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -12,11 +12,11 @@
 }
 
 .header {
-  background-color: #FFFEFB;
+  background-color: #E8D5A3;
   color: #414141;
   padding: clamp(15px, 4vw, 20px) clamp(20px, 5vw, 40px);
   border-radius: 15px;
-  border: 1px solid #8D6B1F;
+  border: 2px solid #8D6B1F;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -100,10 +100,10 @@
 }
 
 .profileSection {
-  background-color: #FFFEFB;
+  background-color: #E8D5A3;
   padding: clamp(25px, 5vw, 40px);
   border-radius: 20px;
-  border: 1px solid #8D6B1F;
+  border: 2px solid #8D6B1F;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
@@ -132,10 +132,10 @@
 }
 
 .tag {
-  background-color: #FAF7F0;
+  background-color: #F3E6C8;
   padding: clamp(12px, 2vw, 15px);
   border-radius: 10px;
-  border: 1px solid #8D6B1F;
+  border: 2px solid #8D6B1F;
   flex: 1;
   min-width: 150px;
   display: flex;
@@ -163,7 +163,7 @@
 }
 
 .visitsCard {
-  background-color: #FFFEFB;
+  background-color: #E8D5A3;
   color: #414141;
   padding: clamp(30px, 5vw, 40px) clamp(15px, 3vw, 20px);
   border-radius: 20px;
@@ -192,7 +192,7 @@
 }
 
 .tipsCard {
-  background-color: #FAF7F0;
+  background-color: #F3E6C8;
   padding: 25px;
   border-radius: 20px;
   border-left: 8px solid #C89B3C;
@@ -216,16 +216,16 @@
 }
 
 .tipsItem {
-  border-bottom: 1px solid #8D6B1F;
+  border-bottom: 2px solid #8D6B1F;
   padding-bottom: 8px;
   margin: 0;
 }
 
 .hiringCard {
-  background-color: #FFFEFB;
+  background-color: #E8D5A3;
   padding: 20px;
   border-radius: 20px;
-  border: 1px solid #8D6B1F;
+  border: 2px solid #8D6B1F;
 }
 
 .hiringTitle {

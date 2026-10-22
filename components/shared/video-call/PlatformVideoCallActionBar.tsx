@@ -86,7 +86,7 @@ export default function PlatformVideoCallActionBar({
           onClick={onEnd}
           style={{
             background: "transparent",
-            border: `1px solid ${DASH.gold}`,
+            border: `2px solid #8D6B1F`,
             color: DASH.gold,
             borderRadius: 8,
             padding: "8px 12px",
@@ -106,7 +106,7 @@ export default function PlatformVideoCallActionBar({
           onClick={onEnd}
           style={{
             background: "transparent",
-            border: `1px solid ${DASH.gold}`,
+            border: `2px solid #8D6B1F`,
             color: DASH.gold,
             borderRadius: 8,
             padding: "8px 12px",

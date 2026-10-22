@@ -117,9 +117,9 @@ export function CompanyDashboardNav({
               letterSpacing: "0.02em",
               textDecoration: "none",
               whiteSpace: "nowrap",
-              color: ativo ? "#000" : DASH.gold,
-              background: ativo ? DASH.gold : "transparent",
-              border: `1px solid ${DASH.gold}`,
+              color: "#414141",
+              background: "#F3E6C8",
+              border: "2px solid #8D6B1F",
               borderRadius: "10px 10px 0 0",
               boxShadow: ativo ? "0 2px 0 #5a4512" : "none",
               cursor: "pointer",
@@ -131,8 +131,8 @@ export function CompanyDashboardNav({
             {typeof badge === "number" && badge > 0 ? (
               <span
                 style={{
-                  background: ativo ? "#000" : DASH.gold,
-                  color: ativo ? DASH.gold : "#000",
+                  background: "#8D6B1F",
+                  color: "#F3E6C8",
                   borderRadius: 999,
                   fontSize: 9,
                   fontWeight: 800,
@@ -223,7 +223,7 @@ export default function CompanyDashboardTabPanel({
               title="Abrir os perfis desta lista na vitrine"
               style={{
                 background: "transparent",
-                border: `1px solid ${DASH.gold}`,
+                border: `2px solid #8D6B1F`,
                 color: DASH.gold,
                 borderRadius: 999,
                 padding: "4px 12px",

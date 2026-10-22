@@ -55,7 +55,7 @@ export const dashHeader: CSSProperties = {
   background: "color-mix(in srgb, var(--dash-sidebar) 92%, transparent)",
   backdropFilter: "blur(10px)",
   WebkitBackdropFilter: "blur(10px)",
-  borderBottom: `1px solid rgba(200, 155, 60, 0.34)`,
+  borderBottom: "2px solid #8D6B1F",
   boxShadow: "0 8px 24px rgba(0, 0, 0, 0.22)",
   padding: "10px 20px",
   display: "flex",
@@ -71,7 +71,7 @@ export const dashHeader: CSSProperties = {
 
 export const dashCard: CSSProperties = {
   background: DASH.card,
-  border: `1px solid rgba(200, 155, 60, 0.72)`,
+  border: `2px solid #8D6B1F`,
   borderRadius: 16,
   overflow: "hidden",
   boxShadow: DASH.shadow,
@@ -87,7 +87,7 @@ export const dashAside: CSSProperties = {
 export const dashInput: CSSProperties = {
   width: "100%",
   padding: "8px 10px",
-  border: `1px solid ${DASH.border}`,
+  border: "2px solid #8D6B1F",
   borderRadius: 12,
   backgroundColor: DASH.input,
   color: DASH.text,
@@ -97,9 +97,9 @@ export const dashInput: CSSProperties = {
 };
 
 export const dashTag: CSSProperties = {
-  background: DASH.gold,
-  color: "#000",
-  border: "1px solid #000",
+  background: "#F3E6C8",
+  color: "#414141",
+  border: "2px solid #8D6B1F",
   fontSize: 10,
   padding: "4px 8px",
   borderRadius: 10,
@@ -135,7 +135,7 @@ export const dashPlanAccent: CSSProperties = {
 
 export const dashPlanBox: CSSProperties = {
   ...dashInnerBox,
-  border: `1px solid ${DASH.gold}`,
+  border: `2px solid #8D6B1F`,
   textAlign: "center",
   padding: 10,
 };
@@ -154,14 +154,14 @@ export const dashGhostBtn: CSSProperties = {
 
 export function compatBadgeStyle(_score: number, compact = true): CSSProperties {
   return {
-    background: DASH.gold,
-    color: "#000",
+    background: "#F3E6C8",
+    color: "#414141",
     fontSize: compact ? 11 : 13,
     padding: compact ? "4px 10px" : "6px 12px",
     borderRadius: 6,
     fontWeight: 800,
     display: "inline-block",
-    border: "1px solid #000",
+    border: "2px solid #8D6B1F",
   };
 }
 

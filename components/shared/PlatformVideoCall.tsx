@@ -88,7 +88,7 @@ export default function PlatformVideoCall({
 
   const panelBase: React.CSSProperties = {
     ...dashCard,
-    border: `1px solid ${DASH.gold}`,
+    border: `2px solid #8D6B1F`,
     borderRadius: overlayPip ? 12 : 16,
     overflow: "hidden",
     padding: overlayPip ? 4 : compact ? 12 : 14,
@@ -190,7 +190,7 @@ export default function PlatformVideoCall({
         call.participants.length > 0 && (
           <div
             style={{
-              border: `1px solid ${DASH.gold}`,
+              border: `2px solid #8D6B1F`,
               borderRadius: 8,
               padding: 8,
               marginBottom: 10,

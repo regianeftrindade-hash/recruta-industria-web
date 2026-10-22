@@ -23,14 +23,14 @@ function UpgradePageContent() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#FAF7F0',
+      backgroundColor: '#F3E6C8',
       color: '#414141',
     }}>
       {/* CABEÇALHO */}
       <div style={{
-        backgroundColor: '#FFFEFB',
+        backgroundColor: '#E8D5A3',
         color: '#414141',
-        borderBottom: '1px solid #8D6B1F',
+        borderBottom: '2px solid #8D6B1F',
         padding: '20px 40px',
         display: 'flex',
         justifyContent: 'space-between',
@@ -49,10 +49,10 @@ function UpgradePageContent() {
       {/* CONTEÚDO */}
       <div style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto' }}>
         <div style={{
-          backgroundColor: '#FFFEFB',
+          backgroundColor: '#E8D5A3',
           padding: '40px',
           borderRadius: '15px',
-          border: '1px solid #8D6B1F',
+          border: '2px solid #8D6B1F',
           boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
           textAlign: 'center'
         }}>
@@ -62,10 +62,10 @@ function UpgradePageContent() {
 
           {/* CARD DE PREÇO */}
           <div style={{
-            backgroundColor: '#FAF7F0',
+            backgroundColor: '#F3E6C8',
             padding: '40px',
             borderRadius: '15px',
-            border: '1px solid #8D6B1F',
+            border: '2px solid #8D6B1F',
             borderLeft: '6px solid #C89B3C',
             marginBottom: '40px'
           }}>

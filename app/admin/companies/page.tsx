@@ -79,7 +79,7 @@ export default function AdminCompaniesPage() {
 
       <div style={{ display: 'grid', gap: 16, marginTop: 20 }}>
         {companies.map((company) => (
-          <div key={company.userId} style={{ border: '1px solid #8D6B1F', borderRadius: 12, padding: 16, background: '#FAF7F0' }}>
+          <div key={company.userId} style={{ border: '2px solid #8D6B1F', borderRadius: 12, padding: 16, background: '#F3E6C8' }}>
             <h2 style={{ margin: '0 0 8px', fontSize: 18 }}>{company.razaoSocial}</h2>
             <p style={{ margin: '4px 0', fontSize: 13 }}>CNPJ: {company.cnpj || '—'}</p>
             <p style={{ margin: '4px 0', fontSize: 13 }}>Responsável: {company.responsavelNome || '—'}</p>

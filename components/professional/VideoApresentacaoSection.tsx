@@ -30,7 +30,7 @@ type Props = {
 
 const btnSecondary: React.CSSProperties = {
   background: "transparent",
-  border: `1px solid ${DASH.gold}`,
+  border: `2px solid #8D6B1F`,
   color: DASH.text,
   borderRadius: 6,
   padding: "8px 12px",
@@ -446,7 +446,7 @@ export default function VideoApresentacaoSection({
     width: "min(200px, 100%)",
     aspectRatio: "16 / 9",
     borderRadius: 8,
-    background: "#FAF7F0",
+    background: "#F3E6C8",
     border: "1px dashed rgba(141, 107, 31, 0.45)",
     display: "flex",
     alignItems: "center",
@@ -537,7 +537,7 @@ export default function VideoApresentacaoSection({
                     height: 36,
                     borderRadius: 8,
                     background: "rgba(200, 155, 60, 0.2)",
-                    border: `1px solid ${DASH.gold}`,
+                    border: `2px solid #8D6B1F`,
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",

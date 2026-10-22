@@ -115,7 +115,7 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
           padding: 12,
           borderRadius: 8,
           ...dashInput,
-          border: `1px solid ${DASH.gold}`,
+          border: `2px solid #8D6B1F`,
           fontSize: 14,
           lineHeight: 1.5,
           resize: "vertical",
@@ -157,7 +157,7 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
             style={{
               ...dashInnerBox,
               padding: 12,
-              border: `1px solid ${DASH.gold}`,
+              border: `2px solid #8D6B1F`,
               borderRadius: 10,
               minWidth: 0,
             }}

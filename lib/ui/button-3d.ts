@@ -1,12 +1,12 @@
 import type { CSSProperties } from "react";
 import { COLORS, GOLD_GRADIENT, GOLD_GRADIENT_DISABLED, GOLD_GRADIENT_MUTED } from "@/lib/theme";
 
-/** Sombras 3D — alto relevo (padrão do projeto / cor do logo) */
+/** Sombras 3D — alto relevo, sem encolher o botão */
 export const BUTTON_3D_GOLD_SHADOW =
-    "inset 0 1px 0 rgba(200, 155, 60, 0.45), inset 0 -2px 0 rgba(74, 50, 12, 0.42), 0 3px 0 #5a4512, 0 4px 10px rgba(0, 0, 0, 0.45)";
+    "inset 0 1px 0 #fff6d8, 0 4px 0 #6b5218, 0 8px 16px rgba(90, 67, 14, 0.38)";
 
 export const BUTTON_3D_GOLD_SHADOW_ACTIVE =
-    "inset 0 2px 5px rgba(0, 0, 0, 0.42), 0 1px 0 #5a4512";
+    "inset 0 2px 4px rgba(90, 67, 14, 0.28), 0 1px 0 #6b5218";
 
 /** @deprecated Preferir goldButton3DStyle — todos os botões são dourados 3D */
 export const BUTTON_3D_OUTLINE_SHADOW = BUTTON_3D_GOLD_SHADOW;
@@ -18,7 +18,7 @@ export const BUTTON_3D_DARK_SHADOW = BUTTON_3D_GOLD_SHADOW;
 export const goldButton3DStyle: CSSProperties = {
     background: GOLD_GRADIENT,
     color: COLORS.tinta,
-    border: "1px solid #6b5218",
+    border: "2px solid #8D6B1F",
     fontWeight: 700,
     cursor: "pointer",
     boxShadow: BUTTON_3D_GOLD_SHADOW,
@@ -34,7 +34,7 @@ export const btnGoldStyle: CSSProperties = {
 export const goldButton3DDisabledStyle: CSSProperties = {
     background: GOLD_GRADIENT_DISABLED,
     color: COLORS.branco,
-    border: "1px solid #4a3810",
+    border: "2px solid #8D6B1F",
     boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 1px 0 #3a2a08",
     cursor: "not-allowed",
     opacity: 0.75,
@@ -44,7 +44,7 @@ export const goldButton3DDisabledStyle: CSSProperties = {
 export const goldButton3DMutedStyle: CSSProperties = {
     background: GOLD_GRADIENT_MUTED,
     color: COLORS.branco,
-    border: "1px solid #6b5218",
+    border: "2px solid #8D6B1F",
     fontWeight: 700,
     cursor: "pointer",
     boxShadow: BUTTON_3D_GOLD_SHADOW,

@@ -10,20 +10,20 @@
 /* Modo escuro — alinhado à home polida */
 .ri-dashboard[data-theme="dark"],
 .ri-dashboard[data-theme="light"] {
-  --dash-bg: #FAF7F0;
-  --dash-sidebar: #FFFEFB;
-  --dash-card: #FFFEFB;
+  --dash-bg: #F3E6C8;
+  --dash-sidebar: #F3E6C8;
+  --dash-card: #E8D5A3;
   --dash-inner: #F3E6C8;
   --dash-input-bg: #FFFEFB;
   --dash-tag-bg: #F3E6C8;
   --dash-text: #414141;
   --dash-title: #414141;
   --dash-text-muted: #6b6458;
-  --dash-border: #E8E1D5;
+  --dash-border: #8D6B1F;
   --dash-compat-low: #F3E6C8;
   --dash-compat-low-text: #414141;
   --dash-shadow: 0 8px 20px rgba(65, 65, 65, 0.08);
-  background-color: #FAF7F0;
+  background-color: #F3E6C8;
   background-image: radial-gradient(ellipse 70% 36% at 50% -8%, rgba(243, 230, 200, 0.85), transparent 58%);
   background-attachment: fixed;
 }
@@ -100,7 +100,7 @@
 
 .ri-dashboard .dash-card:hover,
 .ri-dashboard [data-card="1"]:hover {
-  border-color: rgba(200, 155, 60, 0.72) !important;
+  border-color: #8D6B1F !important;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.34);
   transform: none;
 }
@@ -183,10 +183,10 @@
 }
 
 .ri-company-dash .ri-dash-btn-secondary {
-  background: transparent !important;
-  color: var(--dash-text-muted) !important;
-  border: 1px solid var(--dash-border) !important;
-  box-shadow: none !important;
+  background: #E8C56A !important;
+  color: #414141 !important;
+  border: 2px solid #8D6B1F !important;
+  box-shadow: var(--ri-btn-3d-gold-shadow) !important;
   font-weight: 600;
   font-family: inherit;
 }
@@ -249,10 +249,10 @@
 }
 
 .ri-dash-prof .ri-dash-btn-secondary {
-  background: transparent !important;
-  color: var(--dash-text-muted) !important;
-  border: 1px solid var(--dash-border) !important;
-  box-shadow: none !important;
+  background: #E8C56A !important;
+  color: #414141 !important;
+  border: 2px solid #8D6B1F !important;
+  box-shadow: var(--ri-btn-3d-gold-shadow) !important;
   font-weight: 600;
   font-family: inherit;
 }

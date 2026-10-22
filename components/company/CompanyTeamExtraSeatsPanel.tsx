@@ -90,7 +90,7 @@ export default function CompanyTeamExtraSeatsPanel({
         padding: 16,
         display: "grid",
         gap: 12,
-        border: `1px solid ${DASH.gold}`,
+        border: `2px solid #8D6B1F`,
       }}
     >
       <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: DASH.gold }}>
@@ -120,7 +120,7 @@ export default function CompanyTeamExtraSeatsPanel({
                     textAlign: "left",
                     padding: "12px 12px",
                     borderRadius: 10,
-                    border: `1px solid ${DASH.gold}`,
+                    border: `2px solid #8D6B1F`,
                     background: selected ? "rgba(200,155,60,0.2)" : DASH.inner,
                     color: DASH.text,
                     cursor: "pointer",

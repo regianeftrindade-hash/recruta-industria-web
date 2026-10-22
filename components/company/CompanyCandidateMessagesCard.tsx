@@ -132,7 +132,7 @@ export default function CompanyCandidateMessagesCard({
                       gap: 8,
                       padding: "8px 10px",
                       borderRadius: 10,
-                      border: `1px solid ${DASH.gold}`,
+                      border: `2px solid #8D6B1F`,
                       background: isProf ? "rgba(200,155,60,0.12)" : DASH.inner,
                     }}
                   >

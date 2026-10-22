@@ -2,8 +2,8 @@
 :root {
   --primary-color: #414141;
   --secondary-color: #E8E1D5;
-  --background: #FAF7F0;
-  --card-bg: #FFFEFB;
+  --background: #F3E6C8;
+  --card-bg: #E8D5A3;
   --text-primary: #414141;
   --border-color: #E8E1D5;
   --focus-outline: rgba(200, 155, 60, 0.35);
@@ -33,7 +33,7 @@
 }
 
 .heroCard {
-  background: #FFFEFB;
+  background: #E8D5A3;
   border: 1px solid rgba(200, 155, 60, 0.7);
   border-radius: 16px;
   padding: clamp(20px, 4vw, 32px) clamp(16px, 3vw, 28px);
@@ -64,7 +64,7 @@
 }
 
 .messageCard {
-  background-color: #FFFEFB;
+  background-color: #E8D5A3;
   border: 1px solid rgba(200, 155, 60, 0.55);
   border-radius: 12px;
   padding: clamp(14px, 2.5vw, 20px);

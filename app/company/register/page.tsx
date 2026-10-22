@@ -689,9 +689,9 @@ function CadastroEmpresaContent() {
 
   if (contaProfissional && session?.user) {
     return (
-      <div style={{ position: 'relative', minHeight: '100vh', backgroundColor: '#FAF7F0', padding: '40px 20px', color: '#414141', overflow: 'hidden', ...READABLE_TEXT_STYLE }} className="ri-readable">
+      <div style={{ position: 'relative', minHeight: '100vh', backgroundColor: '#F3E6C8', padding: '40px 20px', color: '#414141', overflow: 'hidden', ...READABLE_TEXT_STYLE }} className="ri-readable">
         <AuthAtmosphere intensity="strong" />
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: '560px', margin: '0 auto', background: '#FFFEFB', padding: '40px', borderRadius: '16px', border: '1px solid rgba(200,155,60,0.7)', boxShadow: '0 16px 40px rgba(0,0,0,0.5)', textAlign: 'center' }}>
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '560px', margin: '0 auto', background: '#E8D5A3', padding: '40px', borderRadius: '16px', border: '1px solid rgba(200,155,60,0.7)', boxShadow: '0 16px 40px rgba(0,0,0,0.5)', textAlign: 'center' }}>
           <h1 style={{ color: '#C89B3C', marginTop: 0 }}>Conta profissional detectada</h1>
           <p style={{ lineHeight: 1.6 }}>
             O e-mail <strong>{session.user.email}</strong> já está cadastrado como <strong>profissional</strong>
@@ -711,7 +711,7 @@ function CadastroEmpresaContent() {
             <button
               type="button"
               onClick={() => { window.location.href = '/api/auth/logout'; }}
-              style={{ padding: '12px', background: 'transparent', color: '#414141', border: '1px solid #8D6B1F', borderRadius: 8, fontWeight: 'bold', cursor: 'pointer' }}
+              style={{ padding: '12px', background: 'transparent', color: '#414141', border: '2px solid #8D6B1F', borderRadius: 8, fontWeight: 'bold', cursor: 'pointer' }}
             >
               Sair e usar outro e-mail
             </button>
@@ -777,7 +777,7 @@ function CadastroEmpresaContent() {
             marginBottom: 16,
             padding: '12px 14px',
             borderRadius: 8,
-            border: '1px solid #8D6B1F',
+            border: '2px solid #8D6B1F',
             background: 'rgba(200,155,60,0.12)',
             textAlign: 'center',
           }}>
@@ -882,7 +882,7 @@ function CadastroEmpresaContent() {
             </div>
           )}
           {successMessage && (
-            <div style={{ background: '#FAF7F0', color: '#414141', padding: '10px', borderRadius: '8px', fontWeight: 'bold', border: '1px solid #8D6B1F' }}>
+            <div style={{ background: '#F3E6C8', color: '#414141', padding: '10px', borderRadius: '8px', fontWeight: 'bold', border: '2px solid #8D6B1F' }}>
               {successMessage}
             </div>
           )}
@@ -1007,7 +1007,7 @@ function CadastroEmpresaContent() {
                   : 'E-mail de acesso da conta. Tem que ser corporativo (não Gmail/Hotmail). Se já usa esse e-mail no site, teste com alias: nome+teste@suaempresa.com.br'}
               </small>
               {emailMensagem && (
-                <div style={{ marginTop: 10, background: '#FAF7F0', color: '#414141', padding: 10, borderRadius: 8, border: '1px solid #8D6B1F', fontSize: 13, lineHeight: 1.5 }}>
+                <div style={{ marginTop: 10, background: '#F3E6C8', color: '#414141', padding: 10, borderRadius: 8, border: '2px solid #8D6B1F', fontSize: 13, lineHeight: 1.5 }}>
                   {emailMensagem}
                 </div>
               )}

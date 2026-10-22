@@ -30,7 +30,7 @@ export default function PlatformVideoCallChromeControls({
           fontSize: overlayPip ? 9 : 10,
           background: overlay ? DASH.gold : "transparent",
           color: overlay ? "#000" : DASH.gold,
-          border: `1px solid ${DASH.gold}`,
+          border: `2px solid #8D6B1F`,
           boxShadow: overlay ? undefined : "none",
         }}
         title="Mantém o vídeo no lugar enquanto você rola a página"
@@ -43,7 +43,7 @@ export default function PlatformVideoCallChromeControls({
           onClick={onToggleMinimized}
           style={{
             background: "transparent",
-            border: `1px solid ${DASH.gold}`,
+            border: `2px solid #8D6B1F`,
             color: DASH.gold,
             borderRadius: 8,
             padding: overlayPip ? "4px 6px" : "5px 8px",

@@ -11,7 +11,7 @@ export default function SiteEmailFooter() {
       style={{
         padding: "12px 16px 16px",
         textAlign: "center",
-        background: "#FAF7F0",
+        background: "#F3E6C8",
         borderTop: "1px solid rgba(141, 107, 31, 0.65)",
       }}
     >

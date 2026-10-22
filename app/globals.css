@@ -5,10 +5,10 @@
 }
 
 :root {
-  --ri-preto: #FAF7F0;
-  --ri-card-bg: #FFFEFB;
+  --ri-preto: #F3E6C8;
+  --ri-card-bg: #E8D5A3;
   --ri-dourado: #D4AF37;
-  --ri-dourado-escuro: #E8E1D5;
+  --ri-dourado-escuro: #8D6B1F;
   --ri-branco: #414141;
   --ri-texto-suave: #414141;
   --ri-gold-gradient: #E8C56A;
@@ -37,7 +37,7 @@ select,
 textarea {
   background: #FFFEFB !important;
   color: #414141 !important;
-  border-color: #E8E1D5;
+  border: 2px solid #8D6B1F;
   color-scheme: light;
   font-family: inherit;
   letter-spacing: inherit;
@@ -49,6 +49,7 @@ input[type="file"] {
   color-scheme: light;
   background-color: #FFFEFB !important;
   color: #414141 !important;
+  border: 2px solid #8D6B1F;
 }
 
 input[type="file"]::file-selector-button {

@@ -2,7 +2,7 @@
   max-width: 1000px;
   margin: 0 auto;
   padding: 2rem;
-  background: #FAF7F0;
+  background: #F3E6C8;
   min-height: 100vh;
   color: #414141;
   font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -12,10 +12,10 @@
 }
 
 .checkoutCard {
-  background: #FFFEFB;
+  background: #E8D5A3;
   border-radius: 12px;
   padding: 2rem;
-  border: 1px solid #8D6B1F;
+  border: 2px solid #8D6B1F;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
   margin-bottom: 2rem;
 }
@@ -70,9 +70,9 @@
 .paymentSection {
   margin: 2rem 0;
   padding: 2rem;
-  background: #FAF7F0;
+  background: #F3E6C8;
   border-radius: 8px;
-  border: 1px solid #8D6B1F;
+  border: 2px solid #8D6B1F;
 }
 
 .paymentSection h2 {
@@ -85,7 +85,7 @@
   text-align: center;
   margin: 2rem 0;
   padding: 1.5rem;
-  background: #FFFEFB;
+  background: #E8D5A3;
   border-radius: 8px;
   border: 2px dashed #8D6B1F;
 }
@@ -107,9 +107,9 @@
 .keySection {
   margin: 2rem 0;
   padding: 1.5rem;
-  background: #FFFEFB;
+  background: #E8D5A3;
   border-radius: 8px;
-  border: 1px solid #8D6B1F;
+  border: 2px solid #8D6B1F;
 }
 
 .keyDisplay {
@@ -120,12 +120,12 @@
 .keyInput {
   flex: 1;
   padding: 0.75rem;
-  border: 1px solid #8D6B1F;
+  border: 2px solid #8D6B1F;
   border-radius: 4px;
   font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 0.95em;
   letter-spacing: normal;
-  background: #FAF7F0;
+  background: #F3E6C8;
   color: #414141;
 }
 
@@ -155,9 +155,9 @@
   text-align: center;
   margin: 2rem 0;
   padding: 1.5rem;
-  background: #FFFEFB;
+  background: #E8D5A3;
   border-radius: 8px;
-  border: 1px solid #8D6B1F;
+  border: 2px solid #8D6B1F;
 }
 
 .barcodeContainer {
@@ -166,7 +166,7 @@
   align-items: center;
   margin: 1rem 0;
   padding: 1rem;
-  background: #FAF7F0;
+  background: #F3E6C8;
   border-radius: 4px;
 }
 
@@ -176,18 +176,18 @@
 }
 
 .boletoInfo {
-  background: #FFFEFB;
+  background: #E8D5A3;
   padding: 1.5rem;
   border-radius: 8px;
   margin: 1.5rem 0;
-  border: 1px solid #8D6B1F;
+  border: 2px solid #8D6B1F;
 }
 
 .infoRow {
   display: flex;
   justify-content: space-between;
   padding: 0.75rem 0;
-  border-bottom: 1px solid #8D6B1F;
+  border-bottom: 2px solid #8D6B1F;
 }
 
 .infoRow:last-child {
@@ -205,10 +205,10 @@
 }
 
 .cardForm {
-  background: #FFFEFB;
+  background: #E8D5A3;
   padding: 1.5rem;
   border-radius: 8px;
-  border: 1px solid #8D6B1F;
+  border: 2px solid #8D6B1F;
 }
 
 .formGroup {
@@ -225,10 +225,10 @@
 .formGroup input {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #8D6B1F;
+  border: 2px solid #8D6B1F;
   border-radius: 4px;
   font-size: 1em;
-  background: #FAF7F0;
+  background: #F3E6C8;
   color: #414141;
   transition: border-color 0.3s ease;
 }
@@ -246,22 +246,22 @@
 }
 
 .security {
-  background: #FAF7F0;
+  background: #F3E6C8;
   padding: 1rem;
   border-radius: 4px;
   margin: 1.5rem 0;
   color: #C89B3C;
   text-align: center;
-  border: 1px solid #8D6B1F;
+  border: 2px solid #8D6B1F;
 }
 
 .instructions {
-  background: #FAF7F0;
+  background: #F3E6C8;
   padding: 1.5rem;
   border-radius: 8px;
   margin: 1.5rem 0;
   color: #414141;
-  border: 1px solid #8D6B1F;
+  border: 2px solid #8D6B1F;
 }
 
 .instructions h3 {
@@ -304,7 +304,7 @@
 }
 
 .orderSummary {
-  background: #FAF7F0;
+  background: #F3E6C8;
   padding: 1.5rem;
   border-radius: 8px;
   border-left: 4px solid #C89B3C;
@@ -330,10 +330,10 @@
 }
 
 .customerInfo {
-  background: #FFFEFB;
+  background: #E8D5A3;
   padding: 2rem;
   border-radius: 12px;
-  border: 1px solid #8D6B1F;
+  border: 2px solid #8D6B1F;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
 }
 

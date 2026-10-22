@@ -80,7 +80,7 @@ export default function CompanyCandidateProfileMediaShare({
                 height: 228,
                 borderRadius: 12,
                 overflow: "hidden",
-                border: `1px solid ${DASH.gold}`,
+                border: `2px solid #8D6B1F`,
                 background: "#000",
                 boxShadow: `0 0 0 1px rgba(200,155,60,0.25)`,
               }}
@@ -161,7 +161,7 @@ export default function CompanyCandidateProfileMediaShare({
               style={{
                 ...dashInnerBox,
                 padding: 12,
-                border: `1px solid ${DASH.gold}`,
+                border: `2px solid #8D6B1F`,
                 display: "grid",
                 gap: 10,
               }}
@@ -194,7 +194,7 @@ export default function CompanyCandidateProfileMediaShare({
                           gap: 8,
                           alignItems: "center",
                           padding: "8px 10px",
-                          border: `1px solid ${DASH.gold}`,
+                          border: `2px solid #8D6B1F`,
                           borderRadius: 10,
                           background: selected ? "rgba(200,155,60,0.18)" : DASH.inner,
                           color: DASH.text,

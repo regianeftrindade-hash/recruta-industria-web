@@ -99,10 +99,10 @@ export default function AiAssistantPanel({
   return (
     <section
       style={{
-        border: "1px solid #8D6B1F",
+        border: "2px solid #8D6B1F",
         borderRadius: 14,
         padding: 14,
-        background: "#FFFEFB",
+        background: "#E8D5A3",
         color: "#414141",
         fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
       }}
@@ -174,7 +174,7 @@ export default function AiAssistantPanel({
             marginTop: 12,
             padding: 12,
             borderRadius: 10,
-            background: "#FAF7F0",
+            background: "#F3E6C8",
             border: "1px solid #4a4a4a",
             fontSize: 13,
             lineHeight: 1.5,

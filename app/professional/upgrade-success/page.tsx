@@ -9,17 +9,17 @@ export default function UpgradeSuccessPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#FAF7F0',
+      backgroundColor: '#F3E6C8',
       color: '#414141',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center'
     }}>
       <div style={{
-        backgroundColor: '#FFFEFB',
+        backgroundColor: '#E8D5A3',
         padding: '60px',
         borderRadius: '20px',
-        border: '1px solid #8D6B1F',
+        border: '2px solid #8D6B1F',
         boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
         textAlign: 'center',
         maxWidth: '600px'
@@ -49,10 +49,10 @@ export default function UpgradeSuccessPage() {
         </p>
 
         <div style={{
-          backgroundColor: '#FAF7F0',
+          backgroundColor: '#F3E6C8',
           padding: '20px',
           borderRadius: '12px',
-          border: '1px solid #8D6B1F',
+          border: '2px solid #8D6B1F',
           marginBottom: '30px',
           textAlign: 'left'
         }}>
@@ -74,10 +74,10 @@ export default function UpgradeSuccessPage() {
         </div>
 
         <div style={{
-          backgroundColor: '#FAF7F0',
+          backgroundColor: '#F3E6C8',
           padding: '15px',
           borderRadius: '8px',
-          border: '1px solid #8D6B1F',
+          border: '2px solid #8D6B1F',
           marginBottom: '30px',
           fontSize: '14px',
           color: '#414141'

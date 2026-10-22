@@ -2,9 +2,9 @@
 
 .page {
   --ri-gold: #D4AF37;
-  --ri-gold-dark: #E8E1D5;
-  --ri-ink: #FAF7F0;
-  --ri-panel: #FFFEFB;
+  --ri-gold-dark: #8D6B1F;
+  --ri-ink: #F3E6C8;
+  --ri-panel: #E8D5A3;
   --ri-text: #414141;
   position: relative;
   min-height: 100vh;
@@ -36,7 +36,7 @@
 .atmosphere {
   position: absolute;
   inset: 0;
-  background: #FAF7F0;
+  background: #F3E6C8;
   opacity: 1;
   pointer-events: none;
   z-index: 0;
@@ -53,7 +53,7 @@
 .card {
   position: relative;
   z-index: 1;
-  background: #FFFEFB;
+  background: #E8D5A3;
   padding: 36px 32px;
   border-radius: 16px;
   border: 1px solid rgba(200, 155, 60, 0.7);
@@ -129,7 +129,7 @@
   padding: 36px 32px;
   border-radius: 16px;
   border: 1px solid rgba(200, 155, 60, 0.7);
-  background: #FFFEFB;
+  background: #E8D5A3;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
   text-align: left;
   flex: 1 1 320px;
@@ -258,8 +258,8 @@
   font-size: 14px;
   letter-spacing: normal;
   border-radius: 8px;
-  border: 1px solid #E8D5A3;
-  background: #D4AF37;
+  border: 2px solid #8D6B1F;
+  background: #F3E6C8;
   color: #414141;
   box-shadow: var(--ri-btn-3d-gold-shadow);
   transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease, color 0.15s ease;
@@ -270,11 +270,11 @@
 }
 
 .tabActive {
-  background: linear-gradient(180deg, #5a4512 0%, #4a3810 45%, #3a2a08 100%);
+  background: #F3E6C8;
   color: #414141;
-  border-color: #3a2a08;
-  box-shadow: var(--ri-btn-3d-gold-active);
-  transform: translateY(1px);
+  border-color: #8D6B1F;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transform: none;
 }
 
 .form {
@@ -294,7 +294,7 @@
 .input {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid var(--ri-gold-dark);
+  border: 2px solid #8D6B1F;
   border-radius: 8px;
   background-color: #FFFEFB;
   color: var(--ri-text);
@@ -408,9 +408,9 @@
 .btnPrimary {
   width: 100%;
   padding: 13px 16px;
-  background: #D4AF37;
+  background: #E8C56A;
   color: #414141;
-  border: 1px solid #E8D5A3;
+  border: 2px solid #8D6B1F;
   border-radius: 8px;
   cursor: pointer;
   font-family: inherit;
@@ -427,7 +427,7 @@
 }
 
 .btnPrimary:hover:not(:disabled) {
-  background: linear-gradient(180deg, #9a7620 0%, #e0bc42 45%, #d4af37 100%);
+  background: #F3E0A6;
 }
 
 .btnPrimary:disabled {
@@ -442,9 +442,9 @@
   padding: 13px 16px;
   margin-top: 10px;
   cursor: pointer;
-  background: #D4AF37;
+  background: #E8C56A;
   color: #414141;
-  border: 1px solid #E8D5A3;
+  border: 2px solid #8D6B1F;
   border-radius: 8px;
   font-family: inherit;
   font-size: 15px;
@@ -464,7 +464,7 @@
 }
 
 .btnGoogle:hover:not(:disabled) {
-  background: linear-gradient(180deg, #9a7620 0%, #e0bc42 45%, #d4af37 100%);
+  background: #F3E0A6;
 }
 
 .btnGoogle:disabled {
@@ -483,9 +483,9 @@
   width: 100%;
   padding: 13px 16px;
   margin-top: 10px;
-  background: #D4AF37;
+  background: #E8C56A;
   color: #414141;
-  border: 1px solid #E8D5A3;
+  border: 2px solid #8D6B1F;
   border-radius: 8px;
   cursor: pointer;
   font-family: inherit;
@@ -502,7 +502,7 @@
 }
 
 .btnSecondary:hover {
-  background: linear-gradient(180deg, #9a7620 0%, #e0bc42 45%, #d4af37 100%);
+  background: #F3E0A6;
   color: #414141;
 }
 

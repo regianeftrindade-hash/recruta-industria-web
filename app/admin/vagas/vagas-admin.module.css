@@ -10,7 +10,7 @@
 .applications {
   border: 1px solid rgba(141, 107, 31, 0.55);
   border-radius: 14px;
-  background: #FAF7F0;
+  background: #F3E6C8;
 }
 
 .list,
@@ -36,7 +36,7 @@
   margin-bottom: 8px;
   padding: 10px 12px;
   text-align: left;
-  background: #FFFEFB;
+  background: #E8D5A3;
   color: #414141;
   border: 1px solid rgba(141, 107, 31, 0.45);
   box-shadow: none;
@@ -116,7 +116,7 @@
 
 .choice {
   padding: 8px 12px;
-  background: #FFFEFB;
+  background: #E8D5A3;
   color: #414141;
   border: 1px solid rgba(141, 107, 31, 0.7);
   box-shadow: none;

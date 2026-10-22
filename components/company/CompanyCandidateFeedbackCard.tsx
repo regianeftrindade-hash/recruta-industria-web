@@ -99,7 +99,7 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
         style={{
           ...dashInnerBox,
           padding: 10,
-          border: `1px solid ${DASH.gold}`,
+          border: `2px solid #8D6B1F`,
           display: "grid",
           gap: 8,
           marginBottom: 12,

@@ -186,7 +186,7 @@ function ManualCard({ section, forceOpen }: { section: ManualSection; forceOpen?
     <div
       style={{
         ...dashInnerBox,
-        border: `1px solid ${DASH.gold}`,
+        border: `2px solid #8D6B1F`,
         padding: 0,
         overflow: "hidden",
       }}
@@ -379,7 +379,7 @@ export default function CompanyMeuPlanoPage() {
               fontSize: 11,
               background: expandAll ? DASH.gold : "transparent",
               color: expandAll ? "#000" : DASH.gold,
-              border: `1px solid ${DASH.gold}`,
+              border: `2px solid #8D6B1F`,
               boxShadow: expandAll ? undefined : "none",
             }}
           >

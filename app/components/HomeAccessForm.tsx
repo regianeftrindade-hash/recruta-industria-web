@@ -167,7 +167,7 @@ export default function HomeAccessForm({
               <GoogleSignInButton onClick={handleGoogle} disabled={loading} />
             </div>
             <button type="submit" className={styles.proLoginAcessarTag} disabled={loading}>
-              {loading ? "..." : "Acessar"}
+              Acessar
             </button>
             <Link href={registerHref} className={styles.proLoginRegisterTag}>
               Cadastre-se
@@ -228,7 +228,7 @@ export default function HomeAccessForm({
               <GoogleSignInButton onClick={handleGoogle} disabled={loading} />
             </div>
             <button type="submit" className={styles.cardCta} disabled={loading}>
-              {loading ? "..." : "Acessar"}
+              Acessar
             </button>
             <Link href={registerHref} className={styles.homeAccessRegister}>
               Cadastre-se

@@ -2738,7 +2738,7 @@ export default function CadastroProfissional({
                     <div
                       key={index}
                       className={index === 0 ? blocoErro('experiencias') : undefined}
-                      style={{ border: '1px solid #8D6B1F', padding: '15px', borderRadius: '4px', backgroundColor: '#FFFEFB' }}
+                      style={{ border: '2px solid #8D6B1F', padding: '15px', borderRadius: '4px', backgroundColor: '#E8D5A3' }}
                     >
                       <p style={{ margin: '0 0 10px', fontWeight: 'bold', color: '#C89B3C' }}>Empresa {index + 1}</p>
                       <div className={styles.fieldsRow}>

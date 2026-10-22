@@ -30,7 +30,7 @@ type PaymentData = {
 export default function PagamentoProfissionalPage() {
   return (
     <Suspense fallback={
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FAF7F0", color: "#414141" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F3E6C8", color: "#414141" }}>
         Carregando...
       </div>
     }>
@@ -227,14 +227,14 @@ function PagamentoProfissional() {
 
   if (status === "loading") {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FAF7F0", color: "#414141" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F3E6C8", color: "#414141" }}>
         Carregando...
       </div>
     );
   }
 
   return (
-    <div style={{ position: "relative", minHeight: "100vh", background: "#FAF7F0", color: "#414141", padding: "32px 20px", overflow: "hidden" }}>
+    <div style={{ position: "relative", minHeight: "100vh", background: "#F3E6C8", color: "#414141", padding: "32px 20px", overflow: "hidden" }}>
       <AuthAtmosphere />
       <div style={{ position: "relative", zIndex: 1, maxWidth: 900, margin: "0 auto" }}>
         <button
@@ -251,14 +251,14 @@ function PagamentoProfissional() {
         <p style={{ color: "rgba(242,242,242,0.82)", margin: "0 0 24px", lineHeight: 1.5 }}>{planDef.descricao}</p>
 
         {gatewayReady === false && (
-          <div style={{ background: "#1a1508", border: "1px solid #8D6B1F", borderRadius: 8, padding: 14, marginBottom: 20, fontSize: 13, lineHeight: 1.5 }}>
+          <div style={{ background: "#1a1508", border: "2px solid #8D6B1F", borderRadius: 8, padding: 14, marginBottom: 20, fontSize: 13, lineHeight: 1.5 }}>
             <strong style={{ color: "#C89B3C" }}>Pagamento em configuração.</strong>{" "}
             Cobranças reais ainda não estão disponíveis neste ambiente. Tente mais tarde ou fale com o suporte.
           </div>
         )}
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
-          <div style={{ background: "#FFFEFB", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
+          <div style={{ background: "#E8D5A3", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
             <p style={{ color: "#C89B3C", fontWeight: "bold", fontSize: 28, margin: "0 0 4px" }}>
               {priceLabel.price}<span style={{ fontSize: 14, color: "#aaa" }}>{priceLabel.period}</span>
             </p>
@@ -271,7 +271,7 @@ function PagamentoProfissional() {
             </ul>
           </div>
 
-          <div style={{ background: "#FFFEFB", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
+          <div style={{ background: "#E8D5A3", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
             {!paymentData ? (
               <>
                 <h2 style={{ color: "#C89B3C", margin: "0 0 16px", fontSize: 16 }}>Pagamento</h2>

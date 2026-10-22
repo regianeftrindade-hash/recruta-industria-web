@@ -519,9 +519,9 @@ export default function DashboardProfissional() {
                   fontSize: 11,
                   fontWeight: 700,
                   whiteSpace: "nowrap",
-                  color: ativo ? "#000" : DASH.muted,
-                  background: ativo ? DASH.gold : "transparent",
-                  border: `1px solid ${DASH.gold}`,
+                  color: "#414141",
+                  background: "#F3E6C8",
+                  border: "2px solid #8D6B1F",
                   borderRadius: "10px 10px 0 0",
                   boxShadow: ativo ? "0 2px 0 #5a4512" : "none",
                   cursor: "pointer",
@@ -533,8 +533,8 @@ export default function DashboardProfissional() {
                 {tab.badge > 0 ? (
                   <span
                     style={{
-                      background: ativo ? "#000" : DASH.gold,
-                      color: ativo ? DASH.gold : "#000",
+                      background: "#8D6B1F",
+                      color: "#F3E6C8",
                       borderRadius: 999,
                       fontSize: 9,
                       fontWeight: 800,
@@ -619,7 +619,7 @@ export default function DashboardProfissional() {
                   {fotoPerfil ? (
                     <img src={String(fotoPerfil)} alt="Foto do profissional" style={avatarImageStyle(56)} decoding="async" />
                   ) : (
-                    <div style={{ width: 56, height: 56, borderRadius: "50%", background: DASH.input, border: `1px solid ${DASH.gold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>👤</div>
+                    <div style={{ width: 56, height: 56, borderRadius: "50%", background: DASH.input, border: `2px solid #8D6B1F`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>👤</div>
                   )}
                 </div>
                 <div style={{ flex: "1 1 140px", minWidth: 0 }}>
@@ -629,7 +629,7 @@ export default function DashboardProfissional() {
                       display: "inline-block",
                       padding: "2px 8px",
                       borderRadius: 999,
-                      border: `1px solid ${DASH.gold}`,
+                      border: `2px solid #8D6B1F`,
                       color: DASH.gold,
                       fontSize: 10,
                       fontWeight: 800,

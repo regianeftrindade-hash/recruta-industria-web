@@ -66,7 +66,7 @@ export default function CompanyCandidateProfileHeader({
             flexShrink: 0,
             borderRadius: "50%",
             background: DASH.inner,
-            border: `1px solid ${DASH.gold}`,
+            border: `2px solid #8D6B1F`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
