@@ -17,6 +17,17 @@
   text-decoration: none;
 }
 
+.topActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.backButton {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
 .backLink {
   color: var(--ri-dourado);
   -webkit-text-stroke: 0.75px #000;
@@ -191,7 +202,7 @@
 }
 
 .error {
-  color: #fca5a5;
+  color: #000;
 }
 
 .empty {

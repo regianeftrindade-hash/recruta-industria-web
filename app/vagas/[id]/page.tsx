@@ -6,6 +6,7 @@ import { JobPostingError } from "@/lib/jobs/job-posting";
 import { getPublicJobView } from "@/lib/jobs/job-posting-db";
 import { jobSocialMetadata, publicJobUrl } from "@/lib/jobs/public-job-link";
 import JobApplyButton from "../JobApplyButton";
+import JobBackButton from "../JobBackButton";
 import styles from "../vagas.module.css";
 
 export const dynamic = "force-dynamic";
@@ -114,9 +115,12 @@ export default async function VagaPage({ params, searchParams }: Props) {
         <Link href="/" className={styles.brandLink} aria-label="Página inicial">
           <LogoRecruta size="sm" as="div" />
         </Link>
-        <Link href="/vagas" className={styles.backLink}>
-          Todas as vagas
-        </Link>
+        <div className={styles.topActions}>
+          <JobBackButton />
+          <Link href="/vagas" className={styles.backLink}>
+            Todas as vagas
+          </Link>
+        </div>
       </div>
 
       {view.availability === "unavailable" ? (
