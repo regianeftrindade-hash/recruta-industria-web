@@ -639,8 +639,8 @@
 }
 
 .tagChipActive {
-  background: linear-gradient(180deg, #8d6b1f 0%, #c89b3c 45%, #a87e2e 100%);
-  border-color: #c89b3c;
+  background: #E8C56A;
+  border: 2px solid #8D6B1F;
   color: #000;
   font-weight: 700;
 }
@@ -720,9 +720,9 @@
 
 .addBtn {
   padding: 10px 14px;
-  background: linear-gradient(180deg, #8D6B1F 0%, #C89B3C 45%, #A87E2E 100%);
+  background: #E8C56A;
   color: #000;
-  border: 1px solid #6b5218;
+  border: 2px solid #8D6B1F;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
@@ -744,9 +744,9 @@
 
 .addBtnSmall {
   padding: 5px 10px;
-  background: linear-gradient(180deg, #8D6B1F 0%, #C89B3C 45%, #A87E2E 100%);
+  background: #E8C56A;
   color: #000;
-  border: 1px solid #6b5218;
+  border: 2px solid #8D6B1F;
   border-radius: 4px;
   cursor: pointer;
   font-size: 11px;
@@ -865,10 +865,10 @@
 }
 
 .anexoBtn {
-  background: linear-gradient(180deg, #8d6b1f 0%, #c89b3c 45%, #a87e2e 100%);
+  background: #E8C56A;
   color: #000;
   padding: 8px 14px;
-  border: 1px solid #6b5218;
+  border: 2px solid #8D6B1F;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
@@ -944,10 +944,10 @@
   flex-shrink: 0;
   align-self: stretch;
   padding: 10px 16px;
-  border: 1px solid #6b5218;
-  border-left: 1px solid #6b5218;
+  border: 2px solid #8D6B1F;
+  border-left: 2px solid #8D6B1F;
   border-radius: 0 8px 8px 0;
-  background: linear-gradient(180deg, #8d6b1f 0%, #c89b3c 45%, #a87e2e 100%);
+  background: #E8C56A;
   color: #000;
   font-weight: 700;
   font-size: 14px;
@@ -1582,9 +1582,9 @@
 }
 
 .input[type="file"]::file-selector-button {
-  background: linear-gradient(180deg, #8d6b1f 0%, #c89b3c 45%, #a87e2e 100%);
+  background: #E8C56A;
   color: #000000;
-  border: 1px solid #6b5218;
+  border: 2px solid #8D6B1F;
   border-radius: 6px;
   padding: 8px 14px;
   margin-right: 12px;
@@ -1640,10 +1640,10 @@
 }
 
 .submitBtn {
-  background: linear-gradient(180deg, #8d6b1f 0%, #c89b3c 45%, #a87e2e 100%);
+  background: #E8C56A;
   color: #000000;
   padding: 18px;
-  border: 1px solid #6b5218;
+  border: 2px solid #8D6B1F;
   border-radius: 10px;
   font-weight: 700;
   font-size: 17px;
@@ -1671,10 +1671,10 @@
   display: block;
   width: 100%;
   text-align: center;
-  background: transparent;
-  border: 1px solid rgba(200, 155, 60, 0.55);
+  background: #E8C56A;
+  border: 2px solid #8D6B1F;
   border-radius: 10px;
-  color: var(--text-primary);
+  color: #000;
   padding: 14px 16px;
   font-size: 15px;
   font-weight: 600;
@@ -1694,7 +1694,7 @@
 }
 
 .submitBtn:hover {
-  background: linear-gradient(180deg, #8D6B1F 0%, #C89B3C 50%, #A87E2E 100%);
+  background: #F0D48A;
 }
 
 .submitBtn:focus {
@@ -1893,8 +1893,8 @@
 }
 
 :global(.ri-dashboard[data-theme="dark"]) .tagChipActive {
-  background: #D4AF37;
-  color: #414141 !important;
+  background: #E8C56A;
+  color: #000 !important;
   border: 2px solid #8D6B1F !important;
 }
 
@@ -1948,8 +1948,8 @@
 }
 
 :global(.ri-dashboard[data-theme="light"]) .tagChipActive {
-  background: linear-gradient(180deg, #8d6b1f 0%, #c89b3c 45%, #a87e2e 100%);
-  color: #1a1208;
+  background: #E8C56A;
+  color: #000;
   border: 2px solid #8D6B1F;
 }
 

@@ -141,9 +141,14 @@ export default function PlatformVideoCall({
         <p
           style={{
             margin: "0 0 10px",
+            display: "inline-block",
+            padding: "2px 8px",
+            borderRadius: 14,
+            border: "2px solid #8D6B1F",
+            background: "#E8C56A",
             fontSize: 12,
             fontWeight: 700,
-            color: call.status === "ringing" || call.status === "team_invite" ? "#22c55e" : DASH.gold,
+            color: "#000",
           }}
         >
           {statusLabel}

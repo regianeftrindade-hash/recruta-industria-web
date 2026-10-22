@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { DASH } from "@/lib/dashboard-theme";
+import { btnGoldStyle } from "@/lib/button-3d";
 
 type Props = {
   /** compact = botão pequeno no header empresa */
@@ -51,30 +52,17 @@ export default function DeleteAccountControl({ variant = "card" }: Props) {
     }
   };
 
-  const triggerStyle: React.CSSProperties =
-    variant === "compact"
-      ? {
-          padding: "5px 10px",
-          fontSize: 10,
-          fontWeight: 700,
-          color: "#ffcdd2",
-          background: "transparent",
-          border: "1px solid rgba(229, 57, 53, 0.55)",
-          borderRadius: 8,
-          cursor: "pointer",
-          lineHeight: 1.2,
-        }
-      : {
-          padding: "6px 10px",
-          fontSize: 10,
-          fontWeight: 700,
-          color: "#ffcdd2",
-          background: "rgba(229, 57, 53, 0.12)",
-          border: "1px solid rgba(229, 57, 53, 0.55)",
-          borderRadius: 8,
-          cursor: "pointer",
-          flexShrink: 0,
-        };
+  const triggerStyle: React.CSSProperties = {
+    ...btnGoldStyle,
+    padding: variant === "compact" ? "6px 10px" : "8px 12px",
+    fontSize: variant === "compact" ? 10 : 12,
+    background: "#E8C56A",
+    color: "#000",
+    border: "2px solid #8D6B1F",
+    borderRadius: 8,
+    flexShrink: 0,
+    lineHeight: 1.2,
+  };
 
   return (
     <div style={{ position: "relative" }}>

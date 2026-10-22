@@ -26,12 +26,12 @@ export default function PlatformVideoCallChromeControls({
         onClick={onToggleOverlay}
         style={{
           ...btnGold,
-          padding: overlayPip ? "4px 6px" : "5px 8px",
+          padding: overlayPip ? "4px 8px" : "5px 10px",
           fontSize: overlayPip ? 9 : 10,
-          background: overlay ? DASH.gold : "transparent",
-          color: overlay ? "#000" : DASH.gold,
-          border: `2px solid #8D6B1F`,
-          boxShadow: overlay ? undefined : "none",
+          background: "#E8C56A",
+          color: "#000",
+          border: "2px solid #8D6B1F",
+          borderRadius: 14,
         }}
         title="Mantém o vídeo no lugar enquanto você rola a página"
       >
