@@ -67,6 +67,16 @@
   box-sizing: border-box;
 }
 
+.filters select {
+  appearance: none;
+  padding-right: 32px;
+  background-color: #FFFEFB;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 L6 6.5 L11 1.5' fill='none' stroke='%23414141' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 8px;
+}
+
 .combo .control {
   padding-right: 32px;
   cursor: default;
@@ -74,25 +84,32 @@
 
 .arrow {
   position: absolute;
-  top: 4px;
-  right: 4px;
+  top: 50%;
+  right: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
+  margin: 0;
   padding: 0;
-  border: none;
-  border-radius: 999px;
-  background: transparent;
-  box-shadow: none;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
   color: #414141;
   cursor: pointer;
+  transform: translateY(-50%);
 }
 
 .arrow svg {
   display: block;
   transition: transform 0.15s ease;
+}
+
+.arrow:active {
+  transform: translateY(-50%) !important;
+  box-shadow: none !important;
 }
 
 .arrow[data-open="true"] svg {

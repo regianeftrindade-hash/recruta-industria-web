@@ -311,6 +311,24 @@
   box-shadow: var(--ri-btn-3d-gold-active) !important;
 }
 
+.ri-dash-prof button[data-combo-arrow],
+.ri-dash-prof button[role="option"] {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.ri-dash-prof button[data-combo-arrow]:active {
+  transform: translateY(-50%) !important;
+  box-shadow: none !important;
+}
+
+.ri-dash-prof button[role="option"]:active {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 .ri-candidate-profile-side {
   display: flex;
   flex-direction: column;

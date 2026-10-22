@@ -210,6 +210,7 @@ function ListaFlutuante({
         <button
           type="button"
           className={styles.arrow}
+          data-combo-arrow=""
           data-open={aberto ? "true" : "false"}
           aria-label={aberto ? "Fechar lista" : "Abrir lista"}
           onMouseDown={(event) => event.preventDefault()}
