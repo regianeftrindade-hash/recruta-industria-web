@@ -49,7 +49,7 @@ export default function ApplicationModeFields({
             placeholder="https://empresa.com.br/vaga"
           />
           <span className={styles.help}>
-            Obrigatório para publicar. O profissional abre este endereço em uma nova aba.
+            Obrigatório para publicar. O profissional é encaminhado para este endereço.
           </span>
         </label>
       ) : null}
@@ -67,7 +67,7 @@ export default function ApplicationModeFields({
             placeholder="recrutamento@empresa.com.br"
           />
           <span className={styles.help}>
-            Obrigatório para publicar. Este endereço não aparece na página pública nem nas redes. O currículo em PDF vai em anexo.
+            Obrigatório para publicar. Este endereço não aparece na página pública. O currículo em PDF vai em anexo. Se o profissional não tiver PDF salvo, o perfil do site é enviado neste e-mail.
           </span>
         </label>
       ) : null}

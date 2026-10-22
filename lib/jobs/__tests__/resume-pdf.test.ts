@@ -33,4 +33,29 @@ describe("currículo PDF da candidatura", () => {
     expect(mail.text).not.toContain("http");
     expect(mail.html).not.toContain("Metalurgica");
   });
+
+  it("sem PDF, descreve o perfil do site e não fala de anexo", () => {
+    const mail = buildApplicationMail({
+      jobTitle: "Soldador",
+      professionalName: "Ana Souza",
+      profile: {
+        cargo: "Soldador",
+        area: "Metalurgia",
+        local: "Campinas, SP",
+        escolaridade: "Técnico",
+        turno: "Integral",
+        experiencia: "3-5 anos",
+        experiencias: "Metalúrgica Alfa — Soldador — 2020-01 a 2022-01",
+        recolocacao: "Sim",
+        pretensaoSalarial: "3-4 mil",
+        mensagem: "Disponível para início imediato.",
+        habilidades: "MIG, TIG",
+        profileUrl: "https://www.recrutaindustria.com/company/professional/perfil1",
+      },
+    });
+    expect(mail.text).toContain("não tinha currículo em PDF salvo");
+    expect(mail.text).toContain("Cargo: Soldador");
+    expect(mail.text).toContain("Perfil no site: https://www.recrutaindustria.com/company/professional/perfil1");
+    expect(mail.text).not.toContain("anexado");
+  });
 });

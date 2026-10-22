@@ -18,9 +18,13 @@ import {
 } from "@/lib/jobs/job-posting";
 import {
   APPLICATION_EMAIL_SUCCESS,
-  loadOwnedResumePdf,
+  APPLICATION_PROFILE_EMAIL_SUCCESS,
   sendJobApplicationEmail,
+  tryLoadOwnedResumePdf,
+  type ApplicationProfileMail,
 } from "@/lib/jobs/job-application-mail";
+import { PUBLIC_SITE_ORIGIN } from "@/lib/jobs/public-job-link";
+import { companyProfessionalPath } from "@/lib/profile/public-slug";
 import { parseJobSearch, publicJobWhere, type JobSearchFilters } from "@/lib/jobs/job-search";
 
 function asRecord(job: JobPosting, applicationCount = 0): JobRecord {
@@ -531,7 +535,80 @@ export async function getOwnApplicationState(jobId: string, email: string | null
   };
 }
 
-const EMAIL_CLAIM_MS = 2 * 60 * 1000;
+function textoLista(raw: string | null | undefined): string | null {
+  const value = raw?.trim() || "";
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (Array.isArray(parsed)) {
+      const items = parsed.map((item) => String(item ?? "").trim()).filter(Boolean);
+      return items.length ? items.join(", ") : null;
+    }
+  } catch {
+    return value;
+  }
+  return value;
+}
+
+function textoExperiencias(raw: string | null | undefined): string | null {
+  const value = raw?.trim() || "";
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (!Array.isArray(parsed)) return null;
+    const linhas = parsed.flatMap((item) => {
+      if (!item || typeof item !== "object") return [];
+      const registro = item as Record<string, unknown>;
+      const empresa = String(registro.nome || registro.empresa || "").trim();
+      const cargo = String(registro.cargo || "").trim();
+      const inicio = String(registro.dataInicio || "").trim();
+      const fim = String(registro.dataFim || "").trim();
+      const periodo = [inicio, fim].filter(Boolean).join(" a ");
+      const linha = [empresa, cargo, periodo].filter(Boolean).join(" — ");
+      return linha ? [linha] : [];
+    });
+    return linhas.length ? linhas.join("; ") : null;
+  } catch {
+    return null;
+  }
+}
+
+function perfilParaEmail(profile: {
+  id: string;
+  title: string | null;
+  cargoDesejado: string | null;
+  areaInteresse: string | null;
+  cidade: string | null;
+  estado: string | null;
+  location: string | null;
+  escolaridade: string | null;
+  turnoDisponivel: string | null;
+  tempoExperiencia: string | null;
+  experienciasJSON: string | null;
+  recolocacao: string | null;
+  pretensaoSalarial: string | null;
+  mensagemEmpresas: string | null;
+  bio: string | null;
+  skills: string | null;
+}): ApplicationProfileMail {
+  const local = profile.cidade && profile.estado
+    ? `${profile.cidade}, ${profile.estado}`
+    : profile.cidade || profile.estado || profile.location;
+  return {
+    cargo: profile.cargoDesejado || profile.title,
+    area: profile.areaInteresse,
+    local,
+    escolaridade: profile.escolaridade,
+    turno: profile.turnoDisponivel,
+    experiencia: profile.tempoExperiencia,
+    experiencias: textoExperiencias(profile.experienciasJSON),
+    recolocacao: profile.recolocacao,
+    pretensaoSalarial: profile.pretensaoSalarial,
+    mensagem: profile.mensagemEmpresas || profile.bio,
+    habilidades: textoLista(profile.skills),
+    profileUrl: `${PUBLIC_SITE_ORIGIN}${companyProfessionalPath(profile.id)}`,
+  };
+}
 
 async function claimEmailApplication(
   jobId: string,
@@ -604,7 +681,27 @@ export async function registerJobApplication(jobId: string, email: string) {
       role: true,
       professional: { select: { id: true } },
       company: { select: { id: true } },
-      profile: { select: { id: true, title: true, curricoURL: true } },
+      profile: {
+        select: {
+          id: true,
+          title: true,
+          curricoURL: true,
+          cargoDesejado: true,
+          areaInteresse: true,
+          cidade: true,
+          estado: true,
+          location: true,
+          escolaridade: true,
+          turnoDisponivel: true,
+          tempoExperiencia: true,
+          experienciasJSON: true,
+          recolocacao: true,
+          pretensaoSalarial: true,
+          mensagemEmpresas: true,
+          bio: true,
+          skills: true,
+        },
+      },
     },
   });
 
@@ -642,7 +739,11 @@ export async function registerJobApplication(jobId: string, email: string) {
       throw new JobPostingError("Esta vaga não tem e-mail para receber candidaturas.", 400);
     }
 
-    const resume = await loadOwnedResumePdf(user.email, user.profile?.curricoURL);
+    const resume = await tryLoadOwnedResumePdf(user.email, user.profile?.curricoURL);
+    const profileMail = resume || !user.profile ? null : perfilParaEmail(user.profile);
+    if (!resume && !profileMail) {
+      throw new JobPostingError("Complete seu perfil de profissional para se candidatar.", 400);
+    }
     const claim = await claimEmailApplication(id, user.id, user.profile?.id ?? null);
     if (claim === "already") {
       throw new JobPostingError("Você já enviou sua candidatura para esta vaga.", 409, "ALREADY_APPLIED");
@@ -657,6 +758,7 @@ export async function registerJobApplication(jobId: string, email: string) {
       professionalName: user.name,
       professionalEmail: user.email,
       resume,
+      profile: profileMail,
     });
     if (!sent.ok) {
       await prisma.jobApplication.updateMany({
@@ -684,7 +786,7 @@ export async function registerJobApplication(jobId: string, email: string) {
       userId: saved.userId,
       profileId: saved.profileId,
       createdAt: saved.createdAt.toISOString(),
-      message: APPLICATION_EMAIL_SUCCESS,
+      message: resume ? APPLICATION_EMAIL_SUCCESS : APPLICATION_PROFILE_EMAIL_SUCCESS,
     };
   }
 

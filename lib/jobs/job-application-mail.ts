@@ -8,6 +8,24 @@ const SEND_FAILURE = "Não foi possível enviar a candidatura agora. Tente novam
 export const APPLICATION_EMAIL_SUCCESS =
   "Candidatura enviada com sucesso! Seu currículo foi encaminhado para o processo seletivo desta vaga.";
 
+export const APPLICATION_PROFILE_EMAIL_SUCCESS =
+  "Candidatura enviada com sucesso! Seu perfil do Recruta Indústria foi encaminhado para o processo seletivo desta vaga.";
+
+export type ApplicationProfileMail = {
+  cargo: string | null;
+  area: string | null;
+  local: string | null;
+  escolaridade: string | null;
+  turno: string | null;
+  experiencia: string | null;
+  experiencias: string | null;
+  recolocacao: string | null;
+  pretensaoSalarial: string | null;
+  mensagem: string | null;
+  habilidades: string | null;
+  profileUrl: string | null;
+};
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -16,12 +34,48 @@ function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
+function filled(value: string | null | undefined): string | null {
+  const text = value?.trim() || "";
+  return text || null;
+}
+
+export function applicationProfileLines(profile: ApplicationProfileMail): string[] {
+  const rows: Array<[string, string | null]> = [
+    ["Cargo", profile.cargo],
+    ["Área", profile.area],
+    ["Local", profile.local],
+    ["Escolaridade", profile.escolaridade],
+    ["Turno", profile.turno],
+    ["Experiência", profile.experiencia],
+    ["Empresas em que trabalhou", profile.experiencias],
+    ["Recolocação", profile.recolocacao],
+    ["Pretensão salarial", profile.pretensaoSalarial],
+    ["Habilidades", profile.habilidades],
+    ["Apresentação", profile.mensagem],
+  ];
+  return rows.flatMap(([label, value]) => {
+    const text = filled(value);
+    return text ? [`${label}: ${text}`] : [];
+  });
+}
+
 export function buildApplicationMail(input: {
   jobTitle: string;
   professionalName: string | null;
+  profile?: ApplicationProfileMail | null;
 }): { subject: string; text: string; html: string } {
   const title = input.jobTitle.trim() || "Vaga";
   const name = input.professionalName?.trim() || "Profissional";
+  const profileLines = input.profile ? applicationProfileLines(input.profile) : [];
+  const profileUrl = filled(input.profile?.profileUrl);
+  const body = profileLines.length || profileUrl
+    ? [
+      "Este profissional não tinha currículo em PDF salvo. O perfil cadastrado no Recruta Indústria segue abaixo.",
+      "",
+      ...profileLines,
+      ...(profileUrl ? ["", `Perfil no site: ${profileUrl}`] : []),
+    ]
+    : ["O currículo do candidato está anexado a este e-mail em formato PDF."];
   const text = [
     "Olá,",
     "",
@@ -29,7 +83,7 @@ export function buildApplicationMail(input: {
     "",
     `Profissional: ${name}.`,
     "",
-    "O currículo do candidato está anexado a este e-mail em formato PDF.",
+    ...body,
     "",
     "Atenciosamente,",
     "Recruta Indústria",
@@ -43,6 +97,20 @@ export function buildApplicationMail(input: {
     text,
     html,
   };
+}
+
+export async function tryLoadOwnedResumePdf(
+  email: string,
+  stored: string | null | undefined,
+): Promise<Buffer | null> {
+  try {
+    return await loadOwnedResumePdf(email, stored);
+  } catch (error) {
+    if (error instanceof JobPostingError && (error.code === "RESUME_REQUIRED" || error.status === 502)) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 export async function loadOwnedResumePdf(email: string, stored: string | null | undefined): Promise<Buffer> {
@@ -71,11 +139,13 @@ export async function sendJobApplicationEmail(input: {
   jobTitle: string;
   professionalName: string | null;
   professionalEmail: string;
-  resume: Buffer;
+  resume?: Buffer | null;
+  profile?: ApplicationProfileMail | null;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const mail = buildApplicationMail({
     jobTitle: input.jobTitle,
     professionalName: input.professionalName,
+    profile: input.resume ? null : input.profile,
   });
   const result = await sendEmailDetailed({
     to: input.to,
@@ -83,13 +153,15 @@ export async function sendJobApplicationEmail(input: {
     text: mail.text,
     html: mail.html,
     replyTo: input.professionalEmail,
-    attachments: [
-      {
-        filename: "curriculo.pdf",
-        content: input.resume,
-        contentType: "application/pdf",
-      },
-    ],
+    attachments: input.resume
+      ? [
+        {
+          filename: "curriculo.pdf",
+          content: input.resume,
+          contentType: "application/pdf",
+        },
+      ]
+      : undefined,
   });
 
   if (!result.ok) {

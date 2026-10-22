@@ -168,13 +168,11 @@ export default async function VagaPage({ params, searchParams }: Props) {
               <a
                 className={`${styles.externalLink} ri-btn-3d-gold`}
                 href={view.job.externalApplyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
               >
-                Candidatar-se no site da empresa
+                Candidatar-se
               </a>
               <p className={styles.note}>
-                A inscrição é feita no site da empresa e abre em uma nova aba.
+                Esta vaga encaminha a inscrição para a página da empresa.
               </p>
             </div>
           ) : (

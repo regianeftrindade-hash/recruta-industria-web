@@ -28,16 +28,8 @@ export default function JobApplyButton({
 
   const jobReturn = safeJobReturnPath(`/vagas/${jobId}`);
   const loginHref = jobReturn
-    ? `/login?tipo=profissional&redirect=${encodeURIComponent(jobReturn)}`
-    : "/login?tipo=profissional";
-  const wrongAccount = state?.canApply === false
-    && state.applied !== true
-    && (state.blockReason || "").includes("conta de profissional");
-
-  function enterAsProfessional() {
-    const back = jobReturn || `/vagas/${jobId}`;
-    window.location.href = `/api/auth/logout?redirect=${encodeURIComponent(back)}`;
-  }
+    ? `/login?redirect=${encodeURIComponent(jobReturn)}`
+    : "/login";
 
   async function loadState() {
     const response = await fetch(`/api/vagas/${jobId}/candidatura`, { credentials: "include" });
@@ -136,26 +128,24 @@ export default function JobApplyButton({
       <button
         type="button"
         onClick={() => {
-          if (wrongAccount) {
-            enterAsProfessional();
+          if (blocked) {
+            setError(state?.blockReason || "A candidatura é feita com uma conta de profissional.");
             return;
           }
           void apply();
         }}
-        disabled={busy || applied || (blocked && !wrongAccount)}
+        disabled={busy || applied}
       >
         {busy
           ? (mode === "EMAIL" ? "Enviando..." : "Registrando...")
           : applied
             ? (mode === "EMAIL" ? "Candidatura enviada" : "Candidatura registrada")
-            : wrongAccount
-              ? "Entrar como profissional"
-              : (mode === "EMAIL" ? "Candidatar-se" : "Candidatar-se pelo Recruta Indústria")}
+            : "Candidatar-se"}
       </button>
       <p className={styles.note}>
         {mode === "EMAIL"
-          ? "Ao clicar, o currículo em PDF do seu perfil é enviado para o processo seletivo. O e-mail da empresa não aparece aqui."
-          : "O botão registra sua candidatura no Recruta Indústria. Sem conta, o cadastro de profissional devolve você para esta mesma vaga."}
+          ? "Ao clicar, o currículo em PDF é enviado para o processo seletivo. Se não houver PDF salvo, o perfil do site é enviado por e-mail. O e-mail da empresa não aparece aqui."
+          : "A candidatura fica registrada aqui no Recruta Indústria."}
       </p>
       {needsResume ? (
         <p className={styles.note}>
@@ -165,11 +155,6 @@ export default function JobApplyButton({
       {blocked && state?.blockReason ? <p className={styles.error}>{state.blockReason}</p> : null}
       {message ? <p className={styles.message}>{message}</p> : null}
       {error ? <p className={styles.error}>{error}</p> : null}
-      {!state?.authenticated && !applied ? (
-        <p className={styles.note}>
-          Sem conta? O login também leva ao cadastro de profissional já existente.
-        </p>
-      ) : null}
     </div>
   );
 }
