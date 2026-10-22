@@ -24,6 +24,7 @@ export default function JobApplyButton({
   const [error, setError] = useState("");
   const [needsResume, setNeedsResume] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [outcome, setOutcome] = useState("");
 
   async function loadState() {
     const response = await fetch(`/api/vagas/${jobId}/candidatura`, { credentials: "include" });
@@ -47,25 +48,33 @@ export default function JobApplyButton({
       const data = await response.json().catch(() => ({}));
 
       if (response.status === 401 || response.status === 403) {
-        setError(data.error || "A candidatura é feita com a conta de profissional que já está aberta.");
+        const text = data.error || "A candidatura é feita com uma conta de profissional.";
+        setError(text);
+        setOutcome(text);
         return;
       }
 
       if (data.code === "RESUME_REQUIRED") {
+        const text = data.error || "Para se candidatar a esta vaga por e-mail, anexe seu currículo em PDF ao seu perfil.";
         setNeedsResume(true);
-        setError(data.error || "Para se candidatar a esta vaga por e-mail, anexe seu currículo em PDF ao seu perfil.");
+        setError(text);
+        setOutcome(text);
         return;
       }
 
       if (data.code === "EMAIL_BUSY") {
-        setError(data.error || "O envio desta candidatura já está em andamento.");
+        const text = data.error || "O envio desta candidatura já está em andamento.";
+        setError(text);
+        setOutcome(text);
         return;
       }
 
       if (response.status === 409 || data.alreadyApplied) {
-        setMessage(mode === "EMAIL"
+        const text = mode === "EMAIL"
           ? "Você já enviou sua candidatura para esta vaga."
-          : "Você já registrou candidatura nesta vaga.");
+          : "Você já registrou candidatura nesta vaga.";
+        setMessage(text);
+        setOutcome(text);
         setState({
           authenticated: true,
           applied: true,
@@ -76,11 +85,15 @@ export default function JobApplyButton({
       }
 
       if (!response.ok) {
-        setError(data.error || "Não foi possível registrar a candidatura.");
+        const text = data.error || "Não foi possível registrar a candidatura.";
+        setError(text);
+        setOutcome(text);
         return;
       }
 
-      setMessage(data.message || "Candidatura registrada.");
+      const text = data.message || "Candidatura registrada.";
+      setMessage(text);
+      setOutcome(text);
       setState({
         authenticated: true,
         applied: true,
@@ -88,7 +101,9 @@ export default function JobApplyButton({
         blockReason: null,
       });
     } catch {
-      setError("Não foi possível registrar a candidatura.");
+      const text = "Não foi possível registrar a candidatura.";
+      setError(text);
+      setOutcome(text);
     } finally {
       setBusy(false);
     }
@@ -128,9 +143,11 @@ export default function JobApplyButton({
       >
         {busy
           ? (mode === "EMAIL" ? "Enviando..." : "Registrando...")
-          : applied
-            ? (mode === "EMAIL" ? "Candidatura enviada" : "Candidatura registrada")
-            : "Candidatar-se"}
+          : outcome
+            ? outcome
+            : applied
+              ? (mode === "EMAIL" ? "Candidatura enviada" : "Candidatura registrada")
+              : "Candidatar-se"}
       </button>
       <p className={styles.note}>
         {mode === "EMAIL"

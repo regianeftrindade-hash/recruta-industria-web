@@ -175,6 +175,11 @@ describe("publicação de vagas", () => {
       hasCompany: true,
     })).toBe(false);
     expect(isProfessionalAccount({
+      role: "COMPANY",
+      hasProfessional: true,
+      hasCompany: true,
+    })).toBe(true);
+    expect(isProfessionalAccount({
       role: "PROFESSIONAL",
       hasProfessional: true,
       hasCompany: false,

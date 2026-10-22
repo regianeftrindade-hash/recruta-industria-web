@@ -172,10 +172,14 @@
 .apply button,
 .externalLink {
   min-width: 220px;
+  max-width: 100%;
   padding: 12px 18px;
+  color: #000;
   font-size: 16px;
+  line-height: 1.35;
   text-align: center;
   text-decoration: none;
+  white-space: normal;
 }
 
 .note,

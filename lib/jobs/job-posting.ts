@@ -581,8 +581,9 @@ export function isProfessionalAccount(user: {
   hasProfessional: boolean;
   hasCompany: boolean;
 }): boolean {
+  if (user.hasProfessional || user.role === "PROFESSIONAL") return true;
   if (user.role === "COMPANY" || user.hasCompany) return false;
-  return user.role === "PROFESSIONAL" || user.hasProfessional;
+  return false;
 }
 
 /** Empresa só consulta candidaturas da vaga vinculada à própria conta. */
