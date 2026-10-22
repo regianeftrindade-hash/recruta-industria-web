@@ -29,9 +29,7 @@
 }
 
 .backLink {
-  color: var(--ri-dourado);
-  -webkit-text-stroke: 0.75px #000;
-  paint-order: stroke fill;
+  color: #000;
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
@@ -39,9 +37,7 @@
 
 .heading {
   margin: 0 0 8px;
-  color: var(--ri-dourado);
-  -webkit-text-stroke: 0.75px #000;
-  paint-order: stroke fill;
+  color: #000;
   font-size: clamp(32px, 5vw, 46px);
   line-height: 1;
 }
@@ -49,7 +45,7 @@
 .lead {
   margin: 0 0 24px;
   max-width: 640px;
-  color: #d6d6d6;
+  color: #000;
   font-size: 16px;
   line-height: 1.45;
 }
@@ -75,7 +71,7 @@
 
 .cardTitle {
   margin: 0 0 8px;
-  color: #414141;
+  color: #000;
   font-size: 24px;
   line-height: 1.15;
 }
@@ -106,9 +102,7 @@
 
 .company {
   margin: 0 0 6px;
-  color: var(--ri-dourado);
-  -webkit-text-stroke: 0.75px #000;
-  paint-order: stroke fill;
+  color: #000;
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -117,7 +111,7 @@
 
 .title {
   margin: 0 0 16px;
-  color: #414141;
+  color: #000;
   font-size: clamp(30px, 5vw, 44px);
   line-height: 1.05;
 }
@@ -138,13 +132,14 @@
 .fact span {
   display: block;
   margin-bottom: 4px;
-  color: #b9b9b9;
+  color: #000;
   font-size: 12px;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
 .fact strong {
-  color: #414141;
+  color: #000;
   font-size: 16px;
   font-weight: 700;
 }
@@ -155,15 +150,13 @@
 
 .section h2 {
   margin: 0 0 8px;
-  color: var(--ri-dourado);
-  -webkit-text-stroke: 0.75px #000;
-  paint-order: stroke fill;
+  color: #000;
   font-size: 18px;
 }
 
 .text {
   margin: 0;
-  color: #414141;
+  color: #000;
   font-size: 16px;
   line-height: 1.5;
   white-space: pre-wrap;
@@ -209,7 +202,7 @@
   padding: 20px;
   border: 1px dashed rgba(141, 107, 31, 0.7);
   border-radius: 14px;
-  color: #d6d6d6;
+  color: #000;
 }
 
 .resumeForm {
@@ -226,9 +219,7 @@
 }
 
 .resumeLink {
-  color: var(--ri-dourado);
-  -webkit-text-stroke: 0.75px #000;
-  paint-order: stroke fill;
+  color: #000;
   font-weight: 700;
 }
 
