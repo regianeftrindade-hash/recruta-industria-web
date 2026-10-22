@@ -164,7 +164,7 @@ export function CompanyChatPanel() {
         </div>
       ) : null}
 
-      <div style={{ ...dashInnerBox, padding: 14 }}>
+      <div style={{ ...dashInnerBox, padding: 14, borderRadius: 28 }}>
         <p style={{ margin: "0 0 10px", fontSize: 12, color: DASH.text, lineHeight: 1.5 }}>
           Convide pessoas da mesma assinatura/plano (equipe RH cadastrada nesta aba).
         </p>
@@ -222,10 +222,12 @@ export function CompanyChatPanel() {
       </div>
 
       <div
+        className="ri-cream-field"
         style={{
           ...dashInnerBox,
           minHeight: 320,
           padding: 14,
+          borderRadius: 28,
           display: "flex",
           flexDirection: "column",
           gap: 12,
@@ -275,8 +277,8 @@ export function CompanyChatPanel() {
               flex: 1,
               minWidth: 0,
               border: `2px solid #8D6B1F`,
-              borderRadius: 14,
-              background: DASH.input,
+              borderRadius: 28,
+              background: "var(--dash-card, #E8D5A3)",
               color: DASH.text,
               padding: "9px 10px",
               fontSize: 12,

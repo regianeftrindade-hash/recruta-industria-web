@@ -4,7 +4,7 @@
   min-width: 0;
   background: var(--dash-card, #E8D5A3);
   border: 2px solid var(--dash-border, #8D6B1F);
-  border-radius: 32px !important;
+  border-radius: 40px !important;
 }
 
 .header {
@@ -97,15 +97,16 @@
   margin-top: 20px;
   padding: 22px 20px;
   border: 2px solid var(--dash-border, #8D6B1F);
-  border-radius: 24px !important;
+  border-radius: 36px !important;
   background: var(--dash-card, #E8D5A3);
 }
 
 .card fieldset {
   border: 2px solid #8D6B1F;
-  border-radius: 22px;
+  border-radius: 28px !important;
   margin: 0 0 14px;
   padding: 14px 14px 4px;
+  overflow: hidden;
 }
 
 .cardTitle {
