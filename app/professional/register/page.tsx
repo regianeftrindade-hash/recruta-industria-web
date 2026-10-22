@@ -432,6 +432,7 @@ export default function CadastroProfissional({
   const [contaJaCompleta, setContaJaCompleta] = useState(false);
   const [sessionWaitTimedOut, setSessionWaitTimedOut] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [salvoNoBotao, setSalvoNoBotao] = useState(false);
   const [camposObrigatoriosFaltando, setCamposObrigatoriosFaltando] = useState<CampoObrigatorioFalta[]>([]);
   const { fg, blocoErro, termoErro } = useCampoObrigatorioErro(camposObrigatoriosFaltando);
   const [password, setPassword] = useState('');
@@ -1183,6 +1184,7 @@ export default function CadastroProfissional({
     };
 
     setSubmitting(true);
+    if (isEditMode) setSalvoNoBotao(false);
     try {
       const salvarSobreMimPerfil = async () => {
         try {
@@ -1231,11 +1233,8 @@ export default function CadastroProfissional({
           });
           localStorage.removeItem('dadosCadastroSimples');
           if (isEditMode) {
-            if (mensagemSucesso) {
-              setFormFeedback({ tone: 'success', message: mensagemSucesso });
-            }
+            setSalvoNoBotao(true);
             if (incorporado) onSalvo?.();
-            else router.push('/professional/dashboard');
           } else {
             reportProfessionalSignupConversion();
             router.push('/professional/boas-vindas');
@@ -1444,7 +1443,7 @@ export default function CadastroProfissional({
   return (
     <div className={`${styles.container} ${incorporado ? styles.containerIncorporado : ""} ri-readable`}>
       <AuthAtmosphere intensity="strong" />
-      {submitting && <PageLoader message="Salvando cadastro..." mode="overlay" />}
+      {submitting && !isEditMode && <PageLoader message="Salvando cadastro..." mode="overlay" />}
       <div className={styles.card} role="main" aria-labelledby={incorporado ? undefined : "register-title"}>
         {incorporado ? (
           <div className={styles.completionSticky}>
@@ -1469,7 +1468,7 @@ export default function CadastroProfissional({
             aria-live="polite"
           >
             {formFeedback.message}{' '}
-            {formFeedback.tone === 'success' && (
+            {formFeedback.tone === 'success' && !isEditMode && (
               <a href="/login?tipo=profissional">Ir para o login</a>
             )}
           </div>
@@ -2997,8 +2996,8 @@ export default function CadastroProfissional({
 
           {!useWizard && (
           <div className={styles.submitBtnRow}>
-            <button type="submit" className={styles.submitBtn}>
-              {isEditMode ? 'Salvar alterações' : 'Finalizar meu cadastro'}
+            <button type="submit" className={styles.submitBtn} disabled={submitting}>
+              {salvoNoBotao ? 'Alterações salvas' : submitting ? 'Salvando...' : 'Salvar alterações'}
             </button>
           </div>
           )}

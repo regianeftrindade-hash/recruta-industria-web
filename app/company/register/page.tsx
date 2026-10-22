@@ -37,6 +37,7 @@ function CadastroEmpresaContent() {
   const [cpfError, setCpfError] = useState('');
   const [cpfValidado, setCpfValidado] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [salvoNoBotao, setSalvoNoBotao] = useState(false);
   const [checkingRegistration, setCheckingRegistration] = useState(false);
   const [contaJaCompleta, setContaJaCompleta] = useState(false);
   const [sessionWaitTimedOut, setSessionWaitTimedOut] = useState(false);
@@ -501,6 +502,7 @@ function CadastroEmpresaContent() {
     const emailCorpFinal = (usuarioLogado ? emailCorporativo : formData.email).trim();
 
     setLoading(true);
+    if (isEditMode) setSalvoNoBotao(false);
 
     try {
       if (bypass && usuarioLogado) {
@@ -522,6 +524,11 @@ function CadastroEmpresaContent() {
             fotoResponsavelUrl,
           }),
         }).catch(() => undefined);
+        if (isEditMode) {
+          setSalvoNoBotao(true);
+          setLoading(false);
+          return;
+        }
         router.push('/company/dashboard-empresa');
         return;
       }
@@ -553,8 +560,14 @@ function CadastroEmpresaContent() {
           return;
         }
 
+        if (isEditMode) {
+          setSuccessMessage('Alterações salvas');
+          setSalvoNoBotao(true);
+          setLoading(false);
+          return;
+        }
         setSuccessMessage('Cadastro salvo.');
-        router.push(isEditMode ? '/company/dashboard-empresa' : '/company/boas-vindas');
+        router.push('/company/boas-vindas');
         return;
       }
 
@@ -696,7 +709,7 @@ function CadastroEmpresaContent() {
   return (
     <div className={`${styles.container} ri-readable`}>
       <AuthAtmosphere intensity="strong" />
-      {loading && <PageLoader message="Enviando cadastro..." mode="overlay" />}
+      {loading && !isEditMode && <PageLoader message="Enviando cadastro..." mode="overlay" />}
       <div className={styles.card} style={{ maxWidth: 1100 }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
           <LogoRecruta size="sm" as="div" depth />
@@ -1057,7 +1070,7 @@ function CadastroEmpresaContent() {
               disabled={loading}
               style={{ cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
             >
-              {loading ? 'Enviando...' : isEditMode ? 'ATUALIZAR CADASTRO' : 'FINALIZAR CADASTRO'}
+              {salvoNoBotao ? 'Alterações salvas' : loading ? 'Salvando...' : isEditMode ? 'ATUALIZAR CADASTRO' : 'FINALIZAR CADASTRO'}
             </button>
           </div>
 
