@@ -11,8 +11,7 @@ export const APPLICATION_EMAIL_SUCCESS =
 export const APPLICATION_PROFILE_EMAIL_SUCCESS =
   "Candidatura enviada com sucesso! Seu perfil do Recruta Indústria foi encaminhado para o processo seletivo desta vaga.";
 
-export const APPLICATION_WHATSAPP_SUCCESS =
-  "Abra o WhatsApp para enviar seu currículo ao número da empresa.";
+export const APPLICATION_WHATSAPP_SUCCESS = "Candidatura enviada.";
 
 export function whatsAppApplyUrl(phoneDigits: string, text: string): string {
   return `https://wa.me/${phoneDigits}?text=${encodeURIComponent(text)}`;

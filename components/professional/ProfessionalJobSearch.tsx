@@ -253,35 +253,14 @@ function ListaFlutuante({
 
 function JobCardActions({ job }: { job: PublicJob }) {
   const target = applyTarget(job);
-  let host = "";
-  if (target.kind === "external") {
-    try {
-      host = new URL(target.href).hostname.replace(/^www\./, "");
-    } catch {
-      host = "";
-    }
-  }
 
   return (
     <div className={styles.cardActions}>
       {target.kind === "external" ? (
-        <a href={target.href} title={target.href}>Candidatar-se</a>
+        <a href={target.href}>Candidatar-se</a>
       ) : (
-        <ProfessionalApplyButton
-          jobId={job.id}
-          mode={target.kind === "email" ? "EMAIL" : target.kind === "whatsapp" ? "WHATSAPP" : "INTERNAL"}
-        />
+        <ProfessionalApplyButton jobId={job.id} />
       )}
-      <a href={`/vagas/${job.id}`}>Ver vaga</a>
-      <p className={styles.applyNote}>
-        {target.kind === "external"
-          ? `Abre o site da empresa${host ? `: ${host}` : ""}.`
-          : target.kind === "email"
-            ? "Envia o currículo para o e-mail da empresa."
-            : target.kind === "whatsapp"
-              ? "Envia o currículo para o WhatsApp da empresa."
-              : "A candidatura fica somente na página da empresa."}
-      </p>
     </div>
   );
 }
@@ -492,7 +471,7 @@ export default function ProfessionalJobSearch() {
       <div className={styles.list}>
         {jobs.map((job) => (
           <article key={job.id} className={styles.card}>
-            <h3>{job.title}</h3>
+            <h3><a href={`/vagas/${job.id}`}>{job.title}</a></h3>
             <p className={styles.company}>{job.companyLabel}</p>
             <ul>
               {job.publicationDate ? <li>{job.publicationDate}</li> : null}

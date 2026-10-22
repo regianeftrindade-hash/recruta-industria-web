@@ -1,15 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { ApplicationMode } from "@/lib/jobs/job-posting";
 
-/** Candidatura por e-mail ou pelo site, só quando o profissional clica. */
+/** O destino fica no servidor, conforme a vaga. O botão não mostra e-mail nem WhatsApp. */
 export default function ProfessionalApplyButton({
   jobId,
-  mode,
 }: {
   jobId: string;
-  mode: Extract<ApplicationMode, "EMAIL" | "INTERNAL" | "WHATSAPP">;
 }) {
   const [label, setLabel] = useState("Candidatar-se");
   const [busy, setBusy] = useState(false);
@@ -28,13 +25,12 @@ export default function ProfessionalApplyButton({
         window.location.href = data.whatsappUrl;
         return;
       }
-      const text = String(data.message || data.error || "");
       if (response.ok || response.status === 409) {
         setDone(true);
-        setLabel(text || (mode === "EMAIL" ? "Candidatura enviada." : "Candidatura registrada."));
+        setLabel("Candidatura enviada");
         return;
       }
-      setLabel(text || "Não foi possível candidatar.");
+      setLabel("Não foi possível candidatar.");
     } catch {
       setLabel("Não foi possível candidatar.");
     } finally {
@@ -44,7 +40,7 @@ export default function ProfessionalApplyButton({
 
   return (
     <button type="button" onClick={() => void apply()} disabled={busy || done}>
-      {busy ? (mode === "WHATSAPP" ? "Abrindo WhatsApp..." : mode === "EMAIL" ? "Enviando..." : "Registrando...") : label}
+      {busy ? "Enviando..." : label}
     </button>
   );
 }

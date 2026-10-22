@@ -46,9 +46,6 @@ export default function JobCandidatar({
         <a className={`${styles.externalLink} ri-btn-3d-gold`} href={publicSignupPath(jobId)}>
           Candidatar-se
         </a>
-        <p className={styles.note}>
-          Para se candidatar, crie sua conta com e-mail e senha. Depois você volta para esta vaga e clica de novo em Candidatar-se.
-        </p>
       </div>
     );
   }
@@ -59,13 +56,11 @@ export default function JobCandidatar({
         <a className={`${styles.externalLink} ri-btn-3d-gold`} href={externalApplyUrl}>
           Candidatar-se
         </a>
-        <p className={styles.note}>Esta vaga abre o site da empresa.</p>
       </div>
     );
   }
 
-  const applyMode = mode === "EMAIL" ? "EMAIL" : mode === "WHATSAPP" ? "WHATSAPP" : "INTERNAL";
   return (
-    <JobApplyButton jobId={jobId} mode={applyMode} autoApply={false} />
+    <JobApplyButton jobId={jobId} autoApply={false} />
   );
 }
