@@ -5,6 +5,7 @@ import LogoRecruta from "@/app/components/LogoRecruta";
 import { JobPostingError } from "@/lib/jobs/job-posting";
 import { getPublicJobView } from "@/lib/jobs/job-posting-db";
 import { jobSocialMetadata, publicJobUrl } from "@/lib/jobs/public-job-link";
+import JobShareActions from "@/components/jobs/JobShareActions";
 import JobApplyButton from "../JobApplyButton";
 import JobBackButton from "../JobBackButton";
 import styles from "../vagas.module.css";
@@ -162,6 +163,8 @@ export default async function VagaPage({ params, searchParams }: Props) {
               <p className={styles.text}>{view.job.applicationInstructions}</p>
             </section>
           ) : null}
+
+          <JobShareActions jobId={view.job.id} title={view.job.title} className={styles.share} />
 
           {view.job.applicationMode === "EXTERNAL" && view.job.externalApplyUrl ? (
             <div className={styles.apply}>

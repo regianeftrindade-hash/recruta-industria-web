@@ -21,6 +21,24 @@ export function facebookShareUrl(jobId: string): string {
   return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(publicJobUrl(jobId))}`;
 }
 
+export type ApplyTarget =
+  | { kind: "external"; href: string }
+  | { kind: "email" }
+  | { kind: "internal" };
+
+/** Destino do botão Candidatar-se. O e-mail da empresa não entra no link público. */
+export function applyTarget(job: {
+  applicationMode: string;
+  externalApplyUrl?: string | null;
+}): ApplyTarget {
+  if (job.applicationMode === "EXTERNAL") {
+    const href = job.externalApplyUrl?.trim() || "";
+    if (href) return { kind: "external", href };
+  }
+  if (job.applicationMode === "EMAIL") return { kind: "email" };
+  return { kind: "internal" };
+}
+
 /** Aceita só o retorno interno da vaga que originou o cadastro. */
 export function safeJobReturnPath(value: string | null | undefined): string | null {
   if (!value) return null;

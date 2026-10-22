@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  applyTarget,
   facebookShareUrl,
   jobSocialMetadata,
   publicJobUrl,
@@ -56,6 +57,29 @@ describe("link público da vaga", () => {
     expect(social.title + social.description).not.toContain("MetalurgicaSigilosaXYZ");
     expect(social.description).not.toContain("rh@secreta.com");
     expect(social.description).not.toContain("11988887777");
+  });
+
+  it("aponta Candidatar-se para o site informado e guarda o e-mail fora do link", () => {
+    const site = "https://metalurgicabrasil.gupy.io/vagas/1";
+    expect(applyTarget({ applicationMode: "EXTERNAL", externalApplyUrl: site })).toEqual({
+      kind: "external",
+      href: site,
+    });
+    expect(applyTarget({ applicationMode: "EXTERNAL", externalApplyUrl: `  ${site}  ` })).toEqual({
+      kind: "external",
+      href: site,
+    });
+    expect(applyTarget({
+      applicationMode: "EMAIL",
+      externalApplyUrl: "selecao@industriafabril.com.br",
+    })).toEqual({ kind: "email" });
+    expect(JSON.stringify(applyTarget({
+      applicationMode: "EMAIL",
+      externalApplyUrl: "selecao@industriafabril.com.br",
+    }))).not.toContain("@");
+    expect(applyTarget({ applicationMode: "INTERNAL", externalApplyUrl: null })).toEqual({
+      kind: "internal",
+    });
   });
 
   it("pode citar o nome público quando a vaga é identificada", () => {
