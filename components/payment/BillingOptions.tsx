@@ -19,7 +19,6 @@ const optionStyle = (active: boolean): React.CSSProperties => ({
   ...goldButton3DStyle,
   flex: 1,
   padding: "12px 10px",
-  borderRadius: 8,
   fontSize: 13,
   fontWeight: 700,
   textAlign: "center",
