@@ -2729,9 +2729,9 @@ export default function CadastroProfissional({
             </div>
 
             <>
-                <TextoMarcador marcador="obrigatorio">Experiências profissionais</TextoMarcador>
+                <TextoMarcador>Experiências profissionais</TextoMarcador>
                 <p style={{ margin: '0 0 10px', fontSize: 12, color: 'var(--dash-text, #414141)', lineHeight: 1.45 }}>
-                  Informe ao menos uma empresa com nome, cargo e período (mês/ano de início). Deixe o fim em branco se ainda trabalha lá.
+                  Opcional. Se quiser, informe empresa, cargo e o mês/ano de início. Deixe o fim em branco se ainda trabalha lá.
                 </p>
                 <div className={blocoErro('experiencias')} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                   {empresas.map((empresa, index) => (
@@ -2743,7 +2743,7 @@ export default function CadastroProfissional({
                       <p style={{ margin: '0 0 10px', fontWeight: 'bold', color: '#C89B3C' }}>Empresa {index + 1}</p>
                       <div className={styles.fieldsRow}>
                         <div className={index === 0 ? fg('experiencias') : styles.fieldGroup}>
-                          <LabelMarcador marcador="obrigatorio">Nome da empresa</LabelMarcador>
+                          <LabelMarcador>Nome da empresa</LabelMarcador>
                           <input
                             id={index === 0 ? 'experiencias' : undefined}
                             type="text"
@@ -2765,7 +2765,7 @@ export default function CadastroProfissional({
                           />
                         </div>
                         <div className={index === 0 ? fg('experiencias') : styles.fieldGroup}>
-                          <LabelMarcador marcador="obrigatorio">Cargo</LabelMarcador>
+                          <LabelMarcador>Cargo</LabelMarcador>
                           <input
                             type="text"
                             className={styles.input}
@@ -2798,7 +2798,7 @@ export default function CadastroProfissional({
                           </div>
                         </div>
                         <div className={styles.fieldGroup}>
-                          <LabelMarcador marcador="obrigatorio">Início (Mês/Ano)</LabelMarcador>
+                          <LabelMarcador>Início (Mês/Ano)</LabelMarcador>
                           <input
                             type="month"
                             className={styles.input}

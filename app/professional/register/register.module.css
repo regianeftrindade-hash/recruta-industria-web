@@ -439,7 +439,7 @@
 
 .fieldsRow {
   display: grid;
-  grid-template-columns: repeat(var(--fields-per-row), minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
   gap: 12px var(--field-gap);
   margin-bottom: 10px;
   align-items: start;
@@ -1524,6 +1524,8 @@
   color-scheme: dark;
   -webkit-appearance: none;
   appearance: none;
+  min-height: 48px;
+  overflow: visible;
 }
 
 .input:-webkit-autofill,
@@ -1618,7 +1620,7 @@
 .grid,
 .fieldsRow {
   display: grid;
-  grid-template-columns: repeat(var(--fields-per-row), minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
   gap: 12px var(--field-gap);
   margin-bottom: 10px;
   align-items: start;
@@ -1785,7 +1787,7 @@
 .containerIncorporado .fieldGroup {
   width: max-content;
   max-width: 100%;
-  min-width: 0;
+  min-width: min(100%, 26rem);
 }
 
 .containerIncorporado .fieldWide,
@@ -1827,11 +1829,17 @@
   max-width: 100%;
 }
 
-.containerIncorporado .input,
+.containerIncorporado .input {
+  padding: 8px 12px;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
 .containerIncorporado .select {
-  padding: 4px 8px;
-  font-size: 13px;
-  line-height: 1.2;
+  padding: 8px 44px 8px 12px;
+  font-size: 15px;
+  line-height: 1.35;
+  field-sizing: content;
 }
 
 .containerIncorporado .textarea {

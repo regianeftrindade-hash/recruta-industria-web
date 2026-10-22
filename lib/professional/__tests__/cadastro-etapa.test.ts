@@ -65,12 +65,12 @@ describe("validarCamposObrigatoriosEtapa", () => {
     expect(faltando.some((c) => c.id === "escolaridade")).toBe(false);
   });
 
-  it("etapa carreira exige escolaridade, cargo, pretensão e experiências", () => {
+  it("etapa carreira exige escolaridade, cargo e pretensão", () => {
     const faltando = validarCamposObrigatoriosEtapa(base(), 1);
     expect(faltando.some((c) => c.id === "escolaridade")).toBe(true);
     expect(faltando.some((c) => c.id === "cargoDesejado")).toBe(true);
     expect(faltando.some((c) => c.id === "pretensaoSalarial")).toBe(true);
-    expect(faltando.some((c) => c.id === "experiencias")).toBe(true);
+    expect(faltando.some((c) => c.id === "experiencias")).toBe(false);
     expect(faltando.some((c) => c.id === "areaInteresse")).toBe(false);
   });
 
@@ -121,5 +121,6 @@ describe("validarCamposObrigatoriosCadastro", () => {
     expect(ids).not.toContain("possuiCNH");
     expect(ids).not.toContain("areaInteresse");
     expect(ids).not.toContain("cursoFormacao");
+    expect(ids).not.toContain("experiencias");
   });
 });

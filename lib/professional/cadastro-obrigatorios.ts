@@ -97,18 +97,11 @@ function dataNascimentoValida(dataDisplay: string, dataIso: string): boolean {
   return !campoVazio(dataIso);
 }
 
-function experienciaCompleta(e: ValidacaoCadastroEmpresa): boolean {
-  return (
-    !campoVazio(e.nome)
-    && !campoVazio(e.cargo)
-    && !campoVazio(e.dataInicio)
-  );
-}
-
 /**
  * Obrigatórios do cadastro profissional (perfil):
  * nome, nascimento, cidade, estado, e-mail, telefone, WhatsApp, escolaridade,
- * experiências (empresa, cargo, período), pretensão, cargo desejado, situação.
+ * pretensão, cargo desejado, situação.
+ * Experiência profissional é opcional.
  * Senha (cadastro novo) e termos legais continuam obrigatórios para concluir.
  */
 export function validarCamposObrigatoriosCadastro(input: ValidacaoCadastroInput): CampoObrigatorioFalta[] {
@@ -143,14 +136,6 @@ export function validarCamposObrigatoriosCadastro(input: ValidacaoCadastroInput)
   if (campoVazio(input.situacaoProfissional)) add('situacaoProfissional', 'Situação profissional atual');
   if (campoVazio(input.cargoDesejado)) add('cargoDesejado', 'Cargo desejado');
   if (campoVazio(input.pretensaoSalarial)) add('pretensaoSalarial', 'Pretensão salarial');
-
-  const temExperienciaCompleta = input.empresas.some(experienciaCompleta);
-  if (!temExperienciaCompleta) {
-    add(
-      'experiencias',
-      'Experiência profissional (empresa, cargo e período/início)',
-    );
-  }
 
   if (!input.autorizoDados) add('autorizoDados', 'Termo de Autorização de Uso de Dados');
   if (!input.declaroVerdadeiro) add('declaroVerdadeiro', 'Termo de Declaração de Veracidade');
@@ -190,7 +175,6 @@ export const CAMPOS_OBRIGATORIOS_POR_ETAPA: readonly (readonly CampoObrigatorioI
     'situacaoProfissional',
     'cargoDesejado',
     'pretensaoSalarial',
-    'experiencias',
   ],
   [],
   ['autorizoDados', 'declaroVerdadeiro', 'aceitoLGPD'],
