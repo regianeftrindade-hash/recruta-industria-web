@@ -229,7 +229,7 @@ export default function CompanyDashboardTabPanel({
               style={{
                 background: "transparent",
                 border: `2px solid #8D6B1F`,
-                color: DASH.gold,
+                color: "#000",
                 borderRadius: 999,
                 padding: "4px 12px",
                 fontSize: 11,
@@ -240,7 +240,7 @@ export default function CompanyDashboardTabPanel({
               {l.name} ({l.itemCount})
             </button>
           ))}
-          <button type="button" onClick={onCreateList} style={{ ...btnGold, padding: "5px 12px", fontSize: 11 }}>
+          <button type="button" onClick={onCreateList} style={{ ...btnGold, padding: "5px 12px", fontSize: 11, color: "#000" }}>
             + Lista
           </button>
         </div>
@@ -271,7 +271,7 @@ export default function CompanyDashboardTabPanel({
                         background: "transparent",
                         border: "none",
                         borderBottom: `1px solid ${DASH.border}`,
-                        color: DASH.text,
+                        color: "#000",
                         fontSize: 12,
                         padding: "6px 2px",
                         cursor: "pointer",
@@ -362,7 +362,7 @@ export default function CompanyDashboardTabPanel({
             {alerts.map((a) => (
               <div key={a.id} style={{ ...dashInnerBox, padding: 12 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center", marginBottom: 6 }}>
-                  <strong style={{ color: DASH.gold, fontSize: 13 }}>🔔 {a.name}</strong>
+                  <strong style={{ color: "#000", fontSize: 13 }}>🔔 {a.name}</strong>
                   <label style={{ color: DASH.muted, fontSize: 10, whiteSpace: "nowrap" }}>
                     <input type="checkbox" checked={a.active} onChange={(e) => onToggleAlert(a.id, e.target.checked)} /> Ativo
                   </label>

@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   APPLICATION_STAGES,
   CONTRACT_TYPES,
   WORK_MODES,
   applicationStageLabel,
+  salaryInputFromCents,
   type AdminJob,
   type ApplicationMode,
   type ApplicationStage,
@@ -17,6 +18,176 @@ import fields from "@/app/admin/vagas/vagas-admin.module.css";
 import styles from "./company-vagas.module.css";
 
 type Screen = "form" | "list" | "applications";
+
+const ESTADOS: Array<{ uf: string; nome: string }> = [
+  { uf: "AC", nome: "Acre" }, { uf: "AL", nome: "Alagoas" }, { uf: "AP", nome: "Amapá" },
+  { uf: "AM", nome: "Amazonas" }, { uf: "BA", nome: "Bahia" }, { uf: "CE", nome: "Ceará" },
+  { uf: "DF", nome: "Distrito Federal" }, { uf: "ES", nome: "Espírito Santo" }, { uf: "GO", nome: "Goiás" },
+  { uf: "MA", nome: "Maranhão" }, { uf: "MT", nome: "Mato Grosso" }, { uf: "MS", nome: "Mato Grosso do Sul" },
+  { uf: "MG", nome: "Minas Gerais" }, { uf: "PA", nome: "Pará" }, { uf: "PB", nome: "Paraíba" },
+  { uf: "PR", nome: "Paraná" }, { uf: "PE", nome: "Pernambuco" }, { uf: "PI", nome: "Piauí" },
+  { uf: "RJ", nome: "Rio de Janeiro" }, { uf: "RN", nome: "Rio Grande do Norte" }, { uf: "RS", nome: "Rio Grande do Sul" },
+  { uf: "RO", nome: "Rondônia" }, { uf: "RR", nome: "Roraima" }, { uf: "SC", nome: "Santa Catarina" },
+  { uf: "SP", nome: "São Paulo" }, { uf: "SE", nome: "Sergipe" }, { uf: "TO", nome: "Tocantins" },
+];
+
+const FAIXAS_SALARIO: Array<{ id: string; label: string; minimo: string; negociavel: boolean }> = [
+  { id: "1000-2000", label: "1.000,00 a 2.000,00", minimo: "1000", negociavel: false },
+  { id: "2000-3000", label: "2.000,00 a 3.000,00", minimo: "2000", negociavel: false },
+  { id: "3000-4000", label: "3.000,00 a 4.000,00", minimo: "3000", negociavel: false },
+  { id: "4000-5000", label: "4.000,00 a 5.000,00", minimo: "4000", negociavel: false },
+  { id: "acima-5000", label: "Acima de 5.000,00", minimo: "5000,01", negociavel: false },
+  { id: "combinar", label: "A combinar", minimo: "", negociavel: true },
+];
+
+function reaisParaCentavos(value: string): number | null {
+  const trimmed = value.trim().replace(/r\$/gi, "").replace(/\s/g, "");
+  if (!trimmed) return null;
+  const normalized = trimmed.includes(",")
+    ? trimmed.replace(/\./g, "").replace(",", ".")
+    : trimmed.replace(/\./g, "");
+  const amount = Number(normalized);
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+  return Math.round(amount * 100);
+}
+
+function faixaIdDoSalario(salary: string, negotiable: boolean): string {
+  if (negotiable) return "combinar";
+  const cents = reaisParaCentavos(salary);
+  if (cents == null) return "";
+  if (cents > 500000) return "acima-5000";
+  const faixa = [...FAIXAS_SALARIO].reverse().find((item) => {
+    const minimo = reaisParaCentavos(item.minimo);
+    return minimo != null && cents >= minimo && item.id !== "acima-5000" && item.id !== "combinar";
+  });
+  return faixa?.id || "";
+}
+
+function salarioDaFaixa(id: string): { salary: string; salaryNegotiable: boolean } {
+  const faixa = FAIXAS_SALARIO.find((item) => item.id === id);
+  if (!faixa || faixa.negociavel) return { salary: "", salaryNegotiable: Boolean(faixa?.negociavel) };
+  const cents = reaisParaCentavos(faixa.minimo);
+  return { salary: cents == null ? "" : salaryInputFromCents(cents), salaryNegotiable: false };
+}
+
+function localDoTexto(workplace: string): { estado: string; cidade: string } {
+  const texto = workplace.trim();
+  const match = texto.match(/^(.*)[\/,\-]\s*([A-Za-z]{2})$/);
+  if (!match) {
+    const uf = ESTADOS.find((item) => item.uf === texto.toUpperCase());
+    return uf ? { estado: uf.uf, cidade: "" } : { estado: "", cidade: texto };
+  }
+  const uf = match[2].toUpperCase();
+  return ESTADOS.some((item) => item.uf === uf)
+    ? { estado: uf, cidade: match[1].trim() }
+    : { estado: "", cidade: texto };
+}
+
+function textoDoLocal(estado: string, cidade: string): string {
+  if (cidade && estado) return `${cidade}/${estado}`;
+  return cidade || estado;
+}
+
+function ListaSuspensa({
+  label,
+  value,
+  placeholder,
+  options,
+  vazio,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  placeholder: string;
+  options: Array<{ id: string; label: string }>;
+  vazio: string;
+  onChange: (id: string) => void;
+}) {
+  const listId = useId();
+  const rootRef = useRef<HTMLLabelElement>(null);
+  const [aberto, setAberto] = useState(false);
+  const [texto, setTexto] = useState("");
+  const selecionada = options.find((item) => item.id === value);
+
+  useEffect(() => {
+    setTexto(selecionada?.label || "");
+  }, [selecionada?.label]);
+
+  useEffect(() => {
+    if (!aberto) return;
+    function fechar(event: MouseEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) setAberto(false);
+    }
+    document.addEventListener("mousedown", fechar);
+    return () => document.removeEventListener("mousedown", fechar);
+  }, [aberto]);
+
+  const filtradas = useMemo(() => {
+    const consulta = texto.trim().toLocaleLowerCase("pt-BR");
+    if (!consulta || consulta === (selecionada?.label || "").toLocaleLowerCase("pt-BR")) return options;
+    return options.filter((item) => item.label.toLocaleLowerCase("pt-BR").includes(consulta));
+  }, [options, selecionada?.label, texto]);
+
+  return (
+    <label className={fields.field} ref={rootRef}>
+      {label}
+      <span className={styles.combo}>
+        <input
+          className={styles.comboControl}
+          value={texto}
+          placeholder={placeholder}
+          role="combobox"
+          aria-expanded={aberto}
+          aria-controls={listId}
+          autoComplete="off"
+          onFocus={() => setAberto(true)}
+          onChange={(event) => {
+            setTexto(event.target.value);
+            setAberto(true);
+            if (!event.target.value.trim()) onChange("");
+          }}
+        />
+        <button
+          type="button"
+          className={styles.arrow}
+          data-combo-arrow=""
+          data-open={aberto ? "true" : "false"}
+          aria-label={aberto ? "Fechar lista" : "Abrir lista"}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => setAberto((atual) => !atual)}
+        >
+          <svg width="12" height="8" viewBox="0 0 12 8" aria-hidden="true">
+            <path d="M1 1.5 L6 6.5 L11 1.5" fill="none" stroke="#000" strokeWidth="1.6" />
+          </svg>
+        </button>
+        {aberto ? (
+          <ul id={listId} className={styles.menu} role="listbox">
+            {filtradas.length === 0 ? (
+              <li>{vazio}</li>
+            ) : (
+              filtradas.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={item.id === value}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      onChange(item.id);
+                      setAberto(false);
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                </li>
+              ))
+            )}
+          </ul>
+        ) : null}
+      </span>
+    </label>
+  );
+}
 
 type FormState = {
   companyName: string;
@@ -122,6 +293,11 @@ export default function CompanyVagasPanel({
   const [screen, setScreen] = useState<Screen | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm(""));
+  const [estado, setEstado] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [cidades, setCidades] = useState<string[]>([]);
+  const [carregandoCidades, setCarregandoCidades] = useState(false);
+  const [faixaId, setFaixaId] = useState("");
   const [baseline, setBaseline] = useState("");
   const [applications, setApplications] = useState<ApplicationRow[]>([]);
   const [candidateQuery, setCandidateQuery] = useState("");
@@ -138,6 +314,10 @@ export default function CompanyVagasPanel({
   const rememberForm = useCallback((next: FormState) => {
     setForm(next);
     setBaseline(JSON.stringify(next));
+    const local = localDoTexto(next.workplace);
+    setEstado(local.estado);
+    setCidade(local.cidade);
+    setFaixaId(faixaIdDoSalario(next.salary, next.salaryNegotiable));
   }, []);
 
   const loadApplications = useCallback(async (jobId: string) => {
@@ -149,6 +329,30 @@ export default function CompanyVagasPanel({
     }
     setApplications(data.applications || []);
   }, [apiBase]);
+
+  useEffect(() => {
+    if (!estado) {
+      setCidades([]);
+      return;
+    }
+    let ativo = true;
+    setCarregandoCidades(true);
+    void fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estado}/municipios`)
+      .then((response) => (response.ok ? response.json() : []))
+      .then((data: Array<{ nome: string }>) => {
+        if (!ativo) return;
+        setCidades(data.map((item) => item.nome).sort((a, b) => a.localeCompare(b, "pt-BR")));
+      })
+      .catch(() => {
+        if (ativo) setCidades([]);
+      })
+      .finally(() => {
+        if (ativo) setCarregandoCidades(false);
+      });
+    return () => {
+      ativo = false;
+    };
+  }, [estado]);
 
   useEffect(() => {
     void fetch(apiBase, { credentials: "include" })
@@ -444,20 +648,41 @@ export default function CompanyVagasPanel({
               Cargo
               <input value={form.title} onChange={(event) => update("title", event.target.value)} maxLength={160} placeholder="Ex.: Operador CNC" />
             </label>
-            <div>
-              <label className={fields.field}>
-                Salário
-                <input value={form.salary} onChange={(event) => update("salary", event.target.value)} disabled={form.salaryNegotiable} inputMode="decimal" placeholder="R$ 3.500,00" />
-              </label>
-              <label className={fields.check}>
-                <input type="checkbox" checked={form.salaryNegotiable} onChange={(event) => update("salaryNegotiable", event.target.checked)} />
-                A combinar
-              </label>
-            </div>
-            <label className={fields.field}>
-              Local de trabalho
-              <input value={form.workplace} onChange={(event) => update("workplace", event.target.value)} maxLength={120} placeholder="Cidade / UF" />
-            </label>
+            <ListaSuspensa
+              label="Salário"
+              value={faixaId}
+              placeholder="Faixa"
+              options={FAIXAS_SALARIO.map((faixa) => ({ id: faixa.id, label: faixa.label }))}
+              vazio="Nenhuma faixa encontrada."
+              onChange={(id) => {
+                setFaixaId(id);
+                const salario = salarioDaFaixa(id);
+                setForm((current) => ({ ...current, ...salario }));
+              }}
+            />
+            <ListaSuspensa
+              label="Estado"
+              value={estado}
+              placeholder="UF"
+              options={ESTADOS.map((item) => ({ id: item.uf, label: `${item.uf} — ${item.nome}` }))}
+              vazio="Nenhum estado encontrado."
+              onChange={(uf) => {
+                setEstado(uf);
+                setCidade("");
+                setForm((current) => ({ ...current, workplace: textoDoLocal(uf, "") }));
+              }}
+            />
+            <ListaSuspensa
+              label="Cidade"
+              value={cidade}
+              placeholder={estado ? "Cidade" : "Escolha o estado"}
+              options={cidades.map((nome) => ({ id: nome, label: nome }))}
+              vazio={estado ? (carregandoCidades ? "Carregando cidades..." : "Nenhuma cidade encontrada.") : "Escolha o estado para ver as cidades."}
+              onChange={(nome) => {
+                setCidade(nome);
+                setForm((current) => ({ ...current, workplace: textoDoLocal(estado, nome) }));
+              }}
+            />
             <div className={styles.span}>
               <fieldset className={fields.field}>
                 <legend>Tipo de contratação</legend>

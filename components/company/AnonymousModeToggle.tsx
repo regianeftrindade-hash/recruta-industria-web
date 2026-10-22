@@ -34,7 +34,7 @@ export default function AnonymousModeToggle({
         style={{
           fontSize: 10,
           fontWeight: 700,
-          color: DASH.gold,
+          color: "#000",
           whiteSpace: "nowrap",
           textTransform: "uppercase",
           letterSpacing: "0.03em",

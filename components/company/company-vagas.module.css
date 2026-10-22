@@ -4,7 +4,7 @@
   min-width: 0;
   background: var(--dash-card, #E8D5A3);
   border: 2px solid var(--dash-border, #8D6B1F);
-  border-radius: 28px;
+  border-radius: 40px;
 }
 
 .header {
@@ -95,8 +95,15 @@
   margin-top: 20px;
   padding: 22px 20px;
   border: 2px solid var(--dash-border, #8D6B1F);
-  border-radius: 22px;
+  border-radius: 32px;
   background: var(--dash-inner, #F3E6C8);
+}
+
+.card fieldset {
+  border: 2px solid #8D6B1F;
+  border-radius: 22px;
+  margin: 0 0 14px;
+  padding: 14px 14px 4px;
 }
 
 .cardTitle {
@@ -332,4 +339,96 @@
   .title {
     font-size: 24px;
   }
+}
+
+.combo {
+  position: relative;
+  display: block;
+}
+
+.comboControl {
+  width: 100%;
+  height: 42px;
+  padding: 0 36px 0 12px;
+  border: 2px solid #8D6B1F !important;
+  border-radius: 999px !important;
+  background: #FFFEFB !important;
+  color: #000 !important;
+  font-size: 14px;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+.combo::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #000;
+  border-bottom: 2px solid #000;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.combo:has(.arrow[data-open="true"])::after {
+  transform: rotate(225deg);
+  top: 20px;
+}
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.arrow:active {
+  transform: translateY(-50%) !important;
+  box-shadow: none !important;
+}
+
+.menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  margin: 0;
+  padding: 6px;
+  overflow: auto;
+  list-style: none;
+  border: 2px solid #8D6B1F;
+  border-radius: 16px;
+  background: #FFFEFB;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.menu button {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: none !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #000 !important;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu button[aria-selected="true"] {
+  background: #E8C56A !important;
 }

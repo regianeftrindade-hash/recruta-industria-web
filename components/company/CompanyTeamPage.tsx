@@ -291,7 +291,7 @@ export default function CompanyTeamPage() {
                   }}
                 >
                   <div>
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: DASH.gold }}>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#000" }}>
                       {m.name || m.invitedEmail}
                     </p>
                     <p style={{ margin: "2px 0 0", fontSize: 11, color: DASH.muted }}>
