@@ -29,9 +29,9 @@
 }
 
 .ri-dashboard .dash-theme-toggle {
-  background: transparent;
-  color: var(--dash-text);
-  border: 1px solid var(--dash-border);
+  background: #E8C56A;
+  color: #414141;
+  border: 2px solid #8D6B1F;
   border-radius: 8px;
   padding: 7px 12px;
   font-size: 11px;
@@ -117,6 +117,8 @@
 /* Hierarquia: gold só em h1/destaque; seções usam título do tema */
 .ri-dashboard h1 {
   color: var(--dash-gold) !important;
+  -webkit-text-stroke: 0.4px #000;
+  paint-order: stroke fill;
   font-weight: 700;
   text-decoration: none;
   letter-spacing: 0.01em;

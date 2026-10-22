@@ -119,7 +119,7 @@
 
 .wizardStepBtnActive {
   border-color: #8D6B1F;
-  background: #E8D5A3;
+  background: #E8C56A;
   color: #414141;
 }
 
@@ -669,12 +669,13 @@
 }
 
 .badge_obrigatorio {
-  background: #C89B3C;
-  color: #000;
+  background: #F3E6C8;
+  color: #414141;
+  border: 2px solid #8D6B1F;
 }
 
 .badge_opcional {
-  background: #333;
+  background: #F3E6C8;
   color: #414141;
   border: 2px solid #8D6B1F;
 }

@@ -9,14 +9,16 @@
 
 .title {
   margin: 0 0 6px;
-  color: #c89b3c;
+  color: #D4AF37;
+  -webkit-text-stroke: 0.4px #000;
+  paint-order: stroke fill;
   font-size: 28px;
   line-height: 1.15;
 }
 
 .subtitle {
   margin: 0 0 14px;
-  color: #d6d6d6;
+  color: #414141;
   font-size: 15px;
 }
 
@@ -30,14 +32,14 @@
 .stat {
   min-width: 140px;
   padding: 10px 14px;
-  border: 1px solid rgba(141, 107, 31, 0.55);
-  border-radius: 12px;
-  background: #F3E6C8;
+  border: 2px solid #8D6B1F;
+  border-radius: 14px;
+  background: #E8D5A3;
 }
 
 .stat span {
   display: block;
-  color: #bdbdbd;
+  color: #414141;
   font-size: 12px;
   font-weight: 700;
 }
@@ -45,7 +47,9 @@
 .stat strong {
   display: block;
   margin-top: 2px;
-  color: #c89b3c;
+  color: #D4AF37;
+  -webkit-text-stroke: 0.4px #000;
+  paint-order: stroke fill;
   font-size: 22px;
 }
 
@@ -62,9 +66,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  color: #c89b3c;
-  border: 1px solid #c89b3c;
+  background: #E8C56A;
+  color: #414141;
+  border: 2px solid #8D6B1F;
   box-shadow: none;
   border-radius: 8px;
   font-weight: 700;
@@ -77,28 +81,34 @@
   font-size: 14px;
 }
 
+.tab:not(.tabOn) {
+  background: #F3E6C8;
+}
+
 .tabOn {
-  background: #c89b3c;
-  color: #111;
+  background: #E8C56A;
+  color: #414141;
 }
 
 .card {
   margin-top: 16px;
   padding: 18px;
-  border: 1px solid rgba(141, 107, 31, 0.55);
-  border-radius: 14px;
-  background: #F3E6C8;
+  border: 2px solid #8D6B1F;
+  border-radius: 16px;
+  background: #E8D5A3;
 }
 
 .cardTitle {
   margin: 0 0 4px;
-  color: #c89b3c;
+  color: #D4AF37;
+  -webkit-text-stroke: 0.4px #000;
+  paint-order: stroke fill;
   font-size: 18px;
 }
 
 .cardText {
   margin: 0 0 16px;
-  color: #cfcfcf;
+  color: #414141;
   font-size: 14px;
 }
 
@@ -131,9 +141,9 @@
   gap: 12px 16px;
   align-items: center;
   padding: 14px;
-  border: 1px solid rgba(141, 107, 31, 0.45);
-  border-radius: 12px;
-  background: #1c1c1c;
+  border: 2px solid #8D6B1F;
+  border-radius: 14px;
+  background: #E8D5A3;
 }
 
 .jobTitle {
@@ -144,7 +154,7 @@
 
 .meta {
   margin: 0;
-  color: #cfcfcf;
+  color: #414141;
   font-size: 13px;
   line-height: 1.45;
 }
@@ -155,7 +165,9 @@
   padding: 2px 8px;
   border-radius: 999px;
   background: rgba(200, 155, 60, 0.16);
-  color: #c89b3c;
+  color: #D4AF37;
+  -webkit-text-stroke: 0.4px #000;
+  paint-order: stroke fill;
   font-size: 12px;
   font-weight: 800;
   vertical-align: middle;
@@ -264,7 +276,7 @@
 .stage {
   display: block;
   margin-top: 4px;
-  color: #bdbdbd;
+  color: #414141;
   font-size: 12px;
   font-weight: 700;
 }
@@ -298,7 +310,7 @@
 
 .empty {
   margin: 0;
-  color: #d6d6d6;
+  color: #414141;
   font-size: 15px;
 }
 

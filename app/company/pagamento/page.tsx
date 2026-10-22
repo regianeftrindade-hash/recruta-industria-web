@@ -262,7 +262,7 @@ function PagamentoEmpresa() {
         <p style={{ color: "rgba(242,242,242,0.82)", margin: "0 0 24px", lineHeight: 1.5 }}>{planDef.descricao}</p>
 
         {gatewayReady === false && (
-          <div style={{ background: "#1a1508", border: "2px solid #8D6B1F", borderRadius: 8, padding: 14, marginBottom: 20, fontSize: 13, lineHeight: 1.5 }}>
+          <div style={{ background: "#E8D5A3", border: "2px solid #8D6B1F", borderRadius: 8, padding: 14, marginBottom: 20, fontSize: 13, lineHeight: 1.5 }}>
             <strong style={{ color: "#C89B3C" }}>Pagamento em configuração.</strong>{" "}
             Cobranças reais ainda não estão disponíveis neste ambiente. Tente mais tarde ou fale com o suporte.
           </div>
@@ -326,15 +326,13 @@ function PagamentoEmpresa() {
                               ...goldButton3DStyle,
                               flex: 1,
                               padding: "12px 10px",
-                              borderRadius: 8,
                               fontSize: 14,
                               fontWeight: 700,
                               cursor: "pointer",
-                              color: active ? "#F2F2F2" : "#1a1508",
-                              border: active ? "1px solid #3a2a08" : "1px solid #6b5218",
-                              background: active
-                                ? "linear-gradient(180deg, #5a4512 0%, #4a3810 45%, #3a2a08 100%)"
-                                : goldButton3DStyle.background,
+                              color: "#414141",
+                              border: "2px solid #8D6B1F",
+                              borderRadius: 12,
+                              background: active ? "#D4AF37" : "#E8C56A",
                               boxShadow: active ? BUTTON_3D_GOLD_SHADOW_ACTIVE : BUTTON_3D_GOLD_SHADOW,
                               transform: active ? "translateY(1px)" : "none",
                             }}

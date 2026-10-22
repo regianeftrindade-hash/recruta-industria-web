@@ -58,7 +58,7 @@ export const goldButtonStyle: CSSProperties = {
 
 export const inputStyle: CSSProperties = {
   padding: "12px",
-  borderRadius: 0,
+  borderRadius: 10,
   border: "2px solid #8D6B1F",
   background: "#FFFEFB",
   color: COLORS.branco,
@@ -72,7 +72,7 @@ export const inputStyle: CSSProperties = {
 export const cardStyle: CSSProperties = {
   background: COLORS.cardBg,
   border: "2px solid #8D6B1F",
-  borderRadius: "8px",
+  borderRadius: "14px",
   color: COLORS.branco,
 };
 

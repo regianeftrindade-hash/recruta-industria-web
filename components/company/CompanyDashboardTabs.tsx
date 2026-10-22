@@ -118,7 +118,7 @@ export function CompanyDashboardNav({
               textDecoration: "none",
               whiteSpace: "nowrap",
               color: "#414141",
-              background: "#F3E6C8",
+              background: ativo ? "#E8C56A" : "#F3E6C8",
               border: "2px solid #8D6B1F",
               borderRadius: "10px 10px 0 0",
               boxShadow: ativo ? "0 2px 0 #5a4512" : "none",

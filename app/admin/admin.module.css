@@ -100,7 +100,7 @@
   font-size: 13px;
   font-weight: 600;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 14px;
   border: 1px solid rgba(141, 107, 31, 0.7);
   background: #F3E6C8;
   transition: background 0.15s ease, border-color 0.15s ease;
@@ -248,7 +248,7 @@
 
 .revenueTotalHint {
   font-size: 12px;
-  color: #aaa;
+  color: #414141;
 }
 
 .sectionTag {
@@ -398,7 +398,7 @@
 }
 
 .mailUnreadBadgeZero {
-  color: #888;
+  color: #414141;
   font-weight: 600;
 }
 
@@ -426,7 +426,7 @@
 .panelSub {
   margin: 4px 0 0;
   font-size: 12px;
-  color: #888;
+  color: #414141;
 }
 
 .charts {
@@ -440,7 +440,7 @@
   border: 1px solid rgba(141, 107, 31, 0.4);
   border-radius: 14px;
   padding: 14px;
-  background: #333;
+  background: #E8D5A3;
 }
 
 .chartTitle {
@@ -465,7 +465,7 @@
 
 .chartVal {
   font-size: 9px;
-  color: #bbb;
+  color: #414141;
   margin-bottom: 4px;
   font-variant-numeric: tabular-nums;
 }
@@ -480,7 +480,7 @@
 
 .chartLabel {
   font-size: 8px;
-  color: #777;
+  color: #414141;
   margin-top: 6px;
   white-space: nowrap;
   transform: rotate(-30deg);
@@ -495,7 +495,7 @@
   border: 1px solid rgba(141, 107, 31, 0.4);
   border-radius: 12px;
   padding: 14px;
-  background: #333;
+  background: #E8D5A3;
 }
 
 .companyName {
@@ -507,7 +507,7 @@
 .companyMeta {
   margin: 3px 0;
   font-size: 12px;
-  color: #aaa;
+  color: #414141;
 }
 
 .companyActions {
@@ -527,7 +527,7 @@
   max-height: none;
   overflow: visible;
   border: none;
-  border-radius: 0;
+  border-radius: 14px;
 }
 
 .companyListRow {
@@ -537,8 +537,8 @@
   align-items: flex-start;
   padding: 8px 10px;
   border: 1px solid rgba(141, 107, 31, 0.35);
-  border-radius: 8px;
-  background: #333;
+  border-radius: 14px;
+  background: #E8D5A3;
 }
 
 .companyListRowEmpty {
@@ -570,7 +570,7 @@
 .companyListNameEmpty {
   font-size: 12px;
   font-weight: 600;
-  color: #888;
+  color: #414141;
 }
 
 .companyListEmail {
@@ -583,7 +583,7 @@
 
 .companyListMeta {
   font-size: 10px;
-  color: #888;
+  color: #414141;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -602,7 +602,7 @@
 .btnApprove {
   padding: 8px 12px;
   border: 1px solid #6b5218;
-  border-radius: 8px;
+  border-radius: 14px;
   background: linear-gradient(180deg, #8d6b1f 0%, #d4af37 45%, #c89b3c 100%);
   color: #000;
   font-weight: 700;
@@ -620,7 +620,7 @@
 .btnReject {
   padding: 8px 12px;
   border: 1px solid #6b5218;
-  border-radius: 8px;
+  border-radius: 14px;
   background: linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8d6b1f 100%);
   color: #414141;
   font-weight: 700;
@@ -644,9 +644,9 @@
 
 .mailItem {
   border: 1px solid rgba(141, 107, 31, 0.35);
-  border-radius: 8px;
+  border-radius: 14px;
   padding: 8px 10px;
-  background: #333;
+  background: #E8D5A3;
   width: 100%;
   text-align: left;
   cursor: pointer;
@@ -675,7 +675,7 @@
 
 .mailItemPreview:hover {
   border-color: rgba(141, 107, 31, 0.35);
-  background: #333;
+  background: #E8D5A3;
 }
 
 .mailItemPreview.mailItemUnread:hover {
@@ -724,19 +724,19 @@
 .mailFrom {
   margin-top: 2px;
   font-size: 11px;
-  color: #999;
+  color: #414141;
 }
 
 .mailDate {
   font-size: 10px;
-  color: #777;
+  color: #414141;
 }
 
 .mailDetail {
   margin-top: 12px;
   border: 1px solid rgba(141, 107, 31, 0.4);
   border-radius: 10px;
-  background: #333;
+  background: #E8D5A3;
   overflow: hidden;
 }
 
@@ -752,7 +752,7 @@
 .mailDetailMeta {
   margin: 4px 0 0;
   font-size: 12px;
-  color: #999;
+  color: #414141;
   line-height: 1.45;
 }
 
@@ -762,7 +762,7 @@
   overflow: auto;
   font-size: 13px;
   line-height: 1.55;
-  color: #ddd;
+  color: #414141;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -771,7 +771,7 @@
 .mailDetailError {
   margin: 12px 0 0;
   font-size: 13px;
-  color: #aaa;
+  color: #414141;
 }
 
 .mailDetailError {
@@ -781,9 +781,10 @@
 .btnCloseMail {
   flex-shrink: 0;
   border: 1px solid rgba(200, 155, 60, 0.4);
-  background: transparent;
-  color: #c89b3c;
-  border-radius: 8px;
+  background: #E8C56A;
+  color: #414141;
+  border: 2px solid #8D6B1F;
+  border-radius: 14px;
   padding: 6px 10px;
   font-size: 12px;
   cursor: pointer;
@@ -796,7 +797,7 @@
 .empty {
   margin: 0;
   padding: 18px 0;
-  color: #888;
+  color: #414141;
   font-size: 13px;
 }
 
@@ -824,7 +825,7 @@
 .footerNote {
   margin-top: 24px;
   font-size: 11px;
-  color: #666;
+  color: #414141;
   text-align: center;
 }
 
@@ -865,7 +866,7 @@
   padding: 14px;
   border: 1px solid rgba(141, 107, 31, 0.4);
   border-radius: 10px;
-  background: #333;
+  background: #E8D5A3;
 }
 
 .replyTitle {
@@ -878,7 +879,7 @@
   display: block;
   margin: 8px 0 4px;
   font-size: 12px;
-  color: #aaa;
+  color: #414141;
 }
 
 .replyInput,
@@ -886,9 +887,9 @@
   width: 100%;
   box-sizing: border-box;
   border: 1px solid rgba(141, 107, 31, 0.4);
-  border-radius: 8px;
+  border-radius: 14px;
   background: #E8D5A3;
-  color: #eee;
+  color: #414141;
   padding: 10px 12px;
   font: inherit;
   font-size: 13px;
@@ -966,7 +967,7 @@
   margin: 0;
   font-size: 13px;
   line-height: 1.5;
-  color: #ccc;
+  color: #414141;
   flex: 1;
 }
 
@@ -993,7 +994,7 @@
   margin: 0 0 14px;
   font-size: 13px;
   line-height: 1.5;
-  color: #bbb;
+  color: #414141;
 }
 
 .servicoIframeNote strong {
@@ -1040,7 +1041,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 11px;
-  color: #888;
+  color: #414141;
 }
 
 .linkGoldButton {

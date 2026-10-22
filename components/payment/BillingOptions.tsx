@@ -26,11 +26,10 @@ const optionStyle = (active: boolean): React.CSSProperties => ({
   lineHeight: 1.35,
   outline: "none",
   cursor: "pointer",
-  color: active ? "#F2F2F2" : "#1a1508",
-  border: active ? "1px solid #3a2a08" : "1px solid #6b5218",
-  background: active
-    ? "linear-gradient(180deg, #5a4512 0%, #4a3810 45%, #3a2a08 100%)"
-    : goldButton3DStyle.background,
+  color: "#414141",
+  border: "2px solid #8D6B1F",
+  borderRadius: 12,
+  background: active ? "#D4AF37" : "#E8C56A",
   boxShadow: active ? BUTTON_3D_GOLD_SHADOW_ACTIVE : BUTTON_3D_GOLD_SHADOW,
   transform: active ? "translateY(1px)" : "none",
 });

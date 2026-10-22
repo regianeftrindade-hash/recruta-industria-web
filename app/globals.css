@@ -226,3 +226,14 @@ video {
   width: 128px;
   height: 128px;
 }
+
+/* Texto dourado com contorno preto fino, para não sumir no amarelo */
+[style*="--dash-gold"],
+[style*="--ri-gold"],
+[style*="#D4AF37"],
+[style*="#d4af37"],
+[style*="#C89B3C"],
+[style*="#c89b3c"] {
+  -webkit-text-stroke: 0.4px #000;
+  paint-order: stroke fill;
+}
