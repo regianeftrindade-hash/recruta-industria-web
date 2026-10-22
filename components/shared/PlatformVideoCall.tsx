@@ -124,7 +124,7 @@ export default function PlatformVideoCall({
           }}
         >
         {!overlayPip && (
-          <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: 0, fontSize: compact ? 13 : 14 }}>
+          <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: 0, fontSize: compact ? 13 : 14, fontWeight: role === "professional" ? 400 : dashSectionTitle.fontWeight }}>
             📹 {title}
           </h3>
         )}

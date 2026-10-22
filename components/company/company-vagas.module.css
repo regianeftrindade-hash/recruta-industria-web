@@ -4,7 +4,7 @@
   min-width: 0;
   background: var(--dash-card, #E8D5A3);
   border: 2px solid var(--dash-border, #8D6B1F);
-  border-radius: 40px;
+  border-radius: 64px !important;
 }
 
 .header {
@@ -13,7 +13,9 @@
 
 .title {
   margin: 0 0 6px;
-  color: var(--dash-text, #414141);
+  color: var(--dash-gold, #D4AF37);
+  -webkit-text-stroke: 1.5px #000 !important;
+  paint-order: stroke fill;
   font-size: 28px;
   line-height: 1.15;
 }
@@ -95,7 +97,7 @@
   margin-top: 20px;
   padding: 22px 20px;
   border: 2px solid var(--dash-border, #8D6B1F);
-  border-radius: 32px;
+  border-radius: 40px !important;
   background: var(--dash-inner, #F3E6C8);
 }
 

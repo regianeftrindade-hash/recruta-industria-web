@@ -116,7 +116,7 @@ export function CompanyDashboardNav({
               gap: 5,
               padding: "8px 16px",
               fontSize: 11,
-              fontWeight: 700,
+              fontWeight: 400,
               letterSpacing: "0.02em",
               textDecoration: "none",
               whiteSpace: "nowrap",

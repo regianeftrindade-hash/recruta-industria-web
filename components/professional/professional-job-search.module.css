@@ -11,6 +11,7 @@
   -webkit-text-stroke: 0.75px #000;
   paint-order: stroke fill;
   font-size: 16px;
+  font-weight: 400 !important;
 }
 
 .lead,

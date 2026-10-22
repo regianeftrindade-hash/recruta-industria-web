@@ -780,7 +780,7 @@
   color: #C89B3C;
   -webkit-text-stroke: 0.75px #000;
   paint-order: stroke fill;
-  font-weight: 600;
+  font-weight: 400;
   font-size: 15px;
 }
 
@@ -1963,11 +1963,15 @@
 :global(.ri-dashboard[data-theme="light"]) .label,
 :global(.ri-dashboard[data-theme="light"]) .legendaPreenchimentoTitulo,
 :global(.ri-dashboard[data-theme="light"]) .legendaPreenchimentoItem,
-:global(.ri-dashboard[data-theme="light"]) .completionTitle,
 :global(.ri-dashboard[data-theme="light"]) .completionPercent,
 :global(.ri-dashboard[data-theme="light"]) .sobreMimSubtitulo {
   color: #414141;
   font-weight: 800;
+}
+
+:global(.ri-dashboard[data-theme="light"]) .completionTitle {
+  color: #414141;
+  font-weight: 400;
 }
 
 :global(.ri-dashboard[data-theme="light"]) .input,
