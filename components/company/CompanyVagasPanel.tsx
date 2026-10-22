@@ -730,7 +730,7 @@ export default function CompanyVagasPanel({
           </div>
           <div className={styles.actions}>
             {selected && selected.status !== "DRAFT" ? (
-              <button type="button" className={styles.ghost} disabled={busy} onClick={() => void save(selected.status)}>
+              <button type="button" className={styles.ghost} disabled={busy} onClick={() => void save(selected.status, "list")}>
                 Salvar alterações
               </button>
             ) : (
