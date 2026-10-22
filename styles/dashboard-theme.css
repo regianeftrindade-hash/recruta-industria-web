@@ -283,9 +283,32 @@
 }
 
 .ri-dash-prof .ri-dash-btn-secondary:hover {
-  border-color: var(--dash-text-muted) !important;
-  color: var(--dash-text) !important;
-  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: #8D6B1F !important;
+  color: #000 !important;
+  background: #E8C56A !important;
+}
+
+/* Botões da página profissional: sombra, relevo 3D e aperto */
+.ri-dash-prof .dash-card,
+.ri-dash-prof [data-card="1"],
+.ri-dash-prof [data-perfil-card="1"] {
+  overflow: visible !important;
+}
+
+.ri-dash-prof button,
+.ri-dash-prof input[type="submit"],
+.ri-dash-prof input[type="button"],
+.ri-dash-prof input[type="file"]::file-selector-button {
+  box-shadow: var(--ri-btn-3d-gold-shadow) !important;
+  transition: transform 0.12s ease, box-shadow 0.12s ease !important;
+}
+
+.ri-dash-prof button:active:not(:disabled),
+.ri-dash-prof input[type="submit"]:active:not(:disabled),
+.ri-dash-prof input[type="button"]:active:not(:disabled),
+.ri-dash-prof input[type="file"]::file-selector-button:active {
+  transform: translateY(3px) !important;
+  box-shadow: var(--ri-btn-3d-gold-active) !important;
 }
 
 .ri-candidate-profile-side {

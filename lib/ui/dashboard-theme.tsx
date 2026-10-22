@@ -166,7 +166,7 @@ export function compatBadgeStyle(_score: number, compact = true): CSSProperties 
 }
 
 function useDashboardThemeState() {
-  const [theme, setTheme] = useState<DashboardThemeMode>("dark");
+  const [theme, setTheme] = useState<DashboardThemeMode>("light");
 
   useEffect(() => {
     try {

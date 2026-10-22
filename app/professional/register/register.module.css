@@ -732,7 +732,7 @@
 }
 
 .addBtn:active {
-  transform: translateY(2px);
+  transform: translateY(3px);
   box-shadow: var(--ri-btn-3d-gold-active);
 }
 
@@ -757,7 +757,7 @@
 }
 
 .addBtnSmall:active {
-  transform: translateY(2px);
+  transform: translateY(3px);
   box-shadow: var(--ri-btn-3d-gold-active);
 }
 
@@ -880,7 +880,7 @@
 }
 
 .anexoBtn:active {
-  transform: translateY(2px);
+  transform: translateY(3px);
   box-shadow: var(--ri-btn-3d-gold-active);
 }
 
@@ -957,7 +957,7 @@
 }
 
 .anexoCampoBtn:active {
-  transform: translateY(2px);
+  transform: translateY(3px);
   box-shadow: var(--ri-btn-3d-gold-active);
 }
 
@@ -1681,15 +1681,22 @@
   cursor: pointer;
   text-decoration: none;
   box-sizing: border-box;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .secondaryLinkBtn:hover {
-  border-color: var(--accent-color, #c89b3c);
-  color: #414141;
+  border-color: #8D6B1F;
+  color: #000;
+}
+
+.secondaryLinkBtn:active {
+  transform: translateY(3px);
+  box-shadow: var(--ri-btn-3d-gold-active);
 }
 
 .submitBtn:active {
-  transform: translateY(2px);
+  transform: translateY(3px);
   box-shadow: var(--ri-btn-3d-gold-active);
 }
 

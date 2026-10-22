@@ -202,6 +202,14 @@
   text-decoration: none;
   cursor: pointer;
   box-sizing: border-box;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.actions button:active,
+.card a:active {
+  transform: translateY(3px);
+  box-shadow: var(--ri-btn-3d-gold-active);
 }
 
 .ghost {
