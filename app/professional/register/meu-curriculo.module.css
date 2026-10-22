@@ -1,0 +1,152 @@
+.area {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: inherit;
+}
+
+.hint {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: inherit;
+}
+
+.status {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: inherit;
+}
+
+.error {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #7a1f1f;
+}
+
+:global(.ri-dashboard[data-theme="dark"]) .error {
+  color: #ffc9c9;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.button,
+.linkButton {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 2px solid #8d6b1f;
+  border-radius: 6px;
+  background: #e8c56a;
+  color: #000;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.3;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+}
+
+.button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.linkButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border: 2px solid #8d6b1f;
+  border-radius: 8px;
+  background: #fff;
+  color: #1a1a1a;
+}
+
+.preview h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #1a1a1a;
+}
+
+.missing {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.sheet {
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid #e4d7b5;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.sheetName {
+  margin: 0 0 6px;
+  font-size: 22px;
+  color: #1a1a1a;
+}
+
+.sheetContacts {
+  margin: 0 0 12px;
+  color: #444;
+  font-size: 13px;
+}
+
+.sheet h4 {
+  margin: 14px 0 6px;
+  color: #8d6b1f;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sheet p {
+  margin: 0 0 8px;
+  white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #1a1a1a;
+}
+
+.frame {
+  width: 100%;
+  height: 480px;
+  border: 1px solid #e4d7b5;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.previewActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .frame {
+    height: 320px;
+  }
+
+  .button,
+  .linkButton {
+    font-size: 13px;
+  }
+}

@@ -37,6 +37,7 @@ import { SOBRE_MIM_VAZIO, truncarSobreMim, type SobreMimData } from '@/lib/sobre
 import { validarCamposObrigatoriosCadastro, validarCamposObrigatoriosEtapa, type CampoObrigatorioFalta, type ValidacaoCadastroInput } from '@/lib/professional/cadastro-obrigatorios';
 import { useCampoObrigatorioErro } from './useCampoObrigatorioErro';
 import RegisterExtendedSections from './RegisterExtendedSections';
+import MeuCurriculo from './MeuCurriculo';
 import { focarCampoCadastro } from '@/lib/ui/focar-campo-cadastro';
 import RegisterWizardChrome, { REGISTER_WIZARD_STEPS } from './RegisterWizardChrome';
 import RegisterCollapsibleSection from '@/components/ui/RegisterCollapsibleSection';
@@ -1512,6 +1513,16 @@ export default function CadastroProfissional({
 
         <div inert={travado ? true : undefined} className={travado ? styles.cadastroTravado : undefined}>
         <form onSubmit={handleSubmit} className={styles.form} noValidate>
+          {(isEditMode || showWizardStep(2)) && (
+            <section className={styles.sectionCard}>
+              <RegisterSectionHeader emoji="📄" title="Meu currículo" />
+              <MeuCurriculo
+                enabled={sessionStatus === "authenticated"}
+                hasSavedResume={Boolean(formData.curriculo)}
+                onSaved={(path) => setFormData((prev) => ({ ...prev, curriculo: path }))}
+              />
+            </section>
+          )}
 
           {showWizardStep(0) && (
           <>
