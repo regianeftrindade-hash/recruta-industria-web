@@ -7,26 +7,27 @@
   border-radius: 32px;
 }
 
-.page,
-.page * {
+.page input,
+.page select,
+.page textarea {
+  background-color: #FFFEFB !important;
   box-shadow: none !important;
 }
 
-.page input,
-.page select,
-.page textarea,
-.page button,
-.page summary,
-.page .tab,
-.page .tabOn,
-.page .ghost,
-.page .danger,
-.page .moreMenu,
-.page .badge,
-.page .menu {
-  background: var(--dash-card, #E8D5A3) !important;
-  background-color: var(--dash-card, #E8D5A3) !important;
-  box-shadow: none !important;
+.page button:not([data-combo-arrow]):not([role="option"]),
+.page summary {
+  background: #E8C56A !important;
+  background-color: #E8C56A !important;
+  color: #000 !important;
+  border: 2px solid #8D6B1F !important;
+  box-shadow: var(--ri-btn-3d-gold-shadow) !important;
+  transition: transform 0.12s ease, box-shadow 0.12s ease !important;
+}
+
+.page button:not([data-combo-arrow]):not([role="option"]):active:not(:disabled),
+.page summary:active {
+  transform: translateY(3px) !important;
+  box-shadow: var(--ri-btn-3d-gold-active) !important;
 }
 
 .header {
@@ -70,10 +71,18 @@
 }
 
 .stat strong {
-  display: block;
-  margin-top: 2px;
-  color: var(--dash-text, #414141);
-  font-size: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  margin-top: 6px;
+  border: 2px solid #8D6B1F;
+  border-radius: 50%;
+  background: #E8C56A;
+  color: #000;
+  font-size: 20px;
+  line-height: 1;
 }
 
 .tabs {
