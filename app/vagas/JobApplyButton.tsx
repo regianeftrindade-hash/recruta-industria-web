@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { safeJobReturnPath } from "@/lib/jobs/public-job-link";
 import styles from "./vagas.module.css";
 
 type ApplyState = {
@@ -26,11 +25,6 @@ export default function JobApplyButton({
   const [needsResume, setNeedsResume] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const jobReturn = safeJobReturnPath(`/vagas/${jobId}`);
-  const loginHref = jobReturn
-    ? `/login?redirect=${encodeURIComponent(jobReturn)}`
-    : "/login";
-
   async function loadState() {
     const response = await fetch(`/api/vagas/${jobId}/candidatura`, { credentials: "include" });
     const data = await response.json().catch(() => ({}));
@@ -52,14 +46,8 @@ export default function JobApplyButton({
       });
       const data = await response.json().catch(() => ({}));
 
-      if (response.status === 401) {
-        window.location.href = loginHref;
-        return;
-      }
-
-      if (response.status === 403 && String(data.error || "").includes("conta de profissional")) {
-        const back = jobReturn || `/vagas/${jobId}?candidatar=1`;
-        window.location.href = `/api/auth/logout?redirect=${encodeURIComponent(back)}`;
+      if (response.status === 401 || response.status === 403) {
+        setError(data.error || "A candidatura é feita com a conta de profissional que já está aberta.");
         return;
       }
 
@@ -134,12 +122,6 @@ export default function JobApplyButton({
       <button
         type="button"
         onClick={() => {
-          if (blocked) {
-            setBusy(true);
-            const back = jobReturn || `/vagas/${jobId}?candidatar=1`;
-            window.location.href = `/api/auth/logout?redirect=${encodeURIComponent(back)}`;
-            return;
-          }
           void apply();
         }}
         disabled={busy || applied}
