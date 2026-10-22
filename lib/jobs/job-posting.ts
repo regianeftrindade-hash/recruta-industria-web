@@ -27,7 +27,8 @@ export const APPLICATION_STAGES = [
 export const APPLICATION_MODES = [
   { value: "EXTERNAL", label: "Candidatura pelo site da empresa" },
   { value: "EMAIL", label: "Candidatura por e-mail" },
-  { value: "INTERNAL", label: "Candidatura pelo Recruta Indústria" },
+  { value: "WHATSAPP", label: "Candidatura por WhatsApp" },
+  { value: "INTERNAL", label: "Candidatura na página da empresa" },
 ] as const;
 
 export type ContractType = (typeof CONTRACT_TYPES)[number]["value"];
@@ -51,6 +52,7 @@ const LIMITS = {
   applicationInstructions: 2000,
   externalApplyUrl: 500,
   applicationEmail: 254,
+  applicationPhone: 20,
   workplace: 120,
 } as const;
 
@@ -84,6 +86,7 @@ export type JobRecord = {
   applicationMode: string;
   externalApplyUrl: string | null;
   applicationEmail: string | null;
+  applicationPhone: string | null;
   status: string;
   origin: string;
   companyUserId: string | null;
@@ -124,6 +127,7 @@ export type AdminJob = PublicJob & {
   applicationMode: ApplicationMode;
   externalApplyUrl: string;
   applicationEmail: string;
+  applicationPhone: string;
   status: JobStatus;
   statusLabel: string;
   origin: string;
@@ -151,6 +155,7 @@ export type JobWriteData = {
   applicationMode: ApplicationMode;
   externalApplyUrl: string | null;
   applicationEmail: string | null;
+  applicationPhone: string | null;
   status: JobStatus;
 };
 
@@ -224,6 +229,22 @@ export function parseExternalApplyUrl(value: unknown): string | null {
   }
 
   return url.toString();
+}
+
+export function parseApplicationPhone(value: unknown): string | null {
+  if (value == null || value === "") return null;
+  if (typeof value !== "string") {
+    throw new JobPostingError("O WhatsApp para candidaturas é inválido.");
+  }
+  let digits = value.replace(/\D/g, "");
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if ((digits.length === 10 || digits.length === 11) && !digits.startsWith("55")) {
+    digits = `55${digits}`;
+  }
+  if (!/^55\d{10,11}$/.test(digits)) {
+    throw new JobPostingError("Informe um WhatsApp com DDD, por exemplo 11 98888-7777.");
+  }
+  return digits;
 }
 
 export function parseApplicationEmail(value: unknown): string | null {
@@ -419,6 +440,7 @@ export function toAdminJob(job: JobRecord): AdminJob {
     applicationMode: isApplicationMode(job.applicationMode) ? job.applicationMode : "INTERNAL",
     externalApplyUrl: job.externalApplyUrl ?? "",
     applicationEmail: job.applicationEmail ?? "",
+    applicationPhone: job.applicationPhone ?? "",
     status,
     statusLabel: jobStatusLabel(status),
     origin: job.origin,
@@ -495,12 +517,18 @@ export function parseJobWrite(input: unknown): JobWriteData {
   const applicationEmail = applicationMode === "EMAIL"
     ? parseApplicationEmail(body.applicationEmail)
     : null;
+  const applicationPhone = applicationMode === "WHATSAPP"
+    ? parseApplicationPhone(body.applicationPhone)
+    : null;
 
   if (statusRaw === "PUBLISHED" && applicationMode === "EXTERNAL" && !externalApplyUrl) {
     throw new JobPostingError("Informe o link oficial para candidatura no site da empresa.");
   }
   if (statusRaw === "PUBLISHED" && applicationMode === "EMAIL" && !applicationEmail) {
     throw new JobPostingError("Informe o e-mail da empresa para receber as candidaturas.");
+  }
+  if (statusRaw === "PUBLISHED" && applicationMode === "WHATSAPP" && !applicationPhone) {
+    throw new JobPostingError("Informe o WhatsApp da empresa para receber as candidaturas.");
   }
 
   let salaryCents: number | null = null;
@@ -551,6 +579,7 @@ export function parseJobWrite(input: unknown): JobWriteData {
       applicationMode,
       externalApplyUrl,
       applicationEmail,
+      applicationPhone,
       status: statusRaw,
     };
   }
@@ -572,6 +601,7 @@ export function parseJobWrite(input: unknown): JobWriteData {
     applicationMode,
     externalApplyUrl,
     applicationEmail,
+    applicationPhone,
     status: statusRaw,
   };
 }

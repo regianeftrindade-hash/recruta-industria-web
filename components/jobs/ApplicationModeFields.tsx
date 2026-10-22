@@ -7,16 +7,20 @@ export default function ApplicationModeFields({
   mode,
   url,
   email,
+  phone,
   onMode,
   onUrl,
   onEmail,
+  onPhone,
 }: {
   mode: ApplicationMode;
   url: string;
   email: string;
+  phone: string;
   onMode: (mode: ApplicationMode) => void;
   onUrl: (value: string) => void;
   onEmail: (value: string) => void;
+  onPhone: (value: string) => void;
 }) {
   return (
     <>
@@ -70,6 +74,30 @@ export default function ApplicationModeFields({
             Obrigatório para publicar. Este endereço não aparece na página pública. O currículo em PDF vai em anexo. Se o profissional não tiver PDF salvo, o perfil do site é enviado neste e-mail.
           </span>
         </label>
+      ) : null}
+
+      {mode === "WHATSAPP" ? (
+        <label className={styles.field}>
+          WhatsApp para receber os currículos
+          <input
+            type="tel"
+            inputMode="tel"
+            autoComplete="off"
+            value={phone}
+            onChange={(event) => onPhone(event.target.value)}
+            maxLength={20}
+            placeholder="11 98888-7777"
+          />
+          <span className={styles.help}>
+            Obrigatório para publicar. O número não aparece na página pública. O candidato abre o WhatsApp, revisa a mensagem e anexa o currículo PDF antes de enviar.
+          </span>
+        </label>
+      ) : null}
+
+      {mode === "INTERNAL" ? (
+        <p className={styles.help}>
+          A candidatura fica somente na página da empresa. Não é enviada por e-mail nem por WhatsApp.
+        </p>
       ) : null}
     </>
   );

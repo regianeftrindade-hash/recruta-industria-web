@@ -163,6 +163,40 @@
   word-break: break-word;
 }
 
+.share {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 22px;
+}
+
+.share a,
+.share button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 2px solid #8D6B1F;
+  border-radius: 999px;
+  background: #E8C56A;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
+  color: #000;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.share span {
+  flex-basis: 100%;
+  color: #000;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .apply {
   margin-top: 28px;
   padding-top: 18px;

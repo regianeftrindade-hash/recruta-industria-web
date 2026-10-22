@@ -11,6 +11,59 @@ export const APPLICATION_EMAIL_SUCCESS =
 export const APPLICATION_PROFILE_EMAIL_SUCCESS =
   "Candidatura enviada com sucesso! Seu perfil do Recruta Indústria foi encaminhado para o processo seletivo desta vaga.";
 
+export const APPLICATION_WHATSAPP_READY =
+  "Você continuará sua candidatura pelo WhatsApp da empresa. Antes de enviar, anexe seu currículo PDF à conversa.";
+
+function oneLine(value: string | null | undefined, max = 160): string {
+  return (value || "")
+    .replace(/[\u0000-\u001F]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, max);
+}
+
+/** Código curto já gravado na vaga. Não inventa um código. */
+export function extractJobCode(observations: string | null | undefined): string | null {
+  const text = observations || "";
+  const match = text.match(/(?:Código da vaga|Referência Recruta):\s*([A-Za-z0-9][A-Za-z0-9-]{2,40})/);
+  return match?.[1] ?? null;
+}
+
+export function whatsAppApplyUrl(phoneDigits: string, text: string): string {
+  if (!/^55\d{10,11}$/.test(phoneDigits)) {
+    throw new JobPostingError("Não foi possível preparar o WhatsApp desta vaga.");
+  }
+  const safe = text.replace(/[\u0000-\u0009\u000B-\u001F]/g, "").trim();
+  return `https://wa.me/${phoneDigits}?text=${encodeURIComponent(safe)}`;
+}
+
+export function buildWhatsAppResumeText(input: {
+  jobTitle: string;
+  professionalName: string | null;
+  jobCode?: string | null;
+  hasPdf: boolean;
+}): string {
+  const title = oneLine(input.jobTitle) || "vaga";
+  const lines = [
+    `Olá! Tenho interesse na vaga de ${title}, divulgada no Recruta Indústria.`,
+    "",
+    "Gostaria de participar do processo seletivo.",
+    "",
+  ];
+  const name = oneLine(input.professionalName);
+  if (name && name.toLowerCase() !== "usuário") lines.push(`Nome: ${name}`);
+  lines.push(`Vaga: ${title}`);
+  const code = oneLine(input.jobCode, 40);
+  if (code) lines.push(`Código da vaga: ${code}`);
+  lines.push("");
+  lines.push(input.hasPdf
+    ? "Vou anexar meu currículo em PDF nesta conversa antes de enviar."
+    : "Estou preparando meu currículo para anexar a esta mensagem.");
+  lines.push("");
+  lines.push("Agradeço pela atenção!");
+  return lines.join("\n");
+}
+
 export type ApplicationProfileMail = {
   cargo: string | null;
   area: string | null;

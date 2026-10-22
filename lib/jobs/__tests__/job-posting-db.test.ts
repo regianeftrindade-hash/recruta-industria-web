@@ -182,6 +182,44 @@ describe.skipIf(!canRun)("gravação de vagas e candidaturas", () => {
     expect(adminView[0]?.email).toBe(proEmail);
     expect(adminView.some((item) => item.userId === other.id)).toBe(false);
 
+    const whatsapp = await db.createAdminJob(admin.id, {
+      companyName: "MetalurgicaSigilosaXYZ",
+      confidential: true,
+      publicationDate: "2026-10-22",
+      title: "Auxiliar de Produção",
+      salary: "",
+      salaryNegotiable: true,
+      contractType: "CLT",
+      workMode: "PRESENCIAL",
+      workplace: "Pomerode/SC",
+      description: "Apoio à linha de produção.",
+      observations: "Referência Recruta: RI-PUB-TESTE-WHATS",
+      applicationMode: "WHATSAPP",
+      applicationPhone: "47997130519",
+      status: "PUBLISHED",
+    });
+    createdJobIds.push(whatsapp.id);
+    const publicWhats = await db.getPublicJob(whatsapp.id);
+    expect(JSON.stringify(publicWhats)).not.toContain("47997130519");
+    expect(JSON.stringify(publicWhats)).not.toContain("5547997130519");
+    expect(JSON.stringify(publicWhats)).not.toContain("MetalurgicaSigilosaXYZ");
+
+    const opened = await db.registerJobApplication(whatsapp.id, proEmail);
+    expect(opened.id).toBeNull();
+    expect("whatsappUrl" in opened && opened.whatsappUrl?.startsWith("https://wa.me/5547997130519?text=")).toBe(true);
+    if ("whatsappUrl" in opened && opened.whatsappUrl) {
+      const text = new URL(opened.whatsappUrl).searchParams.get("text") || "";
+      expect(text).toContain("Auxiliar de Produção");
+      expect(text).toContain("Profissional Teste Vaga");
+      expect(text).toContain("RI-PUB-TESTE-WHATS");
+      expect(text).not.toContain("MetalurgicaSigilosaXYZ");
+      expect(text).not.toMatch(/enviad/i);
+    }
+    expect(await prisma.jobApplication.count({ where: { jobId: whatsapp.id } })).toBe(0);
+    const ownWhats = await db.getOwnApplicationState(whatsapp.id, proEmail);
+    expect(ownWhats.applied).toBe(false);
+    expect(ownWhats.canApply).toBe(true);
+
     const own = await db.getOwnApplicationState(confidential.id, proEmail);
     expect(own.applied).toBe(true);
     const stranger = await db.getOwnApplicationState(confidential.id, otherEmail);

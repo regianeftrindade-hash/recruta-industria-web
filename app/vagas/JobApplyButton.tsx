@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import WhatsAppApplyHandoff from "@/components/jobs/WhatsAppApplyHandoff";
+import { isWhatsAppApplyUrl, publicSignupPath } from "@/lib/jobs/public-job-link";
 import styles from "./vagas.module.css";
 
 type ApplyState = {
@@ -12,19 +14,17 @@ type ApplyState = {
 
 export default function JobApplyButton({
   jobId,
-  mode,
   autoApply,
 }: {
   jobId: string;
-  mode: "INTERNAL" | "EMAIL";
   autoApply: boolean;
 }) {
   const [state, setState] = useState<ApplyState | null>(null);
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [needsResume, setNeedsResume] = useState(false);
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState("");
+  const [whatsapp, setWhatsapp] = useState<{ url: string; hasResume: boolean } | null>(null);
 
   async function loadState() {
     const response = await fetch(`/api/vagas/${jobId}/candidatura`, { credentials: "include" });
@@ -47,34 +47,34 @@ export default function JobApplyButton({
       });
       const data = await response.json().catch(() => ({}));
 
-      if (response.status === 401 || response.status === 403) {
-        const text = data.error || "A candidatura é feita com uma conta de profissional.";
-        setError(text);
-        setOutcome(text);
+      if (response.status === 401) {
+        window.location.href = publicSignupPath(jobId);
+        return;
+      }
+
+      if (response.ok && isWhatsAppApplyUrl(data.whatsappUrl)) {
+        setWhatsapp({ url: data.whatsappUrl, hasResume: data.hasResume === true });
+        return;
+      }
+
+      if (response.status === 403) {
+        setError(data.error || "A candidatura é feita com uma conta de profissional.");
         return;
       }
 
       if (data.code === "RESUME_REQUIRED") {
-        const text = data.error || "Para se candidatar a esta vaga por e-mail, anexe seu currículo em PDF ao seu perfil.";
         setNeedsResume(true);
-        setError(text);
-        setOutcome(text);
+        setError("Anexe seu currículo em PDF ao perfil para se candidatar.");
         return;
       }
 
       if (data.code === "EMAIL_BUSY") {
-        const text = data.error || "O envio desta candidatura já está em andamento.";
-        setError(text);
-        setOutcome(text);
+        setError("O envio desta candidatura já está em andamento.");
         return;
       }
 
       if (response.status === 409 || data.alreadyApplied) {
-        const text = mode === "EMAIL"
-          ? "Você já enviou sua candidatura para esta vaga."
-          : "Você já registrou candidatura nesta vaga.";
-        setMessage(text);
-        setOutcome(text);
+        setOutcome("Candidatura enviada");
         setState({
           authenticated: true,
           applied: true,
@@ -85,15 +85,11 @@ export default function JobApplyButton({
       }
 
       if (!response.ok) {
-        const text = data.error || "Não foi possível registrar a candidatura.";
-        setError(text);
-        setOutcome(text);
+        setError("Não foi possível registrar a candidatura.");
         return;
       }
 
-      const text = data.message || "Candidatura registrada.";
-      setMessage(text);
-      setOutcome(text);
+      setOutcome("Candidatura enviada");
       setState({
         authenticated: true,
         applied: true,
@@ -101,9 +97,7 @@ export default function JobApplyButton({
         blockReason: null,
       });
     } catch {
-      const text = "Não foi possível registrar a candidatura.";
-      setError(text);
-      setOutcome(text);
+      setError("Não foi possível registrar a candidatura.");
     } finally {
       setBusy(false);
     }
@@ -134,6 +128,14 @@ export default function JobApplyButton({
 
   return (
     <div className={styles.apply}>
+      {whatsapp ? (
+        <WhatsAppApplyHandoff
+          jobId={jobId}
+          url={whatsapp.url}
+          hasResume={whatsapp.hasResume}
+          onClose={() => setWhatsapp(null)}
+        />
+      ) : (
       <button
         type="button"
         onClick={() => {
@@ -141,26 +143,15 @@ export default function JobApplyButton({
         }}
         disabled={busy || applied}
       >
-        {busy
-          ? (mode === "EMAIL" ? "Enviando..." : "Registrando...")
-          : outcome
-            ? outcome
-            : applied
-              ? (mode === "EMAIL" ? "Candidatura enviada" : "Candidatura registrada")
-              : "Candidatar-se"}
+        {busy ? "Enviando..." : outcome || (applied ? "Candidatura enviada" : "Candidatar-se")}
       </button>
-      <p className={styles.note}>
-        {mode === "EMAIL"
-          ? "Ao clicar, o currículo em PDF é enviado para o processo seletivo. Se não houver PDF salvo, o perfil do site é enviado por e-mail. O e-mail da empresa não aparece aqui."
-          : "A candidatura fica registrada aqui no Recruta Indústria."}
-      </p>
+      )}
       {needsResume ? (
         <p className={styles.note}>
           <a className={styles.resumeLink} href={`/vagas/${jobId}/curriculo`}>Anexar currículo em PDF</a>
         </p>
       ) : null}
       {blocked && state?.blockReason ? <p className={styles.error}>{state.blockReason}</p> : null}
-      {message ? <p className={styles.message}>{message}</p> : null}
       {error ? <p className={styles.error}>{error}</p> : null}
     </div>
   );

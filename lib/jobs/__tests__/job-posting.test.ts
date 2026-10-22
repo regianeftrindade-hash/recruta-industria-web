@@ -5,6 +5,7 @@ import {
   formatPublicationDate,
   isProfessionalAccount,
   parseApplicationEmail,
+  parseApplicationPhone,
   parseExternalApplyUrl,
   parseJobWrite,
   parseSalaryToCents,
@@ -51,6 +52,7 @@ function recordFrom(data: ReturnType<typeof parseJobWrite>, id = "cjob1234567890
     applicationMode: data.applicationMode,
     externalApplyUrl: data.externalApplyUrl,
     applicationEmail: data.applicationEmail,
+    applicationPhone: data.applicationPhone,
     status: data.status,
     origin: "ADMIN",
     companyUserId: null,
@@ -191,6 +193,7 @@ describe("publicação de vagas", () => {
     expect(interna.applicationMode).toBe("INTERNAL");
     expect(interna.externalApplyUrl).toBeNull();
     expect(interna.applicationEmail).toBeNull();
+    expect(interna.applicationPhone).toBeNull();
 
     const externa = parseJobWrite(baseInput({
       applicationMode: "EXTERNAL",
@@ -226,6 +229,21 @@ describe("publicação de vagas", () => {
       applicationEmail: "sem-arroba",
     }))).toThrow(/e-mail válido/i);
     expect(parseApplicationEmail(" rh@empresa.example ")).toBe("rh@empresa.example");
+
+    const whatsapp = parseJobWrite(baseInput({
+      applicationMode: "WHATSAPP",
+      applicationPhone: "(11) 98888-7777",
+      applicationEmail: "nao-deve-ficar@empresa.example",
+    }));
+    expect(whatsapp.applicationMode).toBe("WHATSAPP");
+    expect(whatsapp.applicationPhone).toBe("5511988887777");
+    expect(whatsapp.applicationEmail).toBeNull();
+    expect(JSON.stringify(toPublicJob(recordFrom(whatsapp)))).not.toContain("5511988887777");
+    expect(() => parseJobWrite(baseInput({
+      applicationMode: "WHATSAPP",
+      applicationPhone: "123",
+    }))).toThrow(/WhatsApp/i);
+    expect(parseApplicationPhone("11988887777")).toBe("5511988887777");
   });
 
   it("guarda o local de trabalho e não exige salário quando está a combinar", () => {

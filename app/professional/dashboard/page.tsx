@@ -23,12 +23,12 @@ import { type ResultadoTesteComportamental } from "@/lib/teste-comportamental";
 import { AVISO_RETENCAO_INBOX } from "@/lib/profile/inbox-retention";
 import ProfessionalJobSearch from "@/components/professional/ProfessionalJobSearch";
 import CadastroProfissional from "@/app/professional/register/page";
+import DeleteAccountControl from "@/components/shared/DeleteAccountControl";
 import ProfessionalOpportunityBoard from "@/components/professional/ProfessionalOpportunityBoard";
 import ProfessionalRecruitmentHistory, {
   type RecruitmentHistoryCounts,
 } from "@/components/professional/ProfessionalRecruitmentHistory";
 import PlatformVideoCall from "@/components/shared/PlatformVideoCall";
-import DeleteAccountControl from "@/components/shared/DeleteAccountControl";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
 
 const VAZIO = "—";
@@ -137,7 +137,6 @@ export default function DashboardProfissional() {
   const [respostaTexto, setRespostaTexto] = useState<Record<string, string>>({});
   const [enviandoRespostaId, setEnviandoRespostaId] = useState<string | null>(null);
   const [abaDireita, setAbaDireita] = useState<"vagas" | "oportunidades" | "dicas" | "perfil" | "mensagens">("vagas");
-  const [perfilEditando, setPerfilEditando] = useState(false);
   const [weekViewsCount, setWeekViewsCount] = useState(0);
   const [lastViewAt, setLastViewAt] = useState<string | null>(null);
   const [lastViewCompany, setLastViewCompany] = useState<string | null>(null);
@@ -147,6 +146,9 @@ export default function DashboardProfissional() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("aba") === "perfil") {
+      setAbaDireita("perfil");
+    }
     const fetchProfile = async () => {
       try {
         setLoading(true);
@@ -580,26 +582,20 @@ export default function DashboardProfissional() {
             gap: 14,
           }}
         >
-          {abaDireita === "perfil" && (
-            <CadastroProfissional
-              incorporado
-              travado={!perfilEditando}
-              onSalvo={() => setPerfilEditando(false)}
-              acoes={
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setPerfilEditando(true)}
-                    disabled={perfilEditando}
-                    style={{ ...btnGold, padding: "6px 10px", fontSize: 10, flexShrink: 0, opacity: perfilEditando ? 0.7 : 1 }}
-                  >
-                    {perfilEditando ? "Campos liberados" : "Editar perfil"}
-                  </button>
-                  <DeleteAccountControl variant="compact" />
-                </>
-              }
-            />
-          )}
+          <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow, overflow: "visible", alignSelf: "stretch" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
+              <h3 style={{ ...dashTitleProf, margin: 0, fontSize: 14 }}>Perfil</h3>
+              <DeleteAccountControl variant="card" />
+            </div>
+            <p style={{ margin: "0 0 12px", fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>
+              {profileData.registrationComplete
+                ? "Seus dados já estão neste cadastro. Altere o que precisar e salve."
+                : "Nome e e-mail já vieram do cadastro simples. O restante fica em branco até você completar e salvar."}
+            </p>
+            {abaDireita === "perfil" && (
+              <CadastroProfissional incorporado />
+            )}
+          </section>
         </main>
 
         {/* Direita — conteúdo da aba ativa */}

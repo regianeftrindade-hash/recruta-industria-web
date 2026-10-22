@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  applyTarget,
   facebookShareUrl,
+  publicSignupPath,
   jobSocialMetadata,
   publicJobUrl,
   safeJobReturnPath,
@@ -34,8 +36,8 @@ describe("link público da vaga", () => {
   });
 
   it("aceita somente o retorno interno da vaga de origem", () => {
-    expect(safeJobReturnPath(`/vagas/${JOB_ID}`)).toBe(`/vagas/${JOB_ID}?candidatar=1`);
-    expect(safeJobReturnPath(`/vagas/${JOB_ID}?candidatar=1`)).toBe(`/vagas/${JOB_ID}?candidatar=1`);
+    expect(safeJobReturnPath(`/vagas/${JOB_ID}`)).toBe(`/vagas/${JOB_ID}`);
+    expect(safeJobReturnPath(`/vagas/${JOB_ID}?candidatar=1`)).toBe(`/vagas/${JOB_ID}`);
     expect(safeJobReturnPath("https://evil.example/vagas/abcdefghi")).toBeNull();
     expect(safeJobReturnPath("//evil.example")).toBeNull();
     expect(safeJobReturnPath("/admin")).toBeNull();
@@ -56,6 +58,33 @@ describe("link público da vaga", () => {
     expect(social.title + social.description).not.toContain("MetalurgicaSigilosaXYZ");
     expect(social.description).not.toContain("rh@secreta.com");
     expect(social.description).not.toContain("11988887777");
+  });
+
+  it("aponta Candidatar-se para o site informado e guarda o e-mail fora do link", () => {
+    const site = "https://metalurgicabrasil.gupy.io/vagas/1";
+    expect(applyTarget({ applicationMode: "EXTERNAL", externalApplyUrl: site })).toEqual({
+      kind: "external",
+      href: site,
+    });
+    expect(applyTarget({ applicationMode: "EXTERNAL", externalApplyUrl: `  ${site}  ` })).toEqual({
+      kind: "external",
+      href: site,
+    });
+    expect(applyTarget({
+      applicationMode: "EMAIL",
+      externalApplyUrl: "selecao@industriafabril.com.br",
+    })).toEqual({ kind: "email" });
+    expect(JSON.stringify(applyTarget({
+      applicationMode: "EMAIL",
+      externalApplyUrl: "selecao@industriafabril.com.br",
+    }))).not.toContain("@");
+    expect(applyTarget({ applicationMode: "INTERNAL", externalApplyUrl: null })).toEqual({
+      kind: "internal",
+    });
+    expect(applyTarget({ applicationMode: "WHATSAPP", externalApplyUrl: null })).toEqual({
+      kind: "whatsapp",
+    });
+    expect(publicSignupPath(JOB_ID)).toBe(`/cadastro?redirect=${encodeURIComponent(`/vagas/${JOB_ID}`)}`);
   });
 
   it("pode citar o nome público quando a vaga é identificada", () => {

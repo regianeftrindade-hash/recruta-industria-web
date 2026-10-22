@@ -109,7 +109,7 @@ export default function CadastroSimplesProfissionalPage() {
       }
 
       const back = safeJobReturnPath(new URLSearchParams(window.location.search).get("redirect"));
-      router.replace(back ?? "/professional/dashboard");
+      router.replace(back ?? "/professional/dashboard?aba=perfil");
     } catch {
       setErrorMessage("Erro ao criar conta. Tente novamente.");
       setLoading(false);

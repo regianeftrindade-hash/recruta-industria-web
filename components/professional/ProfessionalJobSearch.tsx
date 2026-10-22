@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import ProfessionalApplyButton from "@/components/jobs/ProfessionalApplyButton";
 import { CONTRACT_TYPES, WORK_MODES, type PublicJob } from "@/lib/jobs/job-posting";
+import { applyTarget } from "@/lib/jobs/public-job-link";
 import styles from "./professional-job-search.module.css";
 
 type SearchState = {
@@ -249,6 +251,20 @@ function ListaFlutuante({
   );
 }
 
+function JobCardActions({ job }: { job: PublicJob }) {
+  const target = applyTarget(job);
+
+  return (
+    <div className={styles.cardActions}>
+      {target.kind === "external" ? (
+        <a href={target.href}>Candidatar-se</a>
+      ) : (
+        <ProfessionalApplyButton jobId={job.id} />
+      )}
+    </div>
+  );
+}
+
 export default function ProfessionalJobSearch() {
   const [form, setForm] = useState<SearchState>(EMPTY);
   const [cidades, setCidades] = useState<string[]>([]);
@@ -455,7 +471,7 @@ export default function ProfessionalJobSearch() {
       <div className={styles.list}>
         {jobs.map((job) => (
           <article key={job.id} className={styles.card}>
-            <h3>{job.title}</h3>
+            <h3><a href={`/vagas/${job.id}`}>{job.title}</a></h3>
             <p className={styles.company}>{job.companyLabel}</p>
             <ul>
               {job.publicationDate ? <li>{job.publicationDate}</li> : null}
@@ -465,7 +481,7 @@ export default function ProfessionalJobSearch() {
               {job.workplace ? <li>{job.workplace}</li> : null}
             </ul>
             {job.description ? <p className={styles.excerpt}>{excerpt(job.description)}</p> : null}
-            <a href={`/vagas/${job.id}`}>Ver vaga</a>
+            <JobCardActions job={job} />
           </article>
         ))}
       </div>

@@ -225,7 +225,10 @@
 }
 
 .actions button,
-.card a {
+.cardActions a,
+.cardActions button,
+.share a,
+.share button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -246,7 +249,10 @@
 }
 
 .actions button:active,
-.card a:active {
+.cardActions a:active,
+.cardActions button:active,
+.share a:active,
+.share button:active {
   transform: translateY(3px);
   box-shadow: var(--ri-btn-3d-gold-active);
 }
@@ -273,6 +279,11 @@
   margin: 0;
   color: var(--dash-text, #414141);
   font-size: 15px;
+}
+
+.card h3 a {
+  color: inherit;
+  text-decoration: none;
 }
 
 .company {
@@ -304,6 +315,32 @@
   color: #414141;
   font-size: 12px;
   line-height: 1.4;
+}
+
+.cardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.share {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.share span {
+  flex-basis: 100%;
+  margin: 0;
+  color: #414141;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .empty,

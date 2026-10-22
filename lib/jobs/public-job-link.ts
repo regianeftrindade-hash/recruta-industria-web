@@ -21,6 +21,26 @@ export function facebookShareUrl(jobId: string): string {
   return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(publicJobUrl(jobId))}`;
 }
 
+export type ApplyTarget =
+  | { kind: "external"; href: string }
+  | { kind: "email" }
+  | { kind: "whatsapp" }
+  | { kind: "internal" };
+
+/** Destino do botão Candidatar-se. O e-mail da empresa não entra no link público. */
+export function applyTarget(job: {
+  applicationMode: string;
+  externalApplyUrl?: string | null;
+}): ApplyTarget {
+  if (job.applicationMode === "EXTERNAL") {
+    const href = job.externalApplyUrl?.trim() || "";
+    if (href) return { kind: "external", href };
+  }
+  if (job.applicationMode === "EMAIL") return { kind: "email" };
+  if (job.applicationMode === "WHATSAPP") return { kind: "whatsapp" };
+  return { kind: "internal" };
+}
+
 /** Aceita só o retorno interno da vaga que originou o cadastro. */
 export function safeJobReturnPath(value: string | null | undefined): string | null {
   if (!value) return null;
@@ -44,7 +64,28 @@ export function safeJobReturnPath(value: string | null | undefined): string | nu
   const candidatar = url.searchParams.get("candidatar");
   if (candidatar != null && candidatar !== "1") return null;
 
-  return `/vagas/${match[1]}?candidatar=1`;
+  return `/vagas/${match[1]}`;
+}
+
+/** Link wa.me gerado pelo servidor, só com número brasileiro e texto codificado. */
+export function isWhatsAppApplyUrl(value: unknown): value is string {
+  if (typeof value !== "string" || value.length > 4000) return false;
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return false;
+  }
+  return url.protocol === "https:"
+    && url.hostname === "wa.me"
+    && /^\/55\d{10,11}$/.test(url.pathname)
+    && url.searchParams.has("text")
+    && url.username === ""
+    && url.password === "";
+}
+
+export function publicSignupPath(jobId: string): string {
+  return `/cadastro?redirect=${encodeURIComponent(`/vagas/${jobId}`)}`;
 }
 
 function publicExcerpt(text: string): string {

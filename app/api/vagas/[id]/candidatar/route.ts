@@ -20,11 +20,15 @@ export async function POST(request: NextRequest, { params }: Context) {
     return NextResponse.json({
       ok: true,
       message: application.message,
-      application: {
-        id: application.id,
-        jobId: application.jobId,
-        createdAt: application.createdAt,
-      },
+      whatsappUrl: "whatsappUrl" in application ? application.whatsappUrl : null,
+      hasResume: "hasResume" in application ? application.hasResume === true : false,
+      application: application.id
+        ? {
+            id: application.id,
+            jobId: application.jobId,
+            createdAt: application.createdAt,
+          }
+        : null,
     });
   } catch (error) {
     return jsonError(error, "Não foi possível registrar a candidatura.");
