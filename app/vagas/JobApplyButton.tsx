@@ -30,6 +30,14 @@ export default function JobApplyButton({
   const loginHref = jobReturn
     ? `/login?tipo=profissional&redirect=${encodeURIComponent(jobReturn)}`
     : "/login?tipo=profissional";
+  const wrongAccount = state?.canApply === false
+    && state.applied !== true
+    && (state.blockReason || "").includes("conta de profissional");
+
+  function enterAsProfessional() {
+    const back = jobReturn || `/vagas/${jobId}`;
+    window.location.href = `/api/auth/logout?redirect=${encodeURIComponent(back)}`;
+  }
 
   async function loadState() {
     const response = await fetch(`/api/vagas/${jobId}/candidatura`, { credentials: "include" });
@@ -125,12 +133,24 @@ export default function JobApplyButton({
 
   return (
     <div className={styles.apply}>
-      <button type="button" onClick={() => void apply()} disabled={busy || applied || blocked}>
+      <button
+        type="button"
+        onClick={() => {
+          if (wrongAccount) {
+            enterAsProfessional();
+            return;
+          }
+          void apply();
+        }}
+        disabled={busy || applied || (blocked && !wrongAccount)}
+      >
         {busy
           ? (mode === "EMAIL" ? "Enviando..." : "Registrando...")
           : applied
             ? (mode === "EMAIL" ? "Candidatura enviada" : "Candidatura registrada")
-            : (mode === "EMAIL" ? "Candidatar-se" : "Candidatar-se pelo Recruta Indústria")}
+            : wrongAccount
+              ? "Entrar como profissional"
+              : (mode === "EMAIL" ? "Candidatar-se" : "Candidatar-se pelo Recruta Indústria")}
       </button>
       <p className={styles.note}>
         {mode === "EMAIL"
