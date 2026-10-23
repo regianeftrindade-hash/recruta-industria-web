@@ -22,6 +22,7 @@ import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 import { type ResultadoTesteComportamental } from "@/lib/teste-comportamental";
 import { AVISO_RETENCAO_INBOX } from "@/lib/profile/inbox-retention";
 import ProfessionalJobSearch from "@/components/professional/ProfessionalJobSearch";
+import ProfessionalMeuPlano from "@/components/professional/ProfessionalMeuPlano";
 import CadastroProfissional from "@/app/professional/register/page";
 import ProfessionalOpportunityBoard from "@/components/professional/ProfessionalOpportunityBoard";
 import ProfessionalRecruitmentHistory, {
@@ -136,7 +137,7 @@ export default function DashboardProfissional() {
   const [mensagemAbertaId, setMensagemAbertaId] = useState<string | null>(null);
   const [respostaTexto, setRespostaTexto] = useState<Record<string, string>>({});
   const [enviandoRespostaId, setEnviandoRespostaId] = useState<string | null>(null);
-  const [abaDireita, setAbaDireita] = useState<"vagas" | "oportunidades" | "dicas" | "perfil" | "mensagens">("vagas");
+  const [abaDireita, setAbaDireita] = useState<"vagas" | "oportunidades" | "dicas" | "perfil" | "mensagens" | "plano">("vagas");
   const [perfilEditando, setPerfilEditando] = useState(false);
   const [weekViewsCount, setWeekViewsCount] = useState(0);
   const [lastViewAt, setLastViewAt] = useState<string | null>(null);
@@ -446,7 +447,7 @@ export default function DashboardProfissional() {
     }
   };
 
-  const paginaInteira = abaDireita === "oportunidades" || abaDireita === "vagas";
+  const paginaInteira = abaDireita === "oportunidades" || abaDireita === "vagas" || abaDireita === "plano";
 
   return (
     <DashboardThemeShell className="ri-dash-prof" style={{ width: "100%", maxWidth: "none" }}>
@@ -505,6 +506,7 @@ export default function DashboardProfissional() {
               { id: "dicas" as const, label: "Dicas", badge: tips.length },
               { id: "mensagens" as const, label: "Mensagens", badge: inboxMessages.length },
               { id: "perfil" as const, label: "Perfil", badge: 0 },
+              { id: "plano" as const, label: "Meu plano", badge: 0 },
             ]
           ).map((tab) => {
             const ativo = abaDireita === tab.id;
@@ -926,6 +928,8 @@ export default function DashboardProfissional() {
             </div>
           </section>
           )}
+
+          {abaDireita === "plano" && <ProfessionalMeuPlano />}
         </aside>
       </div>
     </DashboardThemeShell>
