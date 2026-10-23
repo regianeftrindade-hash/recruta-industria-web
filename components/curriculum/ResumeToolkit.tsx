@@ -31,6 +31,9 @@ type Props = {
   authenticated?: boolean;
   missing?: boolean;
   resumeName?: string | null;
+  /** `generate` mostra só a geração do PDF, com os dados já preenchidos. */
+  focus?: "full" | "generate";
+  notice?: string;
   getLocalDraft?: () => ResumeDraft;
   onDraftApplied?: (draft: ResumeDraft) => void;
   onHoldFile?: (file: File | null) => void;
@@ -132,6 +135,8 @@ export default function ResumeToolkit({
   authenticated = variant !== "register",
   missing = false,
   resumeName,
+  focus = "full",
+  notice,
   getLocalDraft,
   onDraftApplied,
   onHoldFile,
@@ -362,17 +367,26 @@ export default function ResumeToolkit({
     );
   }
 
+  const generateOnly = focus === "generate";
+
   return (
-    <section className={styles.card} aria-label="Meu currículo">
-      {fileInput}
+    <section className={styles.card} aria-label={generateOnly ? "Gerar currículo em PDF" : "Meu currículo"}>
+      {generateOnly ? null : fileInput}
       {view === "home" ? (
         <>
-          {variant !== "apply" || showGate ? <h2 className={styles.title}>Meu currículo</h2> : null}
+          {variant !== "apply" || showGate ? (
+            <h2 className={styles.title}>{generateOnly ? "Gerar currículo em PDF" : "Meu currículo"}</h2>
+          ) : null}
           {showGate ? <p className={styles.lead}>{PREMIUM_RESUME_PROMPT}</p> : null}
           {showCheckoutWarning ? PREMIUM_HIRE_NOTICE.map((paragraph) => (
             <p key={paragraph.slice(0, 24)} className={styles.lead}>{paragraph}</p>
           )) : null}
-          {variant === "register" ? (
+          {generateOnly ? (
+            <p className={styles.note}>
+              {notice || "Não tem um currículo para anexar? Não tem problema. Geramos seu currículo em PDF gratuito com os dados preenchidos neste cadastro."}
+            </p>
+          ) : null}
+          {!generateOnly && variant === "register" ? (
             <p className={styles.note}>
               Anexar currículo usa um arquivo que você já tem. Gerar currículo em PDF cria um documento com os dados deste cadastro. Nenhum dos dois é obrigatório para concluir.
             </p>
@@ -396,13 +410,15 @@ export default function ResumeToolkit({
               </p>
             </>
           ) : null}
-          {!showGate && !shownName && variant === "profile" ? (
+          {!generateOnly && !showGate && !shownName && variant === "profile" ? (
             <p className={styles.note}>Nenhum currículo salvo. Você pode anexar um PDF ou DOCX ou gerar um PDF pelos dados do perfil.</p>
           ) : null}
           <div className={styles.actions}>
-            <button type="button" className="ri-btn-3d-gold" disabled={busy} onClick={() => inputRef.current?.click()}>
-              {shownName && !showGate && !showCheckoutWarning ? "Substituir currículo" : "Anexar currículo"}
-            </button>
+            {generateOnly ? null : (
+              <button type="button" className="ri-btn-3d-gold" disabled={busy} onClick={() => inputRef.current?.click()}>
+                {shownName && !showGate && !showCheckoutWarning ? "Substituir currículo" : "Anexar currículo"}
+              </button>
+            )}
             <button type="button" className="ri-btn-3d-gold" disabled={busy} onClick={openReview}>
               Gerar currículo em PDF
             </button>

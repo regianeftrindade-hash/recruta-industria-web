@@ -42,6 +42,7 @@ import RegisterWizardChrome, { REGISTER_WIZARD_STEPS } from './RegisterWizardChr
 import RegisterCollapsibleSection from '@/components/ui/RegisterCollapsibleSection';
 import ResumeToolkit from '@/components/curriculum/ResumeToolkit';
 import { sanitizeResumeDraft, type ResumeDraft } from '@/lib/curriculum/resume-draft';
+import { buildResumeFormApplyPatch, matchCidadeIbge } from '@/lib/curriculum/apply-resume-to-form';
 import PageLoader from '@/app/components/PageLoader';
 import {
   calculateProfileCompletion,
@@ -70,7 +71,6 @@ import VideoApresentacaoCadastro from '@/components/professional/VideoApresentac
 import { AuthAtmosphere } from '@/components/shared/AuthAtmosphere';
 import LogoRecruta from '@/app/components/LogoRecruta';
 import { reportProfessionalSignupConversion } from '@/lib/analytics/google-ads';
-import { matchCidadeIbge } from '@/lib/curriculum/apply-resume-to-form';
 import type { ResumeStructuredFields } from '@/lib/curriculum/types';
 
 const BACKUP_STORAGE_KEY = 'dadosFormularioBackup';
@@ -170,6 +170,35 @@ function tentarSalvarLocal(key: string, payload: Record<string, unknown>): boole
   }
 }
 
+function arquivoFotoPermitido(file: File): boolean {
+  if (['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) return true;
+  return /\.(jpe?g|png|webp|gif)$/i.test(file.name);
+}
+
+function arquivoFotoComTipo(file: File): File {
+  if (file.type) return file;
+  const nome = file.name.toLowerCase();
+  const type = nome.endsWith('.png')
+    ? 'image/png'
+    : nome.endsWith('.webp')
+      ? 'image/webp'
+      : nome.endsWith('.gif')
+        ? 'image/gif'
+        : nome.endsWith('.jpg') || nome.endsWith('.jpeg')
+          ? 'image/jpeg'
+          : '';
+  return type ? new File([file], file.name, { type }) : file;
+}
+
+function lerImagemComoDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(new Error('Não foi possível ler a imagem.'));
+    reader.readAsDataURL(file);
+  });
+}
+
 function isFotoPerfilPreviewable(value: string | null): boolean {
   if (!value) return false;
   const src = String(value);
@@ -228,8 +257,28 @@ function CampoFotoPerfil({
   centered?: boolean;
   avisoSalvar?: boolean;
 }) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [erro, setErro] = useState('');
   const temFoto = isFotoPerfilPreviewable(value);
+
+  const inputFoto = (
+    <input
+      id="fotoPerfil"
+      className={styles.fotoInput}
+      type="file"
+      accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+      onChange={async (e) => {
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (!file) return;
+        setErro('');
+        try {
+          await onFileSelect(file);
+        } catch (err) {
+          setErro(err instanceof Error ? err.message : 'Não foi possível usar esta foto.');
+        }
+      }}
+    />
+  );
 
   return (
     <div className={`${styles.fotoCampo} ${centered ? styles.fotoCampoCentro : ''}`}>
@@ -244,9 +293,10 @@ function CampoFotoPerfil({
           />
           <div className={styles.fotoAnexoLinha}>
             <span className={styles.anexoTextoInline}>✓ Foto de perfil anexada</span>
-            <button type="button" className={styles.anexoBtn} onClick={() => inputRef.current?.click()}>
+            <label className={`${styles.anexoBtn} ${styles.fotoLabelBtn}`}>
               Trocar foto
-            </button>
+              {inputFoto}
+            </label>
           </div>
           {centered && <LegendaPreenchimento avisoSalvar={avisoSalvar} />}
         </div>
@@ -254,36 +304,64 @@ function CampoFotoPerfil({
       {!temFoto && (
         <div className={centered ? styles.fotoComAnexo : undefined}>
           <div className={centered ? styles.fotoAnexoLinha : styles.anexoBtnRow}>
-            <button
-              type="button"
-              className={styles.anexoBtn}
-              onClick={() => inputRef.current?.click()}
-            >
+            <label className={`${styles.anexoBtn} ${styles.fotoLabelBtn}`}>
               Selecionar foto
-            </button>
+              {inputFoto}
+            </label>
           </div>
           {centered && <LegendaPreenchimento avisoSalvar={avisoSalvar} />}
         </div>
       )}
-      <input
-        ref={inputRef}
-        id="fotoPerfil"
-        type="file"
-        accept="image/*"
-        style={{ display: 'none' }}
-        onChange={async (e) => {
-          const file = e.target.files?.[0];
-          if (!file) return;
-          if (!file.type.startsWith('image/')) {
-            alert('Selecione um arquivo de imagem válido (JPG, PNG, etc.).');
-            e.target.value = '';
-            return;
-          }
-          await onFileSelect(file);
-          e.target.value = '';
-        }}
-      />
+      {erro ? <p className={styles.anexoCurriculoErro} role="alert">{erro}</p> : null}
     </div>
+  );
+}
+
+function AnexoCurriculoAutomatico({
+  onFile,
+}: {
+  onFile: (file: File) => Promise<string>;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [nome, setNome] = useState('');
+  const [aviso, setAviso] = useState('');
+  const [erro, setErro] = useState('');
+
+  return (
+    <section className={styles.anexoCurriculoCard} aria-label="Anexar currículo">
+      <p className={styles.anexoCurriculoAviso}>
+        Anexe um PDF ou DOCX. O cadastro será preenchido automaticamente.
+      </p>
+      <label className={`${styles.anexoBtn} ${styles.fotoLabelBtn}`}>
+        {busy ? 'Lendo currículo...' : nome ? 'Trocar currículo' : 'Anexar PDF ou DOCX'}
+        <input
+          className={styles.fotoInput}
+          type="file"
+          accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          disabled={busy}
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            e.target.value = '';
+            if (!file) return;
+            setBusy(true);
+            setErro('');
+            setAviso('');
+            try {
+              const mensagem = await onFile(file);
+              setNome(file.name);
+              setAviso(mensagem);
+            } catch (err) {
+              setErro(err instanceof Error ? err.message : 'Não foi possível ler o currículo.');
+            } finally {
+              setBusy(false);
+            }
+          }}
+        />
+      </label>
+      {nome ? <p className={styles.anexoCurriculoNome}>{nome}</p> : null}
+      {aviso ? <p className={styles.anexoCurriculoNome} role="status">{aviso}</p> : null}
+      {erro ? <p className={styles.anexoCurriculoErro} role="alert">{erro}</p> : null}
+    </section>
   );
 }
 
@@ -1183,6 +1261,96 @@ export default function CadastroProfissional({
     setIdiomas(draft.idiomas.length ? draft.idiomas.map((selecionado) => ({ selecionado })) : [{ selecionado: "" }]);
   };
 
+  async function importarCurriculoArquivo(file: File): Promise<string> {
+    const nome = file.name.toLowerCase();
+    if (!nome.endsWith('.pdf') && !nome.endsWith('.docx')) {
+      throw new Error('Envie um arquivo PDF ou DOCX.');
+    }
+    if (!file.size) throw new Error('O arquivo está vazio.');
+    if (file.size > 8 * 1024 * 1024) throw new Error('Arquivo muito grande (máx. 8MB).');
+
+    pendingResumeRef.current = file;
+    const body = new FormData();
+    body.set('file', file);
+    const res = await fetch('/api/professional/curriculum/extract', {
+      method: 'POST',
+      body,
+      credentials: 'include',
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(typeof data?.error === 'string' && data.error.trim()
+        ? data.error
+        : 'Não foi possível ler o currículo.');
+    }
+
+    const patch = buildResumeFormApplyPatch(
+      data?.extraction?.structured,
+      { formData, telefone, telefone2 },
+      { overwrite: true },
+    );
+    const formDataPatch: Record<string, unknown> = { ...patch.formDataPatch };
+    if (patch.cidadePendente) {
+      pendingCidadeImportRef.current = patch.cidadePendente;
+      const estadoNovo = typeof formDataPatch.estado === 'string' ? formDataPatch.estado : formData.estado;
+      if (estadoNovo === formData.estado && cidades.length) {
+        const matched = matchCidadeIbge(patch.cidadePendente, cidades);
+        if (matched) {
+          pendingCidadeImportRef.current = null;
+          formDataPatch.cidade = matched;
+        }
+      }
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      ...(formDataPatch as Partial<typeof prev>),
+    }));
+    if (patch.telefone) setTelefone(patch.telefone);
+    if (patch.telefone2) setTelefone2(patch.telefone2);
+    if (patch.dataNascimentoDisplay) setDataNascimentoValue(patch.dataNascimentoDisplay);
+    if (patch.cursos?.length) setCursos(patch.cursos);
+    if (patch.empresas?.length) setEmpresas(patch.empresas);
+    if (typeof formDataPatch.email === 'string' && isValidEmail(formDataPatch.email)) {
+      setEmailError('');
+    }
+
+    if (!patch.filledLabels.length) {
+      return 'Arquivo anexado. Não encontramos dados para preencher. Complete o cadastro e, no fim da página, geramos o PDF gratuito.';
+    }
+    return `Cadastro preenchido automaticamente: ${patch.filledLabels.join(', ')}.`;
+  }
+
+  const montarRascunhoCurriculo = () => sanitizeResumeDraft({
+    nome: formData.nome,
+    cidade: formData.cidade,
+    estado: formData.estado,
+    telefone: telefone || formData.telefone,
+    email: formData.email,
+    objetivo: formData.cargoDesejado,
+    resumo: formData.mensagemEmpresas,
+    escolaridade: formData.escolaridade,
+    curso: formData.cursoFormacao,
+    instituicao: formData.instituicaoFormacao,
+    ano: formData.anoConclusaoFormacao,
+    experiencias: empresas.map((item) => ({
+      empresa: item.nome,
+      cargo: item.cargo,
+      inicio: item.dataInicio,
+      fim: item.dataFim,
+      atividades: item.descricao,
+      segmento: item.segmento,
+    })),
+    cursos: cursos.map((item) => item.nome),
+    habilidades: [
+      ...formData.maquinasEquipamentos,
+      ...formData.qualidadeProcessos,
+      ...formData.informatica,
+    ],
+    idiomas: idiomas.map((item) => serializeIdioma(item)),
+    cnh: formData.possuiCNH === 'Sim' ? formData.categoriaCNH : '',
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -1596,44 +1764,41 @@ export default function CadastroProfissional({
           </div>
         )}
 
-        {(isEditMode || wizardStep === 0) && (
-          <ResumeToolkit
-            variant={isEditMode ? "profile" : "register"}
-            authenticated={Boolean(session?.user?.email)}
-            getLocalDraft={() => sanitizeResumeDraft({
-              nome: formData.nome,
-              cidade: formData.cidade,
-              estado: formData.estado,
-              telefone: telefone || formData.telefone,
-              email: formData.email,
-              objetivo: formData.cargoDesejado,
-              resumo: formData.mensagemEmpresas,
-              escolaridade: formData.escolaridade,
-              curso: formData.cursoFormacao,
-              instituicao: formData.instituicaoFormacao,
-              ano: formData.anoConclusaoFormacao,
-              experiencias: empresas.map((item) => ({
-                empresa: item.nome,
-                cargo: item.cargo,
-                inicio: item.dataInicio,
-                fim: item.dataFim,
-                atividades: item.descricao,
-                segmento: item.segmento,
-              })),
-              cursos: cursos.map((item) => item.nome),
-              habilidades: [
-                ...formData.maquinasEquipamentos,
-                ...formData.qualidadeProcessos,
-                ...formData.informatica,
-              ],
-              idiomas: idiomas.map((item) => serializeIdioma(item)),
-              cnh: formData.possuiCNH === "Sim" ? formData.categoriaCNH : "",
-            })}
-            onDraftApplied={aplicarRascunhoCurriculo}
-            onHoldFile={(file) => {
-              pendingResumeRef.current = file;
+        {showWizardStep(0) && (
+          <>
+          <CampoFotoPerfil
+            centered
+            avisoSalvar={isEditMode}
+            value={formData.fotoPerfil}
+            onFileSelect={async (file) => {
+              if (!arquivoFotoPermitido(file)) {
+                throw new Error('Use uma foto JPG, PNG, WEBP ou GIF.');
+              }
+              const foto = arquivoFotoComTipo(file);
+              const previewUrl = await lerImagemComoDataUrl(foto);
+              if (!previewUrl.startsWith('data:image')) {
+                throw new Error('Não foi possível ler a imagem.');
+              }
+              setFormData((prev) => ({ ...prev, fotoPerfil: previewUrl }));
+
+              const fd = new FormData();
+              fd.append('file', foto);
+              fd.append('type', 'avatars');
+              const res = await fetch('/api/upload', { method: 'POST', body: fd, credentials: 'include' });
+              const data = await res.json().catch(() => ({}));
+              if (!res.ok || !data.success || !data.file?.url) {
+                throw new Error(typeof data.error === 'string' && data.error.trim()
+                  ? data.error
+                  : 'Não foi possível enviar a foto. A prévia ficou só nesta tela.');
+              }
+              const url = String(data.file.url);
+              if (isFotoPerfilPreviewable(url)) {
+                setFormData((prev) => ({ ...prev, fotoPerfil: url }));
+              }
             }}
           />
+          <AnexoCurriculoAutomatico onFile={importarCurriculoArquivo} />
+          </>
         )}
 
         <div inert={travado ? true : undefined} className={travado ? styles.cadastroTravado : undefined}>
@@ -1641,35 +1806,6 @@ export default function CadastroProfissional({
 
           {showWizardStep(0) && (
           <>
-          <CampoFotoPerfil
-            centered
-            avisoSalvar={isEditMode}
-            value={formData.fotoPerfil}
-            onFileSelect={async (file) => {
-              const reader = new FileReader();
-              reader.onloadend = async () => {
-                const previewUrl = reader.result as string;
-                setFormData((prev) => ({ ...prev, fotoPerfil: previewUrl }));
-
-                try {
-                  const fd = new FormData();
-                  fd.append('file', file);
-                  fd.append('type', 'avatars');
-
-                  const res = await fetch('/api/upload', { method: 'POST', body: fd, credentials: 'include' });
-                  const data = await res.json();
-
-                  if (res.ok && data.success && data.file?.url) {
-                    setFormData((prev) => ({ ...prev, fotoPerfil: data.file.url }));
-                  }
-                } catch (err) {
-                  console.error('Erro no upload da foto:', err);
-                }
-              };
-              reader.readAsDataURL(file);
-            }}
-          />
-
           <section className={styles.sectionCard}>
             <RegisterSectionHeader emoji="🏭" title="Dados pessoais" />
             
@@ -3129,6 +3265,20 @@ export default function CadastroProfissional({
           )}
         </form>
         </div>
+
+        {(isEditMode || wizardStep === lastWizardStep) && (
+          <ResumeToolkit
+            variant={isEditMode ? 'profile' : 'register'}
+            focus="generate"
+            notice="Não tem um currículo para anexar? Não tem problema. Geramos seu currículo em PDF gratuito com os dados preenchidos neste cadastro."
+            authenticated={Boolean(session?.user?.email)}
+            getLocalDraft={montarRascunhoCurriculo}
+            onDraftApplied={aplicarRascunhoCurriculo}
+            onHoldFile={(file) => {
+              pendingResumeRef.current = file;
+            }}
+          />
+        )}
       </div>
     </div>
   );
