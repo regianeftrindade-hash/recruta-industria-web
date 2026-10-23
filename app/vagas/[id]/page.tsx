@@ -5,6 +5,7 @@ import LogoRecruta from "@/app/components/LogoRecruta";
 import { JobPostingError } from "@/lib/jobs/job-posting";
 import { getPublicJobView } from "@/lib/jobs/job-posting-db";
 import { jobSocialMetadata, publicJobUrl } from "@/lib/jobs/public-job-link";
+import { jobApplicationDeadline, textWithoutJobSource } from "@/lib/jobs/public-job-display";
 import JobApplyButton from "../JobApplyButton";
 import JobBackButton from "../JobBackButton";
 import JobShareButton from "../JobShareButton";
@@ -146,6 +147,10 @@ export default async function VagaPage({ params, searchParams }: Props) {
             <Fact label="Contratação" value={view.job.contractLabel} />
             <Fact label="Modalidade" value={view.job.workModeLabel} />
             <Fact label="Local de trabalho" value={view.job.workplace} />
+            <Fact
+              label="Prazo para inscrição"
+              value={jobApplicationDeadline(view.job) ? `até ${jobApplicationDeadline(view.job)}` : null}
+            />
           </div>
 
           <section className={styles.section}>
@@ -153,17 +158,17 @@ export default async function VagaPage({ params, searchParams }: Props) {
             <p className={styles.text}>{view.job.description}</p>
           </section>
 
-          {view.job.observations ? (
+          {textWithoutJobSource(view.job.observations) ? (
             <section className={styles.section}>
               <h2>Observações</h2>
-              <p className={styles.text}>{view.job.observations}</p>
+              <p className={styles.text}>{textWithoutJobSource(view.job.observations)}</p>
             </section>
           ) : null}
 
-          {view.job.applicationInstructions ? (
+          {textWithoutJobSource(view.job.applicationInstructions) ? (
             <section className={styles.section}>
               <h2>Como se candidatar</h2>
-              <p className={styles.text}>{view.job.applicationInstructions}</p>
+              <p className={styles.text}>{textWithoutJobSource(view.job.applicationInstructions)}</p>
             </section>
           ) : null}
 

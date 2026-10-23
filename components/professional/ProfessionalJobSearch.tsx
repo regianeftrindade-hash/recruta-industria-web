@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { CONTRACT_TYPES, WORK_MODES, type PublicJob } from "@/lib/jobs/job-posting";
+import { jobApplicationDeadline } from "@/lib/jobs/public-job-display";
 import styles from "./professional-job-search.module.css";
 
 type CompatibleJob = PublicJob & { reasons: string[] };
@@ -77,12 +78,6 @@ function modeOptionLabel(value: string, label: string): string {
 
 function semAcento(value: string): string {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-}
-
-function excerpt(value: string): string {
-  const plain = value.replace(/\s+/g, " ").trim();
-  if (plain.length <= 140) return plain;
-  return `${plain.slice(0, 137).trimEnd()}...`;
 }
 
 const BUSCAS_KEY = "ri-profissional-buscas-vagas";
@@ -521,8 +516,8 @@ export default function ProfessionalJobSearch() {
                     {job.contractLabel ? <li>{job.contractLabel}</li> : null}
                     {job.workModeLabel ? <li>{job.workModeLabel}</li> : null}
                     {job.workplace ? <li>{job.workplace}</li> : null}
+                    {jobApplicationDeadline(job) ? <li>Inscrições até {jobApplicationDeadline(job)}</li> : null}
                   </ul>
-                  {job.description ? <p className={styles.excerpt}>{excerpt(job.description)}</p> : null}
                   <a href={`/vagas/${job.id}`}>Ver vaga</a>
                 </article>
               ))}
@@ -550,8 +545,8 @@ export default function ProfessionalJobSearch() {
                 {job.contractLabel ? <li>{job.contractLabel}</li> : null}
                 {job.workModeLabel ? <li>{job.workModeLabel}</li> : null}
                 {job.workplace ? <li>{job.workplace}</li> : null}
+                {jobApplicationDeadline(job) ? <li>Inscrições até {jobApplicationDeadline(job)}</li> : null}
               </ul>
-              {job.description ? <p className={styles.excerpt}>{excerpt(job.description)}</p> : null}
               <a href={`/vagas/${job.id}`}>Ver vaga</a>
             </article>
           ))}

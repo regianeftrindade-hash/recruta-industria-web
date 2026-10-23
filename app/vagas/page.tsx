@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import { listPublicJobs } from "@/lib/jobs/job-posting-db";
+import { jobApplicationDeadline } from "@/lib/jobs/public-job-display";
 import styles from "./vagas.module.css";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +48,8 @@ export default async function VagasPage() {
               {job.salaryLabel ? <li>{job.salaryLabel}</li> : null}
               {job.contractLabel ? <li>{job.contractLabel}</li> : null}
               {job.workModeLabel ? <li>{job.workModeLabel}</li> : null}
+              {job.workplace ? <li>{job.workplace}</li> : null}
+              {jobApplicationDeadline(job) ? <li>Inscrições até {jobApplicationDeadline(job)}</li> : null}
             </ul>
           </Link>
         ))}
