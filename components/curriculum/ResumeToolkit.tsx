@@ -223,7 +223,7 @@ export default function ResumeToolkit({
         }
         onHoldFile?.(file);
         setHeldName(file.name);
-        setMessage("Arquivo selecionado. Ele será salvo no perfil quando o cadastro for concluído.");
+        setMessage("Arquivo selecionado. Ele ainda não está no perfil.");
         return;
       }
 
@@ -263,7 +263,7 @@ export default function ResumeToolkit({
         if (saveAsMain) {
           onHoldFile?.(new File([blob], "curriculo.pdf", { type: "application/pdf" }));
           setHeldName("curriculo.pdf");
-          setMessage("Currículo em PDF pronto. Ele será salvo no perfil quando o cadastro for concluído.");
+          setMessage("Currículo em PDF pronto. Ele ainda não está no perfil.");
         }
       } else {
         const response = await fetch("/api/professional/curriculo/gerar", {
@@ -535,6 +535,11 @@ export default function ResumeToolkit({
       ) : null}
 
       {message ? <p className={styles.status} role="status">{message}</p> : null}
+      {!authenticated && heldName ? (
+        <p className={styles.note}>
+          Conclua o cadastro nesta página para salvar o currículo no perfil. Se você sair ou fechar a aba antes disso, o arquivo será perdido.
+        </p>
+      ) : null}
       {error ? <p className={styles.error} role="alert">{error}</p> : null}
     </section>
   );

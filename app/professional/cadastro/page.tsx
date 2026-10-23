@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -14,6 +14,7 @@ import ResumeToolkit from "@/components/curriculum/ResumeToolkit";
 import { sanitizeResumeDraft, type ResumeDraft } from "@/lib/curriculum/resume-draft";
 
 const SIMPLE_STORAGE_KEY = "dadosCadastroSimples";
+const AVISO_CURRICULO_PENDENTE = "O currículo ainda não foi salvo no perfil. Conclua o cadastro nesta página. Se você sair agora, o arquivo será perdido.";
 
 function chavePorEmail(base: string, email: string): string {
   const slug = email.toLowerCase().trim().replace(/[^a-z0-9]/g, "_");
@@ -33,6 +34,30 @@ export default function CadastroSimplesProfissionalPage() {
   const [contaCriada, setContaCriada] = useState(false);
   const pendingResumeRef = useRef<File | null>(null);
   const pendingDraftRef = useRef<ResumeDraft | null>(null);
+  const [curriculoNaMemoria, setCurriculoNaMemoria] = useState(false);
+
+  useEffect(() => {
+    if (!curriculoNaMemoria || loading || contaCriada) return;
+    const avisarSaida = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    const avisarLink = (event: MouseEvent) => {
+      const anchor = (event.target as Element | null)?.closest?.("a");
+      if (!anchor || anchor.hasAttribute("download")) return;
+      const href = anchor.getAttribute("href") || "";
+      if (!href || href.startsWith("#") || href.startsWith("blob:") || href.startsWith("data:")) return;
+      if (window.confirm(AVISO_CURRICULO_PENDENTE)) return;
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    window.addEventListener("beforeunload", avisarSaida);
+    document.addEventListener("click", avisarLink, true);
+    return () => {
+      window.removeEventListener("beforeunload", avisarSaida);
+      document.removeEventListener("click", avisarLink, true);
+    };
+  }, [curriculoNaMemoria, loading, contaCriada]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -314,6 +339,7 @@ export default function CadastroSimplesProfissionalPage() {
             }}
             onHoldFile={(file) => {
               pendingResumeRef.current = file;
+              setCurriculoNaMemoria(Boolean(file));
             }}
           />
 
