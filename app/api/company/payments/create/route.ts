@@ -41,13 +41,14 @@ import { sanitizeTaxId, fallbackTaxIdForSandbox } from '@/lib/payment-tax';
 
 import {
 
-  getPlanPriceCentavos,
-
   parseBillingMode,
 
   parseBillingPeriod,
 
 } from '@/lib/billing';
+
+import { companyChargeCentavos } from '@/lib/company/company-launch-price';
+import { countCompanyLaunchMonthsUsed } from '@/lib/payment/company-payment';
 
 
 
@@ -127,7 +128,9 @@ export async function POST(req: NextRequest) {
 
     const planDef = getPlanDefinition(planTier);
 
-    const amount = getPlanPriceCentavos(planDef.precoCentavos, billingPeriod);
+    const paidLaunchMonths = await countCompanyLaunchMonthsUsed(user.id);
+
+    const amount = companyChargeCentavos(planDef, billingPeriod, paidLaunchMonths, billingMode);
 
     const name = String(user.company.name || user.name || 'Empresa').trim();
 

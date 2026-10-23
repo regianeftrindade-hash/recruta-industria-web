@@ -181,10 +181,24 @@ describe("ativação empresa", () => {
     ).toBe("Cobrança não pertence a esta empresa");
   });
 
-  it("aceita BASIC mensal pago no valor certo", () => {
+  it("aceita BASIC mensal no preço normal ou no lançamento", () => {
     expect(
       validateCompanyPaymentForActivation(
         { id: "1", reference: "r", amount: 24900, status: "PAID", meta: metaMensal },
+        "co-1",
+        "BASIC",
+      ),
+    ).toBeNull();
+    const metaLancamento = JSON.stringify({
+      type: "company_subscription",
+      planTier: "BASIC",
+      companyUserId: "co-1",
+      expectedAmount: 19920,
+      billingPeriod: "monthly",
+    });
+    expect(
+      validateCompanyPaymentForActivation(
+        { id: "2", reference: "r2", amount: 19920, status: "PAID", meta: metaLancamento },
         "co-1",
         "BASIC",
       ),

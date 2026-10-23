@@ -12,6 +12,7 @@ import {
   type BillingMode,
   type BillingPeriod,
 } from "@/lib/billing";
+import { companyChargeBaseCentavos } from "@/lib/company/company-launch-price";
 import { btnGoldStyle as btnGold, BUTTON_3D_GOLD_SHADOW, BUTTON_3D_GOLD_SHADOW_ACTIVE, goldButton3DStyle } from "@/lib/button-3d";
 import { PixQrCode } from "@/app/components/PixQrCode";
 import { BillingOptions } from "@/app/components/BillingOptions";
@@ -54,14 +55,25 @@ function PagamentoEmpresa() {
   const [processing, setProcessing] = useState(false);
   const [gatewayReady, setGatewayReady] = useState<boolean | null>(null);
   const [recurringSupported, setRecurringSupported] = useState(false);
+  const [paidLaunchMonths, setPaidLaunchMonths] = useState<number | null>(null);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
   const pollCountRef = useRef(0);
   const POLL_MAX = 30; // ~2 min a cada 4s
 
-  const priceLabel = useMemo(
-    () => formatPlanPriceLabel(planDef.precoCentavos, billingPeriod),
-    [planDef.precoCentavos, billingPeriod],
+  const chargeBase = companyChargeBaseCentavos(
+    planDef,
+    billingPeriod,
+    paidLaunchMonths ?? 0,
+    billingMode,
   );
+  const priceLabel = useMemo(
+    () => formatPlanPriceLabel(chargeBase, billingPeriod),
+    [chargeBase, billingPeriod],
+  );
+  const emLancamento = billingPeriod === "monthly"
+    && billingMode !== "recurring"
+    && Boolean(planDef.precoLancamentoCentavos)
+    && chargeBase === planDef.precoLancamentoCentavos;
 
   useEffect(() => {
     void fetch("/api/payment/config")
@@ -82,6 +94,23 @@ function PagamentoEmpresa() {
       })
       .catch(() => setGatewayReady(false));
   }, []);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    let ativo = true;
+    void fetch("/api/company/subscription", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!ativo) return;
+        setPaidLaunchMonths(typeof data?.paidLaunchMonths === "number" ? data.paidLaunchMonths : 0);
+      })
+      .catch(() => {
+        if (ativo) setPaidLaunchMonths(0);
+      });
+    return () => {
+      ativo = false;
+    };
+  }, [status]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -276,6 +305,16 @@ function PagamentoEmpresa() {
             {priceLabel.savings && (
               <p style={{ color: "#8D6B1F", fontSize: 11, margin: "0 0 12px" }}>{priceLabel.savings}</p>
             )}
+            {emLancamento ? (
+              <p style={{ color: "#8D6B1F", fontSize: 12, margin: "0 0 12px", lineHeight: 1.45 }}>
+                Preço de lançamento nos 3 primeiros meses. Depois, {planDef.preco}/mês.
+              </p>
+            ) : null}
+            {billingPeriod === "monthly" && planDef.precoLancamento && !emLancamento && paidLaunchMonths != null && paidLaunchMonths >= 3 ? (
+              <p style={{ color: "#8D6B1F", fontSize: 12, margin: "0 0 12px", lineHeight: 1.45 }}>
+                Os 3 meses de lançamento já foram usados. Este pagamento usa o preço normal.
+              </p>
+            ) : null}
             <p style={{ color: "var(--dash-text, #414141)", fontSize: 12, margin: "0 0 16px" }}>Inclui:</p>
             <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, lineHeight: 1.7 }}>
               {planDef.inclui.map((item) => <li key={item}>✅ {item}</li>)}

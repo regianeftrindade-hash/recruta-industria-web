@@ -55,7 +55,7 @@ export function getPlanFeatures(tier: CompanyPlanTier): CompanyPlanFeatures {
     canFavorite: isPaid,
     canSearchHistory: isPaid,
     canSendTips: isPaid,
-    canSendProposals: isPaid,
+    canSendProposals: isPremium,
     canViewAvailability: isPaid,
     canViewLastUpdate: isPaid,
     canUseAlerts: isPremium,

@@ -7,12 +7,12 @@ import {
   type CompanyPlanTier,
 } from '@/lib/company-premium-plans';
 import {
-  getPlanPriceCentavos,
   parseBillingMode,
   parseBillingPeriod,
   type BillingMode,
   type BillingPeriod,
 } from '@/lib/billing';
+import { acceptedCompanyPaymentCentavos, launchMonthsFromPayments } from '@/lib/company/company-launch-price';
 import { getSubscriptionDays } from '@/lib/billing';
 
 type PaymentRow = {
@@ -51,13 +51,14 @@ export function validateCompanyPaymentForActivation(
   const mode = billingMode ?? parseBillingMode(meta.billingMode);
 
   const planDef = getPlanDefinition(planTier);
-  const expected = getPlanPriceCentavos(planDef.precoCentavos, period);
+  const paid = Math.round(payment.amount);
+  const accepted = acceptedCompanyPaymentCentavos(planDef, period);
 
-  if (expected !== Math.round(payment.amount)) {
+  if (!accepted.includes(paid)) {
     return 'Valor pago não confere com o plano';
   }
 
-  if (meta.expectedAmount !== expected) {
+  if (meta.expectedAmount !== paid) {
     return 'Metadados da cobrança inválidos';
   }
 
@@ -133,6 +134,17 @@ export async function activateCompanyPlanFromPayment(
   }
 
   return { alreadyActive: alreadyActive && !options?.isRenewal && !meta?.isRenewal };
+}
+
+export async function countCompanyLaunchMonthsUsed(companyUserId: string): Promise<number> {
+  const rows = await prisma.paymentRecord.findMany({
+    where: {
+      status: 'PAID',
+      meta: { contains: `"companyUserId":"${companyUserId}"` },
+    },
+    select: { status: true, meta: true },
+  });
+  return launchMonthsFromPayments(rows, companyUserId);
 }
 
 export function buildCompanyPaymentDescription(

@@ -14,7 +14,7 @@ import { getPlanDefinition, getPaidPlanTiers } from '@/lib/company-premium-plans
 
 import { getCompanyPlanContext } from '@/lib/company-plan'
 
-import { activateCompanyPlanFromPayment } from '@/lib/company-payment'
+import { activateCompanyPlanFromPayment, countCompanyLaunchMonthsUsed } from '@/lib/company-payment'
 
 
 
@@ -59,6 +59,7 @@ export async function GET() {
     gatewaySubscriptionId: billing?.gatewaySubscriptionId ?? null,
     usage: planContext.usage,
     features: planContext.features,
+    paidLaunchMonths: await countCompanyLaunchMonthsUsed(user.id),
   })
 
 }
