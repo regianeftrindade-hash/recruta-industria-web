@@ -413,7 +413,7 @@ export default function ResumeToolkit({
             ) : null}
             {showGate && onCancel ? (
               <button type="button" className={styles.secondary} disabled={busy} onClick={onCancel}>
-                Cancelar
+                Voltar à vaga
               </button>
             ) : null}
           </div>

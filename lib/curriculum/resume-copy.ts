@@ -1,6 +1,6 @@
 /** Frase exibida quando o Premium tenta a candidatura automática sem currículo. */
 export const PREMIUM_RESUME_PROMPT =
-  "Para utilizar a candidatura Premium, você precisa ter um currículo salvo no seu perfil.";
+  "Para utilizar a candidatura automática, você precisa ter um currículo salvo no seu perfil.";
 
 /** Aviso antes da confirmação da contratação. Não bloqueia o pagamento. */
 export const PREMIUM_HIRE_NOTICE = [

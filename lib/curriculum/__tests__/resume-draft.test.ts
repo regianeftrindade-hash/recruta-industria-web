@@ -260,7 +260,7 @@ describe("gerador de currículo", () => {
 
   it("mantém o texto do aviso de contratação e o pedido de currículo do Premium", () => {
     expect(PREMIUM_RESUME_PROMPT).toBe(
-      "Para utilizar a candidatura Premium, você precisa ter um currículo salvo no seu perfil.",
+      "Para utilizar a candidatura automática, você precisa ter um currículo salvo no seu perfil.",
     );
     expect(PREMIUM_HIRE_NOTICE).toHaveLength(4);
     expect(PREMIUM_HIRE_NOTICE[0]).toMatch(/Mantenha seu currículo disponível/);

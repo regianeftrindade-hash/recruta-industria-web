@@ -82,7 +82,7 @@ describe("candidatura Free e Premium", () => {
     expect(semCurriculo.automatic).toBe(true);
     expect(semCurriculo.needsResume).toBe(true);
     expect(semCurriculo.detail).toBe(
-      "Para utilizar a candidatura Premium, você precisa ter um currículo salvo no seu perfil.",
+      "Para utilizar a candidatura automática, você precisa ter um currículo salvo no seu perfil.",
     );
 
     const whatsapp = describeApplyPanel({

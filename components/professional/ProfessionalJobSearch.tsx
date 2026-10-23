@@ -4,6 +4,8 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { CONTRACT_TYPES, WORK_MODES, type PublicJob } from "@/lib/jobs/job-posting";
 import styles from "./professional-job-search.module.css";
 
+type CompatibleJob = PublicJob & { reasons: string[] };
+
 type SearchState = {
   q: string;
   cidade: string;
@@ -254,6 +256,8 @@ export default function ProfessionalJobSearch() {
   const [cidades, setCidades] = useState<string[]>([]);
   const [carregandoCidades, setCarregandoCidades] = useState(false);
   const [jobs, setJobs] = useState<PublicJob[]>([]);
+  const [compatible, setCompatible] = useState<CompatibleJob[]>([]);
+  const [matchError, setMatchError] = useState("");
   const [consulta, setConsulta] = useState<SearchState>(EMPTY);
   const [buscas, setBuscas] = useState<BuscaSalva[]>([]);
   const [loading, setLoading] = useState(true);
@@ -290,6 +294,7 @@ export default function ProfessionalJobSearch() {
   async function load(next: SearchState, salvar = false) {
     setLoading(true);
     setError("");
+    setMatchError("");
     setConsulta(next);
     const params = new URLSearchParams();
     const faixa = FAIXAS_SALARIO.find((item) => item.id === next.faixa);
@@ -309,13 +314,26 @@ export default function ProfessionalJobSearch() {
       if (!response.ok) {
         setError(data.error || "Não foi possível buscar as vagas.");
         setJobs([]);
+        setCompatible([]);
+        setMatchError("");
         return;
       }
-      setJobs(Array.isArray(data.jobs) ? data.jobs : []);
+      const found = Array.isArray(data.jobs) ? data.jobs as PublicJob[] : [];
+      const matchResponse = await fetch(`/api/professional/vagas-compativeis?${params.toString()}`, { credentials: "include" });
+      const matchData = matchResponse.ok ? await matchResponse.json().catch(() => ({})) : {};
+      if (!matchResponse.ok) {
+        setMatchError("Não foi possível comparar as vagas com o seu perfil agora. A lista geral continua disponível.");
+      }
+      const matches = Array.isArray(matchData.jobs) ? matchData.jobs as CompatibleJob[] : [];
+      const matchedIds = new Set(matches.map((job) => job.id));
+      setCompatible(matches);
+      setJobs(found.filter((job) => !matchedIds.has(job.id)));
       if (salvar) setBuscas(guardarBusca(next));
     } catch {
       setError("Não foi possível buscar as vagas.");
       setJobs([]);
+      setCompatible([]);
+      setMatchError("");
     } finally {
       setLoading(false);
     }
@@ -441,14 +459,45 @@ export default function ProfessionalJobSearch() {
       {error ? <p className={styles.error}>{error}</p> : null}
       {loading ? <p className={styles.lead}>Buscando vagas...</p> : null}
       {!loading && !error ? (
+        <section className={styles.matches} aria-label="Vagas compatíveis com você">
+          <h3 className={styles.title}>Vagas compatíveis com você</h3>
+          {matchError ? (
+            <p className={styles.error}>{matchError}</p>
+          ) : compatible.length === 0 ? (
+            <p className={styles.empty}>Ainda não encontramos vagas compatíveis. Atualize seu perfil ou ajuste os filtros para descobrir novas oportunidades.</p>
+          ) : (
+            <div className={styles.list}>
+              {compatible.map((job) => (
+                <article key={job.id} className={styles.card}>
+                  <h3>{job.title}</h3>
+                  <p className={styles.company}>{job.companyLabel}</p>
+                  <p className={styles.reasons}>{job.reasons.join(" · ")}</p>
+                  <ul>
+                    {job.publicationDate ? <li>{job.publicationDate}</li> : null}
+                    {job.salaryLabel ? <li>{job.salaryLabel}</li> : null}
+                    {job.contractLabel ? <li>{job.contractLabel}</li> : null}
+                    {job.workModeLabel ? <li>{job.workModeLabel}</li> : null}
+                    {job.workplace ? <li>{job.workplace}</li> : null}
+                  </ul>
+                  {job.description ? <p className={styles.excerpt}>{excerpt(job.description)}</p> : null}
+                  <a href={`/vagas/${job.id}`}>Ver vaga</a>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      ) : null}
+
+      {!loading && !error ? (
         <p className={styles.count}>
-          {jobs.length === 1 ? "1 vaga publicada" : `${jobs.length} vagas publicadas`}
+          {jobs.length === 1 ? "1 vaga em todas as vagas" : `${jobs.length} vagas em todas as vagas`}
           {temFiltro(consulta) ? " com esses filtros" : ""}
         </p>
       ) : null}
+      {!loading && !error ? <h3 className={styles.title}>Todas as vagas</h3> : null}
       {!loading && !error && jobs.length === 0 ? (
         <p className={styles.empty}>
-          {temFiltro(consulta) ? "Nenhuma vaga encontrada com esses filtros." : "Nenhuma vaga publicada no momento."}
+          {temFiltro(consulta) ? "Nenhuma outra vaga encontrada com esses filtros." : "Nenhuma outra vaga publicada no momento."}
         </p>
       ) : null}
 

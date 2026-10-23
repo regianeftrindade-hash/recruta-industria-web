@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth.config';
 import { getProfessionalPlanContext } from '@/lib/professional-plan';
+import { visibleCompanyName } from '@/lib/professional/record-profile-view';
 
 function getStartOfWeek(date: Date): Date {
   const d = new Date(date);
@@ -64,9 +65,7 @@ export async function GET(request: NextRequest) {
         id: view.id,
         createdAt: view.createdAt,
         viewType: isAnon ? view.viewType.replace('_ANON', '') : view.viewType,
-        companyName: canSeeNames && !isAnon
-          ? (companyNameByUserId.get(view.companyUserId) || 'Empresa')
-          : null,
+        companyName: visibleCompanyName(canSeeNames, view.viewType, companyNameByUserId.get(view.companyUserId)),
       };
     });
 
@@ -82,8 +81,8 @@ export async function GET(request: NextRequest) {
       totalViews: profileViews.length,
       lastViewAt: lastView?.createdAt ?? null,
       lastViewType: lastView ? lastView.viewType.replace('_ANON', '') : null,
-      lastViewCompany: lastView && canSeeNames && !lastView.viewType.endsWith('_ANON')
-        ? (companyNameByUserId.get(lastView.companyUserId) || 'Empresa')
+      lastViewCompany: lastView
+        ? visibleCompanyName(canSeeNames, lastView.viewType, companyNameByUserId.get(lastView.companyUserId))
         : null,
       weekViews,
       weekViewsCount: weekViews.length,
