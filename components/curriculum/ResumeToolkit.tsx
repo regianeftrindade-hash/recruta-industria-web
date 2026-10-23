@@ -8,9 +8,11 @@ import {
 import {
   emptyResumeDraft,
   renderResumePdf,
+  RESUME_MODELS,
   sanitizeResumeDraft,
   type ResumeDraft,
   type ResumeExperience,
+  type ResumeModelId,
 } from "@/lib/curriculum/resume-draft";
 import styles from "./resume-toolkit.module.css";
 
@@ -44,6 +46,41 @@ const EMPTY_JOB: ResumeExperience = {
   atividades: "",
   segmento: "",
 };
+
+function bytesToPdfBlob(bytes: Uint8Array): Blob {
+  const copy = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(copy).set(bytes);
+  return new Blob([copy], { type: "application/pdf" });
+}
+
+function ModelPicker({
+  value,
+  onChange,
+}: {
+  value: ResumeModelId;
+  onChange: (id: ResumeModelId) => void;
+}) {
+  return (
+    <div className={styles.models} role="radiogroup" aria-label="Modelo do currículo">
+      {RESUME_MODELS.map((item) => {
+        const selected = item.id === value;
+        return (
+          <button
+            key={item.id}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            className={selected ? styles.modelOn : styles.model}
+            onClick={() => onChange(item.id)}
+          >
+            <strong>{item.label}</strong>
+            <span>{item.hint}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function formatUpdatedAt(value: string | null): string | null {
   if (!value) return null;
@@ -110,6 +147,7 @@ export default function ResumeToolkit({
   const [message, setMessage] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
   const [heldName, setHeldName] = useState("");
+  const [model, setModel] = useState<ResumeModelId>("classico");
 
   async function loadStatus(): Promise<Status | null> {
     if (!authenticated) return null;
@@ -221,10 +259,7 @@ export default function ResumeToolkit({
       let blob: Blob;
       let saved = false;
       if (!authenticated) {
-        const bytes = renderResumePdf(clean);
-        const copy = new ArrayBuffer(bytes.byteLength);
-        new Uint8Array(copy).set(bytes);
-        blob = new Blob([copy], { type: "application/pdf" });
+        blob = bytesToPdfBlob(renderResumePdf(clean, model));
         if (saveAsMain) {
           onHoldFile?.(new File([blob], "curriculo.pdf", { type: "application/pdf" }));
           setHeldName("curriculo.pdf");
@@ -235,7 +270,7 @@ export default function ResumeToolkit({
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ draft: clean, saveAsMain }),
+          body: JSON.stringify({ draft: clean, saveAsMain, model }),
         });
         if (!response.ok) {
           setError(await readError(response, "Não foi possível gerar o currículo."));
@@ -268,6 +303,20 @@ export default function ResumeToolkit({
     habilidades: draft.habilidades.join("\n"),
     idiomas: draft.idiomas.join("\n"),
   }), [draft.cursos, draft.habilidades, draft.idiomas]);
+
+  function chooseModel(next: ResumeModelId) {
+    setModel(next);
+    if (view !== "preview") return;
+    const clean = sanitizeResumeDraft(draft);
+    if (!clean.nome) return;
+    setPreviewUrl(URL.createObjectURL(bytesToPdfBlob(renderResumePdf(clean, next))));
+  }
+
+  function saveAsMain() {
+    const replacing = Boolean(status?.valid || heldName);
+    if (replacing && !window.confirm("Substituir o currículo principal do perfil por este PDF?")) return;
+    void generate(true);
+  }
 
   function setList(key: "cursos" | "habilidades" | "idiomas", value: string) {
     setDraft((current) => ({ ...current, [key]: value.split("\n") }));
@@ -374,7 +423,10 @@ export default function ResumeToolkit({
       {view === "review" ? (
         <div className={styles.form}>
           <h2 className={styles.title}>Revisar currículo</h2>
-          <p className={styles.note}>Confira os dados do perfil. Campos em branco ficam de fora do PDF. O modelo é uma coluna, sem foto e sem gráficos.</p>
+          <p className={styles.note}>
+            Confira os dados do perfil. Campos em branco ficam de fora do PDF. Os três modelos usam os mesmos dados, em uma coluna, sem foto e sem gráficos. A prévia é o próprio PDF, com margens, páginas e rodapé.
+          </p>
+          <ModelPicker value={model} onChange={chooseModel} />
           <div className={styles.grid}>
             <label>Nome profissional
               <input value={draft.nome} onChange={(event) => setDraft({ ...draft, nome: event.target.value })} />
@@ -467,10 +519,12 @@ export default function ResumeToolkit({
       {view === "preview" && previewUrl ? (
         <>
           <h2 className={styles.title}>Prévia do currículo</h2>
+          <p className={styles.note}>Trocar o modelo atualiza a prévia sem apagar as informações.</p>
+          <ModelPicker value={model} onChange={chooseModel} />
           <iframe className={styles.preview} title="Prévia do currículo em PDF" src={previewUrl} />
           <div className={styles.actions}>
             <a className={styles.secondary} href={previewUrl} download="curriculo.pdf">Baixar PDF</a>
-            <button type="button" className="ri-btn-3d-gold" disabled={busy} onClick={() => void generate(true)}>
+            <button type="button" className="ri-btn-3d-gold" disabled={busy} onClick={saveAsMain}>
               {busy ? "Salvando..." : "Salvar como currículo principal"}
             </button>
             <button type="button" className={styles.secondary} disabled={busy} onClick={() => setView("review")}>

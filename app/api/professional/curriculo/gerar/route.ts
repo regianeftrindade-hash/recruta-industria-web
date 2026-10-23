@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { renderResumePdf, sanitizeResumeDraft } from "@/lib/curriculum/resume-draft";
+import { normalizeResumeModel, renderResumePdf, sanitizeResumeDraft } from "@/lib/curriculum/resume-draft";
 import { saveResumeDraft } from "@/lib/curriculum/save-resume-draft";
 import { requireCurrentProfessional } from "@/lib/professional/current-professional";
 import { uploadPrivateFile, sanitizeUploadOwnerPrefix } from "@/lib/storage/private-uploads";
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const bytes = renderResumePdf(draft);
+  const bytes = renderResumePdf(draft, normalizeResumeModel(body?.model));
   const saveAsMain = body?.saveAsMain === true;
   if (!saveAsMain) {
     return pdfResponse(bytes, false);
