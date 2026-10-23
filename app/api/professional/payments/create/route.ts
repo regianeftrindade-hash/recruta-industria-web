@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: 'Gateway de pagamento não configurado',
-          detail: 'Defina ASAAS_API_KEY no ambiente. O Premium profissional usa o Asaas.',
+          detail: 'A cobrança profissional usa a mesma ASAAS_API_KEY da cobrança empresarial. Ela não está definida neste ambiente.',
         },
         { status: 503 },
       );
