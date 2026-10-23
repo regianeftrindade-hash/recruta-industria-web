@@ -35,7 +35,8 @@ export async function POST(request: NextRequest) {
     const cartaoCnpjUrl = String(data.cartaoCnpjUrl || '').trim()
     const logoUrl = String(data.logoUrl || '').trim()
     const fotoResponsavelUrl = String(data.fotoResponsavelUrl || '').trim()
-    const emailCorporativoRaw = String(data.emailCorporativo || '').trim()
+    const emailInformado = Object.prototype.hasOwnProperty.call(data, 'emailCorporativo')
+    const emailCorporativoRaw = emailInformado ? String(data.emailCorporativo || '').trim() : ''
     const emailCorporativo = emailCorporativoRaw
       ? normalizeCorporateEmail(emailCorporativoRaw)
       : ''
@@ -98,10 +99,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (!isTestBypass && !emailCorporativo) {
-      return NextResponse.json({ error: 'Informe o e-mail corporativo.' }, { status: 400 })
-    }
-
     if (emailCorporativo) {
       const emailValidationError = corporateEmailError(emailCorporativo)
       if (emailValidationError) {
@@ -156,9 +153,9 @@ export async function POST(request: NextRequest) {
     if (telefone) extraUpdate.telefone = telefone
     if (endereco) extraUpdate.endereco = endereco
 
-    if (emailCorporativo) {
+    if (emailInformado) {
       extraUpdate.emailCorporativo = emailCorporativo
-      extraUpdate.emailCorporativoVerificado = emailCorporativoVerificado
+      extraUpdate.emailCorporativoVerificado = Boolean(emailCorporativo) && emailCorporativoVerificado
     }
 
     if (cartaoCnpjUrl) {

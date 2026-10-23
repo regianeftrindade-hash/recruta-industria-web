@@ -20,6 +20,11 @@ import {
 import CompanyDashboardTabContent from "@/components/company/CompanyDashboardTabContent";
 import CompanyInterviewConfirmBanner from "@/components/company/CompanyInterviewConfirmBanner";
 import { matchesCompanyTestBypass } from "@/lib/company/company-test-bypass-shared";
+import {
+  COMPANY_FIELDS_NOTICE,
+  COMPANY_VIEW_ONLY_NOTICE,
+  companyVerificationTag,
+} from "@/lib/company/company-verification";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import {
   DASH,
@@ -130,6 +135,15 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
   if (status === "unauthenticated" && !bypass) return null;
 
   const navBadges = dash.getBadges();
+  const verificationTag = dash.verificationStatus
+    ? companyVerificationTag({
+        verificationStatus: dash.verificationStatus,
+        cartaoCnpjUrl: dash.companyProfile?.cartaoCnpjUrl,
+        emailCorporativo: dash.companyProfile?.emailCorporativo,
+      })
+    : null;
+  const camposVerificacaoVazios = !dash.companyProfile?.cartaoCnpjUrl?.trim()
+    || !dash.companyProfile?.emailCorporativo?.trim();
 
   return (
       <DashboardThemeShell className="ri-company-dash">
@@ -155,6 +169,32 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
           <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
             <LogoRecruta size="xs" as="h1" depth />
             <span className="ri-dash-access-tag">Acesso Empresa</span>
+            {verificationTag ? (
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignSelf: "flex-start",
+                  marginTop: 2,
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                  border: "1px solid #8D6B1F",
+                  background: verificationTag === "Empresa verificada"
+                    ? "#1a3d1a"
+                    : verificationTag === "Verificação recusada"
+                      ? "#3d1a1a"
+                      : "#E8C56A",
+                  color: verificationTag === "Empresa verificada"
+                    ? "#9ae6b4"
+                    : verificationTag === "Verificação recusada"
+                      ? "#f87171"
+                      : "#24180a",
+                  fontSize: 10,
+                  fontWeight: 800,
+                }}
+              >
+                {verificationTag}
+              </span>
+            ) : null}
           </div>
           <div
             className="ri-company-header-actions"
@@ -182,6 +222,28 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
           <CompanyDashboardNav badges={navBadges} />
         </div>
       </header>
+
+      {dash.planReady && !dash.canPublishAndSearch ? (
+        <div
+          role="status"
+          style={{
+            margin: "10px 16px 0",
+            padding: "10px 12px",
+            borderRadius: 14,
+            border: "1px solid #8D6B1F",
+            background: "rgba(200,155,60,0.12)",
+          }}
+        >
+          <p style={{ margin: 0, fontSize: 13, color: DASH.text, lineHeight: 1.5 }}>
+            {COMPANY_VIEW_ONLY_NOTICE}
+          </p>
+          {camposVerificacaoVazios ? (
+            <p style={{ margin: "6px 0 0", fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>
+              {COMPANY_FIELDS_NOTICE}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       <CompanyInterviewConfirmBanner
         onOpenEntrevistas={() => {

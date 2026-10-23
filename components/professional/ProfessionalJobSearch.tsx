@@ -257,6 +257,7 @@ export default function ProfessionalJobSearch() {
   const [carregandoCidades, setCarregandoCidades] = useState(false);
   const [jobs, setJobs] = useState<PublicJob[]>([]);
   const [compatible, setCompatible] = useState<CompatibleJob[]>([]);
+  const [isPremium, setIsPremium] = useState<boolean | null>(null);
   const [matchError, setMatchError] = useState("");
   const [consulta, setConsulta] = useState<SearchState>(EMPTY);
   const [buscas, setBuscas] = useState<BuscaSalva[]>([]);
@@ -320,10 +321,19 @@ export default function ProfessionalJobSearch() {
       }
       const found = Array.isArray(data.jobs) ? data.jobs as PublicJob[] : [];
       const matchResponse = await fetch(`/api/professional/vagas-compativeis?${params.toString()}`, { credentials: "include" });
-      const matchData = matchResponse.ok ? await matchResponse.json().catch(() => ({})) : {};
+      const matchData = await matchResponse.json().catch(() => ({}));
       if (!matchResponse.ok) {
-        setMatchError("Não foi possível comparar as vagas com o seu perfil agora. A lista geral continua disponível.");
+        const premiumRequired = matchResponse.status === 403 && matchData.premiumRequired === true;
+        setIsPremium(premiumRequired ? false : null);
+        setCompatible([]);
+        setJobs(found);
+        if (!premiumRequired) {
+          setMatchError("Não foi possível comparar as vagas com o seu perfil agora. A lista geral continua disponível.");
+        }
+        if (salvar) setBuscas(guardarBusca(next));
+        return;
       }
+      setIsPremium(true);
       const matches = Array.isArray(matchData.jobs) ? matchData.jobs as CompatibleJob[] : [];
       const matchedIds = new Set(matches.map((job) => job.id));
       setCompatible(matches);
@@ -458,7 +468,16 @@ export default function ProfessionalJobSearch() {
 
       {error ? <p className={styles.error}>{error}</p> : null}
       {loading ? <p className={styles.lead}>Buscando vagas...</p> : null}
-      {!loading && !error ? (
+      {!loading && !error && isPremium === false ? (
+        <section className={styles.matches} aria-label="Vagas compatíveis com você">
+          <h3 className={styles.title}>Vagas compatíveis com você</h3>
+          <div className={styles.premium}>
+            <p>Esta lista fica disponível no plano Premium.</p>
+            <a href="/professional/pagamento">Assinar o plano Premium</a>
+          </div>
+        </section>
+      ) : null}
+      {!loading && !error && isPremium !== false ? (
         <section className={styles.matches} aria-label="Vagas compatíveis com você">
           <h3 className={styles.title}>Vagas compatíveis com você</h3>
           {matchError ? (

@@ -102,8 +102,7 @@ export async function GET(_request: NextRequest) {
       company?.name?.trim() &&
       extra?.cnpj?.trim() &&
       extra?.responsavelNome?.trim() &&
-      extra?.responsavelCpf?.trim() &&
-      extra?.emailCorporativo?.trim()
+      extra?.responsavelCpf?.trim()
     )
 
     const isRegistrationComplete = isTestBypass || isTeamMember || fieldsComplete

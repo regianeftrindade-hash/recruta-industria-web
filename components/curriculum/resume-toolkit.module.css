@@ -10,6 +10,28 @@
   color: #24180a;
 }
 
+.compact {
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 10px 12px;
+}
+
+.compact .title {
+  font-size: 15px;
+}
+
+.compact .note,
+.compact .status {
+  font-size: 12px;
+}
+
+.compact .actions button,
+.compact .secondary {
+  min-height: 34px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
 .title {
   margin: 0;
   font-size: 18px;

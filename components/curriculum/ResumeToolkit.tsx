@@ -370,7 +370,7 @@ export default function ResumeToolkit({
   const generateOnly = focus === "generate";
 
   return (
-    <section className={styles.card} aria-label={generateOnly ? "Gerar currículo em PDF" : "Meu currículo"}>
+    <section className={`${styles.card} ${generateOnly && view === "home" ? styles.compact : ""}`} aria-label={generateOnly ? "Gerar currículo em PDF" : "Meu currículo"}>
       {generateOnly ? null : fileInput}
       {view === "home" ? (
         <>

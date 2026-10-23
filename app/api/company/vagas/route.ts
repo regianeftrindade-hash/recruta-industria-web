@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jsonError } from "@/lib/jobs/job-api";
-import { resolveCompanyPublisher } from "@/lib/jobs/company-publisher";
+import { assertCompanyCanPublish, resolveCompanyPublisher } from "@/lib/jobs/company-publisher";
 import { createCompanyJob, listCompanyJobs } from "@/lib/jobs/job-posting-db";
 
 export async function GET(request: NextRequest) {
@@ -21,6 +21,13 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json().catch(() => null);
+    const status = body && typeof body === "object" && typeof (body as { status?: unknown }).status === "string"
+      ? (body as { status: string }).status
+      : "DRAFT";
+    if (status === "PUBLISHED") {
+      const denied = await assertCompanyCanPublish(access.ownerUserId);
+      if (denied) return denied;
+    }
     const job = await createCompanyJob(access.ownerUserId, access.userId, body);
     return NextResponse.json({ job }, { status: 201 });
   } catch (error) {

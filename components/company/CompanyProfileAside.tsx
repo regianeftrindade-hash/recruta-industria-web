@@ -7,6 +7,7 @@ import DeleteAccountControl from "@/components/shared/DeleteAccountControl";
 import { useCompanyDashboardData } from "@/components/company/CompanyDashboardDataContext";
 import type { CompanyChromeProfile } from "@/components/company/CompanyDashboardDataContext";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
+import { companyVerificationTag } from "@/lib/company/company-verification";
 import {
   DASH,
   dashAside,
@@ -103,12 +104,22 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
     );
   }
 
+  const verificationTag = dash.verificationStatus
+    ? companyVerificationTag({
+        verificationStatus: dash.verificationStatus,
+        cartaoCnpjUrl: dash.companyProfile?.cartaoCnpjUrl,
+        emailCorporativo: dash.companyProfile?.emailCorporativo,
+      })
+    : null;
+
   return (
     <aside style={{ ...dashAside, borderRight: "none", width: "100%", maxWidth: "none" }}>
       <h3 style={{ ...dashSectionTitle, margin: "0 0 12px", fontSize: 14 }}>
         🏢 Perfil da Empresa
-        {dash.companyVerified ? (
-          <span style={{ marginLeft: 8, fontSize: 10, color: "#4ade80", fontWeight: "bold" }}>✓ VERIFICADA</span>
+        {verificationTag ? (
+          <span style={{ marginLeft: 8, fontSize: 10, color: "#8D6B1F", fontWeight: "bold" }}>
+            {verificationTag}
+          </span>
         ) : null}
       </h3>
 

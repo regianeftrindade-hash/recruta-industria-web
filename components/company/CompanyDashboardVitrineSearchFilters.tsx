@@ -137,6 +137,7 @@ export type CompanyDashboardVitrineSearchFiltersProps = {
   buscaAvancadaAberta: boolean;
   loadingProfissionais: boolean;
   advancedFilterDisabled: boolean;
+  searchDisabled?: boolean;
   onFiltrosChange: (filtros: Filtros) => void;
   onToggleBuscaAvancada: () => void;
   onBuscar: () => void;
@@ -149,6 +150,7 @@ export default function CompanyDashboardVitrineSearchFilters({
   buscaAvancadaAberta,
   loadingProfissionais,
   advancedFilterDisabled,
+  searchDisabled = false,
   onFiltrosChange,
   onToggleBuscaAvancada,
   onBuscar,
@@ -242,14 +244,15 @@ export default function CompanyDashboardVitrineSearchFilters({
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
             <button
               onClick={onBuscar}
-              disabled={loadingProfissionais}
+              disabled={loadingProfissionais || searchDisabled}
+              title={searchDisabled ? "A busca de profissionais fica disponível depois da verificação da empresa." : undefined}
               className="ri-dash-btn-primary"
               style={{
                 ...btnGold,
                 padding: "9px 20px",
                 fontSize: 13,
                 fontWeight: 800,
-                opacity: loadingProfissionais ? 0.7 : 1,
+                opacity: loadingProfissionais || searchDisabled ? 0.7 : 1,
               }}
             >
               {loadingProfissionais ? (

@@ -6,6 +6,10 @@ import type {
   CompanyDashboardTabId,
   TalentListDetalhada,
 } from "@/components/company/CompanyDashboardTabs";
+import {
+  isCompanyVerificationStatus,
+  type CompanyVerificationStatus,
+} from "@/lib/company/company-verification";
 
 export type CompanyPlanFeatures = {
   canUseAdvancedFilters?: boolean;
@@ -63,6 +67,8 @@ type DashData = {
   slotsRestantes: number | null;
   isOwner: boolean;
   companyVerified: boolean;
+  verificationStatus: CompanyVerificationStatus | null;
+  canPublishAndSearch: boolean;
   companyProfile: CompanyChromeProfile | null;
   alerts: AlertWithMatches[];
   talentLists: TalentListDetalhada[];
@@ -87,6 +93,8 @@ const EMPTY: DashData = {
   slotsRestantes: null,
   isOwner: true,
   companyVerified: false,
+  verificationStatus: null,
+  canPublishAndSearch: false,
   companyProfile: null,
   alerts: [],
   talentLists: [],
@@ -105,6 +113,26 @@ const TAB_SLICES: Record<CompanyDashboardTabId, CacheSlice[]> = {
   "meu-plano": ["planFeatures"],
   perfil: [],
 };
+
+function readVerification(verification: {
+  verificationStatus?: string;
+  status?: string;
+  canAccessSensitiveProfiles?: boolean;
+} | null | undefined): Pick<DashData, "companyVerified" | "verificationStatus" | "canPublishAndSearch"> {
+  const raw = verification?.verificationStatus || verification?.status;
+  if (!isCompanyVerificationStatus(raw)) {
+    return {
+      companyVerified: false,
+      verificationStatus: null,
+      canPublishAndSearch: false,
+    };
+  }
+  return {
+    companyVerified: raw === "VERIFIED",
+    verificationStatus: raw,
+    canPublishAndSearch: verification?.canAccessSensitiveProfiles === true,
+  };
+}
 
 function parseProfilePayload(data: Record<string, unknown>): Partial<DashData> | null {
   const plan = (data.plan && typeof data.plan === "object" ? data.plan : null) as {
@@ -130,7 +158,11 @@ function parseProfilePayload(data: Record<string, unknown>): Partial<DashData> |
   } | null;
   const verification = (data.verification && typeof data.verification === "object"
     ? data.verification
-    : null) as { status?: string } | null;
+    : null) as {
+      verificationStatus?: string;
+      status?: string;
+      canAccessSensitiveProfiles?: boolean;
+    } | null;
 
   const rawTier = String(plan?.tier || data.planTier || "FREE").trim().toUpperCase() || "FREE";
 
@@ -147,7 +179,7 @@ function parseProfilePayload(data: Record<string, unknown>): Partial<DashData> |
           ? (data.slotsRemaining as number | null)
           : null,
     isOwner: team?.isOwner !== false,
-    companyVerified: verification?.status === "VERIFIED",
+    ...readVerification(verification),
     companyProfile: company
       ? {
           razaoSocial: company.razaoSocial || "",
@@ -174,6 +206,11 @@ async function fetchSlice(slice: CacheSlice): Promise<{ ok: boolean; patch: Part
       const check = await fetch("/api/company/check-registration", { credentials: "include" });
       const checkData = check.ok
         ? ((await check.json().catch(() => null)) as {
+            verification?: {
+              verificationStatus?: string;
+              status?: string;
+              canAccessSensitiveProfiles?: boolean;
+            };
             user?: {
               razaoSocial?: string | null;
               cnpj?: string | null;
@@ -197,6 +234,7 @@ async function fetchSlice(slice: CacheSlice): Promise<{ ok: boolean; patch: Part
           patch: {
             planReady: true,
             planTier: "FREE",
+            ...readVerification(checkData?.verification),
             companyProfile: {
               razaoSocial: u.razaoSocial || "",
               cnpj: u.cnpj ?? null,

@@ -20,6 +20,33 @@
   gap: 8px;
 }
 
+.premium {
+  padding: 10px 12px;
+  border: 2px solid #8d6b1f;
+  border-radius: 12px;
+  background: rgba(232, 197, 106, 0.45);
+}
+
+.premium p {
+  margin: 0;
+  color: #24180a;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.premium a {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 12px;
+  border: 2px solid #8d6b1f;
+  border-radius: 999px;
+  background: #e8c56a;
+  color: #24180a;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
 .reasons {
   margin: 0;
   color: #8d6b1f;

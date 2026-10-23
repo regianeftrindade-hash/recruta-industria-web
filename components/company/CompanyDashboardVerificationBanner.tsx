@@ -3,7 +3,11 @@
 
 import React from "react";
 import Link from "next/link";
-import type { CompanyVerificationStatus } from "@/lib/company/company-verification";
+import {
+  COMPANY_FIELDS_NOTICE,
+  COMPANY_VIEW_ONLY_NOTICE,
+  type CompanyVerificationStatus,
+} from "@/lib/company/company-verification";
 import { DASH } from "@/lib/dashboard-theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 
@@ -11,17 +15,22 @@ export type CompanyDashboardVerificationBannerProps = {
   verificationStatus: CompanyVerificationStatus;
   verificationReason: string | null;
   emailCorporativoVerificado: boolean;
+  cartaoCnpjPreenchido?: boolean;
+  emailCorporativoPreenchido?: boolean;
 };
 
 export default function CompanyDashboardVerificationBanner({
   verificationStatus,
   verificationReason,
   emailCorporativoVerificado,
+  cartaoCnpjPreenchido = false,
+  emailCorporativoPreenchido = false,
 }: CompanyDashboardVerificationBannerProps) {
   const isRejected = verificationStatus === "REJECTED";
   const isPending = verificationStatus === "PENDING";
   const docVerified = verificationStatus === "VERIFIED";
-  const awaitingAdmin = emailCorporativoVerificado && isPending;
+  const awaitingAdmin = emailCorporativoVerificado && cartaoCnpjPreenchido && isPending;
+  const camposVazios = !cartaoCnpjPreenchido || !emailCorporativoPreenchido;
   const showCtas = !emailCorporativoVerificado || isPending || isRejected;
 
   return (
@@ -33,12 +42,17 @@ export default function CompanyDashboardVerificationBanner({
       background: isRejected ? "rgba(220,53,69,0.12)" : "rgba(200,155,60,0.12)",
     }}>
       <p style={{ margin: 0, fontSize: 13, color: DASH.text, lineHeight: 1.5 }}>
-        <strong>Liberação de contatos pendente</strong>
-        {' '}— Você pode buscar profissionais, mas dados sensíveis só aparecem quando:
+        <strong>{awaitingAdmin ? "Em análise" : isRejected ? "Verificação recusada" : "Somente visualização"}</strong>
+        {" "}— {COMPANY_VIEW_ONLY_NOTICE}
       </p>
+      {camposVazios ? (
+        <p style={{ margin: "8px 0 0", fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>
+          {COMPANY_FIELDS_NOTICE}
+        </p>
+      ) : null}
       <ul style={{ margin: "8px 0 0", paddingLeft: 18, fontSize: 12, color: DASH.muted, lineHeight: 1.6 }}>
-        <li>{emailCorporativoVerificado ? '✓' : '○'} E-mail corporativo confirmado por link</li>
-        <li>{docVerified ? '✓' : '○'} Cartão CNPJ anexado e aprovado pelo admin</li>
+        <li>{emailCorporativoVerificado ? "✓" : "○"} E-mail corporativo confirmado por link</li>
+        <li>{docVerified ? "✓" : "○"} Cartão CNPJ anexado e aprovado pelo admin</li>
       </ul>
       {isRejected && verificationReason && (
         <p style={{ margin: "8px 0 0", fontSize: 12, color: "#f87171" }}>{verificationReason}</p>

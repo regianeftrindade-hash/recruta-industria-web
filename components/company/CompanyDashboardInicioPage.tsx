@@ -46,6 +46,7 @@ interface CompanyProfile {
   endereco: string | null;
   emailCorporativo: string | null;
   emailCorporativoVerificado: boolean;
+  cartaoCnpjUrl?: string | null;
   logoUrl?: string | null;
   fotoResponsavelUrl?: string | null;
   email: string;
@@ -318,25 +319,10 @@ export default function CompanyDashboardInicioPage() {
                 verificationStatus={verificationStatus}
                 verificationReason={verificationReason}
                 emailCorporativoVerificado={emailCorporativoVerificado}
+                cartaoCnpjPreenchido={Boolean(companyProfile?.cartaoCnpjUrl?.trim())}
+                emailCorporativoPreenchido={Boolean(companyProfile?.emailCorporativo?.trim() || emailCorporativoVerificado)}
               />
             </div>
-          )}
-
-          {registrationComplete && !canAccessSensitiveProfiles && (
-            <section
-              role="status"
-              style={{
-                ...dashCard,
-                margin: "0 0 10px",
-                padding: 14,
-                border: `2px solid #8D6B1F`,
-              }}
-            >
-              <p style={{ margin: 0, fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>
-                A visualização de perfis na vitrine só é liberada após a verificação da empresa
-                (e-mail corporativo e documento CNPJ aprovados).
-              </p>
-            </section>
           )}
 
           <div style={{ padding: "2px 0 6px", minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
@@ -355,6 +341,7 @@ export default function CompanyDashboardInicioPage() {
             advancedFilterDisabled={
               advancedFilterDisabled || !canAccessSensitiveProfiles || !registrationComplete
             }
+            searchDisabled={!canAccessSensitiveProfiles || !registrationComplete}
             onFiltrosChange={search.setFiltros}
             onToggleBuscaAvancada={search.onToggleBuscaAvancada}
             onBuscar={search.onBuscar}

@@ -27,6 +27,7 @@ import { notifyProfessionalAsync, notifyProfileViewed } from '@/lib/professional
 import { recordCompanyProfileView } from '@/lib/professional/record-profile-view'
 import { listActivePremiumProfileIds } from '@/lib/professional-storage'
 import { profilePublicSlugOrBuild } from '@/lib/profile/resolve-profile-ref'
+import { COMPANY_VIEW_ONLY_NOTICE } from '@/lib/company/company-verification'
 
 function salarySearchTerms(input: string): string[] {
   const trimmed = input.trim()
@@ -234,7 +235,7 @@ export async function GET(request: NextRequest) {
         requiresVerification: !verification.canAccessSensitiveProfiles,
         error: !registrationComplete
           ? 'Complete o cadastro da empresa para visualizar profissionais.'
-          : 'Conclua a verificação da empresa para visualizar profissionais na vitrine.',
+          : COMPANY_VIEW_ONLY_NOTICE,
       })
     }
 

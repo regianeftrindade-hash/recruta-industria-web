@@ -446,6 +446,8 @@ export default function DashboardProfissional() {
     }
   };
 
+  const paginaInteira = abaDireita === "oportunidades" || abaDireita === "vagas";
+
   return (
     <DashboardThemeShell className="ri-dash-prof" style={{ width: "100%", maxWidth: "none" }}>
       <header
@@ -563,7 +565,7 @@ export default function DashboardProfissional() {
           display: "grid",
           gridTemplateColumns: "1fr",
           width: "100%",
-          minHeight: abaDireita === "oportunidades" ? 0 : "calc(100vh - 90px)",
+          minHeight: paginaInteira ? 0 : "calc(100vh - 90px)",
           alignItems: "stretch",
         }}
       >
@@ -571,7 +573,8 @@ export default function DashboardProfissional() {
         <main
           style={{
             padding: "12px 10px 12px 12px",
-            overflowY: "auto",
+            overflow: "visible",
+            overflowY: "visible",
             maxHeight: "none",
             minHeight: 0,
             borderRight: "none",
@@ -607,14 +610,15 @@ export default function DashboardProfissional() {
         <aside
           style={{
             padding: "12px 12px 12px 10px",
-            overflowY: abaDireita === "oportunidades" ? "visible" : "auto",
-            maxHeight: abaDireita === "oportunidades" ? "none" : "calc(100vh - 90px)",
+            overflow: paginaInteira ? "visible" : "auto",
+            overflowY: paginaInteira ? "visible" : "auto",
+            maxHeight: paginaInteira ? "none" : "calc(100vh - 90px)",
             minHeight: 0,
             display: abaDireita === "perfil" ? "none" : "flex",
             flexDirection: "column",
             gap: 10,
             minWidth: 0,
-            scrollbarGutter: abaDireita === "oportunidades" ? "auto" : "stable",
+            scrollbarGutter: paginaInteira ? "auto" : "stable",
           }}
         >
           {abaDireita === "vagas" && (

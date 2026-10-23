@@ -16,6 +16,8 @@ import ApplicationModeFields from "@/components/jobs/ApplicationModeFields";
 import { facebookShareUrl, publicJobUrl, whatsAppShareUrl } from "@/lib/jobs/public-job-link";
 import fields from "@/app/admin/vagas/vagas-admin.module.css";
 import styles from "./company-vagas.module.css";
+import { useCompanyDashboardDataOptional } from "@/components/company/CompanyDashboardDataContext";
+import { COMPANY_VIEW_ONLY_NOTICE } from "@/lib/company/company-verification";
 
 type Screen = "form" | "list" | "applications";
 
@@ -290,6 +292,8 @@ export default function CompanyVagasPanel({
   showOrigin?: boolean;
 } = {}) {
   const router = useRouter();
+  const dash = useCompanyDashboardDataOptional();
+  const publicacaoBloqueada = Boolean(dash?.planReady && !dash.canPublishAndSearch);
   const restored = useRef(false);
   const [companyName, setCompanyName] = useState("");
   const [jobs, setJobs] = useState<AdminJob[]>([]);
@@ -408,6 +412,7 @@ export default function CompanyVagasPanel({
   }
 
   function openNew() {
+    if (publicacaoBloqueada) return;
     if (!confirmLeave()) return;
     setSelectedId(null);
     rememberForm(emptyForm(companyName));
@@ -458,6 +463,10 @@ export default function CompanyVagasPanel({
 
   async function save(status: string, nextScreen: Screen = "form") {
     if (busy) return;
+    if (status === "PUBLISHED" && publicacaoBloqueada) {
+      setError(COMPANY_VIEW_ONLY_NOTICE);
+      return;
+    }
     setBusy(true);
     setError("");
     setMessage("");
@@ -492,6 +501,10 @@ export default function CompanyVagasPanel({
 
   async function changeStatus(job: AdminJob, status: string) {
     if (busy) return;
+    if (status === "PUBLISHED" && publicacaoBloqueada) {
+      setError(COMPANY_VIEW_ONLY_NOTICE);
+      return;
+    }
     setBusy(true);
     setError("");
     setMessage("");
@@ -605,7 +618,13 @@ export default function CompanyVagasPanel({
           <button type="button" className={`${styles.tab} ${screen !== "form" ? styles.tabOn : ""}`} onClick={openList}>
             Vagas publicadas ({jobs.length})
           </button>
-          <button type="button" className={`${styles.tab} ${screen === "form" ? styles.tabOn : ""}`} onClick={openNew}>
+          <button
+            type="button"
+            className={`${styles.tab} ${screen === "form" ? styles.tabOn : ""}`}
+            onClick={openNew}
+            disabled={publicacaoBloqueada}
+            title={publicacaoBloqueada ? COMPANY_VIEW_ONLY_NOTICE : undefined}
+          >
             + Nova vaga
           </button>
         </div>
@@ -744,7 +763,12 @@ export default function CompanyVagasPanel({
               </button>
             )}
             {selected?.status !== "PUBLISHED" ? (
-              <button type="button" disabled={busy} onClick={() => void save("PUBLISHED", "list")}>
+              <button
+                type="button"
+                disabled={busy || publicacaoBloqueada}
+                title={publicacaoBloqueada ? COMPANY_VIEW_ONLY_NOTICE : undefined}
+                onClick={() => void save("PUBLISHED", "list")}
+              >
                 Publicar vaga
               </button>
             ) : null}
@@ -797,7 +821,13 @@ export default function CompanyVagasPanel({
                       </button>
                     ) : null}
                     {job.status === "UNPUBLISHED" ? (
-                      <button type="button" className={styles.ghost} disabled={busy} onClick={() => void changeStatus(job, "PUBLISHED")}>
+                      <button
+                        type="button"
+                        className={styles.ghost}
+                        disabled={busy || publicacaoBloqueada}
+                        title={publicacaoBloqueada ? COMPANY_VIEW_ONLY_NOTICE : undefined}
+                        onClick={() => void changeStatus(job, "PUBLISHED")}
+                      >
                         Reativar vaga
                       </button>
                     ) : null}

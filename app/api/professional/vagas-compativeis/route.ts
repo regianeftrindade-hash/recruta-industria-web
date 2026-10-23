@@ -5,6 +5,7 @@ import { parseJobSearch } from "@/lib/jobs/job-search";
 import { searchPublicJobs } from "@/lib/jobs/job-posting-db";
 import { jsonError } from "@/lib/jobs/job-api";
 import { requireCurrentProfessional } from "@/lib/professional/current-professional";
+import { getProfessionalPlanContext } from "@/lib/professional/professional-plan";
 
 function textList(value: string | null | undefined): string[] {
   if (!value) return [];
@@ -29,6 +30,19 @@ export async function GET(request: NextRequest) {
   try {
     const auth = await requireCurrentProfessional(request);
     if (!auth.ok) return auth.response;
+
+    const plan = await getProfessionalPlanContext(auth.user.id);
+    if (!plan.isPremium) {
+      return NextResponse.json(
+        {
+          error: "Vagas compatíveis com você estão disponíveis no plano Premium.",
+          premiumRequired: true,
+          jobs: [],
+          total: 0,
+        },
+        { status: 403 },
+      );
+    }
 
     const profile = await prisma.profile.findUnique({
       where: { userId: auth.user.id },
