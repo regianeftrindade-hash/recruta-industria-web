@@ -29,3 +29,24 @@ export function jobApplicationDeadline(value: {
   const observations = value.observations?.match(PRAZO);
   return observations?.[1] ?? null;
 }
+
+function publicationTime(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value.trim());
+  if (!match) return null;
+  const time = Date.UTC(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+  return Number.isNaN(time) ? null : time;
+}
+
+/** Mais nova primeiro. Sem data fica no fim. Datas iguais mantêm a ordem recebida. */
+export function comparePublicationDateDesc(
+  a: string | null | undefined,
+  b: string | null | undefined,
+): number {
+  const left = publicationTime(a);
+  const right = publicationTime(b);
+  if (left == null && right == null) return 0;
+  if (left == null) return 1;
+  if (right == null) return -1;
+  return right - left;
+}

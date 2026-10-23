@@ -52,11 +52,30 @@ describe("vagas compatíveis", () => {
     expect(match?.reasons).toEqual(["Cargo compatível"]);
   });
 
-  it("ordena pela quantidade de correspondências e não inventa vaga", () => {
+  it("não inclui vaga sem correspondência", () => {
     const ranked = rankCompatibleJobs(profile, [
       job({ id: "fraca", title: "Auxiliar administrativo", description: "Escritório.", workplace: "Curitiba/PR" }),
       job({ id: "forte", title: "Operador de produção", workplace: "Joinville/SC" }),
     ]);
     expect(ranked.map((item) => item.id)).toEqual(["forte"]);
+  });
+
+  it("ordena as correspondências da publicação mais nova para a mais antiga", () => {
+    const ranked = rankCompatibleJobs(profile, [
+      job({
+        id: "antiga",
+        publicationDate: "01/09/2026",
+        title: "Operador de produção soldador",
+        description: "Solda MIG na linha.",
+        workplace: "Joinville/SC",
+      }),
+      job({
+        id: "nova",
+        publicationDate: "23/10/2026",
+        title: "Operador de produção",
+        workplace: "Recife/PE",
+      }),
+    ]);
+    expect(ranked.map((item) => item.id)).toEqual(["nova", "antiga"]);
   });
 });

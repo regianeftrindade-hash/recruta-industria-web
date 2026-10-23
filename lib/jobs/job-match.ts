@@ -1,4 +1,5 @@
 import type { PublicJob } from "@/lib/jobs/job-posting";
+import { comparePublicationDateDesc } from "@/lib/jobs/public-job-display";
 
 export type JobMatchProfile = {
   cargos: string[];
@@ -75,6 +76,6 @@ export function rankCompatibleJobs<T extends PublicJob>(
       const match = matchPublicJob(profile, job);
       return match ? [{ ...job, reasons: match.reasons }] : [];
     })
-    .sort((a, b) => b.reasons.length - a.reasons.length)
+    .sort((a, b) => comparePublicationDateDesc(a.publicationDate, b.publicationDate))
     .slice(0, limit);
 }
