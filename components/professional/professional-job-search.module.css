@@ -303,6 +303,36 @@
   gap: 8px;
 }
 
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.pager button {
+  min-width: 36px;
+  min-height: 32px;
+  padding: 4px 10px;
+  border: 2px solid #8d6b1f;
+  border-radius: 999px;
+  background: #e8c56a;
+  color: #24180a;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pager button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.pagerOn {
+  background: #8d6b1f !important;
+  color: #f3e6c8 !important;
+}
+
 .card {
   padding: 12px;
   border: 2px solid #8D6B1F;

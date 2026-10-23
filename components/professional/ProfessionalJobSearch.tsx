@@ -87,6 +87,17 @@ function excerpt(value: string): string {
 
 const BUSCAS_KEY = "ri-profissional-buscas-vagas";
 const MAX_BUSCAS = 6;
+const VAGAS_POR_PAGINA = 10;
+
+function paginasDaBarra(atual: number, total: number): number[] {
+  const janela = 5;
+  let inicio = Math.max(1, atual - 2);
+  let fim = Math.min(total, inicio + janela - 1);
+  inicio = Math.max(1, fim - janela + 1);
+  const numeros: number[] = [];
+  for (let numero = inicio; numero <= fim; numero += 1) numeros.push(numero);
+  return numeros;
+}
 
 type BuscaSalva = { id: string; form: SearchState; label: string };
 
@@ -263,6 +274,8 @@ export default function ProfessionalJobSearch() {
   const [buscas, setBuscas] = useState<BuscaSalva[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [pagina, setPagina] = useState(1);
+  const listaRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     if (!form.estado) {
@@ -296,6 +309,7 @@ export default function ProfessionalJobSearch() {
     setLoading(true);
     setError("");
     setMatchError("");
+    setPagina(1);
     setConsulta(next);
     const params = new URLSearchParams();
     const faixa = FAIXAS_SALARIO.find((item) => item.id === next.faixa);
@@ -355,6 +369,16 @@ export default function ProfessionalJobSearch() {
 
   function update<K extends keyof SearchState>(key: K, value: SearchState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  const totalPaginas = Math.ceil(jobs.length / VAGAS_POR_PAGINA);
+  const paginaAtual = totalPaginas === 0 ? 1 : Math.min(pagina, totalPaginas);
+  const vagasDaPagina = jobs.slice((paginaAtual - 1) * VAGAS_POR_PAGINA, paginaAtual * VAGAS_POR_PAGINA);
+
+  function irParaPagina(numero: number) {
+    const destino = Math.min(Math.max(1, numero), Math.max(totalPaginas, 1));
+    setPagina(destino);
+    listaRef.current?.scrollIntoView({ block: "start" });
   }
 
   const opcoesEstado = ESTADOS.map((estado) => ({
@@ -507,36 +531,52 @@ export default function ProfessionalJobSearch() {
         </section>
       ) : null}
 
-      {!loading && !error ? (
-        <p className={styles.count}>
-          {jobs.length === 1 ? "1 vaga em todas as vagas" : `${jobs.length} vagas em todas as vagas`}
-          {temFiltro(consulta) ? " com esses filtros" : ""}
-        </p>
-      ) : null}
-      {!loading && !error ? <h3 className={styles.title}>Todas as vagas</h3> : null}
+      {!loading && !error ? <h3 ref={listaRef} className={styles.title}>Todas as vagas</h3> : null}
       {!loading && !error && jobs.length === 0 ? (
         <p className={styles.empty}>
           {temFiltro(consulta) ? "Nenhuma outra vaga encontrada com esses filtros." : "Nenhuma outra vaga publicada no momento."}
         </p>
       ) : null}
 
-      <div className={styles.list}>
-        {jobs.map((job) => (
-          <article key={job.id} className={styles.card}>
-            <h3>{job.title}</h3>
-            <p className={styles.company}>{job.companyLabel}</p>
-            <ul>
-              {job.publicationDate ? <li>{job.publicationDate}</li> : null}
-              {job.salaryLabel ? <li>{job.salaryLabel}</li> : null}
-              {job.contractLabel ? <li>{job.contractLabel}</li> : null}
-              {job.workModeLabel ? <li>{job.workModeLabel}</li> : null}
-              {job.workplace ? <li>{job.workplace}</li> : null}
-            </ul>
-            {job.description ? <p className={styles.excerpt}>{excerpt(job.description)}</p> : null}
-            <a href={`/vagas/${job.id}`}>Ver vaga</a>
-          </article>
-        ))}
-      </div>
+      {!loading && !error && vagasDaPagina.length > 0 ? (
+        <div className={styles.list}>
+          {vagasDaPagina.map((job) => (
+            <article key={job.id} className={styles.card}>
+              <h3>{job.title}</h3>
+              <p className={styles.company}>{job.companyLabel}</p>
+              <ul>
+                {job.publicationDate ? <li>{job.publicationDate}</li> : null}
+                {job.salaryLabel ? <li>{job.salaryLabel}</li> : null}
+                {job.contractLabel ? <li>{job.contractLabel}</li> : null}
+                {job.workModeLabel ? <li>{job.workModeLabel}</li> : null}
+                {job.workplace ? <li>{job.workplace}</li> : null}
+              </ul>
+              {job.description ? <p className={styles.excerpt}>{excerpt(job.description)}</p> : null}
+              <a href={`/vagas/${job.id}`}>Ver vaga</a>
+            </article>
+          ))}
+        </div>
+      ) : null}
+
+      {!loading && !error && totalPaginas > 0 ? (
+        <nav className={styles.pager} aria-label="Páginas de todas as vagas">
+          <button type="button" disabled={paginaAtual <= 1} onClick={() => irParaPagina(1)}>Primeira</button>
+          <button type="button" disabled={paginaAtual <= 1} onClick={() => irParaPagina(paginaAtual - 1)}>Voltar</button>
+          {paginasDaBarra(paginaAtual, totalPaginas).map((numero) => (
+            <button
+              key={numero}
+              type="button"
+              aria-current={numero === paginaAtual ? "page" : undefined}
+              className={numero === paginaAtual ? styles.pagerOn : undefined}
+              onClick={() => irParaPagina(numero)}
+            >
+              {numero}
+            </button>
+          ))}
+          <button type="button" disabled={paginaAtual >= totalPaginas} onClick={() => irParaPagina(paginaAtual + 1)}>Próxima</button>
+          <button type="button" disabled={paginaAtual >= totalPaginas} onClick={() => irParaPagina(totalPaginas)}>Última</button>
+        </nav>
+      ) : null}
     </section>
   );
 }
