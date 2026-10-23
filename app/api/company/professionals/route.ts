@@ -24,6 +24,7 @@ import { filterHabilidadesExtras } from '@/lib/company-profile-display'
 import { readSnapshotDisplay } from '@/lib/professional-profile-map'
 import { listarPerfisVisualizados } from '@/lib/profile-messages'
 import { notifyProfessionalAsync, notifyProfileViewed } from '@/lib/professional-notifications'
+import { recordCompanyProfileView } from '@/lib/professional/record-profile-view'
 import { listActivePremiumProfileIds } from '@/lib/professional-storage'
 import { profilePublicSlugOrBuild } from '@/lib/profile/resolve-profile-ref'
 
@@ -551,12 +552,11 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    await prisma.profileView.create({
-      data: {
-        profileId,
-        companyUserId: dataUserId,
-        viewType: 'FULL',
-      },
+    await recordCompanyProfileView({
+      profileId,
+      profileOwnerUserId: profile.userId,
+      companyUserId: dataUserId,
+      viewType: 'FULL',
     })
 
     notifyProfessionalAsync(() =>

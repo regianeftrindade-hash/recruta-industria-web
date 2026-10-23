@@ -40,6 +40,8 @@ import RegisterExtendedSections from './RegisterExtendedSections';
 import { focarCampoCadastro } from '@/lib/ui/focar-campo-cadastro';
 import RegisterWizardChrome, { REGISTER_WIZARD_STEPS } from './RegisterWizardChrome';
 import RegisterCollapsibleSection from '@/components/ui/RegisterCollapsibleSection';
+import ResumeToolkit from '@/components/curriculum/ResumeToolkit';
+import { sanitizeResumeDraft, type ResumeDraft } from '@/lib/curriculum/resume-draft';
 import PageLoader from '@/app/components/PageLoader';
 import {
   calculateProfileCompletion,
@@ -481,6 +483,7 @@ export default function CadastroProfissional({
   const listaEstados = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
   /** Cidade vinda do currículo — aplica quando a lista IBGE do estado carregar. */
   const pendingCidadeImportRef = useRef<string | null>(null);
+  const pendingResumeRef = useRef<File | null>(null);
 
   const aplicarDadosDoPerfil = (formEdit: {
     formData: Record<string, unknown>;
@@ -1112,6 +1115,74 @@ export default function CadastroProfissional({
     };
   }, [formData.estado]);
 
+  async function enviarCurriculoPendente(): Promise<string | null> {
+    const file = pendingResumeRef.current;
+    if (!file) return null;
+    const body = new FormData();
+    body.set("file", file);
+    body.set("type", "curriculos");
+    const uploaded = await fetch("/api/upload", { method: "POST", body, credentials: "include" });
+    const uploadData = await uploaded.json().catch(() => ({}));
+    if (!uploaded.ok || !uploadData?.file?.path) {
+      return uploadData?.error || "Não foi possível enviar o currículo. A conta foi mantida e o arquivo não foi salvo.";
+    }
+    const saved = await fetch("/api/professional/curriculo", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: uploadData.file.path }),
+    });
+    const savedData = await saved.json().catch(() => ({}));
+    if (!saved.ok) {
+      return savedData?.error || "Não foi possível associar o currículo ao perfil. Tente de novo em Meu currículo.";
+    }
+    pendingResumeRef.current = null;
+    setFormData((prev) => ({ ...prev, curriculo: String(uploadData.file.path) }));
+    return null;
+  }
+
+  const aplicarRascunhoCurriculo = (draft: ResumeDraft) => {
+    setFormData((prev) => ({
+      ...prev,
+      nome: draft.nome,
+      email: draft.email || prev.email,
+      telefone: draft.telefone,
+      cidade: draft.cidade,
+      estado: draft.estado,
+      cargoDesejado: draft.objetivo,
+      mensagemEmpresas: draft.resumo,
+      escolaridade: draft.escolaridade,
+      cursoFormacao: draft.curso,
+      instituicaoFormacao: draft.instituicao,
+      anoConclusaoFormacao: draft.ano,
+      categoriaCNH: draft.cnh,
+      possuiCNH: draft.cnh ? "Sim" : prev.possuiCNH,
+      maquinasEquipamentos: draft.habilidades,
+      qualidadeProcessos: [],
+      informatica: [],
+    }));
+    setTelefone(draft.telefone);
+    setEmpresas(
+      draft.experiencias.length
+        ? draft.experiencias.map((item) => ({
+          nome: item.empresa,
+          cargo: item.cargo,
+          segmento: item.segmento,
+          dataInicio: item.inicio,
+          dataFim: item.fim,
+          descricao: item.atividades,
+        }))
+        : [{ nome: "", cargo: "", segmento: "", dataInicio: "", dataFim: "", descricao: "" }],
+    );
+    setCursos((prev) => {
+      const next = draft.cursos.map((nome) => (
+        prev.find((item) => item.nome === nome) || { nome, possuiCertificado: false }
+      ));
+      return next.length ? next : [{ nome: "", possuiCertificado: false }];
+    });
+    setIdiomas(draft.idiomas.length ? draft.idiomas.map((selecionado) => ({ selecionado })) : [{ selecionado: "" }]);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -1225,6 +1296,11 @@ export default function CadastroProfissional({
         }
 
         if (profileData.success) {
+          const falhaCurriculo = await enviarCurriculoPendente();
+          if (falhaCurriculo) {
+            setFormFeedback({ tone: "error", message: falhaCurriculo });
+            return;
+          }
           await salvarSobreMimPerfil();
           salvarBackupLocal({
             ...dadosParaSalvar,
@@ -1321,6 +1397,11 @@ export default function CadastroProfissional({
       }
 
       if (data.completedExisting) {
+        const falhaCurriculo = await enviarCurriculoPendente();
+        if (falhaCurriculo) {
+          setFormFeedback({ tone: "error", message: falhaCurriculo });
+          return;
+        }
         salvarBackupLocal({
           ...dadosParaSalvar,
           dataNascimentoDisplay: dataNascimentoValue,
@@ -1340,6 +1421,11 @@ export default function CadastroProfissional({
         });
 
         if (signResult?.ok) {
+          const falhaCurriculo = await enviarCurriculoPendente();
+          if (falhaCurriculo) {
+            setFormFeedback({ tone: "error", message: falhaCurriculo });
+            return;
+          }
           salvarBackupLocal({
             ...dadosParaSalvar,
             dataNascimentoDisplay: dataNascimentoValue,
@@ -1508,6 +1594,46 @@ export default function CadastroProfissional({
               ))}
             </ul>
           </div>
+        )}
+
+        {(isEditMode || wizardStep === 0) && (
+          <ResumeToolkit
+            variant={isEditMode ? "profile" : "register"}
+            authenticated={Boolean(session?.user?.email)}
+            getLocalDraft={() => sanitizeResumeDraft({
+              nome: formData.nome,
+              cidade: formData.cidade,
+              estado: formData.estado,
+              telefone: telefone || formData.telefone,
+              email: formData.email,
+              objetivo: formData.cargoDesejado,
+              resumo: formData.mensagemEmpresas,
+              escolaridade: formData.escolaridade,
+              curso: formData.cursoFormacao,
+              instituicao: formData.instituicaoFormacao,
+              ano: formData.anoConclusaoFormacao,
+              experiencias: empresas.map((item) => ({
+                empresa: item.nome,
+                cargo: item.cargo,
+                inicio: item.dataInicio,
+                fim: item.dataFim,
+                atividades: item.descricao,
+                segmento: item.segmento,
+              })),
+              cursos: cursos.map((item) => item.nome),
+              habilidades: [
+                ...formData.maquinasEquipamentos,
+                ...formData.qualidadeProcessos,
+                ...formData.informatica,
+              ],
+              idiomas: idiomas.map((item) => serializeIdioma(item)),
+              cnh: formData.possuiCNH === "Sim" ? formData.categoriaCNH : "",
+            })}
+            onDraftApplied={aplicarRascunhoCurriculo}
+            onHoldFile={(file) => {
+              pendingResumeRef.current = file;
+            }}
+          />
         )}
 
         <div inert={travado ? true : undefined} className={travado ? styles.cadastroTravado : undefined}>

@@ -205,6 +205,7 @@ type FormState = {
   applicationMode: ApplicationMode;
   externalApplyUrl: string;
   applicationEmail: string;
+  applicationWhatsapp: string;
 };
 
 type ApplicationRow = {
@@ -236,6 +237,7 @@ function emptyForm(companyName: string): FormState {
     applicationMode: "INTERNAL",
     externalApplyUrl: "",
     applicationEmail: "",
+    applicationWhatsapp: "",
   };
 }
 
@@ -256,6 +258,7 @@ function formFromJob(job: AdminJob): FormState {
     applicationMode: job.applicationMode,
     externalApplyUrl: job.externalApplyUrl,
     applicationEmail: job.applicationEmail,
+    applicationWhatsapp: job.applicationWhatsapp,
   };
 }
 
@@ -722,9 +725,11 @@ export default function CompanyVagasPanel({
                 mode={form.applicationMode}
                 url={form.externalApplyUrl}
                 email={form.applicationEmail}
+                whatsapp={form.applicationWhatsapp}
                 onMode={(mode) => update("applicationMode", mode)}
                 onUrl={(value) => update("externalApplyUrl", value)}
                 onEmail={(value) => update("applicationEmail", value)}
+                onWhatsapp={(value) => update("applicationWhatsapp", value)}
               />
             </div>
           </div>

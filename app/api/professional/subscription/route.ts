@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth.config';
 import { prisma } from '@/lib/db';
 import { setProfessionalPlanTier } from '@/lib/professional-storage';
 import { getProfessionalPlanContext } from '@/lib/professional-plan';
-import { activateProfessionalPlanFromPayment } from '@/lib/professional-payment';
+import { activateProfessionalPlanFromPayment, findLatestProfessionalCharge } from '@/lib/professional-payment';
 import {
   getPaidProfessionalPlanTiers,
   getProfessionalPlanDefinition,
@@ -29,6 +29,7 @@ export async function GET() {
 
   const planContext = await getProfessionalPlanContext(user.id);
   const billing = await getProfessionalSubscriptionBilling(user.id);
+  const latestCharge = await findLatestProfessionalCharge(user.id);
   return NextResponse.json({
     currentTier: planContext.tier,
     isPremium: planContext.isPremium,
@@ -39,6 +40,13 @@ export async function GET() {
     gatewaySubscriptionId: billing?.gatewaySubscriptionId ?? null,
     plan: planContext.plan,
     features: planContext.features,
+    latestCharge: latestCharge
+      ? {
+          status: latestCharge.status,
+          reference: latestCharge.reference,
+          createdAt: latestCharge.createdAt.toISOString(),
+        }
+      : null,
   });
 }
 

@@ -1,6 +1,13 @@
 import { sendEmailDetailed } from "@/lib/infra/email";
 import { JobPostingError } from "@/lib/jobs/job-posting";
-import { isPdfBuffer, RESUME_REQUIRED_MESSAGE, resumePathOwnedBy } from "@/lib/jobs/resume-pdf";
+import {
+  DOCX_MIME,
+  isDocxBuffer,
+  isPdfBuffer,
+  RESUME_REQUIRED_MESSAGE,
+  resumeFormatFromName,
+  resumePathOwnedBy,
+} from "@/lib/jobs/resume-pdf";
 import { downloadPrivateFile, extractStoragePath } from "@/lib/storage/private-uploads";
 
 const SEND_FAILURE = "Não foi possível enviar a candidatura agora. Tente novamente mais tarde.";
@@ -63,11 +70,13 @@ export function buildApplicationMail(input: {
   jobTitle: string;
   professionalName: string | null;
   profile?: ApplicationProfileMail | null;
+  resumeFormat?: "pdf" | "docx";
 }): { subject: string; text: string; html: string } {
   const title = input.jobTitle.trim() || "Vaga";
   const name = input.professionalName?.trim() || "Profissional";
   const profileLines = input.profile ? applicationProfileLines(input.profile) : [];
   const profileUrl = filled(input.profile?.profileUrl);
+  const formatLabel = input.resumeFormat === "docx" ? "DOCX" : "PDF";
   const body = profileLines.length || profileUrl
     ? [
       "Este profissional não tinha currículo em PDF salvo. O perfil cadastrado no Recruta Indústria segue abaixo.",
@@ -75,7 +84,7 @@ export function buildApplicationMail(input: {
       ...profileLines,
       ...(profileUrl ? ["", `Perfil no site: ${profileUrl}`] : []),
     ]
-    : ["O currículo do candidato está anexado a este e-mail em formato PDF."];
+    : [`O currículo do candidato está anexado a este e-mail em formato ${formatLabel}.`];
   const text = [
     "Olá,",
     "",
@@ -113,10 +122,21 @@ export async function tryLoadOwnedResumePdf(
   }
 }
 
-export async function loadOwnedResumePdf(email: string, stored: string | null | undefined): Promise<Buffer> {
+export type OwnedResume = {
+  bytes: Buffer;
+  format: "pdf" | "docx";
+  filename: string;
+  contentType: string;
+};
+
+export async function loadOwnedResume(
+  email: string,
+  stored: string | null | undefined,
+): Promise<OwnedResume> {
   const raw = stored?.trim() || "";
   const path = raw.includes("://") ? extractStoragePath(raw) : raw.replace(/^\/+/, "").split("?")[0];
-  if (!path || !resumePathOwnedBy(path, email)) {
+  const format = path ? resumeFormatFromName(path) : null;
+  if (!path || !format || !resumePathOwnedBy(path, email)) {
     throw new JobPostingError(RESUME_REQUIRED_MESSAGE, 400, "RESUME_REQUIRED");
   }
 
@@ -128,10 +148,25 @@ export async function loadOwnedResumePdf(email: string, stored: string | null | 
     throw new JobPostingError(SEND_FAILURE, 502);
   }
 
-  if (!bytes || !isPdfBuffer(bytes)) {
+  const valid = Boolean(bytes) && (format === "pdf" ? isPdfBuffer(bytes as Buffer) : isDocxBuffer(bytes as Buffer));
+  if (!bytes || !valid) {
     throw new JobPostingError(RESUME_REQUIRED_MESSAGE, 400, "RESUME_REQUIRED");
   }
-  return bytes;
+
+  return {
+    bytes,
+    format,
+    filename: format === "pdf" ? "curriculo.pdf" : "curriculo.docx",
+    contentType: format === "pdf" ? "application/pdf" : DOCX_MIME,
+  };
+}
+
+export async function loadOwnedResumePdf(email: string, stored: string | null | undefined): Promise<Buffer> {
+  const resume = await loadOwnedResume(email, stored);
+  if (resume.format !== "pdf") {
+    throw new JobPostingError(RESUME_REQUIRED_MESSAGE, 400, "RESUME_REQUIRED");
+  }
+  return resume.bytes;
 }
 
 export async function sendJobApplicationEmail(input: {
@@ -140,12 +175,15 @@ export async function sendJobApplicationEmail(input: {
   professionalName: string | null;
   professionalEmail: string;
   resume?: Buffer | null;
+  resumeFormat?: "pdf" | "docx";
   profile?: ApplicationProfileMail | null;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
+  const format = input.resumeFormat === "docx" ? "docx" : "pdf";
   const mail = buildApplicationMail({
     jobTitle: input.jobTitle,
     professionalName: input.professionalName,
     profile: input.resume ? null : input.profile,
+    resumeFormat: input.resume ? format : undefined,
   });
   const result = await sendEmailDetailed({
     to: input.to,
@@ -156,9 +194,9 @@ export async function sendJobApplicationEmail(input: {
     attachments: input.resume
       ? [
         {
-          filename: "curriculo.pdf",
+          filename: format === "docx" ? "curriculo.docx" : "curriculo.pdf",
           content: input.resume,
-          contentType: "application/pdf",
+          contentType: format === "docx" ? DOCX_MIME : "application/pdf",
         },
       ]
       : undefined,

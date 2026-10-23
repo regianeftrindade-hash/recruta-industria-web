@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import {
   type AdminJob,
+  type ApplicationMode,
   type JobRecord,
   type JobStatus,
   type JobWriteData,
@@ -17,15 +18,23 @@ import {
   toPublicJob,
 } from "@/lib/jobs/job-posting";
 import {
+  assertServerDelivery,
+  discloseApplicationContact,
+  normalizeApplicationMode,
+  type ApplyDelivery,
+  type ApplicantContact,
+  type ProfessionalPlan,
+} from "@/lib/jobs/application-access";
+import {
   APPLICATION_EMAIL_SUCCESS,
-  APPLICATION_PROFILE_EMAIL_SUCCESS,
+  loadOwnedResume,
   sendJobApplicationEmail,
-  tryLoadOwnedResumePdf,
-  type ApplicationProfileMail,
 } from "@/lib/jobs/job-application-mail";
-import { PUBLIC_SITE_ORIGIN } from "@/lib/jobs/public-job-link";
-import { companyProfessionalPath } from "@/lib/profile/public-slug";
+import { savedResumeLabel } from "@/lib/jobs/resume-pdf";
+import { extractStoragePath } from "@/lib/storage/private-uploads";
 import { parseJobSearch, publicJobWhere, type JobSearchFilters } from "@/lib/jobs/job-search";
+import { ensureJobApplicationWhatsappColumn } from "@/lib/infra/ensure-db-schema";
+import { getProfessionalPlanTier } from "@/lib/professional/professional-storage";
 
 function asRecord(job: JobPosting, applicationCount = 0): JobRecord {
   return {
@@ -46,6 +55,7 @@ function asRecord(job: JobPosting, applicationCount = 0): JobRecord {
     applicationMode: job.applicationMode,
     externalApplyUrl: job.externalApplyUrl,
     applicationEmail: job.applicationEmail,
+    applicationWhatsapp: job.applicationWhatsapp,
     status: job.status,
     origin: job.origin,
     companyUserId: job.companyUserId,
@@ -110,12 +120,14 @@ function writeData(data: JobWriteData, current?: { publishedAt: Date | null; clo
     applicationMode: data.applicationMode,
     externalApplyUrl: data.externalApplyUrl,
     applicationEmail: data.applicationEmail,
+    applicationWhatsapp: data.applicationWhatsapp,
     status: data.status,
     ...statusTimestamps(data.status, current),
   };
 }
 
 export async function listAdminJobs(): Promise<AdminJob[]> {
+  await ensureJobApplicationWhatsappColumn();
   const rows = await prisma.jobPosting.findMany({
     orderBy: [{ updatedAt: "desc" }],
     include: { _count: { select: { applications: true } } },
@@ -125,6 +137,7 @@ export async function listAdminJobs(): Promise<AdminJob[]> {
 }
 
 export async function createAdminJob(createdByUserId: string, input: unknown): Promise<AdminJob> {
+  await ensureJobApplicationWhatsappColumn();
   const data = parseJobWrite(input);
   const created = await prisma.jobPosting.create({
     data: {
@@ -142,6 +155,7 @@ export async function createAdminJob(createdByUserId: string, input: unknown): P
 }
 
 export async function updateAdminJob(id: string, input: unknown): Promise<AdminJob> {
+  await ensureJobApplicationWhatsappColumn();
   const jobId = assertJobId(id);
   const current = await prisma.jobPosting.findUnique({ where: { id: jobId } });
   if (!current) {
@@ -165,6 +179,7 @@ export async function updateAdminJob(id: string, input: unknown): Promise<AdminJ
 }
 
 export async function listCompanyJobs(companyOwnerUserId: string): Promise<AdminJob[]> {
+  await ensureJobApplicationWhatsappColumn();
   const rows = await prisma.jobPosting.findMany({
     where: { companyUserId: companyOwnerUserId },
     orderBy: [{ updatedAt: "desc" }],
@@ -178,6 +193,7 @@ export async function createCompanyJob(
   createdByUserId: string,
   input: unknown,
 ): Promise<AdminJob> {
+  await ensureJobApplicationWhatsappColumn();
   const data = parseJobWrite(input);
   const created = await prisma.jobPosting.create({
     data: {
@@ -199,6 +215,7 @@ export async function updateCompanyJob(
   id: string,
   input: unknown,
 ): Promise<AdminJob> {
+  await ensureJobApplicationWhatsappColumn();
   const jobId = assertJobId(id);
   const current = await prisma.jobPosting.findUnique({ where: { id: jobId } });
   if (!current || current.companyUserId !== companyOwnerUserId) {
@@ -222,6 +239,7 @@ export async function updateCompanyJob(
 }
 
 export async function deleteCompanyJob(companyOwnerUserId: string, id: string): Promise<void> {
+  await ensureJobApplicationWhatsappColumn();
   const jobId = assertJobId(id);
   const current = await prisma.jobPosting.findUnique({
     where: { id: jobId },
@@ -245,6 +263,7 @@ export async function deleteCompanyJob(companyOwnerUserId: string, id: string): 
 }
 
 export async function deleteAdminJob(id: string): Promise<void> {
+  await ensureJobApplicationWhatsappColumn();
   const jobId = assertJobId(id);
   const current = await prisma.jobPosting.findUnique({
     where: { id: jobId },
@@ -273,6 +292,7 @@ export async function updateCompanyApplicationStage(
   applicationId: string,
   stage: unknown,
 ): Promise<{ id: string; stage: string }> {
+  await ensureJobApplicationWhatsappColumn();
   const id = assertJobId(jobId);
   const nextStage = parseApplicationStage(stage);
   if (!/^[a-z0-9]{8,40}$/i.test(applicationId)) {
@@ -310,6 +330,7 @@ export async function updateAdminApplicationStage(
   applicationId: string,
   stage: unknown,
 ): Promise<{ id: string; stage: string }> {
+  await ensureJobApplicationWhatsappColumn();
   const id = assertJobId(jobId);
   const nextStage = parseApplicationStage(stage);
   if (!/^[a-z0-9]{8,40}$/i.test(applicationId)) {
@@ -338,6 +359,7 @@ export async function updateAdminApplicationStage(
 }
 
 export async function searchPublicJobs(filters: JobSearchFilters): Promise<PublicJob[]> {
+  await ensureJobApplicationWhatsappColumn();
   const rows = await prisma.jobPosting.findMany({
     where: publicJobWhere(filters),
     orderBy: [{ publicationDate: "desc" }, { createdAt: "desc" }],
@@ -346,10 +368,12 @@ export async function searchPublicJobs(filters: JobSearchFilters): Promise<Publi
 }
 
 export async function listPublicJobs(): Promise<PublicJob[]> {
+  await ensureJobApplicationWhatsappColumn();
   return searchPublicJobs(parseJobSearch({}));
 }
 
 export async function getPublicJob(id: string): Promise<PublicJob | null> {
+  await ensureJobApplicationWhatsappColumn();
   const jobId = assertJobId(id);
   const row = await prisma.jobPosting.findFirst({
     where: { id: jobId, status: "PUBLISHED" },
@@ -363,6 +387,7 @@ export type PublicJobView =
   | { availability: "unavailable"; title: string };
 
 export async function getPublicJobView(id: string): Promise<PublicJobView | null> {
+  await ensureJobApplicationWhatsappColumn();
   const jobId = assertJobId(id);
   const row = await prisma.jobPosting.findUnique({
     where: { id: jobId },
@@ -390,6 +415,7 @@ export type ApplicationView = {
 };
 
 export async function listJobApplicationsForAdmin(jobId: string): Promise<ApplicationView[]> {
+  await ensureJobApplicationWhatsappColumn();
   const id = assertJobId(jobId);
   const job = await prisma.jobPosting.findUnique({ where: { id }, select: { id: true } });
   if (!job) throw new JobPostingError("Vaga não encontrada.", 404);
@@ -420,6 +446,7 @@ export async function listJobApplicationsForCompany(
   jobId: string,
   companyOwnerUserId: string,
 ): Promise<ApplicationView[]> {
+  await ensureJobApplicationWhatsappColumn();
   const id = assertJobId(jobId);
   const job = await prisma.jobPosting.findUnique({
     where: { id },
@@ -437,15 +464,64 @@ export type OwnApplicationState = {
   appliedAt: string | null;
   canApply: boolean;
   blockReason: string | null;
+  plan: ProfessionalPlan | null;
+  applicationMode: ApplicationMode;
+  delivery: ApplyDelivery;
+  contact: ApplicantContact | null;
+  hasResume: boolean;
+  resumeName: string | null;
 };
 
-export async function getOwnApplicationState(jobId: string, email: string | null): Promise<OwnApplicationState> {
+function applicationDisclosure(
+  audience: "anonymous" | "company" | "professional",
+  plan: ProfessionalPlan | null,
+  job: {
+    applicationMode: string;
+    applicationEmail: string | null;
+    applicationWhatsapp: string | null;
+    externalApplyUrl: string | null;
+  },
+  resumeName: string | null,
+): Pick<OwnApplicationState, "plan" | "applicationMode" | "delivery" | "contact" | "hasResume" | "resumeName"> {
+  const mode = normalizeApplicationMode(job.applicationMode);
+  const disclosed = discloseApplicationContact({
+    audience,
+    plan,
+    mode,
+    email: job.applicationEmail,
+    whatsapp: job.applicationWhatsapp,
+    url: job.externalApplyUrl,
+  });
+  return {
+    plan,
+    applicationMode: mode,
+    delivery: disclosed.delivery,
+    contact: disclosed.contact,
+    hasResume: Boolean(resumeName),
+    resumeName,
+  };
+}
+
+export async function getOwnApplicationState(
+  jobId: string,
+  email: string | null,
+  options?: { verifyResume?: boolean },
+): Promise<OwnApplicationState> {
+  await ensureJobApplicationWhatsappColumn();
   const id = assertJobId(jobId);
   const open = await prisma.jobPosting.findFirst({
     where: { id, status: "PUBLISHED" },
-    select: { id: true },
+    select: {
+      id: true,
+      applicationMode: true,
+      applicationEmail: true,
+      applicationWhatsapp: true,
+      externalApplyUrl: true,
+    },
   });
   if (!open) throw new JobPostingError("Vaga não encontrada.", 404);
+
+  const hidden = applicationDisclosure("anonymous", null, open, null);
 
   if (!email) {
     return {
@@ -454,6 +530,7 @@ export async function getOwnApplicationState(jobId: string, email: string | null
       appliedAt: null,
       canApply: true,
       blockReason: null,
+      ...hidden,
     };
   }
 
@@ -464,6 +541,7 @@ export async function getOwnApplicationState(jobId: string, email: string | null
       role: true,
       professional: { select: { id: true } },
       company: { select: { id: true } },
+      profile: { select: { curricoURL: true } },
     },
   });
 
@@ -474,6 +552,7 @@ export async function getOwnApplicationState(jobId: string, email: string | null
       appliedAt: null,
       canApply: true,
       blockReason: null,
+      ...hidden,
     };
   }
 
@@ -488,41 +567,56 @@ export async function getOwnApplicationState(jobId: string, email: string | null
       appliedAt: null,
       canApply: false,
       blockReason: "A candidatura é feita com uma conta de profissional.",
+      ...applicationDisclosure("company", null, open, null),
     };
   }
+
+  const tier = await getProfessionalPlanTier(user.id);
+  const plan: ProfessionalPlan = tier === "PREMIUM" ? "PREMIUM" : "FREE";
+  const storedResume = user.profile?.curricoURL || "";
+  const resumePath = storedResume.includes("://")
+    ? extractStoragePath(storedResume) || storedResume
+    : storedResume;
+  let resumeName = savedResumeLabel(resumePath, email);
+  if (options?.verifyResume && resumeName) {
+    try {
+      await loadOwnedResume(email, resumePath);
+    } catch {
+      console.error("[candidatura] currículo salvo não pôde ser confirmado");
+      resumeName = null;
+    }
+  }
+  const disclosure = applicationDisclosure("professional", plan, open, resumeName);
+  const mode = disclosure.applicationMode;
 
   const existing = await prisma.jobApplication.findUnique({
     where: { jobId_userId: { jobId: id, userId: user.id } },
     select: { createdAt: true, emailStatus: true },
   });
 
-  if (existing?.emailStatus === "FAILED") {
-    return {
-      authenticated: true,
-      applied: false,
-      appliedAt: null,
-      canApply: true,
-      blockReason: null,
-    };
-  }
+  const emailSent = existing?.emailStatus === "SENT";
+  const emailPending = existing?.emailStatus === "PENDING";
 
-  if (existing?.emailStatus === "PENDING") {
+  if (emailPending && mode === "EMAIL") {
     return {
       authenticated: true,
       applied: false,
       appliedAt: null,
       canApply: false,
       blockReason: "O envio desta candidatura já está em andamento.",
+      ...disclosure,
     };
   }
 
-  if (existing) {
+  if ((mode === "INTERNAL" && existing) || emailSent) {
     return {
       authenticated: true,
       applied: true,
-      appliedAt: existing.createdAt.toISOString(),
+      appliedAt: existing ? existing.createdAt.toISOString() : null,
       canApply: false,
       blockReason: null,
+      ...disclosure,
+      contact: null,
     };
   }
 
@@ -532,81 +626,7 @@ export async function getOwnApplicationState(jobId: string, email: string | null
     appliedAt: null,
     canApply: true,
     blockReason: null,
-  };
-}
-
-function textoLista(raw: string | null | undefined): string | null {
-  const value = raw?.trim() || "";
-  if (!value) return null;
-  try {
-    const parsed = JSON.parse(value) as unknown;
-    if (Array.isArray(parsed)) {
-      const items = parsed.map((item) => String(item ?? "").trim()).filter(Boolean);
-      return items.length ? items.join(", ") : null;
-    }
-  } catch {
-    return value;
-  }
-  return value;
-}
-
-function textoExperiencias(raw: string | null | undefined): string | null {
-  const value = raw?.trim() || "";
-  if (!value) return null;
-  try {
-    const parsed = JSON.parse(value) as unknown;
-    if (!Array.isArray(parsed)) return null;
-    const linhas = parsed.flatMap((item) => {
-      if (!item || typeof item !== "object") return [];
-      const registro = item as Record<string, unknown>;
-      const empresa = String(registro.nome || registro.empresa || "").trim();
-      const cargo = String(registro.cargo || "").trim();
-      const inicio = String(registro.dataInicio || "").trim();
-      const fim = String(registro.dataFim || "").trim();
-      const periodo = [inicio, fim].filter(Boolean).join(" a ");
-      const linha = [empresa, cargo, periodo].filter(Boolean).join(" — ");
-      return linha ? [linha] : [];
-    });
-    return linhas.length ? linhas.join("; ") : null;
-  } catch {
-    return null;
-  }
-}
-
-function perfilParaEmail(profile: {
-  id: string;
-  title: string | null;
-  cargoDesejado: string | null;
-  areaInteresse: string | null;
-  cidade: string | null;
-  estado: string | null;
-  location: string | null;
-  escolaridade: string | null;
-  turnoDisponivel: string | null;
-  tempoExperiencia: string | null;
-  experienciasJSON: string | null;
-  recolocacao: string | null;
-  pretensaoSalarial: string | null;
-  mensagemEmpresas: string | null;
-  bio: string | null;
-  skills: string | null;
-}): ApplicationProfileMail {
-  const local = profile.cidade && profile.estado
-    ? `${profile.cidade}, ${profile.estado}`
-    : profile.cidade || profile.estado || profile.location;
-  return {
-    cargo: profile.cargoDesejado || profile.title,
-    area: profile.areaInteresse,
-    local,
-    escolaridade: profile.escolaridade,
-    turno: profile.turnoDisponivel,
-    experiencia: profile.tempoExperiencia,
-    experiencias: textoExperiencias(profile.experienciasJSON),
-    recolocacao: profile.recolocacao,
-    pretensaoSalarial: profile.pretensaoSalarial,
-    mensagem: profile.mensagemEmpresas || profile.bio,
-    habilidades: textoLista(profile.skills),
-    profileUrl: `${PUBLIC_SITE_ORIGIN}${companyProfessionalPath(profile.id)}`,
+    ...disclosure,
   };
 }
 
@@ -622,12 +642,20 @@ async function claimEmailApplication(
     select: { id: true, emailStatus: true, emailAttemptAt: true },
   });
 
-  if (existing && (existing.emailStatus === "SENT" || existing.emailStatus == null)) {
+  if (existing?.emailStatus === "SENT") {
     return "already";
   }
 
   const now = new Date();
   const staleBefore = new Date(now.getTime() - EMAIL_CLAIM_MS);
+
+  if (existing && existing.emailStatus == null) {
+    const claimed = await prisma.jobApplication.updateMany({
+      where: { id: existing.id, emailStatus: null },
+      data: { emailStatus: "PENDING", emailAttemptAt: now, profileId },
+    });
+    return claimed.count === 1 ? "send" : "busy";
+  }
 
   if (!existing) {
     try {
@@ -673,6 +701,7 @@ async function claimEmailApplication(
 }
 
 export async function registerJobApplication(jobId: string, email: string) {
+  await ensureJobApplicationWhatsappColumn();
   const id = assertJobId(jobId);
   const user = await prisma.user.findUnique({
     where: { email },
@@ -683,27 +712,7 @@ export async function registerJobApplication(jobId: string, email: string) {
       role: true,
       professional: { select: { id: true } },
       company: { select: { id: true } },
-      profile: {
-        select: {
-          id: true,
-          title: true,
-          curricoURL: true,
-          cargoDesejado: true,
-          areaInteresse: true,
-          cidade: true,
-          estado: true,
-          location: true,
-          escolaridade: true,
-          turnoDisponivel: true,
-          tempoExperiencia: true,
-          experienciasJSON: true,
-          recolocacao: true,
-          pretensaoSalarial: true,
-          mensagemEmpresas: true,
-          bio: true,
-          skills: true,
-        },
-      },
+      profile: { select: { id: true, curricoURL: true } },
     },
   });
 
@@ -732,20 +741,21 @@ export async function registerJobApplication(jobId: string, email: string) {
     throw new JobPostingError("Esta vaga não está aberta para candidatura.", 404);
   }
 
-  if (job.applicationMode === "EXTERNAL") {
-    throw new JobPostingError("Esta vaga recebe a candidatura no site da empresa.", 400);
+  const mode = normalizeApplicationMode(job.applicationMode);
+  const plan: ProfessionalPlan = mode === "EMAIL" && (await getProfessionalPlanTier(user.id)) === "PREMIUM"
+    ? "PREMIUM"
+    : "FREE";
+
+  if (mode === "WHATSAPP" || mode === "EXTERNAL" || (mode === "EMAIL" && plan !== "PREMIUM")) {
+    assertServerDelivery({ mode, plan, hasValidResume: false });
   }
 
-  if (job.applicationMode === "EMAIL") {
+  if (mode === "EMAIL") {
     if (!job.applicationEmail) {
       throw new JobPostingError("Esta vaga não tem e-mail para receber candidaturas.", 400);
     }
 
-    const resume = await tryLoadOwnedResumePdf(user.email, user.profile?.curricoURL);
-    const profileMail = resume || !user.profile ? null : perfilParaEmail(user.profile);
-    if (!resume && !profileMail) {
-      throw new JobPostingError("Complete seu perfil de profissional para se candidatar.", 400);
-    }
+    const resume = await loadOwnedResume(user.email, user.profile?.curricoURL);
     const claim = await claimEmailApplication(id, user.id, user.profile?.id ?? null);
     if (claim === "already") {
       throw new JobPostingError("Você já enviou sua candidatura para esta vaga.", 409, "ALREADY_APPLIED");
@@ -759,8 +769,8 @@ export async function registerJobApplication(jobId: string, email: string) {
       jobTitle: job.title,
       professionalName: user.name,
       professionalEmail: user.email,
-      resume,
-      profile: profileMail,
+      resume: resume.bytes,
+      resumeFormat: resume.format,
     });
     if (!sent.ok) {
       await prisma.jobApplication.updateMany({
@@ -788,7 +798,7 @@ export async function registerJobApplication(jobId: string, email: string) {
       userId: saved.userId,
       profileId: saved.profileId,
       createdAt: saved.createdAt.toISOString(),
-      message: resume ? APPLICATION_EMAIL_SUCCESS : APPLICATION_PROFILE_EMAIL_SUCCESS,
+      message: APPLICATION_EMAIL_SUCCESS,
     };
   }
 

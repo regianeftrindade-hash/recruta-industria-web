@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildApplicationMail } from "@/lib/jobs/job-application-mail";
-import { isPdfBuffer, resumePathOwnedBy } from "@/lib/jobs/resume-pdf";
+import { isDocxBuffer, isPdfBuffer, resumeFormatFromName, resumePathOwnedBy, savedResumeFileName, savedResumeLabel } from "@/lib/jobs/resume-pdf";
 
 describe("currículo PDF da candidatura", () => {
   it("aceita só arquivo que começa com a assinatura PDF e cabe no limite", () => {
@@ -18,6 +18,24 @@ describe("currículo PDF da candidatura", () => {
     expect(resumePathOwnedBy("curriculos/outro@example.invalid/10_cv.pdf", email)).toBe(false);
     expect(resumePathOwnedBy("curriculos/ana@example.invalid/../outro/cv.pdf", email)).toBe(false);
     expect(resumePathOwnedBy("https://files.example/cv.pdf", email)).toBe(false);
+    expect(resumeFormatFromName("curriculos/ana@example.invalid/10_cv.pdf")).toBe("pdf");
+    expect(resumeFormatFromName("curriculos/ana@example.invalid/10_cv.docx")).toBe("docx");
+    expect(resumeFormatFromName("curriculos/ana@example.invalid/10_cv.doc")).toBeNull();
+    expect(savedResumeLabel("curriculos/ana@example.invalid/10_cv.docx", email)).toBe("Currículo em DOCX");
+    expect(savedResumeLabel("curriculos/outro@example.invalid/10_cv.pdf", email)).toBeNull();
+    expect(savedResumeFileName("curriculos/ana@example.invalid/10_meu_curriculo.pdf", email)).toBe("meu curriculo.pdf");
+    expect(savedResumeFileName("curriculos/outro@example.invalid/10_cv.pdf", email)).toBeNull();
+    expect(savedResumeFileName("curriculos/ana@example.invalid/10_meu_curriculo.pdf", email)).not.toContain("ana@");
+  });
+
+  it("aceita DOCX com a pasta do Word e rejeita um ZIP qualquer", () => {
+    const docx = Buffer.concat([
+      Buffer.from("PK\u0003\u0004"),
+      Buffer.from("word/document.xml"),
+    ]);
+    expect(isDocxBuffer(docx)).toBe(true);
+    expect(isDocxBuffer(Buffer.from("PK\u0003\u0004somente-zip"))).toBe(false);
+    expect(isDocxBuffer(Buffer.from("%PDF-1.7"))).toBe(false);
   });
 
   it("monta o e-mail sem nome de empresa, sem destinatário e sem link do currículo", () => {
@@ -57,5 +75,15 @@ describe("currículo PDF da candidatura", () => {
     expect(mail.text).toContain("Cargo: Soldador");
     expect(mail.text).toContain("Perfil no site: https://www.recrutaindustria.com/company/professional/perfil1");
     expect(mail.text).not.toContain("anexado");
+  });
+
+  it("descreve anexo DOCX sem tratar o arquivo como PDF", () => {
+    const mail = buildApplicationMail({
+      jobTitle: "Soldador",
+      professionalName: "Ana Souza",
+      resumeFormat: "docx",
+    });
+    expect(mail.text).toContain("formato DOCX");
+    expect(mail.text).not.toContain("formato PDF");
   });
 });

@@ -81,7 +81,7 @@ function UpgradePageContent() {
               R$ 19,90
             </p>
             <p style={{ color: '#414141', fontSize: '14px', margin: 0 }}>
-              por mês (renovação automática)
+              por mês
             </p>
           </div>
 
@@ -181,8 +181,7 @@ function UpgradePageContent() {
             fontSize: '13px',
             fontStyle: 'italic'
           }}>
-            ✓ Cancelamento a qualquer momento sem penalidades<br/>
-            ✓ Acesso imediato a todos os recursos Premium
+            O Premium só é liberado depois que o pagamento for confirmado.
           </p>
         </div>
       </div>

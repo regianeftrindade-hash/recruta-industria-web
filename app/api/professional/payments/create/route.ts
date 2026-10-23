@@ -1,404 +1,142 @@
 import { NextRequest, NextResponse } from 'next/server';
-
 import { getServerSession } from 'next-auth';
-
 import { authOptions } from '@/lib/auth.config';
-
 import { prisma } from '@/lib/db';
-
-import {
-
-  createGatewayPayment,
-
-  getGatewayApiUrl,
-
-  isRecurringGatewaySupported,
-
-  type GatewayPaymentMethod,
-
-} from '@/lib/payment/gateway';
-
-import { createPagBankRecurringSubscription } from '@/lib/pagseguro-subscriptions';
-import { getPagSeguroConfig } from '@/lib/pagseguro-client';
-
+import { createAsaasPayment, getAsaasConfig, type AsaasPaymentMethod } from '@/lib/payment/asaas-client';
 import { buildProfessionalPaymentDescription } from '@/lib/professional-payment';
-
 import {
-
   getPaidProfessionalPlanTiers,
-
   getProfessionalPlanDefinition,
-
   type ProfessionalPlanTier,
-
 } from '@/lib/professional-premium-plans';
-
-import { isPaymentGatewayConfigured, isSandboxMode, getPaymentProvider } from '@/lib/payment-config';
-
 import { sanitizeTaxId, fallbackTaxIdForSandbox } from '@/lib/payment-tax';
-
 import {
-
   getPlanPriceCentavos,
-
   parseBillingMode,
-
   parseBillingPeriod,
-
 } from '@/lib/billing';
 
-
-
 export async function POST(req: NextRequest) {
-
   try {
-
-    if (!isPaymentGatewayConfigured()) {
-
+    const { apiKey, apiUrl } = getAsaasConfig();
+    if (!apiKey) {
       return NextResponse.json(
-
         {
-
           error: 'Gateway de pagamento não configurado',
-
-          detail: getPaymentProvider() === 'asaas'
-            ? 'Defina ASAAS_API_KEY no .env.local'
-            : 'Defina PAGSEGURO_TOKEN no .env.local',
-
+          detail: 'A cobrança profissional usa a mesma ASAAS_API_KEY da cobrança empresarial. Ela não está definida neste ambiente.',
         },
-
         { status: 503 },
-
       );
-
     }
-
-
 
     const session = await getServerSession(authOptions);
-
     if (!session?.user?.email) {
-
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
-
     }
-
-
 
     const user = await prisma.user.findUnique({
-
       where: { email: session.user.email.toLowerCase().trim() },
-
       include: { profile: true },
-
     });
-
-
 
     if (!user || user.role !== 'PROFESSIONAL' || !user.profile) {
-
       return NextResponse.json({ error: 'Perfil profissional não encontrado' }, { status: 403 });
-
     }
-
-
 
     const body = await req.json();
-
     const planTier = String(body?.planTier || 'PREMIUM').toUpperCase() as ProfessionalPlanTier;
-
     const billingPeriod = parseBillingPeriod(body?.billingPeriod);
-
     const billingMode = parseBillingMode(body?.billingMode);
-
-    const method = (body?.method || 'pix') as GatewayPaymentMethod;
-
-
+    const method = String(body?.method || 'pix') as AsaasPaymentMethod;
 
     if (!getPaidProfessionalPlanTiers().includes(planTier)) {
-
       return NextResponse.json({ error: 'Plano inválido para cobrança' }, { status: 400 });
-
     }
-
-
-
-    const planDef = getProfessionalPlanDefinition(planTier);
-
-    const amount = getPlanPriceCentavos(planDef.precoCentavos, billingPeriod);
-
-    const name = String(user.name || user.profile.title || 'Profissional').trim();
-
-    const email = user.email.toLowerCase().trim();
-
-    const taxId =
-
-      sanitizeTaxId(user.profile.cpf)
-
-      ?? (isSandboxMode() ? fallbackTaxIdForSandbox() : undefined);
-
-
-
-    if (!taxId) {
-
-      return NextResponse.json(
-
-        { error: 'Cadastre seu CPF no perfil antes de pagar.' },
-
-        { status: 400 },
-
-      );
-
-    }
-
-
-
-    const description = buildProfessionalPaymentDescription(planTier, billingPeriod, billingMode);
-
-
 
     if (billingMode === 'recurring') {
-      if (!isRecurringGatewaySupported()) {
-        return NextResponse.json(
-          {
-            error: 'Assinatura recorrente indisponível com Asaas',
-            detail: 'Use pagamento único (Pix ou Boleto) ou configure PAYMENT_PROVIDER=pagseguro.',
-          },
-          { status: 400 },
-        );
-      }
-
-      const subscription = await createPagBankRecurringSubscription({
-
-        planReference: `pro-${planTier}-${billingPeriod}`.toLowerCase(),
-
-        planName: `${planDef.nome} Profissional`,
-
-        description,
-
-        amountCentavos: amount,
-
-        billingPeriod,
-
-        customer: {
-
-          name,
-
-          email,
-
-          taxId,
-
-          phone: user.profile.whatsapp || user.profile.telefone2 || undefined,
-
+      return NextResponse.json(
+        {
+          error: 'O Premium profissional é cobrado no Asaas por Pix ou Boleto.',
+          detail: 'A assinatura recorrente do PagBank não é usada nesta contratação.',
         },
-
-        subscriptionReference: `pro-${user.id}-${Date.now()}`,
-
-        paymentMethod: 'boleto',
-
-      });
-
-
-
-      const meta = {
-
-        type: 'professional_subscription',
-
-        planTier,
-
-        professionalUserId: user.id,
-
-        expectedAmount: amount,
-
-        billingPeriod,
-
-        billingMode,
-
-        gatewaySubscriptionId: subscription.subscriptionId,
-
-      };
-
-
-
-      await prisma.paymentRecord.create({
-
-        data: {
-
-          reference: subscription.subscriptionId,
-
-          amount,
-
-          currency: 'BRL',
-
-          method: 'boleto',
-
-          customer: JSON.stringify({ name, email }),
-
-          status: subscription.status === 'ACTIVE' ? 'PAID' : 'PENDING',
-
-          meta: JSON.stringify(meta),
-
-          externalId: subscription.subscriptionId,
-
-        },
-
-      });
-
-
-
-      const { apiUrl } = getPagSeguroConfig();
-
-      return NextResponse.json({
-
-        chargeId: subscription.subscriptionId,
-
-        boletoUrl: subscription.boletoUrl,
-
-        checkoutUrl: subscription.checkoutUrl,
-
-        status: subscription.status === 'ACTIVE' ? 'PAID' : 'PENDING',
-
-        planTier,
-
-        amount,
-
-        billingPeriod,
-
-        billingMode,
-
-        recurring: true,
-
-        sandbox: apiUrl.includes('sandbox'),
-
-      });
-
+        { status: 400 },
+      );
     }
-
-
 
     if (!['pix', 'boleto'].includes(method)) {
-
       return NextResponse.json(
-
-        { error: 'Use Pix ou Boleto para pagamento único.' },
-
+        { error: 'Use Pix ou Boleto para o Premium profissional.' },
         { status: 400 },
-
       );
-
     }
 
+    const planDef = getProfessionalPlanDefinition(planTier);
+    const amount = getPlanPriceCentavos(planDef.precoCentavos, billingPeriod);
+    const name = String(user.name || user.profile.title || 'Profissional').trim();
+    const email = user.email.toLowerCase().trim();
+    const sandbox = apiUrl.includes('sandbox');
+    const taxId = sanitizeTaxId(user.profile.cpf) ?? (sandbox ? fallbackTaxIdForSandbox() : undefined);
 
+    if (!taxId) {
+      return NextResponse.json(
+        { error: 'Cadastre seu CPF no perfil antes de pagar.' },
+        { status: 400 },
+      );
+    }
 
-    const payment = await createGatewayPayment({
-
+    const description = buildProfessionalPaymentDescription(planTier, billingPeriod, 'one_time');
+    const payment = await createAsaasPayment({
       amount,
-
       method,
-
       customer: { name, email, taxId },
-
       description,
-
       itemReference: `professional-plan-${planTier}-${billingPeriod}`,
-
     });
-
-
 
     const meta = {
-
       type: 'professional_subscription',
-
       planTier,
-
       professionalUserId: user.id,
-
       expectedAmount: amount,
-
       billingPeriod,
-
-      billingMode,
-
+      billingMode: 'one_time' as const,
+      provider: 'asaas' as const,
     };
 
-
-
     await prisma.paymentRecord.create({
-
       data: {
-
         reference: payment.chargeId,
-
         amount,
-
         currency: 'BRL',
-
         method,
-
         customer: JSON.stringify({ name, email }),
-
         status: payment.status,
-
         meta: JSON.stringify(meta),
-
         externalId: payment.orderId,
-
       },
-
     });
-
-
-
-    const apiUrl = getGatewayApiUrl();
-
-
 
     return NextResponse.json({
-
       chargeId: payment.chargeId,
-
       copyPasteKey: payment.copyPasteKey,
-
       qrCodeDataUrl: payment.qrCodeDataUrl,
-
       boletoUrl: payment.boletoUrl,
-
       line: payment.line,
-
       checkoutUrl: payment.checkoutUrl,
-
       expiresAt: payment.expiresAt,
-
       status: payment.status,
-
       planTier,
-
       amount,
-
       billingPeriod,
-
-      billingMode,
-
+      billingMode: 'one_time',
       recurring: false,
-
-      provider: payment.provider,
-
-      sandbox: apiUrl.includes('sandbox'),
-
+      provider: 'asaas',
+      sandbox,
     });
-
   } catch (error) {
-
     console.error('Erro professional payments/create:', error);
-
     const message = error instanceof Error ? error.message : 'Erro inesperado';
-
-    const status = message.includes('não configurado') ? 503 : 502;
-
+    const status = message.includes('não configurada') || message.includes('não configurado') ? 503 : 502;
     return NextResponse.json({ error: message }, { status });
-
   }
-
 }
-

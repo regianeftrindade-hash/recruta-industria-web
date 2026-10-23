@@ -2,6 +2,21 @@ import { prisma } from "@/lib/db";
 
 let coreSchemaReady = false;
 let lastSeenReady = false;
+let jobWhatsappColumnReady = false;
+
+/** Coluna anulável do WhatsApp da vaga. Não apaga vagas nem candidaturas. */
+export async function ensureJobApplicationWhatsappColumn(): Promise<void> {
+  if (jobWhatsappColumnReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    jobWhatsappColumnReady = true;
+    return;
+  }
+
+  await prisma.$executeRawUnsafe(
+    `ALTER TABLE "job_postings" ADD COLUMN IF NOT EXISTS "applicationWhatsapp" TEXT`,
+  );
+  jobWhatsappColumnReady = true;
+}
 
 /** Em produção, após `prisma migrate deploy`, use DISABLE_RUNTIME_DDL=true para cortar DDL no request path. */
 export function isRuntimeDdlEnabled(): boolean {

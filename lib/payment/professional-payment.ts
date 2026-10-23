@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import { setProfessionalPlanTier, getProfessionalPlanTier } from '@/lib/professional-storage';
 import { asProfessionalPaymentMeta } from '@/lib/payment-config';
+import { getAsaasChargeStatus } from '@/lib/payment/asaas-client';
 import {
   getProfessionalPlanDefinition,
   getPaidProfessionalPlanTiers,
@@ -108,6 +109,11 @@ export async function activateProfessionalPlanFromPayment(
     throw new Error(validationError);
   }
 
+  const asaasError = await confirmProfessionalAsaasPayment(payment.reference);
+  if (asaasError) {
+    throw new Error(asaasError);
+  }
+
   const currentTier = await getProfessionalPlanTier(professionalUserId);
   const alreadyActive = currentTier === planTier && !options?.isRenewal && !meta?.isRenewal;
 
@@ -122,6 +128,40 @@ export async function activateProfessionalPlanFromPayment(
   }
 
   return { alreadyActive: alreadyActive && !options?.isRenewal && !meta?.isRenewal };
+}
+
+/** O Premium só libera quando o Asaas responde que esta cobrança está paga. */
+export async function confirmProfessionalAsaasPayment(reference: string): Promise<string | null> {
+  if (!reference.startsWith('pay_')) {
+    return 'Cobrança profissional precisa ser confirmada no Asaas';
+  }
+  const remote = await getAsaasChargeStatus(reference);
+  if (remote?.status !== 'PAID') {
+    return 'Pagamento ainda não confirmado pelo Asaas';
+  }
+  return null;
+}
+
+export async function findLatestProfessionalCharge(professionalUserId: string): Promise<{
+  status: string;
+  reference: string;
+  createdAt: Date;
+} | null> {
+  if (!professionalUserId) return null;
+  const row = await prisma.paymentRecord.findFirst({
+    where: {
+      AND: [
+        { meta: { contains: '"type":"professional_subscription"' } },
+        { meta: { contains: `"professionalUserId":"${professionalUserId}"` } },
+      ],
+    },
+    orderBy: { createdAt: 'desc' },
+    select: { status: true, reference: true, createdAt: true, meta: true },
+  });
+  if (!row) return null;
+  const meta = asProfessionalPaymentMeta(row.meta);
+  if (!meta || meta.professionalUserId !== professionalUserId) return null;
+  return { status: row.status, reference: row.reference, createdAt: row.createdAt };
 }
 
 export function buildProfessionalPaymentDescription(

@@ -13,10 +13,12 @@ function buildContentSecurityPolicy(): string {
       "media-src 'self' blob: https:",
       "font-src 'self' data: https://fonts.gstatic.com",
       "connect-src 'self' ws: wss: http: https: stun: stuns: turn: turns:",
+      // blob: é a prévia do PDF gerado nesta página.
+      "frame-src 'self' blob:",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self' https://accounts.google.com",
-      "object-src 'none'",
+      "object-src blob:",
     ].join('; ');
   }
 
@@ -29,12 +31,12 @@ function buildContentSecurityPolicy(): string {
     "media-src 'self' blob: https:",
     "font-src 'self' data: https://fonts.gstatic.com",
     "connect-src 'self' https: stun: stuns: turn: turns: wss:",
-    "frame-src 'self' https://accounts.google.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://www.google.com",
+    "frame-src 'self' blob: https://accounts.google.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://www.google.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     // NextAuth redireciona o POST de sign-in para o Google; 'self' sozinho bloqueia o OAuth.
     "form-action 'self' https://accounts.google.com",
-    "object-src 'none'",
+    "object-src blob:",
     "upgrade-insecure-requests",
   ].join('; ');
 }

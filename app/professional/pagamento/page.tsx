@@ -16,6 +16,15 @@ import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import { PixQrCode } from "@/app/components/PixQrCode";
 import { BillingOptions } from "@/app/components/BillingOptions";
 import { AuthAtmosphere } from "@/components/shared/AuthAtmosphere";
+import ResumeToolkit from "@/components/curriculum/ResumeToolkit";
+import { professionalAccessState, professionalChargeNeedsSync } from "@/lib/professional/subscription-state";
+
+type SubscriptionSnapshot = {
+  isPremium: boolean;
+  subscriptionExpiresAt: string | null;
+  autoRenew: boolean;
+  latestCharge: { status: string; reference: string; createdAt: string } | null;
+};
 
 type PaymentData = {
   chargeId: string;
@@ -45,12 +54,15 @@ function PagamentoProfissional() {
   const planDef = PROFESSIONAL_PLAN_TIERS.find((p) => p.id === "PREMIUM")!;
 
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("monthly");
-  const [billingMode, setBillingMode] = useState<BillingMode>("recurring");
+  const [billingMode, setBillingMode] = useState<BillingMode>("one_time");
   const [method, setMethod] = useState<"pix" | "boleto">("pix");
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
   const [processing, setProcessing] = useState(false);
   const [gatewayReady, setGatewayReady] = useState<boolean | null>(null);
+  const [subscription, setSubscription] = useState<SubscriptionSnapshot | null>(null);
+  const [subscriptionNote, setSubscriptionNote] = useState("");
+  const [allowNewCharge, setAllowNewCharge] = useState(false);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
   const pollCountRef = useRef(0);
   const POLL_MAX = 30; // ~2 min a cada 4s
@@ -59,16 +71,38 @@ function PagamentoProfissional() {
     () => formatPlanPriceLabel(planDef.precoCentavos, billingPeriod),
     [planDef.precoCentavos, billingPeriod],
   );
+  const accessState = professionalAccessState({
+    isPremium: Boolean(subscription?.isPremium),
+    latestChargeStatus: subscription?.latestCharge?.status,
+  });
+  const needsSync = professionalChargeNeedsSync({
+    isPremium: Boolean(subscription?.isPremium),
+    latestChargeStatus: subscription?.latestCharge?.status,
+  });
+  const accessLabel = accessState === "active"
+    ? "Premium ativo"
+    : accessState === "pending"
+      ? "Pagamento pendente"
+      : accessState === "declined"
+        ? "Pagamento recusado ou não concluído"
+        : accessState === "canceled"
+          ? "Pagamento cancelado ou não concluído"
+          : "Gratuito";
+  const showCheckout = subscription !== null && !subscription.isPremium && (
+    accessState === "free"
+    || accessState === "declined"
+    || accessState === "canceled"
+    || allowNewCharge
+  );
 
   useEffect(() => {
     void fetch("/api/payment/config")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        const configured = Boolean(data?.configured);
-        const valid = Boolean(data?.tokenValid);
-        setGatewayReady(configured && valid);
-        if (configured && !valid && data?.tokenMessage) {
-          setStatusMessage(data.tokenMessage);
+        const ready = Boolean(data?.professionalPlansEnabled);
+        setGatewayReady(ready);
+        if (!ready && data?.professionalMessage) {
+          setStatusMessage(String(data.professionalMessage));
         }
       })
       .catch(() => setGatewayReady(false));
@@ -79,6 +113,35 @@ function PagamentoProfissional() {
       router.push("/login?tipo=profissional&redirect=%2Fprofessional%2Fpagamento");
     }
   }, [status, router]);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    let ativo = true;
+    void fetch("/api/professional/subscription", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!ativo) return;
+        if (!data) {
+          setSubscriptionNote("Não foi possível consultar a assinatura. O Premium só é ativado depois da confirmação do pagamento.");
+          setSubscription({ isPremium: false, subscriptionExpiresAt: null, autoRenew: false, latestCharge: null });
+          return;
+        }
+        setSubscription({
+          isPremium: Boolean(data.isPremium),
+          subscriptionExpiresAt: data.subscriptionExpiresAt ?? null,
+          autoRenew: Boolean(data.autoRenew),
+          latestCharge: data.latestCharge ?? null,
+        });
+      })
+      .catch(() => {
+        if (!ativo) return;
+        setSubscriptionNote("Não foi possível consultar a assinatura. O Premium só é ativado depois da confirmação do pagamento.");
+        setSubscription({ isPremium: false, subscriptionExpiresAt: null, autoRenew: false, latestCharge: null });
+      });
+    return () => {
+      ativo = false;
+    };
+  }, [status]);
 
   useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
@@ -245,10 +308,40 @@ function PagamentoProfissional() {
           ← Voltar ao painel
         </button>
 
+        <p style={{ color: "#C89B3C", margin: "0 0 8px", fontWeight: 800, letterSpacing: "0.04em", lineHeight: 1.3 }}>
+          DEIXE QUE O RECRUTA FAZ POR VOCÊ.
+        </p>
+        <p style={{ color: "rgba(242,242,242,0.92)", margin: "0 0 20px", lineHeight: 1.5, maxWidth: 640 }}>
+          Ganhe tempo nas candidaturas, descubra empresas interessadas no seu perfil e encontre oportunidades alinhadas à sua experiência.
+        </p>
         <h1 style={{ color: "#C89B3C", margin: "0 0 8px" }}>
           {planDef.emoji} Assinar plano {planDef.nome}
         </h1>
-        <p style={{ color: "rgba(242,242,242,0.82)", margin: "0 0 24px", lineHeight: 1.5 }}>{planDef.descricao}</p>
+        <p style={{ color: "rgba(242,242,242,0.82)", margin: "0 0 12px", lineHeight: 1.5 }}>{planDef.descricao}</p>
+        <p style={{ color: "rgba(242,242,242,0.92)", margin: "0 0 24px", lineHeight: 1.5 }}>
+          Situação da assinatura: <strong>{subscription ? accessLabel : "Consultando..."}</strong>
+          {subscription?.isPremium && subscription.subscriptionExpiresAt
+            ? ` até ${new Date(subscription.subscriptionExpiresAt).toLocaleDateString("pt-BR")}.`
+            : "."}
+          {subscription?.isPremium && subscription.autoRenew
+            ? " A renovação segue a assinatura registrada no gateway. O acesso acompanha o estado confirmado dessa cobrança."
+            : ""}
+          {accessState === "pending"
+            ? " O Premium não é ativado enquanto o pagamento estiver pendente."
+            : ""}
+          {accessState === "declined" || accessState === "canceled"
+            ? " O plano continua gratuito. Você pode tentar a contratação de novo."
+            : ""}
+          {accessState === "free" && subscription
+            ? " O plano gratuito continua com perfil, currículo, busca de vagas e candidatura manual."
+            : ""}
+          {needsSync
+            ? " A última cobrança consta como paga no registro local, mas o Premium ainda não está ativo. Use Verificar agora para consultar o gateway."
+            : ""}
+        </p>
+        {subscriptionNote ? (
+          <p style={{ color: "#E8C56A", margin: "0 0 16px", fontSize: 13, lineHeight: 1.45 }}>{subscriptionNote}</p>
+        ) : null}
 
         {gatewayReady === false && (
           <div style={{ background: "#E8D5A3", border: "2px solid #8D6B1F", borderRadius: 8, padding: 14, marginBottom: 20, fontSize: 13, lineHeight: 1.5 }}>
@@ -272,7 +365,38 @@ function PagamentoProfissional() {
           </div>
 
           <div style={{ background: "#E8D5A3", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
-            {!paymentData ? (
+            {!paymentData && subscription === null ? (
+              <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5 }}>Consultando a assinatura...</p>
+            ) : !paymentData && !showCheckout ? (
+              <div>
+                <h2 style={{ color: "#C89B3C", margin: "0 0 12px", fontSize: 16 }}>{accessLabel}</h2>
+                <p style={{ margin: "0 0 16px", fontSize: 13, lineHeight: 1.5 }}>
+                  {subscription?.isPremium
+                    ? "O Premium desta conta já está ativo. Não é necessário pagar de novo."
+                    : needsSync
+                      ? "A confirmação local ainda precisa ser conferida no gateway antes de liberar o Premium."
+                      : "A cobrança ainda não está confirmada. O botão de contratação fica disponível só para uma nova tentativa, depois que você escolher gerar outra cobrança."}
+                </p>
+                {subscription?.latestCharge?.reference && !subscription.isPremium ? (
+                  <button
+                    type="button"
+                    onClick={() => void checkPaymentStatus(subscription.latestCharge!.reference, { fromButton: true })}
+                    style={{ ...btnGold, width: "100%", padding: 12, fontSize: 13, marginBottom: 8 }}
+                  >
+                    Verificar agora
+                  </button>
+                ) : null}
+                {!subscription?.isPremium ? (
+                  <button
+                    type="button"
+                    onClick={() => setAllowNewCharge(true)}
+                    style={{ ...btnGold, width: "100%", padding: 12, fontSize: 13 }}
+                  >
+                    Gerar outra cobrança
+                  </button>
+                ) : null}
+              </div>
+            ) : !paymentData ? (
               <>
                 <h2 style={{ color: "#C89B3C", margin: "0 0 16px", fontSize: 16 }}>Pagamento</h2>
 
@@ -281,6 +405,7 @@ function PagamentoProfissional() {
                   billingMode={billingMode}
                   onPeriodChange={setBillingPeriod}
                   onModeChange={setBillingMode}
+                  recurringSupported={false}
                 />
 
                 {billingMode === "one_time" && (
@@ -322,17 +447,15 @@ function PagamentoProfissional() {
                   </div>
                 )}
 
+                <ResumeToolkit variant="checkout" />
+
                 <button
                   type="button"
                   onClick={handleCheckout}
                   disabled={processing}
                   style={{ ...btnGold, width: "100%", padding: 14, fontSize: 14, opacity: processing ? 0.7 : 1 }}
                 >
-                  {processing
-                    ? "Processando..."
-                    : billingMode === "recurring"
-                      ? `Assinar ${priceLabel.price}${priceLabel.period}`
-                      : `Pagar ${priceLabel.price}`}
+                  {processing ? "Processando..." : "Assinar Premium"}
                 </button>
                 {statusMessage && (
                   <p style={{ color: "#C89B3C", fontSize: 12, marginTop: 12 }}>{statusMessage}</p>

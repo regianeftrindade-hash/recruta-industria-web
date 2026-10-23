@@ -20,6 +20,7 @@ import { parseTesteComportamentalJSON } from '@/lib/teste-comportamental';
 import { lerCampoJsonDoPerfil } from '@/lib/profile-json-fields';
 import { getVideoApresentacaoPathByProfileId } from '@/lib/professional/professional-video-db';
 import { notifyProfessionalAsync, notifyProfileViewed } from '@/lib/professional-notifications';
+import { recordCompanyProfileView } from '@/lib/professional/record-profile-view';
 import { getCompanyAnonymousMode } from '@/lib/company/company-preferences';
 import {
   resolveProfileIdFromParam,
@@ -165,12 +166,11 @@ export async function GET(
     // (sufixo _ANON) e o profissional não recebe notificação.
     const anonymousMode = await getCompanyAnonymousMode(dataUserId).catch(() => false);
 
-    await prisma.profileView.create({
-      data: {
-        profileId,
-        companyUserId: dataUserId,
-        viewType: `${bloqueado ? 'SUMMARY' : 'FULL'}${anonymousMode ? '_ANON' : ''}`,
-      },
+    await recordCompanyProfileView({
+      profileId,
+      profileOwnerUserId: profile.userId,
+      companyUserId: dataUserId,
+      viewType: `${bloqueado ? 'SUMMARY' : 'FULL'}${anonymousMode ? '_ANON' : ''}`,
     }).catch((err) => {
       console.warn('Falha ao registrar visualização:', err);
     });

@@ -23,10 +23,18 @@ test.describe("empresa logada — funil e plano", () => {
   });
 
   test("abre dashboard empresa e vê busca/vitrine", async ({ page }) => {
-    await page.goto("/company/dashboard-empresa");
-    await expect(page).toHaveURL(/dashboard-empresa/);
-    await expect(page.getByText(/busca rápida/i).first()).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText(/profissionais na vitrine|banco de talentos/i).first()).toBeVisible();
+    await page.goto("/company/dashboard-empresa?tab=inicio");
+    await expect(page).toHaveURL(/dashboard-empresa\?tab=inicio/);
+    await expect(page.getByRole("tab", { name: /caça talentos/i })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    await expect(page.getByRole("heading", { name: /busca rápida/i })).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(
+      page.getByRole("heading", { name: /profissionais na vitrine|banco de talentos/i }),
+    ).toBeVisible();
   });
 
   test("navega para aba Entrevistas e vê funil proposta→entrevista", async ({ page }) => {
@@ -60,8 +68,10 @@ test.describe("empresa logada — funil e plano", () => {
   });
 
   test("atalho Gerenciar plano abre Meu Plano", async ({ page }) => {
-    await page.goto("/company/dashboard-empresa");
-    await expect(page.getByText(/busca rápida/i).first()).toBeVisible({ timeout: 20_000 });
+    await page.goto("/company/dashboard-empresa?tab=inicio");
+    await expect(page.getByRole("heading", { name: /busca rápida/i })).toBeVisible({
+      timeout: 20_000,
+    });
     const btn = page.getByRole("button", { name: /gerenciar plano/i });
     await expect(btn).toBeVisible({ timeout: 15_000 });
     await btn.click();

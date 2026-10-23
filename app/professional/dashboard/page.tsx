@@ -141,7 +141,7 @@ export default function DashboardProfissional() {
   const [weekViewsCount, setWeekViewsCount] = useState(0);
   const [lastViewAt, setLastViewAt] = useState<string | null>(null);
   const [lastViewCompany, setLastViewCompany] = useState<string | null>(null);
-  const [weekViews, setWeekViews] = useState<ProfileViewItem[]>([]);
+  const [visitorViews, setVisitorViews] = useState<ProfileViewItem[]>([]);
   const [companyNamesHidden, setCompanyNamesHidden] = useState(true);
   const [, setTesteComportamental] = useState<ResultadoTesteComportamental | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -178,7 +178,8 @@ export default function DashboardProfissional() {
         if (viewsRes.ok) {
           const viewsData = await viewsRes.json();
           const semana = (viewsData.weekViews || []) as ProfileViewItem[];
-          setWeekViews(semana);
+          const todas = (viewsData.allViews || []) as ProfileViewItem[];
+          setVisitorViews(todas);
           setWeekViewsCount(viewsData.weekViewsCount ?? semana.length);
           setLastViewAt(viewsData.lastViewAt || null);
           setLastViewCompany(viewsData.lastViewCompany || null);
@@ -654,32 +655,45 @@ export default function DashboardProfissional() {
               <PlatformVideoCall role="professional" title="Chamada de vídeo" peerLabel="empresa" />
               <ProfessionalOpportunityBoard proposals={proposals} onChanged={() => void reloadProposals()} />
               <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow, textAlign: "center" }}>
-                <h3 style={{ ...dashTitleProf, margin: "0 0 12px", fontSize: 14 }}>Visualizações da semana</h3>
+                <h3 style={{ ...dashTitleProf, margin: "0 0 12px", fontSize: 14 }}>Quem visualizou meu perfil</h3>
                 <p style={{ margin: "0 0 4px", fontSize: 28, fontWeight: 800, color: DASH.gold, lineHeight: 1.1 }}>{weekViewsCount}</p>
                 <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.muted }}>
                   {weekViewsCount === 0 ? textoContagemVisualizacoesSemana(weekViewsCount) : "esta semana"}
                 </p>
+                <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
+                  Uma visita registra que a empresa abriu o perfil. Isso não significa interesse em contratação.
+                </p>
                 {lastViewAt ? (
                   <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.text }}>
                     Última visualização: <strong>{formatarData(lastViewAt)}</strong>
-                    {lastViewCompany ? <> · <strong>{lastViewCompany}</strong></> : null}
+                    {!companyNamesHidden && lastViewCompany ? <> · <strong>{lastViewCompany}</strong></> : null}
                   </p>
                 ) : (
                   <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
-                    Ainda sem visualizações — quando uma empresa abrir seu perfil, a data e o nome aparecem aqui.
+                    Ainda não há visita de empresa registrada neste perfil.
                   </p>
                 )}
-                {!companyNamesHidden && weekViews.length > 0 ? (
+                {companyNamesHidden ? (
+                  <p style={{ margin: 0, fontSize: 11, color: DASH.text, lineHeight: 1.45 }}>
+                    A lista com o nome das empresas é do plano Premium. A contagem da semana continua no plano gratuito.{" "}
+                    <a href="/professional/pagamento" style={{ color: DASH.gold, fontWeight: 700 }}>Conhecer o Premium</a>
+                  </p>
+                ) : visitorViews.length > 0 ? (
                   <div style={{ textAlign: "left", marginTop: 8 }}>
-                    <p style={{ margin: "0 0 6px", fontSize: 10, fontWeight: 700, color: DASH.muted, textTransform: "uppercase" }}>Empresas que visualizaram</p>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      {weekViews.map((view) => (
+                    <p style={{ margin: "0 0 6px", fontSize: 10, fontWeight: 700, color: DASH.muted, textTransform: "uppercase" }}>Empresas identificadas</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 240, overflowY: "auto" }}>
+                      {visitorViews.filter((view) => view.companyName).map((view) => (
                         <div key={view.id} style={{ padding: "6px 8px", ...dashInnerBox, fontSize: 11 }}>
-                          <strong style={{ color: DASH.title }}>{view.companyName || "Empresa"}</strong>
+                          <strong style={{ color: DASH.title }}>{view.companyName}</strong>
                           <span style={{ color: DASH.muted }}> · {formatarDataHoraCurta(view.createdAt)}</span>
                         </div>
                       ))}
                     </div>
+                    {visitorViews.some((view) => !view.companyName) ? (
+                      <p style={{ margin: "8px 0 0", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
+                        Visitas sem identificação da empresa entram na contagem, mas o nome não é exibido.
+                      </p>
+                    ) : null}
                   </div>
                 ) : null}
               </section>

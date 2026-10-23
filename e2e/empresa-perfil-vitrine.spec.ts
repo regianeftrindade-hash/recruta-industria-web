@@ -18,10 +18,14 @@ test.describe("empresa logada — perfil da vitrine", () => {
   });
 
   test("abre um candidato da vitrine ou registra vitrine vazia", async ({ page }) => {
-    await page.goto("/company/dashboard-empresa");
+    await page.goto("/company/dashboard-empresa?tab=inicio");
+    await expect(page).toHaveURL(/tab=inicio/);
+    await expect(page.getByRole("heading", { name: /busca rápida/i })).toBeVisible({
+      timeout: 20_000,
+    });
     await expect(
-      page.getByText(/busca rápida|profissionais na vitrine|banco de talentos/i).first(),
-    ).toBeVisible({ timeout: 20_000 });
+      page.getByRole("heading", { name: /profissionais na vitrine|banco de talentos/i }),
+    ).toBeVisible();
 
     const profileLink = page
       .locator('a[href*="/company/professional/"]')
