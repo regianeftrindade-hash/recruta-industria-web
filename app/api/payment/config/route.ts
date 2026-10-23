@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth.config';
-import { getAsaasConfig } from '@/lib/payment/asaas-client';
+import { getAsaasConfig, verifyAsaasCredentials } from '@/lib/payment/asaas-client';
 import {
   getPagSeguroConfig,
   getUsableNotificationUrl,
@@ -21,6 +21,14 @@ export async function GET(request: NextRequest) {
   const configured = isPaymentGatewayConfigured();
   const verification = configured ? await verifyGatewayCredentials() : null;
   const plansEnabled = configured && (verification?.ok ?? false);
+  const asaasConfig = getAsaasConfig();
+  const asaasVerification = provider === 'asaas'
+    ? verification
+    : asaasConfig.apiKey
+      ? await verifyAsaasCredentials()
+      : null;
+  const professionalReady = Boolean(asaasConfig.apiKey) && Boolean(asaasVerification?.ok);
+  const professionalMessage = asaasVerification?.message ?? 'ASAAS_API_KEY não definida';
 
   const session = await getServerSession(authOptions);
   const isDev = process.env.NODE_ENV === 'development';
@@ -29,7 +37,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       configured,
       companyPlansEnabled: plansEnabled,
-      professionalPlansEnabled: plansEnabled,
+      professionalPlansEnabled: professionalReady,
+      professionalProvider: 'asaas',
+      professionalMessage,
       provider,
       recurringSupported: provider === 'pagseguro',
     });
@@ -57,7 +67,9 @@ export async function GET(request: NextRequest) {
       provider: 'asaas',
       recurringSupported: false,
       companyPlansEnabled: plansEnabled,
-      professionalPlansEnabled: plansEnabled,
+      professionalPlansEnabled: professionalReady,
+      professionalProvider: 'asaas',
+      professionalMessage,
       sandboxPanelUrl: isDev ? 'https://sandbox.asaas.com' : undefined,
     });
   }
@@ -79,7 +91,9 @@ export async function GET(request: NextRequest) {
     provider: 'pagseguro',
     recurringSupported: true,
     companyPlansEnabled: plansEnabled,
-    professionalPlansEnabled: plansEnabled,
+    professionalPlansEnabled: professionalReady,
+    professionalProvider: 'asaas',
+    professionalMessage,
     sandboxTokenUrl: isDev ? 'https://portaldev.pagbank.com.br/tokens' : undefined,
     gatewayApiUrl: getGatewayApiUrl(),
   });

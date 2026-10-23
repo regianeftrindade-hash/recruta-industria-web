@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const findUnique = vi.fn();
 const getProfessionalPlanTier = vi.fn();
 const setProfessionalPlanTier = vi.fn();
+const getAsaasChargeStatus = vi.fn();
 
 vi.mock("@/lib/db", () => ({
   prisma: {
@@ -17,7 +18,11 @@ vi.mock("@/lib/professional-storage", () => ({
   setProfessionalPlanTier: (...args: unknown[]) => setProfessionalPlanTier(...args),
 }));
 
-import { activateProfessionalPlanFromPayment } from "@/lib/payment/professional-payment";
+vi.mock("@/lib/payment/asaas-client", () => ({
+  getAsaasChargeStatus: (...args: unknown[]) => getAsaasChargeStatus(...args),
+}));
+
+import { activateProfessionalPlanFromPayment, confirmProfessionalAsaasPayment } from "@/lib/payment/professional-payment";
 
 const meta = JSON.stringify({
   type: "professional_subscription",
@@ -33,6 +38,7 @@ describe("ativação do Premium a partir da cobrança", () => {
     findUnique.mockReset();
     getProfessionalPlanTier.mockReset();
     setProfessionalPlanTier.mockReset();
+    getAsaasChargeStatus.mockReset();
     findUnique.mockResolvedValue({
       id: "rec-1",
       reference: "pay_pro",
@@ -42,6 +48,7 @@ describe("ativação do Premium a partir da cobrança", () => {
     });
     getProfessionalPlanTier.mockResolvedValue("FREE");
     setProfessionalPlanTier.mockResolvedValue(undefined);
+    getAsaasChargeStatus.mockResolvedValue({ status: "PAID" });
   });
 
   it("grava o Premium só depois da cobrança paga no valor do plano", async () => {
@@ -95,5 +102,16 @@ describe("ativação do Premium a partir da cobrança", () => {
       .rejects.toThrow("Cobrança sem vínculo de plano profissional");
 
     expect(setProfessionalPlanTier).not.toHaveBeenCalled();
+  });
+
+  it("não ativa se o Asaas ainda não confirmou a cobrança", async () => {
+    getAsaasChargeStatus.mockResolvedValue({ status: "PENDING" });
+
+    await expect(activateProfessionalPlanFromPayment("prof-1", "pay_pro", "PREMIUM"))
+      .rejects.toThrow("Pagamento ainda não confirmado pelo Asaas");
+    expect(setProfessionalPlanTier).not.toHaveBeenCalled();
+    await expect(confirmProfessionalAsaasPayment("CHAR_pagbank")).resolves.toBe(
+      "Cobrança profissional precisa ser confirmada no Asaas",
+    );
   });
 });

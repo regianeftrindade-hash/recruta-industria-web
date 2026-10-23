@@ -54,7 +54,7 @@ function PagamentoProfissional() {
   const planDef = PROFESSIONAL_PLAN_TIERS.find((p) => p.id === "PREMIUM")!;
 
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("monthly");
-  const [billingMode, setBillingMode] = useState<BillingMode>("recurring");
+  const [billingMode, setBillingMode] = useState<BillingMode>("one_time");
   const [method, setMethod] = useState<"pix" | "boleto">("pix");
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
@@ -99,11 +99,10 @@ function PagamentoProfissional() {
     void fetch("/api/payment/config")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        const configured = Boolean(data?.configured);
-        const valid = Boolean(data?.tokenValid);
-        setGatewayReady(configured && valid);
-        if (configured && !valid && data?.tokenMessage) {
-          setStatusMessage(data.tokenMessage);
+        const ready = Boolean(data?.professionalPlansEnabled);
+        setGatewayReady(ready);
+        if (!ready && data?.professionalMessage) {
+          setStatusMessage(String(data.professionalMessage));
         }
       })
       .catch(() => setGatewayReady(false));
@@ -406,6 +405,7 @@ function PagamentoProfissional() {
                   billingMode={billingMode}
                   onPeriodChange={setBillingPeriod}
                   onModeChange={setBillingMode}
+                  recurringSupported={false}
                 />
 
                 {billingMode === "one_time" && (
@@ -455,11 +455,7 @@ function PagamentoProfissional() {
                   disabled={processing}
                   style={{ ...btnGold, width: "100%", padding: 14, fontSize: 14, opacity: processing ? 0.7 : 1 }}
                 >
-                  {processing
-                    ? "Processando..."
-                    : billingMode === "recurring"
-                      ? "Assinar Premium"
-                      : `Pagar ${priceLabel.price}`}
+                  {processing ? "Processando..." : "Assinar Premium"}
                 </button>
                 {statusMessage && (
                   <p style={{ color: "#C89B3C", fontSize: 12, marginTop: 12 }}>{statusMessage}</p>
