@@ -7,16 +7,20 @@ export default function ApplicationModeFields({
   mode,
   url,
   email,
+  whatsapp,
   onMode,
   onUrl,
   onEmail,
+  onWhatsapp,
 }: {
   mode: ApplicationMode;
   url: string;
   email: string;
+  whatsapp: string;
   onMode: (mode: ApplicationMode) => void;
   onUrl: (value: string) => void;
   onEmail: (value: string) => void;
+  onWhatsapp: (value: string) => void;
 }) {
   return (
     <>
@@ -35,6 +39,11 @@ export default function ApplicationModeFields({
             </button>
           ))}
         </div>
+        {mode === "INTERNAL" ? (
+          <span className={styles.help}>
+            A candidatura fica registrada no Recruta Indústria. Os outros contatos desta vaga não são exibidos.
+          </span>
+        ) : null}
       </fieldset>
 
       {mode === "EXTERNAL" ? (
@@ -49,14 +58,14 @@ export default function ApplicationModeFields({
             placeholder="https://empresa.com.br/vaga"
           />
           <span className={styles.help}>
-            Obrigatório para publicar. O profissional é encaminhado para este endereço.
+            Obrigatório para publicar. O profissional acessa este endereço para concluir a candidatura. O Recruta Indústria não preenche o site da empresa.
           </span>
         </label>
       ) : null}
 
       {mode === "EMAIL" ? (
         <label className={styles.field}>
-          E-mail privado para receber os currículos
+          E-mail para receber os currículos
           <input
             type="email"
             inputMode="email"
@@ -67,7 +76,25 @@ export default function ApplicationModeFields({
             placeholder="recrutamento@empresa.com.br"
           />
           <span className={styles.help}>
-            Obrigatório para publicar. Este endereço não aparece na página pública. O currículo em PDF vai em anexo. Se o profissional não tiver PDF salvo, o perfil do site é enviado neste e-mail.
+            Obrigatório para publicar. O endereço não aparece na página pública. O profissional Free copia este e-mail e envia o currículo por conta própria. O Premium envia o currículo automaticamente, sem exibir o endereço.
+          </span>
+        </label>
+      ) : null}
+
+      {mode === "WHATSAPP" ? (
+        <label className={styles.field}>
+          WhatsApp para receber os currículos
+          <input
+            type="tel"
+            inputMode="tel"
+            autoComplete="off"
+            value={whatsapp}
+            onChange={(event) => onWhatsapp(event.target.value)}
+            maxLength={40}
+            placeholder="(11) 98888-7777"
+          />
+          <span className={styles.help}>
+            Obrigatório para publicar. O número não aparece na página pública. Não há envio automático: o profissional copia o número e envia a mensagem por conta própria.
           </span>
         </label>
       ) : null}

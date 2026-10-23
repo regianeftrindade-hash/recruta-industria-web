@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { resolveAuthEmail } from "@/lib/auth/api-auth";
 import { prisma } from "@/lib/db";
 import { isProfessionalAccount } from "@/lib/jobs/job-posting";
-import { loadOwnedResumePdf } from "@/lib/jobs/job-application-mail";
+import { loadOwnedResume } from "@/lib/jobs/job-application-mail";
 import { jsonError } from "@/lib/jobs/job-api";
 
 export async function POST(request: NextRequest) {
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json().catch(() => null);
     const path = typeof body?.path === "string" ? body.path.trim() : "";
-    await loadOwnedResumePdf(user.email, path);
+    await loadOwnedResume(user.email, path);
 
     if (user.profile) {
       await prisma.profile.update({

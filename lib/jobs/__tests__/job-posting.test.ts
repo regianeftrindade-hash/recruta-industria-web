@@ -5,6 +5,7 @@ import {
   formatPublicationDate,
   isProfessionalAccount,
   parseApplicationEmail,
+  parseApplicationWhatsapp,
   parseExternalApplyUrl,
   parseJobWrite,
   parseSalaryToCents,
@@ -51,6 +52,7 @@ function recordFrom(data: ReturnType<typeof parseJobWrite>, id = "cjob1234567890
     applicationMode: data.applicationMode,
     externalApplyUrl: data.externalApplyUrl,
     applicationEmail: data.applicationEmail,
+    applicationWhatsapp: data.applicationWhatsapp,
     status: data.status,
     origin: "ADMIN",
     companyUserId: null,
@@ -226,6 +228,63 @@ describe("publicação de vagas", () => {
       applicationEmail: "sem-arroba",
     }))).toThrow(/e-mail válido/i);
     expect(parseApplicationEmail(" rh@empresa.example ")).toBe("rh@empresa.example");
+    expect(toPublicJob(recordFrom(email))).not.toHaveProperty("applicationWhatsapp");
+    const emailPublico = toPublicJob(recordFrom(parseJobWrite(baseInput({
+      applicationMode: "EMAIL",
+      applicationEmail: "oculto@empresa.example",
+      observations: "",
+      applicationInstructions: "",
+    }))));
+    expect(JSON.stringify(emailPublico)).not.toContain("oculto@empresa.example");
+    expect(emailPublico).not.toHaveProperty("applicationEmail");
+  });
+
+  it("guarda só o WhatsApp da modalidade escolhida e esconde o número na vaga pública", () => {
+    const whatsapp = parseJobWrite(baseInput({
+      confidential: true,
+      applicationMode: "WHATSAPP",
+      applicationWhatsapp: "(47) 98888-7777",
+      applicationEmail: "rh@empresa.example",
+      externalApplyUrl: "https://empresa.example/vaga",
+      observations: "",
+      applicationInstructions: "",
+    }));
+    expect(whatsapp.applicationMode).toBe("WHATSAPP");
+    expect(whatsapp.applicationWhatsapp).toBe("5547988887777");
+    expect(whatsapp.applicationEmail).toBeNull();
+    expect(whatsapp.externalApplyUrl).toBeNull();
+    expect(whatsapp.confidential).toBe(true);
+    expect(whatsapp.workMode).toBe("PRESENCIAL");
+
+    const pub = toPublicJob(recordFrom(whatsapp));
+    expect(pub.companyLabel).toBe("Empresa confidencial");
+    expect(pub.applicationMode).toBe("WHATSAPP");
+    expect(pub).not.toHaveProperty("applicationEmail");
+    expect(pub).not.toHaveProperty("applicationWhatsapp");
+    expect(JSON.stringify(pub)).not.toContain("5547");
+    expect(JSON.stringify(pub)).not.toContain("98888");
+    expect(JSON.stringify(pub)).not.toContain("Metalúrgica");
+
+    const edited = parseJobWrite(baseInput({
+      ...baseInput(),
+      confidential: true,
+      applicationMode: "EMAIL",
+      applicationEmail: "rh@empresa.example",
+      applicationWhatsapp: "(47) 98888-7777",
+      workMode: "HIBRIDO",
+    }));
+    expect(edited.confidential).toBe(true);
+    expect(edited.workMode).toBe("HIBRIDO");
+    expect(edited.applicationMode).toBe("EMAIL");
+    expect(edited.applicationEmail).toBe("rh@empresa.example");
+    expect(edited.applicationWhatsapp).toBeNull();
+
+    expect(() => parseJobWrite(baseInput({
+      applicationMode: "WHATSAPP",
+      applicationWhatsapp: "",
+    }))).toThrow(/WhatsApp/i);
+    expect(() => parseApplicationWhatsapp("123")).toThrow(JobPostingError);
+    expect(parseApplicationWhatsapp(" 47 988887777 ")).toBe("5547988887777");
   });
 
   it("guarda o local de trabalho e não exige salário quando está a combinar", () => {

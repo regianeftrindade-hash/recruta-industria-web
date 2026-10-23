@@ -79,7 +79,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Tipo de pasta de upload inválido' }, { status: 400 });
     }
 
-    if (!ALLOWED_MIME_TYPES.has(file.type)) {
+    let mime = file.type;
+    if (rawType === "curriculos" && (!mime || mime === "application/octet-stream" || mime === "binary/octet-stream")) {
+      const name = file.name.toLowerCase();
+      if (name.endsWith(".pdf")) mime = "application/pdf";
+      else if (name.endsWith(".docx")) mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      else if (name.endsWith(".doc")) mime = "application/msword";
+    }
+
+    if (!ALLOWED_MIME_TYPES.has(mime)) {
       return NextResponse.json({ error: 'Tipo de arquivo não permitido' }, { status: 400 });
     }
 
@@ -88,7 +96,7 @@ export async function POST(request: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    if (!looksLikeAllowedFile(buffer, file.type)) {
+    if (!looksLikeAllowedFile(buffer, mime)) {
       return NextResponse.json(
         { error: 'Conteúdo do arquivo não corresponde ao tipo informado' },
         { status: 400 },
@@ -106,7 +114,7 @@ export async function POST(request: NextRequest) {
       : 'anon';
     const filePath = `${rawType}/${ownerPrefix}/${timestamp}_${sanitizedFileName}`;
 
-    const uploaded = await uploadPrivateFile(filePath, buffer, file.type);
+    const uploaded = await uploadPrivateFile(filePath, buffer, mime);
     const url = uploaded.signedUrl || uploaded.publicUrl;
     if (!url) {
       return NextResponse.json({ error: 'Erro ao gerar URL do arquivo' }, { status: 500 });
@@ -120,7 +128,7 @@ export async function POST(request: NextRequest) {
         url,
         path: uploaded.path,
         signed: Boolean(uploaded.signedUrl),
-        type: file.type,
+        type: mime,
         uploadedAt: new Date().toISOString(),
       },
     });

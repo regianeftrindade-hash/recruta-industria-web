@@ -975,10 +975,11 @@ model JobPosting {
   description              String    @default("")
   observations             String?
   applicationInstructions  String?
-  /// INTERNAL = dentro do Recruta | EXTERNAL = site da empresa | EMAIL = e-mail automático
+  /// INTERNAL = dentro do Recruta | EXTERNAL = site da empresa | EMAIL = e-mail | WHATSAPP = número
   applicationMode          String    @default("INTERNAL")
   externalApplyUrl         String?
   applicationEmail         String?
+  applicationWhatsapp      String?
   /// DRAFT | PUBLISHED | UNPUBLISHED | CLOSED
   status                   String    @default("DRAFT")
   /// ADMIN = cadastrada pelo Recruta | COMPANY = publicada pela empresa

@@ -109,11 +109,85 @@
   text-transform: uppercase;
 }
 
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
 .title {
   margin: 0 0 16px;
   color: #000;
   font-size: clamp(30px, 5vw, 44px);
   line-height: 1.05;
+}
+
+.titleRow .title {
+  margin: 0;
+}
+
+.copyWrap {
+  display: inline-flex;
+  max-width: 100%;
+}
+
+.shareButton,
+.copyButton {
+  padding: 8px 16px;
+  color: #000;
+  font-size: 14px;
+  font-weight: 700;
+  background: #F3E6C8;
+  border: 2px solid #8D6B1F;
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.contactBox {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.method {
+  margin: 0 0 8px;
+  color: #000;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.contactValue {
+  margin: 0;
+  color: #000;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.contactActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .facts {
@@ -234,7 +308,16 @@
   }
 
   .apply button,
-  .externalLink {
+  .externalLink,
+  .copyWrap,
+  .shareButton,
+  .copyButton,
+  .contactActions a,
+  .contactActions button {
     width: 100%;
+  }
+
+  .titleRow {
+    align-items: stretch;
   }
 }

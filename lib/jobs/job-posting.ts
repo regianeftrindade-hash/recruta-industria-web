@@ -1,3 +1,5 @@
+import { normalizePhoneE164 } from "@/lib/notifications/sanitize";
+
 export const CONTRACT_TYPES = [
   { value: "CLT", label: "CLT" },
   { value: "PJ", label: "PJ" },
@@ -25,8 +27,9 @@ export const APPLICATION_STAGES = [
 ] as const;
 
 export const APPLICATION_MODES = [
-  { value: "EXTERNAL", label: "Candidatura pelo site da empresa" },
   { value: "EMAIL", label: "Candidatura por e-mail" },
+  { value: "WHATSAPP", label: "Candidatura por WhatsApp" },
+  { value: "EXTERNAL", label: "Candidatura pelo site da empresa" },
   { value: "INTERNAL", label: "Candidatura pelo Recruta Indústria" },
 ] as const;
 
@@ -51,6 +54,7 @@ const LIMITS = {
   applicationInstructions: 2000,
   externalApplyUrl: 500,
   applicationEmail: 254,
+  applicationWhatsapp: 20,
   workplace: 120,
 } as const;
 
@@ -84,6 +88,7 @@ export type JobRecord = {
   applicationMode: string;
   externalApplyUrl: string | null;
   applicationEmail: string | null;
+  applicationWhatsapp: string | null;
   status: string;
   origin: string;
   companyUserId: string | null;
@@ -124,6 +129,7 @@ export type AdminJob = PublicJob & {
   applicationMode: ApplicationMode;
   externalApplyUrl: string;
   applicationEmail: string;
+  applicationWhatsapp: string;
   status: JobStatus;
   statusLabel: string;
   origin: string;
@@ -151,6 +157,7 @@ export type JobWriteData = {
   applicationMode: ApplicationMode;
   externalApplyUrl: string | null;
   applicationEmail: string | null;
+  applicationWhatsapp: string | null;
   status: JobStatus;
 };
 
@@ -237,6 +244,36 @@ export function parseApplicationEmail(value: unknown): string | null {
     throw new JobPostingError("Informe um e-mail válido para receber as candidaturas.");
   }
   return email;
+}
+
+export function parseApplicationWhatsapp(value: unknown): string | null {
+  if (value == null || value === "") return null;
+  if (typeof value !== "string") {
+    throw new JobPostingError("O WhatsApp para candidaturas é inválido.");
+  }
+  const text = value.trim();
+  if (!text) return null;
+  if (text.length > 40) {
+    throw new JobPostingError("Informe um WhatsApp válido com DDD.");
+  }
+  const phone = normalizePhoneE164(text);
+  if (!phone) {
+    throw new JobPostingError("Informe um WhatsApp válido com DDD, por exemplo (11) 98888-7777.");
+  }
+  return phone;
+}
+
+/** Número legível para o profissional copiar. Não inclui outros contatos da vaga. */
+export function formatWhatsappDisplay(stored: string): string {
+  const digits = stored.replace(/\D/g, "");
+  const national = digits.startsWith("55") && digits.length > 11 ? digits.slice(2) : digits;
+  if (national.length === 11) {
+    return `+55 (${national.slice(0, 2)}) ${national.slice(2, 7)}-${national.slice(7)}`;
+  }
+  if (national.length === 10) {
+    return `+55 (${national.slice(0, 2)}) ${national.slice(2, 6)}-${national.slice(6)}`;
+  }
+  return digits ? `+${digits}` : stored.trim();
 }
 
 export function cleanJobText(value: unknown, max: number, label: string): string {
@@ -419,6 +456,9 @@ export function toAdminJob(job: JobRecord): AdminJob {
     applicationMode: isApplicationMode(job.applicationMode) ? job.applicationMode : "INTERNAL",
     externalApplyUrl: job.externalApplyUrl ?? "",
     applicationEmail: job.applicationEmail ?? "",
+    applicationWhatsapp: job.applicationWhatsapp
+      ? formatWhatsappDisplay(job.applicationWhatsapp)
+      : "",
     status,
     statusLabel: jobStatusLabel(status),
     origin: job.origin,
@@ -495,12 +535,18 @@ export function parseJobWrite(input: unknown): JobWriteData {
   const applicationEmail = applicationMode === "EMAIL"
     ? parseApplicationEmail(body.applicationEmail)
     : null;
+  const applicationWhatsapp = applicationMode === "WHATSAPP"
+    ? parseApplicationWhatsapp(body.applicationWhatsapp)
+    : null;
 
   if (statusRaw === "PUBLISHED" && applicationMode === "EXTERNAL" && !externalApplyUrl) {
     throw new JobPostingError("Informe o link oficial para candidatura no site da empresa.");
   }
   if (statusRaw === "PUBLISHED" && applicationMode === "EMAIL" && !applicationEmail) {
     throw new JobPostingError("Informe o e-mail da empresa para receber as candidaturas.");
+  }
+  if (statusRaw === "PUBLISHED" && applicationMode === "WHATSAPP" && !applicationWhatsapp) {
+    throw new JobPostingError("Informe o WhatsApp da empresa para receber as candidaturas.");
   }
 
   let salaryCents: number | null = null;
@@ -551,6 +597,7 @@ export function parseJobWrite(input: unknown): JobWriteData {
       applicationMode,
       externalApplyUrl,
       applicationEmail,
+      applicationWhatsapp,
       status: statusRaw,
     };
   }
@@ -572,6 +619,7 @@ export function parseJobWrite(input: unknown): JobWriteData {
     applicationMode,
     externalApplyUrl,
     applicationEmail,
+    applicationWhatsapp,
     status: statusRaw,
   };
 }

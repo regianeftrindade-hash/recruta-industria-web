@@ -20,7 +20,12 @@ export default function AnexarCurriculoPage() {
     const input = event.currentTarget.elements.namedItem("curriculo");
     const file = input instanceof HTMLInputElement ? input.files?.[0] : null;
     if (!file) {
-      setError("Selecione o arquivo PDF do seu currículo.");
+      setError("Selecione o currículo em PDF ou DOCX.");
+      return;
+    }
+    const name = file.name.toLowerCase();
+    if (!name.endsWith(".pdf") && !name.endsWith(".docx")) {
+      setError("Envie um arquivo PDF ou DOCX.");
       return;
     }
 
@@ -82,12 +87,17 @@ export default function AnexarCurriculoPage() {
       <article className={styles.article}>
         <h1 className={styles.title}>Anexar currículo</h1>
         <p className={styles.note}>
-          Envie o PDF do seu currículo. Depois você volta para a vaga e confirma a candidatura.
+          Envie o currículo em PDF ou DOCX. O arquivo fica no seu perfil e substitui o anterior somente quando você confirma o envio. Depois você volta para a vaga.
         </p>
         <form className={styles.resumeForm} onSubmit={(event) => void onSubmit(event)}>
-          <input className={styles.file} name="curriculo" type="file" accept="application/pdf,.pdf" />
+          <input
+            className={styles.file}
+            name="curriculo"
+            type="file"
+            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          />
           <button type="submit" className="ri-btn-3d-gold" disabled={busy}>
-            {busy ? "Enviando..." : "Anexar PDF e voltar à vaga"}
+            {busy ? "Enviando..." : "Anexar currículo e voltar à vaga"}
           </button>
           {error ? <p className={styles.error}>{error}</p> : null}
         </form>

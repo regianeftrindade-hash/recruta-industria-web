@@ -7,6 +7,7 @@ import { getPublicJobView } from "@/lib/jobs/job-posting-db";
 import { jobSocialMetadata, publicJobUrl } from "@/lib/jobs/public-job-link";
 import JobApplyButton from "../JobApplyButton";
 import JobBackButton from "../JobBackButton";
+import JobShareButton from "../JobShareButton";
 import styles from "../vagas.module.css";
 
 export const dynamic = "force-dynamic";
@@ -135,7 +136,10 @@ export default async function VagaPage({ params, searchParams }: Props) {
             dangerouslySetInnerHTML={{ __html: jobPostingJsonLd(view.job) }}
           />
           <p className={styles.company}>{view.job.companyLabel}</p>
-          <h1 className={styles.title}>{view.job.title}</h1>
+          <div className={styles.titleRow}>
+            <h1 className={styles.title}>{view.job.title}</h1>
+            <JobShareButton jobId={view.job.id} />
+          </div>
           <div className={styles.facts}>
             <Fact label="Data da publicação" value={view.job.publicationDate} />
             <Fact label="Salário" value={view.job.salaryLabel} />
@@ -163,25 +167,12 @@ export default async function VagaPage({ params, searchParams }: Props) {
             </section>
           ) : null}
 
-          {view.job.applicationMode === "EXTERNAL" && view.job.externalApplyUrl ? (
-            <div className={styles.apply}>
-              <a
-                className={`${styles.externalLink} ri-btn-3d-gold`}
-                href={view.job.externalApplyUrl}
-              >
-                Candidatar-se
-              </a>
-              <p className={styles.note}>
-                Esta vaga encaminha a inscrição para a página da empresa.
-              </p>
-            </div>
-          ) : (
-            <JobApplyButton
-              jobId={view.job.id}
-              mode={view.job.applicationMode === "EMAIL" ? "EMAIL" : "INTERNAL"}
-              autoApply={query.candidatar === "1"}
-            />
-          )}
+          <JobApplyButton
+            jobId={view.job.id}
+            mode={view.job.applicationMode}
+            externalApplyUrl={view.job.applicationMode === "EXTERNAL" ? view.job.externalApplyUrl : null}
+            autoOpen={query.candidatar === "1"}
+          />
         </article>
       )}
     </main>
