@@ -126,10 +126,10 @@ function writeData(data: JobWriteData, current?: { publishedAt: Date | null; clo
   };
 }
 
-const byNewestPublication = [
-  { publicationDate: { sort: "desc" as const, nulls: "last" as const } },
-  { publishedAt: { sort: "desc" as const, nulls: "last" as const } },
-  { createdAt: "desc" as const },
+const byNewestPublication: Prisma.JobPostingOrderByWithRelationInput[] = [
+  { publicationDate: { sort: "desc", nulls: "last" } },
+  { publishedAt: { sort: "desc", nulls: "last" } },
+  { createdAt: "desc" },
 ];
 
 export async function listAdminJobs(): Promise<AdminJob[]> {
