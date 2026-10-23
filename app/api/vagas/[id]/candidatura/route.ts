@@ -9,7 +9,8 @@ export async function GET(request: NextRequest, { params }: Context) {
   try {
     const { id } = await params;
     const auth = await resolveAuthEmail(request);
-    const state = await getOwnApplicationState(id, auth?.email ?? null);
+    const verifyResume = request.nextUrl.searchParams.get("verificar") === "1";
+    const state = await getOwnApplicationState(id, auth?.email ?? null, { verifyResume });
     return NextResponse.json(state);
   } catch (error) {
     return jsonError(error, "Não foi possível consultar a candidatura.");

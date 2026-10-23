@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildApplicationMail } from "@/lib/jobs/job-application-mail";
-import { isDocxBuffer, isPdfBuffer, resumeFormatFromName, resumePathOwnedBy, savedResumeLabel } from "@/lib/jobs/resume-pdf";
+import { isDocxBuffer, isPdfBuffer, resumeFormatFromName, resumePathOwnedBy, savedResumeFileName, savedResumeLabel } from "@/lib/jobs/resume-pdf";
 
 describe("currículo PDF da candidatura", () => {
   it("aceita só arquivo que começa com a assinatura PDF e cabe no limite", () => {
@@ -23,6 +23,9 @@ describe("currículo PDF da candidatura", () => {
     expect(resumeFormatFromName("curriculos/ana@example.invalid/10_cv.doc")).toBeNull();
     expect(savedResumeLabel("curriculos/ana@example.invalid/10_cv.docx", email)).toBe("Currículo em DOCX");
     expect(savedResumeLabel("curriculos/outro@example.invalid/10_cv.pdf", email)).toBeNull();
+    expect(savedResumeFileName("curriculos/ana@example.invalid/10_meu_curriculo.pdf", email)).toBe("meu curriculo.pdf");
+    expect(savedResumeFileName("curriculos/outro@example.invalid/10_cv.pdf", email)).toBeNull();
+    expect(savedResumeFileName("curriculos/ana@example.invalid/10_meu_curriculo.pdf", email)).not.toContain("ana@");
   });
 
   it("aceita DOCX com a pasta do Word e rejeita um ZIP qualquer", () => {

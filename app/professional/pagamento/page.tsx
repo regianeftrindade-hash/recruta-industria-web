@@ -16,6 +16,7 @@ import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import { PixQrCode } from "@/app/components/PixQrCode";
 import { BillingOptions } from "@/app/components/BillingOptions";
 import { AuthAtmosphere } from "@/components/shared/AuthAtmosphere";
+import ResumeToolkit from "@/components/curriculum/ResumeToolkit";
 
 type PaymentData = {
   chargeId: string;
@@ -321,6 +322,8 @@ function PagamentoProfissional() {
                     })}
                   </div>
                 )}
+
+                <ResumeToolkit variant="checkout" />
 
                 <button
                   type="button"

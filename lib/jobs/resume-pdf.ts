@@ -37,6 +37,14 @@ export function savedResumeLabel(path: string | null | undefined, email: string)
   return null;
 }
 
+/** Nome visível do arquivo do próprio profissional, sem a pasta nem o e-mail. */
+export function savedResumeFileName(path: string | null | undefined, email: string): string | null {
+  if (!savedResumeLabel(path, email)) return null;
+  const base = String(path).split("?")[0].split("#")[0].split("/").pop() || "";
+  const cleaned = base.replace(/^\d+_/, "").replace(/_+/g, " ").trim();
+  return cleaned || savedResumeLabel(path, email);
+}
+
 export function resumePathOwnedBy(path: string, email: string): boolean {
   const clean = path.replace(/^\/+/, "").split("?")[0];
   if (!clean || clean.includes("..") || clean.includes("\\") || clean.includes("://")) return false;

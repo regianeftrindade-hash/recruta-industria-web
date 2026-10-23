@@ -1,3 +1,4 @@
+import { PREMIUM_RESUME_PROMPT } from "@/lib/curriculum/resume-copy";
 import {
   type ApplicationMode,
   JobPostingError,
@@ -123,7 +124,7 @@ export function describeApplyPanel(input: {
       methodLabel: applicationModeLabel("EMAIL"),
       detail: input.hasResume
         ? "O envio automático anexa o currículo salvo no seu perfil e só confirma quando o e-mail é aceito."
-        : "Para o envio automático, anexe um currículo em PDF ou DOCX. Consultar a vaga não exige currículo.",
+        : PREMIUM_RESUME_PROMPT,
       contact: null,
       automatic: true,
       needsResume: !input.hasResume,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -10,6 +10,8 @@ import ProfessionalVitrinePitch from "@/components/auth/ProfessionalVitrinePitch
 import loginStyles from "@/app/login/login.module.css";
 import { validatePasswordStrength } from "@/lib/password-strength";
 import { safeJobReturnPath } from "@/lib/jobs/public-job-link";
+import ResumeToolkit from "@/components/curriculum/ResumeToolkit";
+import { sanitizeResumeDraft, type ResumeDraft } from "@/lib/curriculum/resume-draft";
 
 const SIMPLE_STORAGE_KEY = "dadosCadastroSimples";
 
@@ -28,6 +30,9 @@ export default function CadastroSimplesProfissionalPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [contaCriada, setContaCriada] = useState(false);
+  const pendingResumeRef = useRef<File | null>(null);
+  const pendingDraftRef = useRef<ResumeDraft | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,6 +113,14 @@ export default function CadastroSimplesProfissionalPage() {
         return;
       }
 
+      const falhaCurriculo = await associarCurriculoPendente();
+      if (falhaCurriculo) {
+        setContaCriada(true);
+        setErrorMessage(falhaCurriculo);
+        setLoading(false);
+        return;
+      }
+
       const back = safeJobReturnPath(new URLSearchParams(window.location.search).get("redirect"));
       router.replace(back ?? "/professional/dashboard");
     } catch {
@@ -115,6 +128,45 @@ export default function CadastroSimplesProfissionalPage() {
       setLoading(false);
     }
   };
+
+  async function associarCurriculoPendente(): Promise<string | null> {
+    const draft = pendingDraftRef.current;
+    if (draft?.nome) {
+      const savedFields = await fetch("/api/professional/curriculo/gerar", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ draft, saveAsMain: false }),
+      });
+      if (!savedFields.ok) {
+        const data = await savedFields.json().catch(() => ({}));
+        return data.error || "A conta foi criada, mas os dados do currículo não foram salvos no perfil.";
+      }
+    }
+
+    const file = pendingResumeRef.current;
+    if (!file) return null;
+    const body = new FormData();
+    body.set("file", file);
+    body.set("type", "curriculos");
+    const uploaded = await fetch("/api/upload", { method: "POST", body, credentials: "include" });
+    const uploadData = await uploaded.json().catch(() => ({}));
+    if (!uploaded.ok || !uploadData?.file?.path) {
+      return uploadData?.error || "A conta foi criada, mas o arquivo do currículo não foi salvo.";
+    }
+    const saved = await fetch("/api/professional/curriculo", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: uploadData.file.path }),
+    });
+    if (!saved.ok) {
+      const data = await saved.json().catch(() => ({}));
+      return data.error || "A conta foi criada, mas o currículo não foi associado ao perfil.";
+    }
+    pendingResumeRef.current = null;
+    return null;
+  }
 
   return (
     <div className={loginStyles.page}>
@@ -251,9 +303,29 @@ export default function CadastroSimplesProfissionalPage() {
             </div>
           </div>
 
-          <button type="submit" className={loginStyles.btnPrimary} disabled={loading}>
-            Criar conta
-          </button>
+          <ResumeToolkit
+            variant="register"
+            authenticated={false}
+            getLocalDraft={() => sanitizeResumeDraft({ nome, email })}
+            onDraftApplied={(draft) => {
+              pendingDraftRef.current = draft;
+              if (draft.nome) setNome(draft.nome);
+              if (draft.email) setEmail(draft.email);
+            }}
+            onHoldFile={(file) => {
+              pendingResumeRef.current = file;
+            }}
+          />
+
+          {contaCriada ? (
+            <Link href="/professional/dashboard" className={loginStyles.btnPrimary}>
+              Ir ao painel
+            </Link>
+          ) : (
+            <button type="submit" className={loginStyles.btnPrimary} disabled={loading}>
+              Criar conta
+            </button>
+          )}
         </form>
 
         <div className={loginStyles.footer}>

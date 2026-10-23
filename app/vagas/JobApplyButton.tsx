@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ResumeToolkit from "@/components/curriculum/ResumeToolkit";
 import { describeApplyPanel, type ApplicantContact, type ProfessionalPlan } from "@/lib/jobs/application-access";
 import type { ApplicationMode } from "@/lib/jobs/job-posting";
 import CopyTextButton from "./CopyTextButton";
@@ -36,8 +37,8 @@ export default function JobApplyButton({
   const [outcome, setOutcome] = useState("");
   const [open, setOpen] = useState(false);
 
-  async function loadState() {
-    const response = await fetch(`/api/vagas/${jobId}/candidatura`, { credentials: "include" });
+  async function loadState(verify = false) {
+    const response = await fetch(`/api/vagas/${jobId}/candidatura${verify ? "?verificar=1" : ""}`, { credentials: "include" });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       throw new Error(data.error || "Não foi possível consultar a candidatura.");
@@ -121,7 +122,7 @@ export default function JobApplyButton({
     let cancelled = false;
     void (async () => {
       try {
-        const current = await loadState();
+        const current = await loadState(autoOpen);
         if (cancelled || !autoOpen || current.applied) return;
         const currentMode = current.applicationMode || mode;
         if (currentMode === "INTERNAL" && current.authenticated && current.canApply) {
@@ -158,7 +159,7 @@ export default function JobApplyButton({
     setError("");
     let current = state;
     try {
-      current = await loadState();
+      current = await loadState(true);
     } catch (loadError) {
       const text = loadError instanceof Error ? loadError.message : "Não foi possível consultar a candidatura.";
       setError(text);
@@ -225,35 +226,58 @@ export default function JobApplyButton({
       {open && !applied ? (
         <div className={styles.contactBox}>
           <p className={styles.method}>{panel.methodLabel}</p>
-          {panel.contact ? (
-            <p className={styles.contactValue}>{panel.contact.value}</p>
+          {panel.automatic && panel.needsResume ? (
+            <ResumeToolkit
+              variant="apply"
+              missing
+              onSaved={() => {
+                setMessage("Currículo salvo no perfil. A candidatura ainda não foi enviada.");
+                setError("");
+                void loadState(true);
+              }}
+              onCancel={() => {
+                setOpen(false);
+                setMessage("");
+                setError("");
+              }}
+            />
           ) : (
-            <p className={styles.error}>A empresa ainda não informou o dado deste método de candidatura.</p>
+            <>
+              {panel.contact ? (
+                <p className={styles.contactValue}>{panel.contact.value}</p>
+              ) : panel.automatic ? null : (
+                <p className={styles.error}>A empresa ainda não informou o dado deste método de candidatura.</p>
+              )}
+              <div className={styles.contactActions}>
+                {panel.contact && panel.copyLabel ? (
+                  <CopyTextButton value={panel.contact.value} label={panel.copyLabel} />
+                ) : null}
+                {panel.externalLink ? (
+                  <a className={styles.externalLink} href={panel.externalLink} target="_blank" rel="noopener noreferrer">
+                    Acessar site
+                  </a>
+                ) : null}
+                {panel.automatic ? (
+                  <button type="button" className="ri-btn-3d-gold" disabled={busy} onClick={() => void sendAutomatic()}>
+                    {busy ? "Enviando..." : "Enviar candidatura"}
+                  </button>
+                ) : null}
+              </div>
+              {panel.automatic ? (
+                <ResumeToolkit
+                  variant="apply"
+                  missing={false}
+                  resumeName={state?.resumeName}
+                  onSaved={() => {
+                    setMessage("Currículo salvo no perfil. A candidatura ainda não foi enviada.");
+                    setError("");
+                    void loadState(true);
+                  }}
+                />
+              ) : null}
+              <p className={styles.note}>{panel.detail}</p>
+            </>
           )}
-          <div className={styles.contactActions}>
-            {panel.contact && panel.copyLabel ? (
-              <CopyTextButton value={panel.contact.value} label={panel.copyLabel} />
-            ) : null}
-            {panel.externalLink ? (
-              <a className={styles.externalLink} href={panel.externalLink} target="_blank" rel="noopener noreferrer">
-                Acessar site
-              </a>
-            ) : null}
-            {panel.automatic && !panel.needsResume ? (
-              <button type="button" className="ri-btn-3d-gold" disabled={busy} onClick={() => void sendAutomatic()}>
-                {busy ? "Enviando..." : "Enviar candidatura"}
-              </button>
-            ) : null}
-            {panel.automatic ? (
-              <a className={styles.resumeLink} href={`/vagas/${jobId}/curriculo`}>
-                {panel.needsResume ? "Anexar currículo em PDF ou DOCX" : "Substituir currículo"}
-              </a>
-            ) : null}
-          </div>
-          {panel.automatic && !panel.needsResume && state?.resumeName ? (
-            <p className={styles.note}>{state.resumeName} salvo no perfil. Você pode substituir antes de enviar.</p>
-          ) : null}
-          <p className={styles.note}>{panel.detail}</p>
         </div>
       ) : null}
       {!open && currentMode === "INTERNAL" ? (

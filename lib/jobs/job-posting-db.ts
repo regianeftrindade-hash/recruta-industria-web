@@ -31,6 +31,7 @@ import {
   sendJobApplicationEmail,
 } from "@/lib/jobs/job-application-mail";
 import { savedResumeLabel } from "@/lib/jobs/resume-pdf";
+import { extractStoragePath } from "@/lib/storage/private-uploads";
 import { parseJobSearch, publicJobWhere, type JobSearchFilters } from "@/lib/jobs/job-search";
 import { ensureJobApplicationWhatsappColumn } from "@/lib/infra/ensure-db-schema";
 import { getProfessionalPlanTier } from "@/lib/professional/professional-storage";
@@ -501,7 +502,11 @@ function applicationDisclosure(
   };
 }
 
-export async function getOwnApplicationState(jobId: string, email: string | null): Promise<OwnApplicationState> {
+export async function getOwnApplicationState(
+  jobId: string,
+  email: string | null,
+  options?: { verifyResume?: boolean },
+): Promise<OwnApplicationState> {
   await ensureJobApplicationWhatsappColumn();
   const id = assertJobId(jobId);
   const open = await prisma.jobPosting.findFirst({
@@ -568,7 +573,19 @@ export async function getOwnApplicationState(jobId: string, email: string | null
 
   const tier = await getProfessionalPlanTier(user.id);
   const plan: ProfessionalPlan = tier === "PREMIUM" ? "PREMIUM" : "FREE";
-  const resumeName = savedResumeLabel(user.profile?.curricoURL, email);
+  const storedResume = user.profile?.curricoURL || "";
+  const resumePath = storedResume.includes("://")
+    ? extractStoragePath(storedResume) || storedResume
+    : storedResume;
+  let resumeName = savedResumeLabel(resumePath, email);
+  if (options?.verifyResume && resumeName) {
+    try {
+      await loadOwnedResume(email, resumePath);
+    } catch {
+      console.error("[candidatura] currículo salvo não pôde ser confirmado");
+      resumeName = null;
+    }
+  }
   const disclosure = applicationDisclosure("professional", plan, open, resumeName);
   const mode = disclosure.applicationMode;
 
