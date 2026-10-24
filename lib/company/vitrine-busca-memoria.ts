@@ -36,11 +36,18 @@ export function normalizarBuscaVitrine(raw: unknown): VitrineBuscaMemoria | null
   };
 }
 
-export function temFiltroAvancado(filtros: Record<string, string>): boolean {
-  return Object.entries(filtros).some(([chave, valor]) => !FILTROS_RAPIDOS.has(chave) && valor.trim() !== "");
+export function temFiltroAvancado(filtros: object): boolean {
+  return Object.entries(filtros).some(
+    ([chave, valor]) => !FILTROS_RAPIDOS.has(chave) && String(valor ?? "").trim() !== "",
+  );
 }
 
-export function salvarBuscaVitrine(memoria: VitrineBuscaMemoria): void {
+export function salvarBuscaVitrine(memoria: {
+  filtros: object;
+  page: number;
+  ids?: string[];
+  listaNome?: string;
+}): void {
   if (typeof window === "undefined") return;
   const limpa = normalizarBuscaVitrine(memoria);
   try {
