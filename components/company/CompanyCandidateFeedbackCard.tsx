@@ -123,7 +123,7 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
           }}
         />
         {feedbackMsg ? (
-          <p style={{ ...textoAviso, margin: 0, fontSize: 11 }}>{feedbackMsg}</p>
+          <p style={{ ...textoAviso, margin: 0, fontSize: 14 }}>{feedbackMsg}</p>
         ) : null}
         <button
           type="button"

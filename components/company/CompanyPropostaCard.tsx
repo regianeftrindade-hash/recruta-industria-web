@@ -20,7 +20,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 const rotulo: React.CSSProperties = {
   ...textoDourado,
-  fontSize: 11,
+  fontSize: 14,
   textTransform: "uppercase",
   margin: "0 0 4px",
 };
@@ -95,24 +95,24 @@ export default function CompanyPropostaCard({
       <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: COR_PRETO }}>
         {`${p.cargo} · ${formatReaisDisplay(p.salario)}`}
       </p>
-      <p style={{ margin: "0 0 2px", fontSize: 11, color: COR_PRETO }}>
+      <p style={{ margin: "0 0 2px", fontSize: 14, color: COR_PRETO }}>
         <strong style={{ color: COR_PRETO }}>Turno:</strong> {turnoPropostaLabel(p.turno)}
       </p>
       {p.cidade?.trim() ? (
-        <p style={{ margin: "0 0 2px", fontSize: 11, color: COR_PRETO }}>
+        <p style={{ margin: "0 0 2px", fontSize: 14, color: COR_PRETO }}>
           <strong style={{ color: COR_PRETO }}>Cidade:</strong> {p.cidade}
         </p>
       ) : null}
       {p.beneficios?.trim() ? (
-        <p style={{ margin: "0 0 6px", fontSize: 11, color: COR_PRETO, whiteSpace: "pre-wrap" }}>
+        <p style={{ margin: "0 0 6px", fontSize: 14, color: COR_PRETO, whiteSpace: "pre-wrap" }}>
           <strong style={{ color: COR_PRETO }}>Benefícios:</strong> {p.beneficios}
         </p>
       ) : null}
-      <p style={{ margin: "0 0 8px", fontSize: 11, ...textoDourado, fontWeight: 700 }}>
+      <p style={{ margin: "0 0 8px", fontSize: 14, ...textoDourado, fontWeight: 700 }}>
         {STATUS_LABEL[p.status] || p.status}
       </p>
       {(p.status === "SENT" || p.status === "MORE_INFO") && (
-        <p style={{ margin: "0 0 8px", fontSize: 11, color: COR_PRETO, lineHeight: 1.45 }}>
+        <p style={{ margin: "0 0 8px", fontSize: 14, color: COR_PRETO, lineHeight: 1.45 }}>
           {p.status === "MORE_INFO"
             ? "O profissional pediu mais informações. Responda na seção de Mensagens abaixo."
             : "O agendamento fica disponível depois que o profissional confirmar interesse."}
@@ -139,7 +139,7 @@ export default function CompanyPropostaCard({
           ...btnGhost,
           marginTop: 8,
           padding: "6px 10px",
-          fontSize: 11,
+          fontSize: 14,
           ...textoAviso,
           borderColor: "#000",
         }}
@@ -159,7 +159,7 @@ export default function CompanyPropostaCard({
           <p
             style={{
               margin: "0 0 8px",
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: 800,
               ...textoDourado,
               textTransform: "uppercase",
@@ -262,7 +262,7 @@ export default function CompanyPropostaCard({
                   />
                 </div>
               ) : (
-                <p style={{ margin: 0, fontSize: 11, color: COR_PRETO, lineHeight: 1.45 }}>
+                <p style={{ margin: 0, fontSize: 14, color: COR_PRETO, lineHeight: 1.45 }}>
                   A entrevista será pela chamada de vídeo da plataforma. Não é necessário link externo.
                 </p>
               )}

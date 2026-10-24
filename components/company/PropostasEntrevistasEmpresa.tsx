@@ -281,7 +281,7 @@ export default function PropostasEntrevistasEmpresa({
         ...btnGhost,
         marginTop: 8,
         padding: "6px 10px",
-        fontSize: 11,
+        fontSize: 14,
         ...textoAviso,
         borderColor: "#000",
       }}
@@ -422,13 +422,13 @@ export default function PropostasEntrevistasEmpresa({
                       <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: COR_PRETO }}>
                         {p.cargo} · {formatReaisDisplay(p.salario)}
                       </p>
-                      <p style={{ margin: "0 0 2px", fontSize: 11, ...textoDourado, fontWeight: 700 }}>
+                      <p style={{ margin: "0 0 2px", fontSize: 14, ...textoDourado, fontWeight: 700 }}>
                         {STATUS_LABEL[p.status] || p.status}
                       </p>
-                      <p style={{ margin: "0 0 2px", fontSize: 11, color: COR_PRETO }}>
+                      <p style={{ margin: "0 0 2px", fontSize: 14, color: COR_PRETO }}>
                         {comprovante.dataLabel} · {comprovante.horaLabel}
                       </p>
-                      <p style={{ margin: "0 0 4px", fontSize: 11, color: COR_PRETO }}>{comprovante.localLabel}</p>
+                      <p style={{ margin: "0 0 4px", fontSize: 14, color: COR_PRETO }}>{comprovante.localLabel}</p>
                       {p.interview.observacoes?.trim() ? (
                         <p style={{ margin: "0 0 4px", fontSize: 12, color: COR_PRETO, whiteSpace: "pre-wrap" }}>
                           <strong>Observação:</strong> {p.interview.observacoes.trim()}
@@ -469,7 +469,7 @@ export default function PropostasEntrevistasEmpresa({
                       <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: COR_PRETO }}>
                         {p.cargo} · {formatReaisDisplay(p.salario)}
                       </p>
-                      <p style={{ margin: "0 0 8px", fontSize: 11, ...textoDourado }}>{motivo}</p>
+                      <p style={{ margin: "0 0 8px", fontSize: 14, ...textoDourado }}>{motivo}</p>
                       {botaoExcluir(p.id)}
                     </div>
                   );

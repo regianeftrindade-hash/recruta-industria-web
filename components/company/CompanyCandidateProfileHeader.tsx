@@ -111,10 +111,10 @@ export default function CompanyCandidateProfileHeader({
                 <span
                   style={{
                     ...(profissionalOnline ? textoDourado : textoPreto),
-                    fontSize: 9,
-                    lineHeight: 1,
+                    fontSize: 12,
+                    lineHeight: 1.2,
                     textTransform: "uppercase",
-                    letterSpacing: "0.02em",
+                    letterSpacing: "0.03em",
                   }}
                 >
                   {profissionalOnline ? "Online" : "Offline"}

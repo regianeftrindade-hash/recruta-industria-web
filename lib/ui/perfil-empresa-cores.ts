@@ -5,38 +5,29 @@ export const COR_PRETO = "#000000";
 export const COR_DOURADO = "#5C3D07";
 export const COR_VERMELHO = "#C40000";
 
-const contornoPreto = [
-  "0 0 1px #000",
-  "1px 0 0 #000",
-  "-1px 0 0 #000",
-  "0 1px 0 #000",
-  "0 -1px 0 #000",
-  "1px 1px 0 #000",
-  "-1px -1px 0 #000",
-  "1px -1px 0 #000",
-  "-1px 1px 0 #000",
-].join(", ");
-
 export const textoPreto: CSSProperties = {
   color: COR_PRETO,
   fontWeight: 400,
+  textShadow: "none",
 };
 
 export const textoPretoNegrito: CSSProperties = {
   color: COR_PRETO,
   fontWeight: 800,
+  textShadow: "none",
 };
 
+/** Dourado escuro liso. O halo preto em volta da letra apagava o texto no creme. */
 export const textoDourado: CSSProperties = {
   color: COR_DOURADO,
-  fontWeight: 700,
-  textShadow: contornoPreto,
+  fontWeight: 800,
+  textShadow: "none",
 };
 
 export const textoAviso: CSSProperties = {
   color: COR_VERMELHO,
   fontWeight: 800,
-  textShadow: contornoPreto,
+  textShadow: "none",
 };
 
 /** Botão do perfil: preto negrito e borda preta, sem o degradê dourado claro. */

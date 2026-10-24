@@ -87,7 +87,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
 
   const fieldHint = (key: string) =>
     fieldErrors[key] ? (
-      <p style={{ margin: "4px 0 0", fontSize: 11, ...textoAviso }}>{fieldErrors[key]}</p>
+      <p style={{ margin: "4px 0 0", fontSize: 14, ...textoAviso }}>{fieldErrors[key]}</p>
     ) : null;
 
   return (
@@ -111,7 +111,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
       {showForm && (
         <div style={{ display: "grid", gap: 10, marginBottom: 14 }}>
           <div>
-            <p style={{ ...textoDourado, fontSize: 11, textTransform: "uppercase", margin: "0 0 4px" }}>Cargo</p>
+            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>Cargo</p>
             <input
               value={form.cargo}
               placeholder="Inspetor de Qualidade"
@@ -124,7 +124,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             {fieldHint("cargo")}
           </div>
           <div>
-            <p style={{ ...textoDourado, fontSize: 11, textTransform: "uppercase", margin: "0 0 4px" }}>Salário (R$)</p>
+            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>Salário (R$)</p>
             <input
               value={form.salario}
               placeholder="R$ 4.200"
@@ -138,7 +138,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             {fieldHint("salario")}
           </div>
           <div>
-            <p style={{ ...textoDourado, fontSize: 11, textTransform: "uppercase", margin: "0 0 4px" }}>Turno</p>
+            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>Turno</p>
             <select
               value={form.turno}
               onChange={(e) => {
@@ -157,7 +157,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             {fieldHint("turno")}
           </div>
           <div>
-            <p style={{ ...textoDourado, fontSize: 11, textTransform: "uppercase", margin: "0 0 4px" }}>Cidade</p>
+            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>Cidade</p>
             <input
               value={form.cidade}
               placeholder="Campinas/SP"
@@ -170,7 +170,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             {fieldHint("cidade")}
           </div>
           <div>
-            <p style={{ ...textoDourado, fontSize: 11, textTransform: "uppercase", margin: "0 0 4px" }}>Benefícios</p>
+            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>Benefícios</p>
             <textarea
               value={form.beneficios}
               placeholder={"Convênio médico\nVA R$ 500\nPLR"}
@@ -180,7 +180,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             />
           </div>
           <div>
-            <p style={{ ...textoDourado, fontSize: 11, textTransform: "uppercase", margin: "0 0 4px" }}>Mensagem</p>
+            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>Mensagem</p>
             <textarea
               value={form.mensagem}
               rows={3}
@@ -193,7 +193,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             {fieldHint("mensagem")}
           </div>
           {error && (
-            <p style={{ margin: 0, fontSize: 12, ...textoAviso, lineHeight: 1.45 }}>{error}</p>
+            <p style={{ margin: 0, fontSize: 14, ...textoAviso, lineHeight: 1.45 }}>{error}</p>
           )}
           <button
             type="button"
@@ -207,7 +207,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
       )}
 
       {!showForm && error && (
-        <p style={{ margin: "0 0 12px", fontSize: 12, ...textoAviso, lineHeight: 1.45 }}>{error}</p>
+        <p style={{ margin: "0 0 12px", fontSize: 14, ...textoAviso, lineHeight: 1.45 }}>{error}</p>
       )}
     </>
   );

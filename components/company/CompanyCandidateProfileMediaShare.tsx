@@ -130,7 +130,7 @@ export default function CompanyCandidateProfileMediaShare({
               textAlign: "center",
             }}
           >
-            <p style={{ margin: 0, fontSize: 11, color: "#000", lineHeight: 1.4 }}>
+            <p style={{ margin: 0, fontSize: 14, color: "#000", lineHeight: 1.4 }}>
               Sem vídeo de apresentação
             </p>
           </div>
@@ -177,7 +177,7 @@ export default function CompanyCandidateProfileMediaShare({
               <p style={{ margin: 0, fontSize: 12, fontWeight: 700, ...textoDourado }}>
                 Compartilhar com a equipe (mesmo plano)
               </p>
-              <p style={{ margin: 0, fontSize: 11, color: "#000", lineHeight: 1.45 }}>
+              <p style={{ margin: 0, fontSize: 14, color: "#000", lineHeight: 1.45 }}>
                 Só aparecem pessoas da mesma assinatura. Elas recebem o link no chat e em
                 compartilhados.
               </p>
@@ -217,7 +217,7 @@ export default function CompanyCandidateProfileMediaShare({
                             {member.department} · {member.email}
                           </span>
                         </span>
-                        <span style={{ fontSize: 11, ...(selected ? textoDourado : textoPreto) }}>
+                        <span style={{ fontSize: 14, ...(selected ? textoDourado : textoPreto) }}>
                           {selected ? "Selecionado" : "Selecionar"}
                         </span>
                       </button>
@@ -226,7 +226,7 @@ export default function CompanyCandidateProfileMediaShare({
                 </div>
               )}
               <label>
-                <span style={{ ...textoDourado, display: "block", marginBottom: 4, fontSize: 11, textTransform: "uppercase" }}>
+                <span style={{ ...textoDourado, display: "block", marginBottom: 4, fontSize: 14, textTransform: "uppercase" }}>
                   Nota (opcional)
                 </span>
                 <input

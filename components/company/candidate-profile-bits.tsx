@@ -53,17 +53,20 @@ const fieldBox: React.CSSProperties = {
 export const labelStyle: React.CSSProperties = {
   ...textoDourado,
   margin: "0 0 4px",
-  fontSize: 11,
+  fontSize: 14,
+  lineHeight: 1.35,
   textTransform: "uppercase",
+  letterSpacing: "0.01em",
 };
 
 export const valueStyle: React.CSSProperties = {
   color: COR_PRETO,
-  fontSize: 14,
+  fontSize: 16,
   fontWeight: 400,
   margin: 0,
-  lineHeight: 1.55,
+  lineHeight: 1.5,
   wordBreak: "break-word",
+  textShadow: "none",
 };
 
 export function Campo({ label, value, span = 1 }: { label: string; value?: unknown; span?: number }) {
@@ -130,8 +133,9 @@ export function PerfilTextoCorrido({
     <span
       style={{
         ...textoDourado,
-        textDecoration: "underline",
-        textUnderlineOffset: 3,
+        fontSize: 16,
+        lineHeight: 1.45,
+        textDecoration: "none",
       }}
     >
       {label}
@@ -143,8 +147,8 @@ export function PerfilTextoCorrido({
       style={{
         display: "flex",
         flexWrap: "wrap",
-        columnGap: 14,
-        rowGap: 8,
+        columnGap: 18,
+        rowGap: 12,
         alignItems: "baseline",
         width: "100%",
       }}
@@ -161,8 +165,8 @@ export function PerfilTextoCorrido({
                 padding: "3px 10px",
                 border: "2px solid #000",
                 borderRadius: 999,
-                fontSize: 12,
-                lineHeight: 1.3,
+                fontSize: 14,
+                lineHeight: 1.35,
               }}
             >
               {item.label}
@@ -176,9 +180,10 @@ export function PerfilTextoCorrido({
               style={{
                 margin: 0,
                 color: COR_PRETO,
-                fontSize: 14,
+                fontSize: 16,
                 fontWeight: 400,
-                lineHeight: 1.4,
+                lineHeight: 1.5,
+                textShadow: "none",
               flex: full ? "1 1 100%" : "0 0 auto",
               whiteSpace: full ? "normal" : "nowrap",
               wordBreak: full ? "break-word" : undefined,
@@ -283,7 +288,7 @@ export function CursoDetalheItem({ curso }: { curso: CursoDetalhado }) {
         <span
           style={{
             ...tintaSelo(status),
-            fontSize: 10,
+            fontSize: 13,
             padding: "3px 8px",
             borderRadius: 999,
             border: "2px solid #000",
@@ -302,7 +307,7 @@ export function CursoDetalheItem({ curso }: { curso: CursoDetalhado }) {
           href={curso.certificadoUrl}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ ...textoDourado, fontSize: 10, textDecoration: "underline", marginTop: 2 }}
+          style={{ ...textoDourado, fontSize: 14, textDecoration: "underline", marginTop: 2 }}
         >
           Ver anexo
         </a>
@@ -340,7 +345,7 @@ export function CertificacaoDetalheItem({ cert }: { cert: CertificacaoDetalhada 
           <span
             style={{
               ...tintaSelo(status),
-              fontSize: 10,
+              fontSize: 13,
               padding: "3px 8px",
               borderRadius: 999,
               border: "2px solid #000",
@@ -360,7 +365,7 @@ export function CertificacaoDetalheItem({ cert }: { cert: CertificacaoDetalhada 
           href={cert.certificadoUrl}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ ...textoDourado, fontSize: 10, textDecoration: "underline", marginTop: 2 }}
+          style={{ ...textoDourado, fontSize: 14, textDecoration: "underline", marginTop: 2 }}
         >
           Ver anexo
         </a>

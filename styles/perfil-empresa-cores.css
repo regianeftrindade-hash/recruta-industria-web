@@ -1,9 +1,18 @@
 /* Perfil do profissional visto pela empresa.
    O tema do dashboard força dourado claro e cinza nos títulos com !important.
-   Aqui a hierarquia fica nas quatro tintas: preto, preto negrito, dourado escuro e vermelho. */
+   Aqui a hierarquia fica nas quatro tintas, sem halo: o contorno de 1px
+   em volta da letra pequena virava mancha no fundo creme. */
+
+.ri-dashboard .ri-perfil-empresa,
+.ri-dashboard .ri-perfil-empresa * {
+  text-shadow: none !important;
+  -webkit-text-stroke: 0 !important;
+}
 
 .ri-dashboard .ri-perfil-empresa {
   color: #000;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .ri-dashboard .ri-perfil-empresa h1,
@@ -13,34 +22,25 @@
 .ri-dashboard .ri-perfil-empresa h5,
 .ri-dashboard .ri-perfil-empresa h6 {
   color: #5c3d07 !important;
-  -webkit-text-stroke: 0 !important;
-  paint-order: stroke fill;
+  paint-order: normal;
   font-weight: 800 !important;
-  text-shadow:
-    0 0 1px #000,
-    1px 0 0 #000,
-    -1px 0 0 #000,
-    0 1px 0 #000,
-    0 -1px 0 #000,
-    1px 1px 0 #000,
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000 !important;
+  text-decoration: none !important;
+  line-height: 1.25 !important;
 }
 
-/* Dourado do tema (var(--dash-gold)) some no creme. O rótulo sobre o vídeo preto fica de fora. */
-.ri-dashboard .ri-perfil-empresa [style*="--dash-gold"]:not([style*="rgba(0,0,0"]) {
+.ri-dashboard .ri-perfil-empresa h2 {
+  font-size: 26px !important;
+}
+
+.ri-dashboard .ri-perfil-empresa h3,
+.ri-dashboard .ri-perfil-empresa h4 {
+  font-size: 18px !important;
+}
+
+/* Dourado do tema (var(--dash-gold)) some no creme.
+   O selo da câmera traz fundo preto e precisa continuar claro. */
+.ri-dashboard .ri-perfil-empresa [style*="--dash-gold"]:not([style*="rgba(0,0,0"]):not([style*="rgba(0, 0, 0"]) {
   color: #5c3d07 !important;
-  text-shadow:
-    0 0 1px #000,
-    1px 0 0 #000,
-    -1px 0 0 #000,
-    0 1px 0 #000,
-    0 -1px 0 #000,
-    1px 1px 0 #000,
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000 !important;
 }
 
 .ri-dashboard .ri-perfil-empresa [style*="8D6B1F"] {
@@ -53,37 +53,16 @@
   border: 2px solid #000 !important;
   box-shadow: none !important;
   color: #000 !important;
-  text-shadow: none !important;
 }
 
 .ri-dashboard .ri-perfil-empresa button.ri-tinta-aviso {
   color: #c40000 !important;
   border-color: #000 !important;
-  text-shadow:
-    0 0 1px #000,
-    1px 0 0 #000,
-    -1px 0 0 #000,
-    0 1px 0 #000,
-    0 -1px 0 #000,
-    1px 1px 0 #000,
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000 !important;
 }
 
 .ri-dashboard .ri-perfil-empresa button:not([aria-pressed])[style*="5C3D07"],
 .ri-dashboard .ri-perfil-empresa button:not([aria-pressed])[style*="5c3d07"] {
   color: #5c3d07 !important;
-  text-shadow:
-    0 0 1px #000,
-    1px 0 0 #000,
-    -1px 0 0 #000,
-    0 1px 0 #000,
-    0 -1px 0 #000,
-    1px 1px 0 #000,
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000 !important;
 }
 
 .ri-dashboard .ri-perfil-empresa button[style*="f87171"],
@@ -94,16 +73,6 @@
 .ri-dashboard .ri-perfil-empresa [style*="e57373"] {
   color: #c40000 !important;
   border-color: #000 !important;
-  text-shadow:
-    0 0 1px #000,
-    1px 0 0 #000,
-    -1px 0 0 #000,
-    0 1px 0 #000,
-    0 -1px 0 #000,
-    1px 1px 0 #000,
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000 !important;
 }
 
 .ri-dashboard .ri-perfil-empresa .dash-card,
@@ -123,4 +92,10 @@
 .ri-dashboard .ri-perfil-empresa textarea {
   color: #000 !important;
   border-color: #000 !important;
+  font-size: 16px !important;
+}
+
+.ri-dashboard .ri-perfil-empresa a {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
