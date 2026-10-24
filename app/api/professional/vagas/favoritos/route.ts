@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireCurrentProfessional } from "@/lib/professional/current-professional";
 import { JobPostingError } from "@/lib/jobs/job-posting";
-import { isFavoriteJob, listFavoriteJobIds, setFavoriteJob } from "@/lib/jobs/job-favorites";
+import { isFavoriteJob, listFavoriteJobs, setFavoriteJob } from "@/lib/jobs/job-favorites";
 
 export async function GET(request: NextRequest) {
   const auth = await requireCurrentProfessional(request);
@@ -11,12 +11,14 @@ export async function GET(request: NextRequest) {
     if (jobId) {
       return NextResponse.json({ favorited: await isFavoriteJob(auth.user.id, jobId) });
     }
-    return NextResponse.json({ ids: await listFavoriteJobIds(auth.user.id) });
+    const jobs = await listFavoriteJobs(auth.user.id);
+    return NextResponse.json({ ids: jobs.map((job) => job.id), jobs });
   } catch (error) {
     if (error instanceof JobPostingError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
-    throw error;
+    console.error("favoritos profissional", error);
+    return NextResponse.json({ error: "Não foi possível carregar os favoritos." }, { status: 500 });
   }
 }
 
@@ -33,6 +35,7 @@ export async function PUT(request: NextRequest) {
     if (error instanceof JobPostingError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
-    throw error;
+    console.error("favoritos profissional", error);
+    return NextResponse.json({ error: "Não foi possível salvar o favorito." }, { status: 500 });
   }
 }

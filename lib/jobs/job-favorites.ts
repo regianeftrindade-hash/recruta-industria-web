@@ -1,6 +1,18 @@
 import { prisma } from "@/lib/db";
 import { ensureJobFavoritesTable } from "@/lib/infra/ensure-db-schema";
-import { assertJobId } from "@/lib/jobs/job-posting";
+import { assertJobId, type PublicJob } from "@/lib/jobs/job-posting";
+import { asPublicJob } from "@/lib/jobs/job-posting-db";
+
+/** Vagas publicadas que o profissional guardou, da mais recente para a mais antiga. */
+export async function listFavoriteJobs(userId: string): Promise<PublicJob[]> {
+  await ensureJobFavoritesTable();
+  const rows = await prisma.jobFavorite.findMany({
+    where: { userId, job: { status: "PUBLISHED" } },
+    orderBy: { createdAt: "desc" },
+    include: { job: true },
+  });
+  return rows.map((row) => asPublicJob(row.job));
+}
 
 export async function listFavoriteJobIds(userId: string): Promise<string[]> {
   await ensureJobFavoritesTable();

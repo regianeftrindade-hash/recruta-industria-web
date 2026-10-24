@@ -9,15 +9,18 @@ export default function JobFavoriteButton({
   ativo = false,
   retorno,
   carregar = false,
+  onChange,
 }: {
   jobId: string;
   ativo?: boolean;
   retorno: string;
   carregar?: boolean;
+  onChange?: (favorited: boolean) => void;
 }) {
   const router = useRouter();
   const [marcado, setMarcado] = useState(ativo);
   const [busy, setBusy] = useState(false);
+  const [aviso, setAviso] = useState("");
 
   useEffect(() => {
     if (!carregar) setMarcado(ativo);
@@ -39,6 +42,7 @@ export default function JobFavoriteButton({
 
   async function alternar() {
     setBusy(true);
+    setAviso("");
     const proximo = !marcado;
     try {
       const response = await fetch("/api/professional/vagas/favoritos", {
@@ -51,33 +55,53 @@ export default function JobFavoriteButton({
         router.push(`/login?tipo=profissional&redirect=${encodeURIComponent(retorno)}`);
         return;
       }
-      if (!response.ok) return;
       const data = await response.json().catch(() => ({}));
-      setMarcado(Boolean(data.favorited));
+      if (!response.ok) {
+        setAviso(typeof data.error === "string" && data.error ? data.error : "Não foi possível salvar o favorito.");
+        return;
+      }
+      const salvo = Boolean(data.favorited);
+      if (proximo && !salvo) {
+        setMarcado(false);
+        onChange?.(false);
+        setAviso("Esta vaga não está disponível para favoritar.");
+        return;
+      }
+      setMarcado(salvo);
+      onChange?.(salvo);
+    } catch {
+      setAviso("Não foi possível salvar o favorito.");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <button
-      type="button"
-      className="ri-btn-3d-gold"
-      aria-pressed={marcado}
-      aria-label={marcado ? "Remover dos favoritos" : "Marcar como favorito"}
-      title={marcado ? "Remover dos favoritos" : "Marcar como favorito"}
-      disabled={busy}
-      onClick={() => void alternar()}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "6px 12px",
-        fontSize: 13,
-      }}
-    >
-      <BandeiraFavoritoIcon ativo={marcado} size={16} />
-      {marcado ? "Favorito" : "Favoritar"}
-    </button>
+    <span style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
+      <button
+        type="button"
+        className="ri-btn-3d-gold"
+        aria-pressed={marcado}
+        aria-label={marcado ? "Remover dos favoritos" : "Marcar como favorito"}
+        title={marcado ? "Remover dos favoritos" : "Marcar como favorito"}
+        disabled={busy}
+        onClick={() => void alternar()}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "6px 12px",
+          fontSize: 13,
+        }}
+      >
+        <BandeiraFavoritoIcon ativo={marcado} size={16} />
+        {marcado ? "Favorito" : "Favoritar"}
+      </button>
+      {aviso ? (
+        <span role="alert" style={{ color: "#414141", fontSize: 12, fontWeight: 700, maxWidth: 220 }}>
+          {aviso}
+        </span>
+      ) : null}
+    </span>
   );
 }

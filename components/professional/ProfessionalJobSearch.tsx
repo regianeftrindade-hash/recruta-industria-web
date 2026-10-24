@@ -130,6 +130,49 @@ function temFiltro(form: SearchState): boolean {
   return Object.values(form).some((value) => value.trim() !== "");
 }
 
+function vagaPublica(value: unknown): value is PublicJob {
+  if (!value || typeof value !== "object") return false;
+  const job = value as PublicJob;
+  return typeof job.id === "string" && typeof job.title === "string" && typeof job.companyLabel === "string";
+}
+
+function CartaoVaga({
+  job,
+  favorito,
+  onFavorito,
+  reasons,
+}: {
+  job: PublicJob;
+  favorito: boolean;
+  onFavorito: (job: PublicJob, favorited: boolean) => void;
+  reasons?: string[];
+}) {
+  return (
+    <article className={styles.card}>
+      <h3>{job.title}</h3>
+      <p className={styles.company}>{job.companyLabel}</p>
+      {reasons && reasons.length > 0 ? <p className={styles.reasons}>{reasons.join(" · ")}</p> : null}
+      <ul>
+        {job.publicationDate ? <li>{job.publicationDate}</li> : null}
+        {job.salaryLabel ? <li>{job.salaryLabel}</li> : null}
+        {job.contractLabel ? <li>{job.contractLabel}</li> : null}
+        {job.workModeLabel ? <li>{job.workModeLabel}</li> : null}
+        {job.workplace ? <li>{job.workplace}</li> : null}
+        {jobApplicationDeadline(job) ? <li>Inscrições até {jobApplicationDeadline(job)}</li> : null}
+      </ul>
+      <div className={styles.cardActions}>
+        <a href={`/vagas/${job.id}`}>Ver vaga</a>
+        <JobFavoriteButton
+          jobId={job.id}
+          ativo={favorito}
+          retorno="/professional/dashboard"
+          onChange={(marcado) => onFavorito(job, marcado)}
+        />
+      </div>
+    </article>
+  );
+}
+
 function rotuloBusca(form: SearchState): string {
   const partes: string[] = [];
   if (form.q.trim()) partes.push(form.q.trim());
@@ -302,6 +345,10 @@ export default function ProfessionalJobSearch() {
   const [pagina, setPagina] = useState(1);
   const [paginaCompativeis, setPaginaCompativeis] = useState(1);
   const [favoritos, setFavoritos] = useState<string[]>([]);
+  const [vagasFavoritas, setVagasFavoritas] = useState<PublicJob[]>([]);
+  const [favoritosProntos, setFavoritosProntos] = useState(false);
+  const [erroFavoritos, setErroFavoritos] = useState("");
+  const [paginaFavoritos, setPaginaFavoritos] = useState(1);
   const listaRef = useRef<HTMLHeadingElement>(null);
   const compativeisRef = useRef<HTMLHeadingElement>(null);
 
@@ -336,11 +383,27 @@ export default function ProfessionalJobSearch() {
   useEffect(() => {
     let ativo = true;
     void fetch("/api/professional/vagas/favoritos", { credentials: "include" })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data) => {
-        if (ativo && Array.isArray(data?.ids)) setFavoritos(data.ids.filter((id: unknown) => typeof id === "string"));
+      .then(async (response) => {
+        const data = await response.json().catch(() => null);
+        return { ok: response.ok, data };
       })
-      .catch(() => {});
+      .then(({ ok, data }) => {
+        if (!ativo) return;
+        if (!ok) {
+          setErroFavoritos(typeof data?.error === "string" ? data.error : "Não foi possível carregar os favoritos.");
+          return;
+        }
+        const jobs = Array.isArray(data?.jobs) ? data.jobs.filter(vagaPublica) : [];
+        setVagasFavoritas(jobs);
+        setFavoritos(Array.isArray(data?.ids) ? data.ids.filter((id: unknown) => typeof id === "string") : jobs.map((job: PublicJob) => job.id));
+        setErroFavoritos("");
+      })
+      .catch(() => {
+        if (ativo) setErroFavoritos("Não foi possível carregar os favoritos.");
+      })
+      .finally(() => {
+        if (ativo) setFavoritosProntos(true);
+      });
     return () => {
       ativo = false;
     };
@@ -424,6 +487,22 @@ export default function ProfessionalJobSearch() {
 
   const listaGeral = paginarLista(jobs, pagina, VAGAS_POR_PAGINA);
   const listaCompativel = paginarLista(compatible, paginaCompativeis, VAGAS_POR_PAGINA);
+  const listaFavoritos = paginarLista(vagasFavoritas, paginaFavoritos, VAGAS_POR_PAGINA);
+
+  function aoFavorito(job: PublicJob, favorited: boolean) {
+    setErroFavoritos("");
+    setFavoritos((atual) => (
+      favorited
+        ? (atual.includes(job.id) ? atual : [job.id, ...atual])
+        : atual.filter((id) => id !== job.id)
+    ));
+    setVagasFavoritas((atual) => (
+      favorited
+        ? (atual.some((item) => item.id === job.id) ? atual : [job, ...atual])
+        : atual.filter((item) => item.id !== job.id)
+    ));
+    if (favorited) setPaginaFavoritos(1);
+  }
 
   function irParaPagina(numero: number, qual: "geral" | "compativeis") {
     if (qual === "compativeis") {
@@ -566,23 +645,13 @@ export default function ProfessionalJobSearch() {
           ) : (
             <div className={styles.list}>
               {listaCompativel.itens.map((job) => (
-                <article key={job.id} className={styles.card}>
-                  <h3>{job.title}</h3>
-                  <p className={styles.company}>{job.companyLabel}</p>
-                  <p className={styles.reasons}>{job.reasons.join(" · ")}</p>
-                  <ul>
-                    {job.publicationDate ? <li>{job.publicationDate}</li> : null}
-                    {job.salaryLabel ? <li>{job.salaryLabel}</li> : null}
-                    {job.contractLabel ? <li>{job.contractLabel}</li> : null}
-                    {job.workModeLabel ? <li>{job.workModeLabel}</li> : null}
-                    {job.workplace ? <li>{job.workplace}</li> : null}
-                    {jobApplicationDeadline(job) ? <li>Inscrições até {jobApplicationDeadline(job)}</li> : null}
-                  </ul>
-                  <div className={styles.cardActions}>
-                    <a href={`/vagas/${job.id}`}>Ver vaga</a>
-                    <JobFavoriteButton jobId={job.id} ativo={favoritos.includes(job.id)} retorno="/professional/dashboard" />
-                  </div>
-                </article>
+                <CartaoVaga
+                  key={job.id}
+                  job={job}
+                  reasons={job.reasons}
+                  favorito={favoritos.includes(job.id)}
+                  onFavorito={aoFavorito}
+                />
               ))}
             </div>
           )}
@@ -592,6 +661,37 @@ export default function ProfessionalJobSearch() {
             total={listaCompativel.totalPaginas}
             onIr={(numero) => irParaPagina(numero, "compativeis")}
           />
+        </section>
+      ) : null}
+
+      {!loading && !error ? (
+        <section className={styles.matches} aria-label="Favoritos">
+          <h3 className={styles.title}>Favoritos</h3>
+          {!favoritosProntos ? <p className={styles.lead}>Carregando favoritos...</p> : null}
+          {favoritosProntos && erroFavoritos ? <p className={styles.error}>{erroFavoritos}</p> : null}
+          {favoritosProntos && !erroFavoritos && vagasFavoritas.length === 0 ? (
+            <p className={styles.empty}>Nenhuma vaga favorita ainda. Use Favoritar para guardar uma vaga nesta lista.</p>
+          ) : null}
+          {listaFavoritos.itens.length > 0 ? (
+            <div className={styles.list}>
+              {listaFavoritos.itens.map((job) => (
+                <CartaoVaga
+                  key={job.id}
+                  job={job}
+                  favorito={favoritos.includes(job.id)}
+                  onFavorito={aoFavorito}
+                />
+              ))}
+            </div>
+          ) : null}
+          {favoritosProntos ? (
+            <Paginador
+              rotulo="Páginas dos favoritos"
+              pagina={listaFavoritos.pagina}
+              total={listaFavoritos.totalPaginas}
+              onIr={setPaginaFavoritos}
+            />
+          ) : null}
         </section>
       ) : null}
 
@@ -607,22 +707,12 @@ export default function ProfessionalJobSearch() {
       {!loading && !error && listaGeral.itens.length > 0 ? (
         <div className={styles.list}>
           {listaGeral.itens.map((job) => (
-            <article key={job.id} className={styles.card}>
-              <h3>{job.title}</h3>
-              <p className={styles.company}>{job.companyLabel}</p>
-              <ul>
-                {job.publicationDate ? <li>{job.publicationDate}</li> : null}
-                {job.salaryLabel ? <li>{job.salaryLabel}</li> : null}
-                {job.contractLabel ? <li>{job.contractLabel}</li> : null}
-                {job.workModeLabel ? <li>{job.workModeLabel}</li> : null}
-                {job.workplace ? <li>{job.workplace}</li> : null}
-                {jobApplicationDeadline(job) ? <li>Inscrições até {jobApplicationDeadline(job)}</li> : null}
-              </ul>
-              <div className={styles.cardActions}>
-                <a href={`/vagas/${job.id}`}>Ver vaga</a>
-                <JobFavoriteButton jobId={job.id} ativo={favoritos.includes(job.id)} retorno="/professional/dashboard" />
-              </div>
-            </article>
+            <CartaoVaga
+              key={job.id}
+              job={job}
+              favorito={favoritos.includes(job.id)}
+              onFavorito={aoFavorito}
+            />
           ))}
         </div>
       ) : null}

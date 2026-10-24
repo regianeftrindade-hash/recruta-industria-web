@@ -44,6 +44,10 @@ import { parseJobSearch, publicJobWhere, type JobSearchFilters } from "@/lib/job
 import { ensureJobApplicationWhatsappColumn } from "@/lib/infra/ensure-db-schema";
 import { getProfessionalPlanTier } from "@/lib/professional/professional-storage";
 
+export function asPublicJob(job: JobPosting): PublicJob {
+  return toPublicJob(asRecord(job));
+}
+
 function asRecord(job: JobPosting, applicationCount = 0): JobRecord {
   return {
     id: job.id,

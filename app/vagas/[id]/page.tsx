@@ -144,9 +144,7 @@ export default async function VagaPage({ params, searchParams }: Props) {
           <div className={styles.titleRow}>
             <h1 className={styles.title}>{view.job.title}</h1>
             <div className={styles.titleTools}>
-              {view.job.origin === "ADMIN" ? (
-                <JobFavoriteButton jobId={view.job.id} retorno={`/vagas/${view.job.id}`} carregar />
-              ) : null}
+              <JobFavoriteButton jobId={view.job.id} retorno={`/vagas/${view.job.id}`} carregar />
               <JobShareButton jobId={view.job.id} shareText={jobShareMessage(view.job)} />
             </div>
           </div>
