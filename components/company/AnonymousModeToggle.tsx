@@ -21,15 +21,24 @@ export default function AnonymousModeToggle({
     <div
       style={{
         display: "inline-flex",
-        alignItems: "center",
-        gap: 8,
+        flexDirection: "column",
+        alignItems: "flex-end",
+        gap: 4,
+        maxWidth: 240,
       }}
-      title={
-        active
-          ? "Modo anônimo ativo: profissionais não veem o nome da empresa"
-          : "Ativar modo anônimo: navegue sem revelar o nome da empresa"
-      }
     >
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+        }}
+        title={
+          active
+            ? "Modo anônimo ativo: vagas, dicas e mensagens são enviadas sem o nome da empresa"
+            : "Quando selecionado, vagas, dicas e mensagens serão enviadas anonimamente"
+        }
+      >
       <span
         style={{
           fontSize: 10,
@@ -120,6 +129,20 @@ export default function AnonymousModeToggle({
           }}
         />
       </button>
+      </div>
+      <p
+        style={{
+          margin: 0,
+          maxWidth: 220,
+          fontSize: 10,
+          fontWeight: 700,
+          lineHeight: 1.35,
+          textAlign: "right",
+          color: "#24180a",
+        }}
+      >
+        Quando selecionado, vagas, dicas e mensagens serão enviadas anonimamente.
+      </p>
     </div>
   );
 }
