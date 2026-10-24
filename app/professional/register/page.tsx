@@ -1797,7 +1797,7 @@ export default function CadastroProfissional({
               }
             }}
           />
-          <AnexoCurriculoAutomatico onFile={importarCurriculoArquivo} />
+          {!isEditMode ? <AnexoCurriculoAutomatico onFile={importarCurriculoArquivo} /> : null}
           </>
         )}
 
@@ -3269,7 +3269,7 @@ export default function CadastroProfissional({
         {(isEditMode || wizardStep === lastWizardStep) && (
           <ResumeToolkit
             variant={isEditMode ? 'profile' : 'register'}
-            focus="generate"
+            focus={isEditMode ? 'full' : 'generate'}
             notice="Não tem um currículo para anexar? Não tem problema. Geramos seu currículo em PDF gratuito com os dados preenchidos neste cadastro."
             authenticated={Boolean(session?.user?.email)}
             getLocalDraft={montarRascunhoCurriculo}

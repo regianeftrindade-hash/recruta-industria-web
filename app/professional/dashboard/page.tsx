@@ -449,7 +449,7 @@ export default function DashboardProfissional() {
   const paginaInteira = abaDireita === "oportunidades" || abaDireita === "vagas";
 
   return (
-    <DashboardThemeShell className="ri-dash-prof" style={{ width: "100%", maxWidth: "none" }}>
+    <DashboardThemeShell className="ri-dash-prof" style={{ width: "100%", maxWidth: "none", overflow: "visible" }}>
       <header
         style={{
           ...dashHeader,
@@ -566,6 +566,9 @@ export default function DashboardProfissional() {
           gridTemplateColumns: "1fr",
           width: "100%",
           minHeight: paginaInteira ? 0 : "calc(100vh - 90px)",
+          height: paginaInteira ? "auto" : undefined,
+          maxHeight: paginaInteira ? "none" : undefined,
+          overflow: paginaInteira ? "visible" : undefined,
           alignItems: "stretch",
         }}
       >

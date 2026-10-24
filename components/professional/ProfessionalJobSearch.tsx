@@ -362,12 +362,13 @@ export default function ProfessionalJobSearch() {
       const found = porDataDePublicacao(Array.isArray(data.jobs) ? data.jobs as PublicJob[] : []);
       const matchResponse = await fetch(`/api/professional/vagas-compativeis?${params.toString()}`, { credentials: "include" });
       const matchData = await matchResponse.json().catch(() => ({}));
-      if (!matchResponse.ok) {
-        const premiumRequired = matchResponse.status === 403 && matchData.premiumRequired === true;
-        setIsPremium(premiumRequired ? false : null);
+      const premiumConfirmado = matchResponse.ok && matchData.premium === true;
+      if (!premiumConfirmado) {
+        const bloqueado = matchResponse.status === 403 || matchData.premiumRequired === true;
+        setIsPremium(bloqueado ? false : null);
         setCompatible([]);
         setJobs(found);
-        if (!premiumRequired) {
+        if (!bloqueado) {
           setMatchError("Não foi possível comparar as vagas com o seu perfil agora. A lista geral continua disponível.");
         }
         if (salvar) setBuscas(guardarBusca(next));
@@ -521,6 +522,7 @@ export default function ProfessionalJobSearch() {
 
       {error ? <p className={styles.error}>{error}</p> : null}
       {loading ? <p className={styles.lead}>Buscando vagas...</p> : null}
+      {!loading && !error && matchError && isPremium !== true ? <p className={styles.error}>{matchError}</p> : null}
       {!loading && !error && isPremium === false ? (
         <section className={styles.matches} aria-label="Vagas compatíveis com você">
           <h3 className={styles.title}>Vagas compatíveis com você</h3>
@@ -530,7 +532,7 @@ export default function ProfessionalJobSearch() {
           </div>
         </section>
       ) : null}
-      {!loading && !error && isPremium !== false ? (
+      {!loading && !error && isPremium === true ? (
         <section className={styles.matches} aria-label="Vagas compatíveis com você">
           <h3 ref={compativeisRef} className={styles.title}>Vagas compatíveis com você</h3>
           {matchError ? (
