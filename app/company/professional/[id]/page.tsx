@@ -9,6 +9,7 @@ import LogoRecruta from "@/app/components/LogoRecruta";
 import "@/app/dashboard/dashboard-theme.css";
 import { DashboardThemeShell, dashHeader } from "@/lib/dashboard-theme";
 import { botaoPerfil, COR_DOURADO, COR_PRETO } from "@/lib/ui/perfil-empresa-cores";
+import { DESTINO_LISTA_PROFISSIONAIS } from "@/lib/company/vitrine-busca-memoria";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 
 /** Perfil do candidato (empresa) — abre direto pelo id, sem API de resolve. */
@@ -46,10 +47,10 @@ export default function CompanyProfessionalPage() {
           <DashboardThemeToggle />
           <button
             type="button"
-            onClick={() => router.push("/company/dashboard-empresa")}
+            onClick={() => router.push(DESTINO_LISTA_PROFISSIONAIS)}
             style={{ ...botaoPerfil, padding: "8px 14px", fontSize: 12 }}
           >
-            Voltar à vitrine
+            Voltar
           </button>
         </div>
       </header>
@@ -67,7 +68,7 @@ export default function CompanyProfessionalPage() {
       >
         <CompanyCandidateProfilePanel
           profileId={profileId}
-          onBack={() => router.push("/company/dashboard-empresa")}
+          onBack={() => router.push(DESTINO_LISTA_PROFISSIONAIS)}
           onUnlocked={() => router.refresh()}
         />
       </main>

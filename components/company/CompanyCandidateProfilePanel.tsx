@@ -84,7 +84,7 @@ export default function CompanyCandidateProfilePanel({
       <div className={CLASSE_PERFIL} style={{ padding: "20px 0" }}>
         <p style={{ ...textoAviso, marginBottom: 16 }}>{error || "Perfil não encontrado"}</p>
         <button type="button" onClick={onBack} style={{ ...botaoPerfil, padding: "8px 16px", fontSize: 13 }}>
-          ← Voltar aos perfis
+          ← Voltar
         </button>
       </div>
     );

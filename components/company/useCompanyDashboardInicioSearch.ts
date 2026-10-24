@@ -8,6 +8,12 @@ import {
   type Filtros,
 } from "@/components/company/CompanyDashboardVitrineSearchFilters";
 import {
+  lerBuscaVitrine,
+  limparBuscaVitrine,
+  salvarBuscaVitrine,
+  temFiltroAvancado,
+} from "@/lib/company/vitrine-busca-memoria";
+import {
   PAGINACAO_INICIAL,
   PER_PAGE_PERFIS,
   type PaginacaoInfo,
@@ -95,14 +101,15 @@ export function useCompanyDashboardInicioSearch({
     };
   }, [filtros.estado]);
 
-  const buscarProfissionais = useCallback(async (page: number) => {
+  const buscarProfissionais = useCallback(async (page: number, filtrosBusca?: Filtros) => {
+    const usados = filtrosBusca ?? filtros;
     setVitrineIds(null);
     setVitrineListaNome("");
     setLoadingProfissionais(true);
     setErroBusca("");
     try {
       const params = new URLSearchParams();
-      Object.entries(filtros).forEach(([k, v]) => { if (v) params.set(k, v); });
+      Object.entries(usados).forEach(([k, v]) => { if (v) params.set(k, v); });
       params.set("page", String(page));
       params.set("perPage", String(PER_PAGE_PERFIS));
       const res = await fetch(`/api/company/professionals?${params}`, { credentials: "include" });
@@ -133,9 +140,11 @@ export function useCompanyDashboardInicioSearch({
           totalPages,
         }
       );
-      setPaginaPerfis(data.pagination?.page ?? page);
+      const pagina = data.pagination?.page ?? page;
+      setPaginaPerfis(pagina);
       if (data.planTier) setPlanTier(data.planTier);
       if (data.features) setPlanFeatures(data.features);
+      salvarBuscaVitrine({ filtros: usados, page: pagina });
     } catch {
       setErroBusca("Erro de rede ao buscar profissionais");
     } finally {
@@ -160,6 +169,7 @@ export function useCompanyDashboardInicioSearch({
       setPaginacao({ page: 1, perPage: PER_PAGE_PERFIS, total: 0, totalPages: 1 });
       setPaginaPerfis(1);
       setErroBusca("");
+      salvarBuscaVitrine({ filtros, page: 1, ids: [], listaNome });
       vitrinePerfisRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
@@ -200,16 +210,18 @@ export function useCompanyDashboardInicioSearch({
           totalPages,
         },
       );
-      setPaginaPerfis(data.pagination?.page ?? page);
+      const pagina = data.pagination?.page ?? page;
+      setPaginaPerfis(pagina);
       if (data.planTier) setPlanTier(data.planTier);
       if (data.features) setPlanFeatures(data.features);
+      salvarBuscaVitrine({ filtros, page: pagina, ids, listaNome });
       vitrinePerfisRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch {
       setErroBusca(`Erro de rede: ${erroPadrao}`);
     } finally {
       setLoadingProfissionais(false);
     }
-  }, [setPlanTier, setPlanFeatures, setUnlockedCount, setSlotsRestantes]);
+  }, [filtros, setPlanTier, setPlanFeatures, setUnlockedCount, setSlotsRestantes]);
 
   const irParaPagina = useCallback((page: number) => {
     if (vitrineIds) {
@@ -384,17 +396,45 @@ export function useCompanyDashboardInicioSearch({
   useEffect(() => {
     if (!mounted || status !== "authenticated") return;
     try {
+      let abriuPonte = false;
       const listRaw = window.sessionStorage.getItem("company-open-talent-list");
       if (listRaw) {
         window.sessionStorage.removeItem("company-open-talent-list");
         const list = JSON.parse(listRaw) as TalentList;
-        if (list?.id) void handleOpenTalentList(list);
+        if (list?.id) {
+          abriuPonte = true;
+          void handleOpenTalentList(list);
+        }
       }
       const alertRaw = window.sessionStorage.getItem("company-open-alert-filters");
       if (alertRaw) {
         window.sessionStorage.removeItem("company-open-alert-filters");
         const filters = JSON.parse(alertRaw) as Record<string, string>;
+        abriuPonte = true;
         void handleOpenAlertMatches({ id: "", name: "", active: true, filters, newMatches: [] });
+      }
+      if (!abriuPonte) {
+        const memoria = lerBuscaVitrine();
+        if (memoria) {
+          const next: Filtros = { ...EMPTY_FILTROS };
+          (Object.keys(EMPTY_FILTROS) as (keyof Filtros)[]).forEach((key) => {
+            const valor = memoria.filtros[key];
+            if (typeof valor === "string") next[key] = valor;
+          });
+          setFiltros(next);
+          setBuscaAvancadaAberta(temFiltroAvancado(next));
+          setBuscaRealizada(true);
+          if (memoria.ids) {
+            void abrirPerfisPorIds(
+              memoria.ids,
+              "Erro ao abrir a lista de profissionais",
+              memoria.page,
+              memoria.listaNome || "",
+            );
+          } else if (filtrosTemValor(next)) {
+            void buscarProfissionais(memoria.page, next);
+          }
+        }
       }
     } catch {
       /* ignore */
@@ -408,6 +448,7 @@ export function useCompanyDashboardInicioSearch({
 
   const onBuscar = () => {
     if (!filtrosTemValor(filtros)) {
+      limparBuscaVitrine();
       setErroBusca("Selecione ao menos um filtro para buscar profissionais.");
       setBuscaRealizada(false);
       setProfissionais([]);
@@ -425,6 +466,7 @@ export function useCompanyDashboardInicioSearch({
   };
 
   const onLimpar = () => {
+    limparBuscaVitrine();
     setFiltros(EMPTY_FILTROS);
     setCidadesOpcoes([]);
     setBuscaRealizada(false);
