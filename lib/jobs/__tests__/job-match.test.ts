@@ -18,6 +18,7 @@ function job(patch: Partial<PublicJob>): PublicJob {
     applicationInstructions: null,
     applicationMode: "INTERNAL",
     externalApplyUrl: null,
+    origin: "ADMIN",
     ...patch,
   };
 }

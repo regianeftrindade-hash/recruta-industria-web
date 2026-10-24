@@ -28,6 +28,7 @@ model User {
   profile      Profile?
   jobPostingsCreated JobPosting[] @relation("JobPostingCreator")
   jobApplications    JobApplication[]
+  jobFavorites       JobFavorite[]
 }
 
 model VideoCallInvite {
@@ -994,6 +995,7 @@ model JobPosting {
   company    Company?         @relation(fields: [companyUserId], references: [userId], onDelete: SetNull)
   createdBy  User?            @relation("JobPostingCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
   applications JobApplication[]
+  favorites    JobFavorite[]
 
   @@index([status, publicationDate])
   @@index([companyUserId])
@@ -1022,4 +1024,19 @@ model JobApplication {
   @@index([userId])
   @@index([jobId, createdAt])
   @@map("job_applications")
+}
+
+/// Vaga guardada pelo profissional. Some da lista quando a vaga deixa de existir.
+model JobFavorite {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
+  createdAt DateTime @default(now())
+
+  user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  JobPosting @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@index([userId, createdAt])
+  @@map("job_favorites")
 }

@@ -86,6 +86,16 @@ function localDoTexto(workplace: string): { estado: string; cidade: string } {
     : { estado: "", cidade: texto };
 }
 
+function vagaCombinaFiltro(job: AdminJob, titulo: string, estado: string, cidade: string): boolean {
+  const tituloNorm = titulo.trim().toLocaleLowerCase("pt-BR");
+  const cidadeNorm = cidade.trim().toLocaleLowerCase("pt-BR");
+  if (tituloNorm && !job.title.toLocaleLowerCase("pt-BR").includes(tituloNorm)) return false;
+  const local = localDoTexto(job.workplace || "");
+  if (estado && local.estado !== estado) return false;
+  if (cidadeNorm && !local.cidade.toLocaleLowerCase("pt-BR").includes(cidadeNorm)) return false;
+  return true;
+}
+
 function textoDoLocal(estado: string, cidade: string): string {
   if (cidade && estado) return `${cidade}/${estado}`;
   return cidade || estado;
@@ -299,6 +309,13 @@ export default function CompanyVagasPanel({
   const restored = useRef(false);
   const [companyName, setCompanyName] = useState("");
   const [jobs, setJobs] = useState<AdminJob[]>([]);
+  const [filtroTitulo, setFiltroTitulo] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState("");
+  const [filtroCidade, setFiltroCidade] = useState("");
+  const jobsVisiveis = useMemo(
+    () => jobs.filter((job) => vagaCombinaFiltro(job, filtroTitulo, filtroEstado, filtroCidade)),
+    [jobs, filtroTitulo, filtroEstado, filtroCidade],
+  );
   const [screen, setScreen] = useState<Screen | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm(""));
@@ -810,8 +827,41 @@ export default function CompanyVagasPanel({
       ) : null}
 
       {screen === "list" && jobs.length > 0 ? (
+        <>
+        <div className={styles.listFilters}>
+          <label>
+            Título da vaga
+            <input
+              value={filtroTitulo}
+              onChange={(event) => setFiltroTitulo(event.target.value)}
+              maxLength={160}
+              placeholder="Título da vaga"
+            />
+          </label>
+          <label>
+            Estado
+            <select value={filtroEstado} onChange={(event) => setFiltroEstado(event.target.value)}>
+              <option value="">Todos</option>
+              {ESTADOS.map((estado) => (
+                <option key={estado.uf} value={estado.uf}>{estado.uf} — {estado.nome}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Cidade
+            <input
+              value={filtroCidade}
+              onChange={(event) => setFiltroCidade(event.target.value)}
+              maxLength={80}
+              placeholder="Cidade"
+            />
+          </label>
+        </div>
+        {jobsVisiveis.length === 0 ? (
+          <p className={styles.meta}>Nenhuma vaga com esse título, estado ou cidade.</p>
+        ) : (
         <div className={styles.rows}>
-              {jobs.map((job) => (
+              {jobsVisiveis.map((job) => (
                 <article key={job.id} className={styles.row}>
                   <div>
                     <h2 className={styles.jobTitle}>
@@ -943,6 +993,8 @@ export default function CompanyVagasPanel({
                 </article>
               ))}
         </div>
+        )}
+        </>
       ) : null}
 
       {screen === "applications" && selected ? (

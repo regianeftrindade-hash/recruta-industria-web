@@ -115,6 +115,8 @@ export type PublicJob = {
   applicationInstructions: string | null;
   applicationMode: ApplicationMode;
   externalApplyUrl: string | null;
+  /** ADMIN = publicada pelo Recruta | COMPANY = publicada pela empresa */
+  origin: "ADMIN" | "COMPANY";
 };
 
 export type AdminJob = PublicJob & {
@@ -452,6 +454,7 @@ export function toPublicJob(job: JobRecord): PublicJob {
       job.applicationMode === "EXTERNAL" && job.externalApplyUrl
         ? job.externalApplyUrl
         : null,
+    origin: job.origin === "COMPANY" ? "COMPANY" : "ADMIN",
   };
 }
 
@@ -479,7 +482,7 @@ export function toAdminJob(job: JobRecord): AdminJob {
       : "",
     status,
     statusLabel: jobStatusLabel(status),
-    origin: job.origin,
+    origin: job.origin === "COMPANY" ? "COMPANY" : "ADMIN",
     originLabel: jobOriginLabel(job.origin),
     companyUserId: job.companyUserId,
     applicationCount: job.applicationCount ?? 0,

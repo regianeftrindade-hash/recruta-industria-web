@@ -178,6 +178,48 @@ Experiencia: Soldador na Empresa XYZ 2018-2024
     expect(r.experiencias).toBeNull();
   });
 
+  it('preenche várias experiências, cursos e ensino médio', () => {
+    const r = parseResumePatterns(`
+João da Silva
+joao.silva@email.com
+(19) 98888-7777
+Valinhos - SP
+
+Escolaridade
+Ensino Médio
+
+Experiência Profissional
+
+Soldador
+Metalúrgica ABC Ltda
+janeiro de 2018 - atual
+Soldagem MIG e leitura de desenho.
+
+Auxiliar de Produção
+Funcional Mikron
+03/2014 - 12/2017
+
+Cursos
+NR-35 Trabalho em Altura
+Operador de Ponte Rolante
+Empilhadeira
+`);
+    expect(r.escolaridade).toBe('Médio completo');
+    expect(r.experiencias).toHaveLength(2);
+    expect(r.experiencias?.[0]?.cargo).toMatch(/Soldador/i);
+    expect(r.experiencias?.[0]?.empresa).toMatch(/Metalúrgica ABC/i);
+    expect(r.experiencias?.[0]?.dataInicio).toBe('2018-01');
+    expect(r.experiencias?.[0]?.dataFim).toBeNull();
+    expect(r.experiencias?.[1]?.cargo).toMatch(/Auxiliar de Produção/i);
+    expect(r.experiencias?.[1]?.empresa).toMatch(/Funcional Mikron/i);
+    expect(r.experiencias?.[1]?.dataInicio).toBe('2014-03');
+    expect(r.experiencias?.[1]?.dataFim).toBe('2017-12');
+    expect(r.cursos || []).toEqual(expect.arrayContaining([
+      expect.stringMatching(/NR-35/i),
+      expect.stringMatching(/Ponte Rolante/i),
+    ]));
+  });
+
   it('entende cidade com estado por extenso e data por extenso', () => {
     const r = parseResumePatterns(`
 Maria Souza

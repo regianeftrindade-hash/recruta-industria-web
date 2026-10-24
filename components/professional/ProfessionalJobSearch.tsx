@@ -5,6 +5,7 @@ import { CONTRACT_TYPES, WORK_MODES, type PublicJob } from "@/lib/jobs/job-posti
 import { paginarLista, paginasDaBarra } from "@/lib/jobs/paginate-list";
 import { comparePublicationDateDesc, jobApplicationDeadline } from "@/lib/jobs/public-job-display";
 import { VAGAS_COMPATIVEIS_ENABLED } from "@/lib/jobs/vagas-compativeis-flag";
+import JobFavoriteButton from "@/components/jobs/JobFavoriteButton";
 import styles from "./professional-job-search.module.css";
 
 type CompatibleJob = PublicJob & { reasons: string[] };
@@ -300,6 +301,7 @@ export default function ProfessionalJobSearch() {
   const [error, setError] = useState("");
   const [pagina, setPagina] = useState(1);
   const [paginaCompativeis, setPaginaCompativeis] = useState(1);
+  const [favoritos, setFavoritos] = useState<string[]>([]);
   const listaRef = useRef<HTMLHeadingElement>(null);
   const compativeisRef = useRef<HTMLHeadingElement>(null);
 
@@ -329,6 +331,19 @@ export default function ProfessionalJobSearch() {
 
   useEffect(() => {
     setBuscas(lerBuscas());
+  }, []);
+
+  useEffect(() => {
+    let ativo = true;
+    void fetch("/api/professional/vagas/favoritos", { credentials: "include" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (ativo && Array.isArray(data?.ids)) setFavoritos(data.ids.filter((id: unknown) => typeof id === "string"));
+      })
+      .catch(() => {});
+    return () => {
+      ativo = false;
+    };
   }, []);
 
   async function load(next: SearchState, salvar = false) {
@@ -563,7 +578,10 @@ export default function ProfessionalJobSearch() {
                     {job.workplace ? <li>{job.workplace}</li> : null}
                     {jobApplicationDeadline(job) ? <li>Inscrições até {jobApplicationDeadline(job)}</li> : null}
                   </ul>
-                  <a href={`/vagas/${job.id}`}>Ver vaga</a>
+                  <div className={styles.cardActions}>
+                    <a href={`/vagas/${job.id}`}>Ver vaga</a>
+                    <JobFavoriteButton jobId={job.id} ativo={favoritos.includes(job.id)} retorno="/professional/dashboard" />
+                  </div>
                 </article>
               ))}
             </div>
@@ -600,7 +618,10 @@ export default function ProfessionalJobSearch() {
                 {job.workplace ? <li>{job.workplace}</li> : null}
                 {jobApplicationDeadline(job) ? <li>Inscrições até {jobApplicationDeadline(job)}</li> : null}
               </ul>
-              <a href={`/vagas/${job.id}`}>Ver vaga</a>
+              <div className={styles.cardActions}>
+                <a href={`/vagas/${job.id}`}>Ver vaga</a>
+                <JobFavoriteButton jobId={job.id} ativo={favoritos.includes(job.id)} retorno="/professional/dashboard" />
+              </div>
             </article>
           ))}
         </div>

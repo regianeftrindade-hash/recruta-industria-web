@@ -23,9 +23,12 @@
   gap: 12px;
 }
 
-.backButton {
+.backButton,
+.panelLink {
   padding: 8px 16px;
   font-size: 14px;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .backLink {
@@ -129,6 +132,21 @@
   min-width: 0;
   max-width: 42%;
   margin: 0;
+}
+
+.titleTools {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.titleTools .shareRow {
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  margin-left: 0;
+  justify-content: flex-start;
 }
 
 .copyWrap {
@@ -445,6 +463,19 @@
   .copyWrap,
   .contactActions button {
     width: 100%;
+  }
+
+  .titleRow {
+    flex-wrap: wrap;
+  }
+
+  .titleRow .title {
+    max-width: 100%;
+  }
+
+  .titleTools,
+  .titleTools .shareRow {
+    flex-wrap: wrap;
   }
 
   .shareRow {

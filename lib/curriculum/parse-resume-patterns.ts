@@ -177,7 +177,7 @@ function detectSection(line: string): keyof typeof SECTION_HEADERS | null {
 }
 
 function splitSections(text: string): Record<string, string> {
-  const lines = linesOf(text);
+  const lines = text.replace(/\r\n/g, '\n').split('\n');
   const buckets: Record<string, string[]> = {
     header: [],
     experiencia: [],
@@ -189,7 +189,12 @@ function splitSections(text: string): Record<string, string> {
   };
   let current: keyof typeof buckets = 'header';
 
-  for (const line of lines) {
+  for (const raw of lines) {
+    const line = normalizeSpaces(raw);
+    if (!line) {
+      buckets[current].push('');
+      continue;
+    }
     const section = detectSection(line);
     if (section) {
       current = section;
@@ -460,10 +465,13 @@ function matchEscolaridade(text: string): string | null {
     { re: /\bsuperior\s+completo\b|\bbacharel(?:ado)?\b|\blicenciatura\b|\bgraduacao\s+completa\b/, value: 'Superior completo' },
     { re: /\bsuperior\s+incompleto\b|\bcursando\s+(?:o\s+)?superior\b|\bgraduacao\s+incompleta\b/, value: 'Superior incompleto' },
     { re: /\btecnico\b|\bcurso\s+tecnico\b/, value: 'Técnico' },
-    { re: /\bmedio\s+completo\b|\bensino\s+medio\s+completo\b|\b2[oº]\s*grau\s+completo\b/, value: 'Médio completo' },
-    { re: /\bmedio\s+incompleto\b|\bensino\s+medio\s+incompleto\b/, value: 'Médio incompleto' },
-    { re: /\bfundamental\s+completo\b|\b1[oº]\s*grau\s+completo\b/, value: 'Fundamental completo' },
-    { re: /\bfundamental\s+incompleto\b/, value: 'Fundamental incompleto' },
+    { re: /\bmedio\s+completo\b|\bensino\s+medio\s+completo\b|\b2[oº°]\s*grau\s+completo\b/, value: 'Médio completo' },
+    { re: /\bmedio\s+incompleto\b|\bensino\s+medio\s+incompleto\b|\b2[oº°]\s*grau\s+incompleto\b/, value: 'Médio incompleto' },
+    { re: /\bfundamental\s+completo\b|\b1[oº°]\s*grau\s+completo\b/, value: 'Fundamental completo' },
+    { re: /\bfundamental\s+incompleto\b|\b1[oº°]\s*grau\s+incompleto\b/, value: 'Fundamental incompleto' },
+    { re: /\bensino\s+superior\b|\bsuperior\b/, value: 'Superior completo' },
+    { re: /\bensino\s+medio\b|\b2[oº°]\s*grau\b/, value: 'Médio completo' },
+    { re: /\bensino\s+fundamental\b|\b1[oº°]\s*grau\b/, value: 'Fundamental completo' },
   ];
   for (const rule of rules) {
     if (rule.re.test(lower)) return rule.value;
@@ -524,18 +532,40 @@ function extractCursoRotulado(text: string): string | null {
   return value;
 }
 
-function parsePeriodo(line: string): { inicio: string; fim: string; label: string } | null {
-  const m = line.match(
-    /(\d{2}\/\d{4}|\d{4})\s*[-–—aà]+\s*(\d{2}\/\d{4}|\d{4}|atual|presente|hoje)/i,
-  );
-  if (!m) return null;
-  const toIsoish = (v: string) => {
-    if (/atual|presente|hoje/i.test(v)) return '';
-    if (/^\d{4}$/.test(v)) return `${v}-01`;
-    const [mm, yyyy] = v.split('/');
-    return `${yyyy}-${mm}`;
+const MES_NOME =
+  'jan(?:eiro)?|fev(?:ereiro)?|mar(?:ço|co)?|abr(?:il)?|mai(?:o)?|jun(?:ho)?|jul(?:ho)?|ago(?:sto)?|set(?:embro)?|out(?:ubro)?|nov(?:embro)?|dez(?:embro)?';
+
+function mesNumero(token: string): string | null {
+  const chave = stripAccents(token.toLowerCase()).slice(0, 3);
+  const mapa: Record<string, string> = {
+    jan: '01', fev: '02', mar: '03', abr: '04', mai: '05', jun: '06',
+    jul: '07', ago: '08', set: '09', out: '10', nov: '11', dez: '12',
   };
-  return { inicio: toIsoish(m[1]), fim: toIsoish(m[2]), label: normalizeSpaces(m[0]) };
+  return mapa[chave] || null;
+}
+
+function dataDoPeriodo(valor: string): string {
+  const texto = normalizeSpaces(valor);
+  if (/atual|presente|hoje/i.test(texto)) return '';
+  if (/^\d{4}$/.test(texto)) return `${texto}-01`;
+  const numerica = texto.match(/^(\d{2})\/(\d{4})$/);
+  if (numerica) return `${numerica[2]}-${numerica[1]}`;
+  const porExtenso = texto.match(new RegExp(`^(${MES_NOME})(?:\\s+de)?\\s+(\\d{4})$`, 'i'))
+    || texto.match(new RegExp(`^(${MES_NOME})\\/(\\d{4})$`, 'i'));
+  if (!porExtenso) return '';
+  const mes = mesNumero(porExtenso[1]);
+  return mes ? `${porExtenso[2]}-${mes}` : '';
+}
+
+function parsePeriodo(line: string): { inicio: string; fim: string; label: string } | null {
+  const data = `(?:\\d{2}\\/\\d{4}|\\d{4}|(?:${MES_NOME})(?:\\s+de)?\\s+\\d{4}|(?:${MES_NOME})\\/\\d{4})`;
+  const m = line.match(new RegExp(`(${data})\\s*[-–—aà]+\\s*(${data}|atual|presente|hoje)`, 'i'));
+  if (!m) return null;
+  return {
+    inicio: dataDoPeriodo(m[1]),
+    fim: dataDoPeriodo(m[2]),
+    label: normalizeSpaces(m[0]),
+  };
 }
 
 type ExpItem = NonNullable<ResumeStructuredFields['experiencias']>[number] & {
@@ -587,6 +617,10 @@ function parseLinhaExperiencia(value: string): ExpItem | null {
 }
 
 function extractExperiencias(section: string): ExpItem[] {
+  const blocos = section.split(/\n\s*\n/).map((bloco) => bloco.trim()).filter(Boolean);
+  if (blocos.length > 1) {
+    return blocos.flatMap((bloco) => extractExperiencias(bloco)).slice(0, 8);
+  }
   const lines = linesOf(section);
   const items: ExpItem[] = [];
   let current: ExpItem | null = null;
@@ -652,16 +686,33 @@ function extractExperiencias(section: string): ExpItem[] {
 
     if (/^(atividades|responsabilidades|descri)/i.test(line)) continue;
 
+    const curto = line.length <= 70 && line.split(/\s+/).length <= 8 && !/[.!?]$/.test(line);
+    const empregoPronto = Boolean(current && (current.periodo || (current.cargo && current.empresa)));
+    if (empregoPronto && curto && (current?.descricao || current?.periodo)) {
+      flush();
+      current = pareceEmpresa(line) ? { empresa: line } : { cargo: line };
+      continue;
+    }
+
     if (!current) {
-      current = { empresa: line };
+      current = pareceEmpresa(line) ? { empresa: line } : { cargo: line };
+    } else if (!current.empresa && pareceEmpresa(line)) {
+      current.empresa = line;
     } else if (!current.cargo && line.length < 80) {
       current.cargo = line;
+    } else if (!current.empresa && line.length < 80) {
+      current.empresa = line;
     } else {
       current.descricao = [current.descricao, line].filter(Boolean).join(' ').slice(0, 500);
     }
   }
   flush();
   return items.slice(0, 8);
+}
+
+function pareceEmpresa(line: string): boolean {
+  return /\b(ltda|s\.?\s*a\.?|eireli|epp)\b/i.test(line)
+    || /^(empresa|metal[uú]rgica|ind[uú]stria|companhia)\b/i.test(line);
 }
 
 /** Currículos sem o título "Experiência" ainda trazem Empresa/Cargo ou período | empresa | cargo. */
@@ -700,11 +751,10 @@ function extractCursos(section: string, fullText: string): string[] {
   }
 
   for (const line of linesOf(section)) {
-    if (line.length >= 4 && line.length <= 90 && !detectSection(line)) {
-      if (/curso|certific|treinamento|capacita|workshop|nr-/i.test(line) || /^[A-ZÀ-Ÿ0-9]/.test(line)) {
-        found.add(line.replace(/^[-•*]\s*/, '').slice(0, 90));
-      }
-    }
+    const clean = line.replace(/^[-•*➢▸►]\s*/, '').trim();
+    if (clean.length < 3 || clean.length > 80 || detectSection(clean)) continue;
+    if (clean.split(/\s+/).length > 10) continue;
+    found.add(clean.slice(0, 90));
     if (found.size >= 12) break;
   }
 

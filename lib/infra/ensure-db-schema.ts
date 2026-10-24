@@ -3,6 +3,32 @@ import { prisma } from "@/lib/db";
 let coreSchemaReady = false;
 let lastSeenReady = false;
 let jobWhatsappColumnReady = false;
+let jobFavoritesReady = false;
+
+/** Tabela de vagas favoritas do profissional. */
+export async function ensureJobFavoritesTable(): Promise<void> {
+  if (jobFavoritesReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    jobFavoritesReady = true;
+    return;
+  }
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "job_favorites" (
+      "id" TEXT NOT NULL,
+      "userId" TEXT NOT NULL,
+      "jobId" TEXT NOT NULL,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "job_favorites_pkey" PRIMARY KEY ("id")
+    )
+  `);
+  await prisma.$executeRawUnsafe(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "job_favorites_userId_jobId_key" ON "job_favorites"("userId", "jobId")`,
+  );
+  await prisma.$executeRawUnsafe(
+    `CREATE INDEX IF NOT EXISTS "job_favorites_userId_createdAt_idx" ON "job_favorites"("userId", "createdAt")`,
+  );
+  jobFavoritesReady = true;
+}
 
 /** Coluna anulável do WhatsApp da vaga. Não apaga vagas nem candidaturas. */
 export async function ensureJobApplicationWhatsappColumn(): Promise<void> {

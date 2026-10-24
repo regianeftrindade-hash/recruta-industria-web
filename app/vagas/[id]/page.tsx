@@ -8,6 +8,8 @@ import { jobShareMessage, jobSocialMetadata, publicJobUrl } from "@/lib/jobs/pub
 import { jobApplicationDeadline, textWithoutJobSource } from "@/lib/jobs/public-job-display";
 import JobApplyButton from "../JobApplyButton";
 import JobBackButton from "../JobBackButton";
+import JobFavoriteButton from "@/components/jobs/JobFavoriteButton";
+import JobPanelLink from "../JobPanelLink";
 import JobShareButton from "../JobShareButton";
 import JobText from "../JobText";
 import styles from "../vagas.module.css";
@@ -120,6 +122,7 @@ export default async function VagaPage({ params, searchParams }: Props) {
         </Link>
         <div className={styles.topActions}>
           <JobBackButton />
+          <JobPanelLink />
           <Link href="/vagas" className={styles.backLink}>
             Todas as vagas
           </Link>
@@ -140,7 +143,12 @@ export default async function VagaPage({ params, searchParams }: Props) {
           <p className={styles.company}>{view.job.companyLabel}</p>
           <div className={styles.titleRow}>
             <h1 className={styles.title}>{view.job.title}</h1>
-            <JobShareButton jobId={view.job.id} shareText={jobShareMessage(view.job)} />
+            <div className={styles.titleTools}>
+              {view.job.origin === "ADMIN" ? (
+                <JobFavoriteButton jobId={view.job.id} retorno={`/vagas/${view.job.id}`} carregar />
+              ) : null}
+              <JobShareButton jobId={view.job.id} shareText={jobShareMessage(view.job)} />
+            </div>
           </div>
           <div className={styles.facts}>
             <Fact label="Data da publicação" value={view.job.publicationDate} />

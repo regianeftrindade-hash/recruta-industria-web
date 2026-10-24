@@ -209,6 +209,34 @@
   margin-top: 8px;
 }
 
+.listFilters {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(160px, 0.8fr) minmax(0, 1fr);
+  gap: 10px;
+  margin: 0 0 14px;
+}
+
+.listFilters label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #414141;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.listFilters input,
+.listFilters select {
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 2px solid #8D6B1F;
+  border-radius: 12px;
+  background: #FFFEFB;
+  color: #414141;
+  font: inherit;
+  font-weight: 600;
+}
+
 .rows {
   display: flex;
   flex-direction: column;
@@ -457,7 +485,8 @@
 
 @media (max-width: 800px) {
   .grid,
-  .row {
+  .row,
+  .listFilters {
     grid-template-columns: 1fr;
     display: grid;
   }

@@ -967,7 +967,7 @@ export default function CadastroProfissional({
     setProfileLoaded(true);
   }, [isEditMode, sessionStatus, session?.user?.email, session?.user, router]);
 
-  // Sessão Google: preenche dados básicos; se cadastro já completo, avisa (não manda ao painel em silêncio)
+  // Sessão Google: preenche dados básicos. Cadastro já completo volta à vaga ou ao painel.
   useEffect(() => {
     if (isEditMode) return;
 
@@ -1004,6 +1004,8 @@ export default function CadastroProfissional({
         if (cancelled || curriculoImportadoRef.current) return;
         if (data?.registrationComplete) {
           setContaJaCompleta(true);
+          const volta = safeJobReturnPath(searchParams.get('redirect'));
+          router.replace(volta || '/professional/dashboard');
           return;
         }
 
@@ -1751,46 +1753,16 @@ export default function CadastroProfissional({
       ? 'Verificando cadastro...'
       : 'Carregando...';
 
-  if (paginaCarregando) {
-    return <PageLoader message={mensagemCarregamento} />;
-  }
-
-  if (!isEditMode && contaJaCompleta) {
-    const emailLogado = session?.user?.email || 'sua conta';
+  if (paginaCarregando || (!isEditMode && contaJaCompleta)) {
+    const destinoContaPronta = safeJobReturnPath(searchParams.get('redirect'));
     return (
-      <div className={`${styles.container} ri-readable`}>
-        <AuthAtmosphere intensity="strong" />
-        <div className={styles.card} role="main" aria-labelledby="register-title">
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
-            <LogoRecruta size="sm" as="div" depth />
-          </div>
-          <h1 id="register-title" className={styles.title}>
-            Você já tem cadastro
-          </h1>
-          <p className={styles.formHint}>
-            Você já está logado neste site como <strong>{emailLogado}</strong>.
-            Para entrar no painel use o botão abaixo. Se quiser cadastrar outra
-            pessoa ou outra conta, saia primeiro.
-          </p>
-          <div className={styles.alreadyRegisteredActions}>
-            <Link href="/professional/dashboard" className={styles.submitBtn}>
-              Ir ao painel
-            </Link>
-            <button
-              type="button"
-              className={styles.secondaryLinkBtn}
-              onClick={() => {
-                void signOut({ callbackUrl: '/professional/register' });
-              }}
-            >
-              Sair e criar outro cadastro
-            </button>
-            <Link href="/" className={styles.secondaryLinkBtn}>
-              Voltar à página inicial
-            </Link>
-          </div>
-        </div>
-      </div>
+      <PageLoader
+        message={
+          contaJaCompleta
+            ? (destinoContaPronta ? 'Voltando para a vaga...' : 'Abrindo o painel...')
+            : mensagemCarregamento
+        }
+      />
     );
   }
 
