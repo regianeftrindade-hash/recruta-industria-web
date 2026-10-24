@@ -178,14 +178,14 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
                   padding: "2px 8px",
                   borderRadius: 999,
                   border: "1px solid #8D6B1F",
-                  background: verificationTag === "Empresa verificada"
+                  background: verificationTag === "Aprovada"
                     ? "#1a3d1a"
-                    : verificationTag === "Verificação recusada"
+                    : verificationTag === "Reprovada"
                       ? "#3d1a1a"
                       : "#E8C56A",
-                  color: verificationTag === "Empresa verificada"
+                  color: verificationTag === "Aprovada"
                     ? "#9ae6b4"
-                    : verificationTag === "Verificação recusada"
+                    : verificationTag === "Reprovada"
                       ? "#f87171"
                       : "#24180a",
                   fontSize: 10,
@@ -223,7 +223,7 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
         </div>
       </header>
 
-      {dash.planReady && !dash.canPublishAndSearch ? (
+      {dash.verificationStatus && !dash.canPublishAndSearch ? (
         <div
           role="status"
           style={{

@@ -476,10 +476,6 @@
     padding-bottom: 4px;
   }
 
-  .ri-company-dash-grid > [data-company-main] {
-    order: -1;
-  }
-
   .ri-company-dash header {
     padding-left: 10px !important;
     padding-right: 10px !important;

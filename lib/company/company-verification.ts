@@ -20,7 +20,7 @@ export function isCompanyVerificationStatus(value: string | null | undefined): v
 }
 
 export const COMPANY_VIEW_ONLY_NOTICE =
-  'Sem a verificação, o site fica só para visualização. Não é possível publicar vagas nem encontrar profissionais.';
+  'Enquanto o e-mail corporativo e o cartão CNPJ não forem verificados, a conta não tem acesso a profissionais nem à publicação de vagas.';
 
 export const COMPANY_FIELDS_NOTICE =
   'O cartão CNPJ e o e-mail corporativo em branco não impedem a entrada nem a visualização. Eles travam a publicação de vagas e a busca de profissionais.';
@@ -43,14 +43,15 @@ export function companyDocumentsSubmitted(info: {
   return Boolean(info.cartaoCnpjUrl?.trim() && info.emailCorporativo?.trim());
 }
 
-/** Tag visível no painel. Sem os dois campos preenchidos, pendente não vira "Em análise". */
+export type CompanyVerificationTag = 'Em análise' | 'Aprovada' | 'Reprovada';
+
+/** Tag do status da conta. Aparece sempre: em análise, aprovada ou reprovada. */
 export function companyVerificationTag(info: {
   verificationStatus: CompanyVerificationStatus;
   cartaoCnpjUrl?: string | null;
   emailCorporativo?: string | null;
-}): 'Empresa verificada' | 'Em análise' | 'Verificação recusada' | null {
-  if (info.verificationStatus === 'VERIFIED') return 'Empresa verificada';
-  if (info.verificationStatus === 'REJECTED') return 'Verificação recusada';
-  if (info.verificationStatus === 'PENDING' && companyDocumentsSubmitted(info)) return 'Em análise';
-  return null;
+}): CompanyVerificationTag {
+  if (info.verificationStatus === 'VERIFIED') return 'Aprovada';
+  if (info.verificationStatus === 'REJECTED') return 'Reprovada';
+  return 'Em análise';
 }
