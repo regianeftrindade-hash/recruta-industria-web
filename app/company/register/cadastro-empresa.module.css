@@ -1,0 +1,61 @@
+.linhaTripla,
+.linhaDupla {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.linhaTripla {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr) minmax(0, 0.9fr);
+}
+
+.linhaDupla {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.linhaCheia {
+  margin-bottom: 12px;
+}
+
+.avisoDesbloqueio {
+  margin: 4px 0 12px;
+  color: #b91c1c;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+  width: 100%;
+}
+
+.rodapeCadastro {
+  margin-top: 8px;
+}
+
+.porqueVerificacao {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: #e8d5a3;
+  border: 2px solid #8d6b1f;
+  border-radius: 14px;
+}
+
+.porqueTitulo {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #24180a;
+  line-height: 1.35;
+}
+
+.porqueTexto {
+  margin: 0;
+  font-size: 13px;
+  color: #414141;
+  line-height: 1.55;
+}
+
+@media (max-width: 768px) {
+  .linhaTripla,
+  .linhaDupla {
+    grid-template-columns: 1fr;
+  }
+}

@@ -8,6 +8,8 @@ import { isValidCPF } from '@/lib/security';
 import PageLoader from '@/app/components/PageLoader';
 import { READABLE_TEXT_STYLE } from '@/lib/theme';
 import styles from '@/app/professional/register/register.module.css';
+import layout from './cadastro-empresa.module.css';
+import RegisterTermoItem from '@/app/professional/register/RegisterTermoItem';
 import { matchesCompanyTestBypass } from '@/lib/company/company-test-bypass-shared';
 import { AuthAtmosphere } from '@/components/shared/AuthAtmosphere';
 import LogoRecruta from '@/app/components/LogoRecruta';
@@ -51,7 +53,13 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
   const [contaJaCompleta, setContaJaCompleta] = useState(false);
   const [sessionWaitTimedOut, setSessionWaitTimedOut] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [editando, setEditando] = useState(false);
+  const [editandoEmpresa, setEditandoEmpresa] = useState(false);
+  const [editandoResponsavel, setEditandoResponsavel] = useState(false);
+  const [termos, setTermos] = useState({
+    autorizoDados: false,
+    declaroVerdadeiro: false,
+    aceitoLGPD: false,
+  });
   const [statusVerificacao, setStatusVerificacao] = useState('PENDING');
   const [motivoReprovacao, setMotivoReprovacao] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -507,7 +515,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isEditMode && !editando) return;
+    if (isEditMode && !editandoEmpresa && !editandoResponsavel) return;
     setErrorMessage('');
     setSuccessMessage('');
 
@@ -532,6 +540,11 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
         setErrorMessage('Informe o e-mail corporativo da empresa.');
         return;
       }
+    }
+
+    if (!isEditMode && (!termos.autorizoDados || !termos.declaroVerdadeiro || !termos.aceitoLGPD)) {
+      setErrorMessage('Aceite os três termos no final do cadastro para continuar.');
+      return;
     }
 
     setLoading(true);
@@ -559,7 +572,8 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
         }).catch(() => undefined);
         if (isEditMode) {
           setSalvoNoBotao(true);
-          setEditando(false);
+          setEditandoEmpresa(false);
+          setEditandoResponsavel(false);
           setLoading(false);
           return;
         }
@@ -597,7 +611,8 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
         if (isEditMode) {
           setSuccessMessage('Alterações salvas');
           setSalvoNoBotao(true);
-          setEditando(false);
+          setEditandoEmpresa(false);
+          setEditandoResponsavel(false);
           setLoading(false);
           return;
         }
@@ -748,7 +763,8 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
     : rotuloStatus === 'Reprovado'
       ? { background: '#3d1a1a', color: '#f87171' }
       : { background: '#E8C56A', color: '#24180a' };
-  const cadastroTravado = isEditMode && !editando;
+  const empresaTravada = isEditMode && !editandoEmpresa;
+  const responsavelTravado = isEditMode && !editandoResponsavel;
 
   return (
     <div className={`${styles.container} ${incorporado ? styles.containerIncorporado : ''} ri-readable`}>
@@ -883,24 +899,6 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
-          {isEditMode ? (
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-                <button
-                  type="button"
-                  className={styles.anexoBtn}
-                  disabled={loading}
-                  onClick={(event) => {
-                    if (!editando) {
-                      setEditando(true);
-                      return;
-                    }
-                    event.currentTarget.form?.requestSubmit();
-                  }}
-                >
-                  {editando ? (loading ? 'Salvando...' : 'Salvar') : 'Editar'}
-                </button>
-              </div>
-          ) : null}
           {errorMessage && (
             <div style={{ background: '#fee2e2', color: '#b91c1c', padding: '10px', borderRadius: '8px', fontWeight: 'bold' }}>
               {errorMessage}
@@ -915,9 +913,25 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
           <section className={styles.sectionCard}>
             <div className={styles.sectionHead}>
               <RegisterSectionHeader emoji="🏭" title="Dados da empresa" />
+              {isEditMode ? (
+                <button
+                  type="button"
+                  className={styles.blocoEditarBtn}
+                  disabled={loading}
+                  onClick={(event) => {
+                    if (!editandoEmpresa) {
+                      setEditandoEmpresa(true);
+                      return;
+                    }
+                    event.currentTarget.form?.requestSubmit();
+                  }}
+                >
+                  {editandoEmpresa ? (loading ? 'Salvando...' : 'Salvar') : 'Editar'}
+                </button>
+              ) : null}
             </div>
-            <div inert={cadastroTravado ? true : undefined} className={cadastroTravado ? styles.cadastroTravado : undefined}>
-              <div className={styles.fieldsRow} style={twoCols}>
+            <div inert={empresaTravada ? true : undefined} className={empresaTravada ? styles.cadastroTravado : undefined}>
+              <div className={layout.linhaTripla}>
                 <div>
                   <label className={styles.label}>CNPJ</label>
                   <input id="empresa-cnpj" type="text" className={styles.input} placeholder="00.000.000/0000-00" value={cnpjValue} onChange={handleCnpjChange} />
@@ -925,18 +939,6 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                 <div>
                   <label className={styles.label}>RAZÃO SOCIAL</label>
                   <input id="empresa-razao" type="text" className={styles.input} value={formData.nome} onChange={(e) => setFormData({ ...formData, nome: e.target.value })} />
-                </div>
-                <div>
-                  <label className={styles.label}>ENDEREÇO</label>
-                  <textarea
-                    id="empresa-endereco"
-                    className={styles.input}
-                    placeholder="Rua, número, bairro, cidade — UF"
-                    value={formData.endereco}
-                    onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
-                    style={{ minHeight: 88, resize: 'vertical' }}
-                    required={false}
-                  />
                 </div>
                 <div>
                   <label className={styles.label}>TELEFONE (DDD)</label>
@@ -950,6 +952,22 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                     required={false}
                   />
                 </div>
+              </div>
+              <div className={layout.linhaCheia}>
+                <label className={styles.label}>ENDEREÇO</label>
+                <input
+                  id="empresa-endereco"
+                  type="text"
+                  className={styles.input}
+                  placeholder="Rua, número, bairro, cidade — UF"
+                  value={formData.endereco}
+                  onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
+                />
+              </div>
+              <p className={layout.avisoDesbloqueio}>
+                O e-mail corporativo e o cartão CNPJ são necessários para desbloquear os perfis dos profissionais e o cadastro de vagas. Sem a confirmação do e-mail pelo link e sem o cartão CNPJ analisado, a empresa entra no painel, mas não vê os contatos dos profissionais nem publica vagas. Envie os dois para liberar a busca de perfis e a abertura de vagas.
+              </p>
+              <div className={layout.linhaDupla}>
                 <div>
                   <label className={styles.label}>
                     {emailVerificado ? (
@@ -982,12 +1000,12 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                       type="button"
                       className={styles.anexoCampoBtn}
                       onClick={() => void handleEnviarConfirmacaoEmail()}
-                      disabled={enviandoEmail || emailVerificado}
+                      disabled={enviandoEmail || emailVerificado || empresaTravada}
                       style={{
                         background: emailVerificado ? '#1a3d1a' : undefined,
                         color: emailVerificado ? '#9ae6b4' : undefined,
                         borderLeft: emailVerificado ? '1px solid #2f855a' : undefined,
-                        cursor: enviandoEmail || emailVerificado ? 'not-allowed' : 'pointer',
+                        cursor: enviandoEmail || emailVerificado || empresaTravada ? 'not-allowed' : 'pointer',
                         opacity: enviandoEmail ? 0.7 : 1,
                         whiteSpace: 'nowrap',
                       }}
@@ -1009,7 +1027,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                   {emailErro && <small style={{ color: '#dc3545', display: 'block', marginTop: 8 }}>{emailErro}</small>}
                 </div>
                 <div>
-                  <label className={styles.label}>CARTÃO CNPJ (opcional)</label>
+                  <label className={styles.label}>CARTÃO CNPJ</label>
                   <div className={styles.anexoCampoInline}>
                     <div className={styles.anexoCampoInput}>
                       {cartaoCnpjNome ? (
@@ -1022,7 +1040,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                       type="button"
                       className={styles.anexoCampoBtn}
                       onClick={() => cartaoInputRef.current?.click()}
-                      disabled={enviandoCartao}
+                      disabled={enviandoCartao || empresaTravada}
                     >
                       {enviandoCartao ? 'Enviando...' : cartaoCnpjUrl ? 'Trocar' : 'Selecionar'}
                     </button>
@@ -1048,8 +1066,24 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
           <section className={styles.sectionCard}>
             <div className={styles.sectionHead}>
               <RegisterSectionHeader emoji="👤" title="Dados do responsável" />
+              {isEditMode ? (
+                <button
+                  type="button"
+                  className={styles.blocoEditarBtn}
+                  disabled={loading}
+                  onClick={(event) => {
+                    if (!editandoResponsavel) {
+                      setEditandoResponsavel(true);
+                      return;
+                    }
+                    event.currentTarget.form?.requestSubmit();
+                  }}
+                >
+                  {editandoResponsavel ? (loading ? 'Salvando...' : 'Salvar') : 'Editar'}
+                </button>
+              ) : null}
             </div>
-            <div inert={cadastroTravado ? true : undefined} className={cadastroTravado ? styles.cadastroTravado : undefined}>
+            <div inert={responsavelTravado ? true : undefined} className={responsavelTravado ? styles.cadastroTravado : undefined}>
               <div className={styles.fieldsRow} style={twoCols}>
                 <div>
                   <label className={styles.label}>NOME DO RESPONSÁVEL</label>
@@ -1120,25 +1154,61 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
             </section>
           ) : null}
 
-          {isEditMode ? null : (
-            <>
-              <div className={styles.submitBtnRow}>
-                <button
-                  type="submit"
-                  className={styles.submitBtn}
-                  disabled={loading}
-                  style={{ cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
-                >
-                  {loading ? 'Salvando...' : 'FINALIZAR CADASTRO'}
-                </button>
+          <div className={layout.rodapeCadastro}>
+            <section className={styles.sectionCard}>
+              <div className={styles.sectionHead}>
+                <RegisterSectionHeader emoji="📋" title="Termos" />
               </div>
-              <div className={styles.anexoBtnRow}>
-                <Link href="/login?tipo=empresa" style={{ fontSize: '13px', color: '#414141', textDecoration: 'underline' }}>
-                  Já tem conta? Entrar
-                </Link>
+              <div className={styles.formSubCard}>
+                <RegisterTermoItem
+                  id="empresa-termo-dados"
+                  slug="autorizacao-dados"
+                  titulo="Termo de Autorização de Uso de Dados"
+                  checked={termos.autorizoDados}
+                  onChange={(checked) => setTermos((prev) => ({ ...prev, autorizoDados: checked }))}
+                />
+                <RegisterTermoItem
+                  id="empresa-termo-veracidade"
+                  slug="declaracao-veracidade"
+                  titulo="Termo de Declaração de Veracidade"
+                  checked={termos.declaroVerdadeiro}
+                  onChange={(checked) => setTermos((prev) => ({ ...prev, declaroVerdadeiro: checked }))}
+                />
+                <RegisterTermoItem
+                  id="empresa-termo-lgpd"
+                  slug="lgpd"
+                  titulo="Termo LGPD — Tratamento de Dados Pessoais"
+                  checked={termos.aceitoLGPD}
+                  onChange={(checked) => setTermos((prev) => ({ ...prev, aceitoLGPD: checked }))}
+                />
               </div>
-            </>
-          )}
+              {isEditMode ? null : (
+                <>
+                  <div className={styles.submitBtnRow}>
+                    <button
+                      type="submit"
+                      className={styles.submitBtn}
+                      disabled={loading}
+                      style={{ cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
+                    >
+                      {loading ? 'Salvando...' : 'FINALIZAR CADASTRO'}
+                    </button>
+                  </div>
+                  <div className={styles.anexoBtnRow}>
+                    <Link href="/login?tipo=empresa" style={{ fontSize: '13px', color: '#414141', textDecoration: 'underline' }}>
+                      Já tem conta? Entrar
+                    </Link>
+                  </div>
+                </>
+              )}
+            </section>
+            <div className={layout.porqueVerificacao}>
+              <p className={layout.porqueTitulo}>Por que pedimos essas verificações</p>
+              <p className={layout.porqueTexto}>
+                A verificação existe para proteger candidatos e empresas. Golpistas podem usar o nome de uma empresa real, sem autorização, para publicar vagas falsas e aplicar golpes. O e-mail corporativo confirma que a conta fala em nome da empresa. O cartão CNPJ permite conferir se a empresa existe e se os dados do cadastro batem com o documento. Só depois dessa checagem o Recruta Indústria desbloqueia os perfis dos profissionais e o cadastro de vagas, reduzindo fraude e o uso indevido do nome da empresa.
+              </p>
+            </div>
+          </div>
         </form>
       </div>
     </div>
