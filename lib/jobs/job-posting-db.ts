@@ -1,6 +1,7 @@
 import type { JobPosting } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { fotoGravada } from "@/lib/professional/foto-perfil";
 import {
   type AdminJob,
   type ApplicationMode,
@@ -418,6 +419,7 @@ export type ApplicationView = {
   name: string | null;
   email: string;
   profileTitle: string | null;
+  avatar: string | null;
 };
 
 export async function listJobApplicationsForAdmin(jobId: string): Promise<ApplicationView[]> {
@@ -431,7 +433,7 @@ export async function listJobApplicationsForAdmin(jobId: string): Promise<Applic
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { id: true, name: true, email: true } },
-      profile: { select: { id: true, title: true } },
+      profile: { select: { id: true, title: true, avatar: true, formDataJSON: true } },
     },
   });
 
@@ -445,6 +447,7 @@ export async function listJobApplicationsForAdmin(jobId: string): Promise<Applic
     name: row.user.name,
     email: row.user.email,
     profileTitle: row.profile?.title ?? null,
+    avatar: fotoGravada(row.profile?.avatar, row.profile?.formDataJSON),
   }));
 }
 

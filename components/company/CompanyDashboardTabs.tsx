@@ -15,6 +15,7 @@ import {
   useCompanyDashboardTab,
   type CompanyDashboardActiveTab,
 } from "@/components/company/CompanyDashboardTabContext";
+import FotoPerfilAvatar from "@/components/shared/FotoPerfilAvatar";
 
 export type CompanyDashboardTabId =
   | "vagas"
@@ -27,7 +28,7 @@ export type CompanyDashboardTabId =
   | "perfil";
 
 export type TalentListDetalhada = TalentList & {
-  profiles: Array<{ id: string; nome: string; cargo: string }>;
+  profiles: Array<{ id: string; nome: string; cargo: string; avatar?: string | null }>;
 };
 
 export type AlertMatch = {
@@ -35,6 +36,7 @@ export type AlertMatch = {
   score: number;
   nome?: string;
   cargo?: string;
+  avatar?: string | null;
 };
 
 export type EntrevistaAgendada = {
@@ -193,7 +195,7 @@ export default function CompanyDashboardTabPanel({
   onOpenAlertMatches: (alert: CompanyAlert) => void;
   canContactRecruta: boolean;
 }) {
-  const porCargo = new Map<string, Array<{ id: string; nome: string; listas: string[] }>>();
+  const porCargo = new Map<string, Array<{ id: string; nome: string; avatar: string | null; listas: string[] }>>();
   for (const lista of talentListsDetalhadas) {
     for (const p of lista.profiles) {
       const grupo = porCargo.get(p.cargo) || [];
@@ -201,7 +203,7 @@ export default function CompanyDashboardTabPanel({
       if (existente) {
         if (!existente.listas.includes(lista.name)) existente.listas.push(lista.name);
       } else {
-        grupo.push({ id: p.id, nome: p.nome, listas: [lista.name] });
+        grupo.push({ id: p.id, nome: p.nome, avatar: p.avatar || null, listas: [lista.name] });
       }
       porCargo.set(p.cargo, grupo);
     }
@@ -266,7 +268,9 @@ export default function CompanyDashboardTabPanel({
                       onClick={() => onOpenProfile(p.id)}
                       title="Abrir perfil"
                       style={{
-                        display: "block",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
                         width: "100%",
                         textAlign: "left",
                         background: "transparent",
@@ -279,9 +283,12 @@ export default function CompanyDashboardTabPanel({
                         fontFamily: "inherit",
                       }}
                     >
-                      👤 <strong>{p.nome}</strong>
+                      <FotoPerfilAvatar value={p.avatar} size={32} />
+                      <span>
+                      <strong>{p.nome}</strong>
                       <span style={{ display: "block", fontSize: 10, color: DASH.muted, marginTop: 2 }}>
                         {p.listas.map((nome) => `📁 ${nome}`).join(" · ")}
+                      </span>
                       </span>
                     </button>
                   ))}
@@ -380,7 +387,9 @@ export default function CompanyDashboardTabPanel({
                         type="button"
                         onClick={() => onOpenProfile(m.profileId)}
                         style={{
-                          display: "block",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
                           width: "100%",
                           textAlign: "left",
                           background: "transparent",
@@ -393,9 +402,12 @@ export default function CompanyDashboardTabPanel({
                           fontFamily: "inherit",
                         }}
                       >
-                        👤 <strong>{m.nome || "Profissional"}</strong>
+                        <FotoPerfilAvatar value={m.avatar} size={28} />
+                        <span style={{ flex: 1, minWidth: 0 }}>
+                        <strong>{m.nome || "Profissional"}</strong>
                         <span style={{ color: DASH.muted }}> · {m.cargo || ""}</span>
                         <span style={{ float: "right", color: DASH.gold, fontWeight: 700 }}>🎯 {m.score}%</span>
+                        </span>
                       </button>
                     ))}
                   </div>

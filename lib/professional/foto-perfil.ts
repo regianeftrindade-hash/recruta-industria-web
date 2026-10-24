@@ -60,6 +60,31 @@ export function fotoPerfilSrc(value: string | null | undefined): string {
   return "";
 }
 
+/** Foto já gravada: a coluna do perfil, ou a que ficou só no formulário. */
+export function fotoGravada(
+  avatar: string | null | undefined,
+  snapshot?: string | null,
+): string | null {
+  const column = String(avatar || "").trim();
+  if (fotoPerfilSrc(column)) return column;
+  if (!snapshot?.trim()) return null;
+  try {
+    const parsed = JSON.parse(snapshot) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+    const obj = parsed as Record<string, unknown>;
+    const nested = obj.formData;
+    const nestedFoto =
+      nested && typeof nested === "object" && !Array.isArray(nested)
+        ? (nested as Record<string, unknown>).fotoPerfil
+        : "";
+    const top = typeof obj.fotoPerfil === "string" ? obj.fotoPerfil : "";
+    const raw = String(top || nestedFoto || "").trim();
+    return fotoPerfilSrc(raw) ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Atualiza só a foto dentro do snapshot já salvo. */
 export function patchFotoNoSnapshot(snapshot: string | null, path: string): string {
   let parsed: Record<string, unknown> = {};

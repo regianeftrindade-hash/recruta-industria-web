@@ -15,6 +15,7 @@ import {
   type CompanyProfileTrackingData,
 } from '@/lib/company-profile-tracking';
 import { isArquivoAnexado } from '@/lib/arquivo-anexo';
+import { fotoGravada } from '@/lib/professional/foto-perfil';
 import { parseSobreMimJSON } from '@/lib/sobre-mim';
 import { parseTesteComportamentalJSON } from '@/lib/teste-comportamental';
 import { lerCampoJsonDoPerfil } from '@/lib/profile-json-fields';
@@ -216,7 +217,7 @@ export async function GET(
       pretensaoSalarial: bloqueado ? undefined : profile.pretensaoSalarial || '—',
       mensagem: bloqueado ? undefined : profile.mensagemEmpresas || profile.bio || '—',
       habilidades,
-      avatar: profile.avatar,
+      avatar: fotoGravada(profile.avatar, profile.formDataJSON),
       bloqueado,
       unlocked: !bloqueado,
       favorito,

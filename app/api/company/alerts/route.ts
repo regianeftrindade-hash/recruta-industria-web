@@ -13,6 +13,7 @@ import {
 import type { IndustrialFilters } from '@/lib/profile-industrial'
 import { sanitizeIndustrialFilters, hasActiveIndustrialFilters } from '@/lib/profile-industrial'
 import { parseJsonSafe } from '@/lib/professional-profile-map'
+import { fotoGravada } from '@/lib/professional/foto-perfil'
 
 function parseAlertFilters(filtersJSON: string | IndustrialFilters | null | undefined): IndustrialFilters {
   if (filtersJSON && typeof filtersJSON === 'object') {
@@ -49,7 +50,7 @@ export async function GET(request: NextRequest) {
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     const withMatches = await Promise.all(alerts.map(async (alert) => {
       const filters = parseAlertFilters(alert.filtersJSON)
-      let newMatches: { profileId: string; score: number; updatedAt: string; nome?: string; cargo?: string }[] = []
+      let newMatches: { profileId: string; score: number; updatedAt: string; nome?: string; cargo?: string; avatar?: string | null }[] = []
       if (includeMatches && alert.active) {
         try {
           newMatches = await findAlertMatches(filters, since, 10)
@@ -78,6 +79,8 @@ export async function GET(request: NextRequest) {
             id: true,
             title: true,
             cargoDesejado: true,
+            avatar: true,
+            formDataJSON: true,
             user: { select: { name: true } },
           },
         })
@@ -89,6 +92,7 @@ export async function GET(request: NextRequest) {
               ...m,
               nome: p?.user?.name || 'Profissional',
               cargo: p?.cargoDesejado?.trim() || p?.title?.trim() || 'Sem cargo informado',
+              avatar: p ? fotoGravada(p.avatar, p.formDataJSON) : null,
             }
           })
         }

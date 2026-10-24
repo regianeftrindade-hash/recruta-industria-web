@@ -17,6 +17,7 @@ import { INSTAGRAM_SHARE_URL, facebookShareUrl, publicJobUrl, whatsAppShareUrl }
 import fields from "@/app/admin/vagas/vagas-admin.module.css";
 import styles from "./company-vagas.module.css";
 import { useCompanyDashboardDataOptional } from "@/components/company/CompanyDashboardDataContext";
+import FotoPerfilAvatar from "@/components/shared/FotoPerfilAvatar";
 import { COMPANY_VIEW_ONLY_NOTICE } from "@/lib/company/company-verification";
 
 type Screen = "form" | "list" | "applications";
@@ -218,6 +219,7 @@ type ApplicationRow = {
   profileTitle: string | null;
   stage: string;
   createdAt: string;
+  avatar?: string | null;
 };
 
 const COMPANY_RETURN_KEY = "ri-company-vagas-return";
@@ -934,6 +936,7 @@ export default function CompanyVagasPanel({
             const stage = isStage(application.stage) ? application.stage : "NEW";
             return (
               <div key={application.id} className={styles.candidate}>
+                <FotoPerfilAvatar value={application.avatar} size={40} alt="" />
                 <div>
                   {profilePath && application.profileId ? (
                     <button type="button" className={styles.name} onClick={() => openProfile(application)}>

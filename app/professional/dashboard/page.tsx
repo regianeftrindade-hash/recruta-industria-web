@@ -654,38 +654,34 @@ export default function DashboardProfissional() {
             scrollbarGutter: paginaInteira ? "auto" : "stable",
           }}
         >
-          {abaDireita === "vagas" && (
-            <>
-              <section className="dash-card" style={{ ...dashCard, padding: "14px 14px 18px", overflow: "visible", boxShadow: DASH.shadow, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-                <div onClick={handleFotoClick} style={{ cursor: "pointer", flexShrink: 0 }} title="Clique para alterar a foto">
-                  {fotoSrc ? (
-                    <img src={fotoSrc} alt="Foto do profissional" style={avatarImageStyle(56)} decoding="async" />
-                  ) : (
-                    <div style={{ width: 56, height: 56, borderRadius: "50%", background: DASH.input, border: `2px solid #8D6B1F`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>👤</div>
-                  )}
-                </div>
-                <div style={{ flex: "1 1 140px", minWidth: 0 }}>
-                  <p style={{ margin: "0 0 6px", fontWeight: 800, fontSize: 16, color: DASH.title }}>{nomeExibicao}</p>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      padding: "2px 8px",
-                      borderRadius: 999,
-                      border: "2px solid #8D6B1F",
-                      background: "#E8C56A",
-                      color: "#000",
-                      fontSize: 10,
-                      fontWeight: 800,
-                      letterSpacing: "0.04em",
-                    }}
-                  >
-                    CADASTRO {typeof profileData.profileCompletion === "number" ? profileData.profileCompletion : 0}%
-                  </span>
-                </div>
-              </section>
-              <ProfessionalJobSearch />
-            </>
-          )}
+          <section className="dash-card" style={{ ...dashCard, padding: "14px 14px 18px", overflow: "visible", boxShadow: DASH.shadow, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+            <div onClick={handleFotoClick} style={{ cursor: "pointer", flexShrink: 0 }} title="Clique para alterar a foto">
+              {fotoSrc ? (
+                <img src={fotoSrc} alt="Foto do profissional" style={avatarImageStyle(56)} decoding="async" />
+              ) : (
+                <div style={{ width: 56, height: 56, borderRadius: "50%", background: DASH.input, border: `2px solid #8D6B1F`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>👤</div>
+              )}
+            </div>
+            <div style={{ flex: "1 1 140px", minWidth: 0 }}>
+              <p style={{ margin: "0 0 6px", fontWeight: 800, fontSize: 16, color: DASH.title }}>{nomeExibicao}</p>
+              <span
+                style={{
+                  display: "inline-block",
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                  border: "2px solid #8D6B1F",
+                  background: "#E8C56A",
+                  color: "#000",
+                  fontSize: 10,
+                  fontWeight: 800,
+                  letterSpacing: "0.04em",
+                }}
+              >
+                CADASTRO {typeof profileData.profileCompletion === "number" ? profileData.profileCompletion : 0}%
+              </span>
+            </div>
+          </section>
+          {abaDireita === "vagas" && <ProfessionalJobSearch />}
 
           {abaDireita === "oportunidades" && (
             <>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { fotoGravada } from '@/lib/professional/foto-perfil'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth.config'
 import { prisma } from '@/lib/db'
@@ -136,7 +137,7 @@ function buildSummary(profile: ProfileRow, industrial: ProfileIndustrialData, co
     experiencia: profile.tempoExperiencia || '—',
     recolocacao: profile.recolocacao || '—',
     habilidades,
-    avatar: profile.avatar,
+    avatar: fotoGravada(profile.avatar, profile.formDataJSON),
     bloqueado: true,
     unlocked: false,
     compatibilidade,
@@ -166,7 +167,7 @@ function buildFull(profile: ProfileRow, industrial: ProfileIndustrialData, compa
     pretensaoSalarial: profile.pretensaoSalarial || '—',
     mensagem: profile.mensagemEmpresas || profile.bio || '—',
     habilidades,
-    avatar: profile.avatar,
+    avatar: fotoGravada(profile.avatar, profile.formDataJSON),
     bloqueado: false,
     unlocked: true,
     compatibilidade,

@@ -3,6 +3,7 @@ import {
   caminhoFotoPerfil,
   fotoPerfilParaSalvar,
   fotoPerfilSrc,
+  fotoGravada,
   patchFotoNoSnapshot,
 } from "@/lib/professional/foto-perfil";
 
@@ -18,6 +19,14 @@ describe("foto de perfil", () => {
     expect(fotoPerfilParaSalvar("data:image/png;base64,aaaa")).toBeNull();
     expect(caminhoFotoPerfil("../secret")).toBeNull();
     expect(caminhoFotoPerfil("avatars/%2e%2e/segredo")).toBeNull();
+  });
+
+  it("acha a foto no formulário quando a coluna está vazia", () => {
+    const path = "avatars/ana@recruta.ind.br/10_foto.jpg";
+    const snap = JSON.stringify({ nome: "Ana", formData: { fotoPerfil: path } });
+    expect(fotoGravada(null, snap)).toBe(path);
+    expect(fotoGravada("", snap)).toBe(path);
+    expect(fotoGravada(path, JSON.stringify({ fotoPerfil: "" }))).toBe(path);
   });
 
   it("troca só a foto no snapshot existente", () => {

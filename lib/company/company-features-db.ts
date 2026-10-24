@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { fotoGravada } from '@/lib/professional/foto-perfil';
 import { prisma } from '@/lib/db';
 import { applyCollaborationSchema } from '@/lib/infra/ensure-db-schema';
 import type { IndustrialFilters } from '@/lib/profile-industrial';
@@ -92,7 +93,7 @@ export type TalentListWithProfiles = {
   id: string;
   name: string;
   createdAt: Date;
-  profiles: Array<{ id: string; nome: string; cargo: string }>;
+  profiles: Array<{ id: string; nome: string; cargo: string; avatar: string | null }>;
 };
 
 /** Listas do banco de talentos com os perfis (nome e cargo) para agrupamento por cargo. */
@@ -119,6 +120,8 @@ export async function listTalentListsWithProfiles(
           id: true,
           title: true,
           cargoDesejado: true,
+          avatar: true,
+          formDataJSON: true,
           user: { select: { name: true } },
         },
       })
@@ -138,9 +141,10 @@ export async function listTalentListsWithProfiles(
           id: p.id,
           nome: p.user?.name || 'Profissional',
           cargo: p.cargoDesejado?.trim() || p.title?.trim() || 'Sem cargo informado',
+          avatar: fotoGravada(p.avatar, p.formDataJSON),
         };
       })
-      .filter((p): p is { id: string; nome: string; cargo: string } => p !== null),
+      .filter((p): p is { id: string; nome: string; cargo: string; avatar: string | null } => p !== null),
   }));
 }
 
