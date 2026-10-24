@@ -228,9 +228,11 @@
   gap: 10px;
 }
 
-.ri-dash-prof .ri-dash-two-col > main {
-  overflow: visible;
-  max-height: none;
+.ri-dash-prof .ri-dash-two-col,
+.ri-dash-prof .ri-dash-two-col > main,
+.ri-dash-prof [data-pagina-inteira="true"] {
+  overflow: visible !important;
+  max-height: none !important;
 }
 
 .ri-dash-prof h3 {

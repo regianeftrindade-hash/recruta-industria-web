@@ -328,21 +328,6 @@ export default function CadastroSimplesProfissionalPage() {
             </div>
           </div>
 
-          <ResumeToolkit
-            variant="register"
-            authenticated={false}
-            getLocalDraft={() => sanitizeResumeDraft({ nome, email })}
-            onDraftApplied={(draft) => {
-              pendingDraftRef.current = draft;
-              if (draft.nome) setNome(draft.nome);
-              if (draft.email) setEmail(draft.email);
-            }}
-            onHoldFile={(file) => {
-              pendingResumeRef.current = file;
-              setCurriculoNaMemoria(Boolean(file));
-            }}
-          />
-
           {contaCriada ? (
             <Link href="/professional/dashboard" className={loginStyles.btnPrimary}>
               Ir ao painel
@@ -353,6 +338,21 @@ export default function CadastroSimplesProfissionalPage() {
             </button>
           )}
         </form>
+
+        <ResumeToolkit
+          variant="register"
+          authenticated={false}
+          getLocalDraft={() => sanitizeResumeDraft({ nome, email })}
+          onDraftApplied={(draft) => {
+            pendingDraftRef.current = draft;
+            if (draft.nome) setNome(draft.nome);
+            if (draft.email) setEmail(draft.email);
+          }}
+          onHoldFile={(file) => {
+            pendingResumeRef.current = file;
+            setCurriculoNaMemoria(Boolean(file));
+          }}
+        />
 
         <div className={loginStyles.footer}>
           <Link href="/" className={loginStyles.footerLink}>
