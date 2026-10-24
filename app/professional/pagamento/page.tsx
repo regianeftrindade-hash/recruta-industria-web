@@ -324,7 +324,7 @@ function PagamentoProfissional() {
         {offeringEnabled ? (
           <p style={{ color: "rgba(242,242,242,0.82)", margin: "0 0 12px", lineHeight: 1.5 }}>{planDef.descricao}</p>
         ) : null}
-        <p style={{ color: "rgba(242,242,242,0.92)", margin: "0 0 24px", lineHeight: 1.5 }}>
+        <p style={{ color: offeringEnabled ? "rgba(242,242,242,0.92)" : "#414141", margin: "0 0 24px", lineHeight: 1.5 }}>
           Situação da assinatura: <strong>{subscription ? accessLabel : "Consultando..."}</strong>
           {subscription?.isPremium && subscription.subscriptionExpiresAt
             ? ` até ${new Date(subscription.subscriptionExpiresAt).toLocaleDateString("pt-BR")}.`
