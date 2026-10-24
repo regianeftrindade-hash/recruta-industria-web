@@ -44,11 +44,11 @@ export function usePlatformVideoCallCamera({
         });
       }
       streamRef.current = stream;
+      setCameraOn(true);
       if (localRef.current) {
         localRef.current.srcObject = stream;
-        await localRef.current.play().catch(() => {});
+        void localRef.current.play().catch(() => {});
       }
-      setCameraOn(true);
     } catch (err) {
       const name = err instanceof DOMException ? err.name : "";
       if (name === "NotAllowedError" || name === "PermissionDeniedError") {

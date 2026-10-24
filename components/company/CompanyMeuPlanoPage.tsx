@@ -178,6 +178,11 @@ const MANUAL: ManualSection[] = [
   },
 ];
 
+function primeiraFrase(texto: string): string {
+  const match = texto.match(/^.*?[.!?](?:\s|$)/);
+  return (match?.[0] ?? texto).trim();
+}
+
 function ManualCard({ section, forceOpen }: { section: ManualSection; forceOpen?: boolean }) {
   const [open, setOpen] = useState(false);
   const expanded = forceOpen || open;
@@ -323,7 +328,7 @@ export default function CompanyMeuPlanoPage() {
               <span style={{ color: DASH.muted, fontSize: 11 }}>{planDef.periodo}</span>
             </p>
             <p style={{ margin: 0, fontSize: 12, color: DASH.muted, lineHeight: 1.5 }}>
-              {planDef.descricao}
+              {primeiraFrase(planDef.descricao)}
             </p>
             {feedback ? (
               <p
@@ -351,52 +356,58 @@ export default function CompanyMeuPlanoPage() {
       </section>
 
       <section className="dash-card" style={{ ...dashCard, padding: 16 }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 12,
-            flexWrap: "wrap",
-            marginBottom: 12,
-          }}
-        >
-          <div>
-            <h3 style={{ ...dashSectionTitle, margin: "0 0 4px", fontSize: 15 }}>
-              📖 Manual de uso da plataforma
-            </h3>
-            <p style={{ margin: 0, fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>
-              Guia detalhado de cada funcionalidade do painel da empresa. Clique em um tema para
-              expandir.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setExpandAll((v) => !v)}
+        <details>
+          <summary
             style={{
-              ...btnGold,
-              padding: "6px 12px",
-              fontSize: 11,
-              background: expandAll ? DASH.gold : "transparent",
-              color: expandAll ? "#000" : DASH.gold,
-              border: `2px solid #8D6B1F`,
-              boxShadow: expandAll ? undefined : "none",
+              cursor: "pointer",
+              fontSize: 15,
+              fontWeight: 800,
+              color: DASH.gold,
             }}
           >
-            {expandAll ? "Recolher tudo" : "Expandir tudo"}
-          </button>
-        </div>
-
-        <div style={{ display: "grid", gap: 10 }}>
-          {MANUAL.map((section) => (
-            <ManualCard key={section.id} section={section} forceOpen={expandAll} />
-          ))}
-        </div>
-
-        <p style={{ margin: "16px 0 0", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
-          Dúvidas sobre cobrança, verificação ou planos? Use a aba{" "}
-          <strong style={dashPlanAccent}>Contato</strong> para falar com a Recruta Indústria.
-        </p>
+            Como usar o painel
+          </summary>
+          <div style={{ marginTop: 12 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 12,
+                flexWrap: "wrap",
+                marginBottom: 12,
+              }}
+            >
+              <p style={{ margin: 0, fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>
+                Cada tema abre o passo a passo. O guia continua disponível aqui.
+              </p>
+              <button
+                type="button"
+                onClick={() => setExpandAll((v) => !v)}
+                style={{
+                  ...btnGold,
+                  padding: "6px 12px",
+                  fontSize: 11,
+                  background: expandAll ? DASH.gold : "transparent",
+                  color: expandAll ? "#000" : DASH.gold,
+                  border: `2px solid #8D6B1F`,
+                  boxShadow: expandAll ? undefined : "none",
+                }}
+              >
+                {expandAll ? "Recolher tudo" : "Expandir tudo"}
+              </button>
+            </div>
+            <div style={{ display: "grid", gap: 10 }}>
+              {MANUAL.map((section) => (
+                <ManualCard key={section.id} section={section} forceOpen={expandAll} />
+              ))}
+            </div>
+            <p style={{ margin: "16px 0 0", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
+              Dúvidas sobre cobrança, verificação ou planos? Use a aba{" "}
+              <strong style={dashPlanAccent}>Contato</strong> para falar com a Recruta Indústria.
+            </p>
+          </div>
+        </details>
       </section>
     </main>
   );

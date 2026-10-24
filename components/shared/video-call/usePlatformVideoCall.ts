@@ -180,12 +180,13 @@ export function usePlatformVideoCall({
     };
   }, [role, callId, status, stopCamera]);
 
-  // Quando aceita (dos dois lados), liga a câmera
+  // Aceite liga a câmera dos dois lados. Quem chama já se vê enquanto espera o aceite.
   useEffect(() => {
-    if (status === "accepted" && !cameraOn) {
+    const empresaChamando = role === "company" && isInitiator && status === "ringing";
+    if ((status === "accepted" || empresaChamando) && !cameraOn) {
       void startCamera();
     }
-  }, [status, cameraOn, startCamera]);
+  }, [status, cameraOn, startCamera, role, isInitiator]);
 
   // Profissional: escuta chamadas entrantes
   useEffect(() => {

@@ -75,10 +75,12 @@ export default function PlatformVideoCall({
 
   // Reanexa o stream local quando o painel remonta (overlay / minimize / status)
   useEffect(() => {
-    if (cameraOn && localRef.current && streamRef.current) {
-      localRef.current.srcObject = streamRef.current;
-    }
-  }, [cameraOn, overlay, minimized, call.status]);
+    const video = localRef.current;
+    const stream = streamRef.current;
+    if (!cameraOn || !video || !stream) return;
+    if (video.srcObject !== stream) video.srcObject = stream;
+    void video.play().catch(() => {});
+  }, [cameraOn, overlay, minimized, call.status, preparar]);
 
   useEffect(() => {
     if (role !== "professional") return;
