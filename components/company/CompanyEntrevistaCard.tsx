@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { DASH, dashInnerBox } from "@/lib/dashboard-theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
@@ -53,6 +54,18 @@ const chip = (active: boolean): React.CSSProperties => ({
   color: active ? DASH.gold : DASH.muted,
   fontFamily: "inherit",
 });
+
+function linkHttp(url: string | null | undefined): string | null {
+  const raw = String(url || "").trim();
+  if (!raw) return null;
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol === "https:" || parsed.protocol === "http:") return parsed.toString();
+  } catch {
+    return null;
+  }
+  return null;
+}
 
 const btnGhost: React.CSSProperties = {
   background: "transparent",
@@ -117,6 +130,7 @@ export default function CompanyEntrevistaCard({
   onReagendar,
   onPerfil,
 }: Props) {
+  const router = useRouter();
   if (!p.interview) return null;
 
   const t = trackingOf(p);
@@ -129,6 +143,7 @@ export default function CompanyEntrevistaCard({
     observacoes: p.interview.observacoes,
   });
   const nomeProf = p.professionalName || "Profissional";
+  const salaUrl = linkHttp(p.interview.meetingUrl);
 
   return (
     <article style={{ ...rowStyle, flexWrap: "wrap", alignItems: "flex-start" }}>
@@ -236,6 +251,28 @@ export default function CompanyEntrevistaCard({
         >
           Cancelar
         </button>
+        {p.interview.locationType === "PLATFORM" &&
+        (p.status === "INTERVIEW_CONFIRMED" || p.status === "INTERVIEW_PENDING") ? (
+          <button
+            type="button"
+            onClick={() =>
+              router.push(`/company/professional/${encodeURIComponent(p.profileId)}?chamar=1`)
+            }
+            style={{ ...btnGold, padding: "5px 8px", fontSize: 10 }}
+          >
+            Ligar agora
+          </button>
+        ) : null}
+        {p.interview.locationType === "ONLINE" && salaUrl ? (
+          <a
+            href={salaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ ...btnGold, padding: "5px 8px", fontSize: 10, textDecoration: "none" }}
+          >
+            Abrir a sala
+          </a>
+        ) : null}
         <button type="button" onClick={onPerfil} style={{ ...btnGold, padding: "5px 8px", fontSize: 10 }}>
           Perfil
         </button>

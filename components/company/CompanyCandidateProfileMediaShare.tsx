@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import SecureVideoPlayer from "@/components/shared/SecureVideoPlayer";
 import {
@@ -51,6 +51,11 @@ export default function CompanyCandidateProfileMediaShare({
   onShareNoteChange,
   onShare,
 }: Props) {
+  const [autoChamar, setAutoChamar] = useState(false);
+
+  useEffect(() => {
+    setAutoChamar(new URLSearchParams(window.location.search).get("chamar") === "1");
+  }, []);
   return (
     <>
       <div
@@ -136,6 +141,7 @@ export default function CompanyCandidateProfileMediaShare({
             title="Chamada de vídeo"
             compact
             peerLabel={nome.split(" ")[0] || "candidato"}
+            autoChamar={autoChamar}
           />
         )}
       </div>

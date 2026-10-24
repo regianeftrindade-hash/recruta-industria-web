@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { DASH, dashCard, dashSectionTitle } from "@/lib/dashboard-theme";
+import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import styles from "./PlatformVideoCall.module.css";
 import type { PlatformVideoCallProps } from "./video-call/types";
 import { getCallStatusLabel } from "./video-call/statusLabel";
@@ -24,6 +25,7 @@ export default function PlatformVideoCall({
   title = "Chamada de vídeo",
   compact = false,
   peerLabel = "Outro participante",
+  autoChamar = false,
 }: PlatformVideoCallProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
@@ -36,6 +38,9 @@ export default function PlatformVideoCall({
   const [cameraOn, setCameraOn] = useState(false);
   const [remoteLive, setRemoteLive] = useState(false);
   const [error, setError] = useState("");
+  const [preparar, setPreparar] = useState(false);
+  const [proxima, setProxima] = useState<{ empresa: string; quando: string } | null>(null);
+  const autoStartRef = useRef(false);
 
   const { startCamera, stopCamera } = usePlatformVideoCallCamera({
     localRef,
@@ -75,6 +80,54 @@ export default function PlatformVideoCall({
     }
   }, [cameraOn, overlay, minimized, call.status]);
 
+  useEffect(() => {
+    if (role !== "professional") return;
+    let cancelled = false;
+    void fetch("/api/professional/proposals", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        const list = Array.isArray(data.proposals) ? data.proposals : [];
+        const next = list.find((item) => {
+          const interview = item?.interview;
+          const itemStatus = item?.status;
+          return (
+            interview?.locationType === "PLATFORM" &&
+            (itemStatus === "INTERVIEW_CONFIRMED" || itemStatus === "INTERVIEW_PENDING")
+          );
+        });
+        if (!next) {
+          setProxima(null);
+          return;
+        }
+        const when = new Date(next.interview.scheduledAt);
+        const quando = Number.isNaN(when.getTime())
+          ? ""
+          : when.toLocaleString("pt-BR", {
+              day: "2-digit",
+              month: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              timeZone: "America/Sao_Paulo",
+            });
+        setProxima({ empresa: String(next.companyName || "Empresa"), quando });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [role]);
+
+  const chamarRef = useRef(call.handleChamar);
+  chamarRef.current = call.handleChamar;
+
+  useEffect(() => {
+    if (!autoChamar || role !== "company" || !profileId || autoStartRef.current) return;
+    autoStartRef.current = true;
+    wrapRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    void chamarRef.current();
+  }, [autoChamar, role, profileId]);
+
   const overlayPip = overlay;
 
   const enableOverlay = () => {
@@ -106,7 +159,7 @@ export default function PlatformVideoCall({
       };
 
   const statusLabel = getCallStatusLabel(call.status, role, call.isInitiator, call.incomingCompany);
-  const chamadaOciosa = role === "professional" && call.status === "idle" && !overlay && !error;
+  const chamadaOciosa = role === "professional" && call.status === "idle" && !overlay;
 
   if (chamadaOciosa) {
     return (
@@ -115,9 +168,74 @@ export default function PlatformVideoCall({
           <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 6px", fontSize: 14, fontWeight: 400 }}>
             Chamada de vídeo
           </h3>
-          <p style={{ margin: 0, fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>
-            Quando uma empresa ligar, Aceitar e Recusar aparecem neste card. A câmera só liga depois que você aceitar.
+          {proxima ? (
+            <p style={{ margin: "0 0 6px", fontSize: 12, fontWeight: 700, color: DASH.gold, lineHeight: 1.45 }}>
+              Entrevista com {proxima.empresa}
+              {proxima.quando ? ` · ${proxima.quando}` : ""}
+            </p>
+          ) : null}
+          <p style={{ margin: "0 0 10px", fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>
+            Quando a empresa ligar, Aceitar e Recusar aparecem neste card. Preparar a câmera deixa você pronto antes do aceite.
           </p>
+          {preparar ? (
+            <div
+              style={{
+                width: "100%",
+                maxWidth: 280,
+                aspectRatio: "4 / 3",
+                borderRadius: 10,
+                overflow: "hidden",
+                border: "2px solid #8D6B1F",
+                background: "#0a0a0a",
+                position: "relative",
+                marginBottom: 10,
+              }}
+            >
+              <video
+                ref={localRef}
+                muted
+                playsInline
+                autoPlay
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: cameraOn ? "block" : "none" }}
+              />
+              {!cameraOn ? (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#F3E6C8",
+                    fontSize: 12,
+                    textAlign: "center",
+                    padding: 8,
+                  }}
+                >
+                  Abrindo câmera…
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+          {error ? (
+            <p style={{ margin: "0 0 8px", fontSize: 12, color: "#f87171", lineHeight: 1.4 }}>{error}</p>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => {
+              if (preparar) {
+                stopCamera();
+                setPreparar(false);
+                setError("");
+                return;
+              }
+              setPreparar(true);
+              void startCamera();
+            }}
+            style={{ ...btnGold, padding: "8px 12px", fontSize: 12 }}
+          >
+            {preparar ? "Fechar câmera" : "Preparar câmera"}
+          </button>
         </section>
       </div>
     );
@@ -296,14 +414,17 @@ export default function PlatformVideoCall({
         >
           {role === "company"
             ? "Clique em Chamar. A câmera só liga quando o profissional aceitar. Use Sobrepor para rolar a página com o vídeo fixo."
-            : "Quando a empresa ligar, use Aceitar ou Recusar. Use Sobrepor para rolar a página com o vídeo fixo."}
+            : "Quando a empresa ligar, use Aceitar ou Recusar. A outra pessoa vê seu vídeo depois do aceite."}
         </p>
       )}
       </section>
   );
 
   return (
-    <div ref={wrapRef} id={role === "professional" ? "chamada-video-profissional" : undefined}>
+    <div
+      ref={wrapRef}
+      id={role === "professional" ? "chamada-video-profissional" : "chamada-video-empresa"}
+    >
       {panel}
     </div>
   );

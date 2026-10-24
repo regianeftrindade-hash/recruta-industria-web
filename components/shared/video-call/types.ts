@@ -15,6 +15,8 @@ export type PlatformVideoCallProps = {
   title?: string;
   compact?: boolean;
   peerLabel?: string;
+  /** Empresa: inicia a chamada ao abrir o perfil (?chamar=1). */
+  autoChamar?: boolean;
 };
 
 export type ApiCall = {
