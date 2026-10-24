@@ -83,6 +83,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
   const cartaoInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const fotoInputRef = useRef<HTMLInputElement>(null);
+  const checagemEmailRef = useRef<string | null>(null);
 
   const formatarTelefone = (valor: string) => {
     const telefoneLimpo = valor.replace(/\D/g, '');
@@ -138,13 +139,15 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
     if (status === 'unauthenticated') {
       setCheckingRegistration(false);
       setContaJaCompleta(false);
-      router.replace('/company/cadastro');
+      if (!incorporado) router.replace('/company/cadastro');
       return;
     }
 
-    if (status !== 'authenticated' || !session?.user) return;
+    if (status !== 'authenticated' || !session?.user?.email) return;
 
-    const email = session.user.email || '';
+    const email = session.user.email;
+    if (checagemEmailRef.current === email) return;
+
     const bypassByEmail = matchesCompanyTestBypass({
       email,
       userName: session.user.name,
@@ -165,7 +168,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
       return;
     }
 
-    setCheckingRegistration(true);
+    if (!incorporado) setCheckingRegistration(true);
     setContaJaCompleta(false);
     let cancelled = false;
     const timeoutId = window.setTimeout(() => {
@@ -263,14 +266,25 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
       })
       .finally(() => {
         window.clearTimeout(timeoutId);
-        if (!cancelled) setCheckingRegistration(false);
+        if (!cancelled) {
+          checagemEmailRef.current = email;
+          setCheckingRegistration(false);
+        }
       });
 
     return () => {
       cancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [status, session, router, isEditMode]);
+  }, [
+    status,
+    session?.user?.email,
+    session?.user?.name,
+    (session?.user as { userType?: string } | undefined)?.userType,
+    incorporado,
+    isEditMode,
+    router,
+  ]);
 
   useEffect(() => {
     if (status !== 'loading') {
@@ -667,9 +681,11 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
 
   // Sem sessão: não pintar o formulário completo enquanto redireciona para /company/cadastro.
   if (
-    (status === 'loading' && !sessionWaitTimedOut) ||
-    status === 'unauthenticated' ||
-    (status === 'authenticated' && checkingRegistration)
+    !incorporado && (
+      (status === 'loading' && !sessionWaitTimedOut) ||
+      status === 'unauthenticated' ||
+      (status === 'authenticated' && checkingRegistration)
+    )
   ) {
     return (
       <PageLoader
