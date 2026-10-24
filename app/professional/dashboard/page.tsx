@@ -142,8 +142,24 @@ export default function DashboardProfissional() {
   const [lastViewCompany, setLastViewCompany] = useState<string | null>(null);
   const [visitorViews, setVisitorViews] = useState<ProfileViewItem[]>([]);
   const [companyNamesHidden, setCompanyNamesHidden] = useState(true);
+  const [premiumOffering, setPremiumOffering] = useState(false);
   const [, setTesteComportamental] = useState<ResultadoTesteComportamental | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let ativo = true;
+    void fetch("/api/payment/config", { credentials: "same-origin" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (ativo) setPremiumOffering(data?.professionalPremiumOffering === true);
+      })
+      .catch(() => {
+        if (ativo) setPremiumOffering(false);
+      });
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -666,10 +682,14 @@ export default function DashboardProfissional() {
                     Ainda não há visita de empresa registrada neste perfil.
                   </p>
                 )}
-                {companyNamesHidden ? (
+                {companyNamesHidden && premiumOffering ? (
                   <p style={{ margin: 0, fontSize: 11, color: DASH.text, lineHeight: 1.45 }}>
                     A lista com o nome das empresas é do plano Premium. A contagem da semana continua no plano gratuito.{" "}
                     <a href="/professional/pagamento" style={{ color: DASH.gold, fontWeight: 700 }}>Conhecer o Premium</a>
+                  </p>
+                ) : companyNamesHidden ? (
+                  <p style={{ margin: 0, fontSize: 11, color: DASH.text, lineHeight: 1.45 }}>
+                    A contagem da semana continua no plano gratuito.
                   </p>
                 ) : visitorViews.length > 0 ? (
                   <div style={{ textAlign: "left", marginTop: 8 }}>

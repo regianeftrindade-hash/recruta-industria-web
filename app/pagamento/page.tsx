@@ -44,6 +44,7 @@ export default function Pagamento() {
   const [method, setMethod] = useState<"card" | "pix" | "boleto">("pix");
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
+  const [offering, setOffering] = useState<boolean | null>(null);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
 
   const clearPoll = () => {
@@ -54,6 +55,21 @@ export default function Pagamento() {
   };
 
   useEffect(() => () => clearPoll(), []);
+
+  useEffect(() => {
+    let ativo = true;
+    void fetch("/api/payment/config", { credentials: "same-origin" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (ativo) setOffering(data?.professionalPremiumOffering === true);
+      })
+      .catch(() => {
+        if (ativo) setOffering(false);
+      });
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   const finishSuccess = () => {
     if (typeof window !== "undefined") {
@@ -129,6 +145,25 @@ export default function Pagamento() {
       setStatusMessage("Erro inesperado ao iniciar o pagamento.");
     }
   };
+
+  if (offering !== true) {
+    return (
+      <div style={{ position: "relative", minHeight: "100vh", background: COLORS.preto, padding: "30px", color: COLORS.branco, overflow: "hidden" }}>
+        <AuthAtmosphere />
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 560, margin: "80px auto", background: "#E8D5A3", borderRadius: 16, padding: 28, border: "2px solid #8D6B1F", textAlign: "center" }}>
+          <h1 style={{ margin: "0 0 12px", fontSize: 24, color: COLORS.dourado }}>Plano profissional</h1>
+          <p style={{ margin: "0 0 18px", lineHeight: 1.5 }}>
+            {offering === null
+              ? "Carregando..."
+              : "Novas contratações do Premium estão pausadas. O plano gratuito continua disponível."}
+          </p>
+          <button type="button" onClick={() => router.push("/")} style={{ ...BTN_GOLD, padding: "12px 20px" }}>
+            Voltar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ position: "relative", minHeight: "100vh", background: COLORS.preto, padding: "30px", color: COLORS.branco, overflow: "hidden" }}>

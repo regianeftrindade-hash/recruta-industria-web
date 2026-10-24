@@ -12,7 +12,7 @@ export default function CheckoutPage() {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F3E6C8", color: "#414141" }}>
-      Abrindo o pagamento do Premium...
+      Abrindo...
     </div>
   );
 }

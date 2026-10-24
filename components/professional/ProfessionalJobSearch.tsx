@@ -4,6 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { CONTRACT_TYPES, WORK_MODES, type PublicJob } from "@/lib/jobs/job-posting";
 import { paginarLista, paginasDaBarra } from "@/lib/jobs/paginate-list";
 import { comparePublicationDateDesc, jobApplicationDeadline } from "@/lib/jobs/public-job-display";
+import { VAGAS_COMPATIVEIS_ENABLED } from "@/lib/jobs/vagas-compativeis-flag";
 import styles from "./professional-job-search.module.css";
 
 type CompatibleJob = PublicJob & { reasons: string[] };
@@ -360,6 +361,14 @@ export default function ProfessionalJobSearch() {
         return;
       }
       const found = porDataDePublicacao(Array.isArray(data.jobs) ? data.jobs as PublicJob[] : []);
+      if (!VAGAS_COMPATIVEIS_ENABLED) {
+        setIsPremium(null);
+        setCompatible([]);
+        setMatchError("");
+        setJobs(found);
+        if (salvar) setBuscas(guardarBusca(next));
+        return;
+      }
       const matchResponse = await fetch(`/api/professional/vagas-compativeis?${params.toString()}`, { credentials: "include" });
       const matchData = await matchResponse.json().catch(() => ({}));
       const premiumConfirmado = matchResponse.ok && matchData.premium === true;
@@ -522,8 +531,8 @@ export default function ProfessionalJobSearch() {
 
       {error ? <p className={styles.error}>{error}</p> : null}
       {loading ? <p className={styles.lead}>Buscando vagas...</p> : null}
-      {!loading && !error && matchError && isPremium !== true ? <p className={styles.error}>{matchError}</p> : null}
-      {!loading && !error && isPremium === false ? (
+      {VAGAS_COMPATIVEIS_ENABLED && !loading && !error && matchError && isPremium !== true ? <p className={styles.error}>{matchError}</p> : null}
+      {VAGAS_COMPATIVEIS_ENABLED && !loading && !error && isPremium === false ? (
         <section className={styles.matches} aria-label="Vagas compatíveis com você">
           <h3 className={styles.title}>Vagas compatíveis com você</h3>
           <div className={styles.premium}>
@@ -532,7 +541,7 @@ export default function ProfessionalJobSearch() {
           </div>
         </section>
       ) : null}
-      {!loading && !error && isPremium === true ? (
+      {VAGAS_COMPATIVEIS_ENABLED && !loading && !error && isPremium === true ? (
         <section className={styles.matches} aria-label="Vagas compatíveis com você">
           <h3 ref={compativeisRef} className={styles.title}>Vagas compatíveis com você</h3>
           {matchError ? (
@@ -571,7 +580,9 @@ export default function ProfessionalJobSearch() {
       {!loading && !error ? <h3 ref={listaRef} className={styles.title}>Todas as vagas</h3> : null}
       {!loading && !error && jobs.length === 0 ? (
         <p className={styles.empty}>
-          {temFiltro(consulta) ? "Nenhuma outra vaga encontrada com esses filtros." : "Nenhuma outra vaga publicada no momento."}
+          {temFiltro(consulta)
+            ? (VAGAS_COMPATIVEIS_ENABLED ? "Nenhuma outra vaga encontrada com esses filtros." : "Nenhuma vaga encontrada com esses filtros.")
+            : (VAGAS_COMPATIVEIS_ENABLED ? "Nenhuma outra vaga publicada no momento." : "Nenhuma vaga publicada no momento.")}
         </p>
       ) : null}
 

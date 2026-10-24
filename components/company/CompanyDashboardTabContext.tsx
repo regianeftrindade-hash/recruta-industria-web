@@ -15,8 +15,8 @@ const TAB_IDS: CompanyDashboardTabId[] = [
   "banco",
   "alertas",
   "contato",
-  "meu-plano",
   "perfil",
+  "meu-plano",
 ];
 
 function isTabId(value: string | null | undefined): value is CompanyDashboardTabId {

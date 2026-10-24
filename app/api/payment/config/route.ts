@@ -15,6 +15,7 @@ import {
   getGatewayApiUrl,
   verifyGatewayCredentials,
 } from '@/lib/payment/gateway';
+import { isProfessionalPremiumOfferingEnabled } from '@/lib/professional/premium-offering';
 
 export async function GET(request: NextRequest) {
   const provider = getPaymentProvider();
@@ -29,6 +30,7 @@ export async function GET(request: NextRequest) {
       : null;
   const professionalReady = Boolean(asaasConfig.apiKey) && Boolean(asaasVerification?.ok);
   const professionalMessage = asaasVerification?.message ?? 'ASAAS_API_KEY não definida';
+  const professionalPremiumOffering = isProfessionalPremiumOfferingEnabled();
 
   const session = await getServerSession(authOptions);
   const isDev = process.env.NODE_ENV === 'development';
@@ -38,6 +40,7 @@ export async function GET(request: NextRequest) {
       configured,
       companyPlansEnabled: plansEnabled,
       professionalPlansEnabled: professionalReady,
+      professionalPremiumOffering,
       professionalProvider: 'asaas',
       professionalMessage,
       provider,
@@ -68,6 +71,7 @@ export async function GET(request: NextRequest) {
       recurringSupported: false,
       companyPlansEnabled: plansEnabled,
       professionalPlansEnabled: professionalReady,
+      professionalPremiumOffering,
       professionalProvider: 'asaas',
       professionalMessage,
       sandboxPanelUrl: isDev ? 'https://sandbox.asaas.com' : undefined,
@@ -92,6 +96,7 @@ export async function GET(request: NextRequest) {
     recurringSupported: true,
     companyPlansEnabled: plansEnabled,
     professionalPlansEnabled: professionalReady,
+    professionalPremiumOffering,
     professionalProvider: 'asaas',
     professionalMessage,
     sandboxTokenUrl: isDev ? 'https://portaldev.pagbank.com.br/tokens' : undefined,

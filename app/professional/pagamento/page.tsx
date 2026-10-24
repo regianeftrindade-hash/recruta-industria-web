@@ -60,6 +60,7 @@ function PagamentoProfissional() {
   const [statusMessage, setStatusMessage] = useState("");
   const [processing, setProcessing] = useState(false);
   const [gatewayReady, setGatewayReady] = useState<boolean | null>(null);
+  const [offeringEnabled, setOfferingEnabled] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionSnapshot | null>(null);
   const [subscriptionNote, setSubscriptionNote] = useState("");
   const [allowNewCharge, setAllowNewCharge] = useState(false);
@@ -88,7 +89,7 @@ function PagamentoProfissional() {
         : accessState === "canceled"
           ? "Pagamento cancelado ou não concluído"
           : "Gratuito";
-  const showCheckout = subscription !== null && !subscription.isPremium && (
+  const showCheckout = offeringEnabled && subscription !== null && !subscription.isPremium && (
     accessState === "free"
     || accessState === "declined"
     || accessState === "canceled"
@@ -101,7 +102,8 @@ function PagamentoProfissional() {
       .then((data) => {
         const ready = Boolean(data?.professionalPlansEnabled);
         setGatewayReady(ready);
-        if (!ready && data?.professionalMessage) {
+        setOfferingEnabled(data?.professionalPremiumOffering === true);
+        if (!ready && data?.professionalMessage && data?.professionalPremiumOffering === true) {
           setStatusMessage(String(data.professionalMessage));
         }
       })
@@ -309,15 +311,19 @@ function PagamentoProfissional() {
         </button>
 
         <p style={{ color: "#C89B3C", margin: "0 0 8px", fontWeight: 800, letterSpacing: "0.04em", lineHeight: 1.3 }}>
-          DEIXE QUE O RECRUTA FAZ POR VOCÊ.
+          {offeringEnabled ? "DEIXE QUE O RECRUTA FAZ POR VOCÊ." : "SEU PLANO"}
         </p>
-        <p style={{ color: "rgba(242,242,242,0.92)", margin: "0 0 20px", lineHeight: 1.5, maxWidth: 640 }}>
-          Ganhe tempo nas candidaturas, descubra empresas interessadas no seu perfil e encontre oportunidades alinhadas à sua experiência.
-        </p>
+        {offeringEnabled ? (
+          <p style={{ color: "rgba(242,242,242,0.92)", margin: "0 0 20px", lineHeight: 1.5, maxWidth: 640 }}>
+            Ganhe tempo nas candidaturas, descubra empresas interessadas no seu perfil e encontre oportunidades alinhadas à sua experiência.
+          </p>
+        ) : null}
         <h1 style={{ color: "#C89B3C", margin: "0 0 8px" }}>
-          {planDef.emoji} Assinar plano {planDef.nome}
+          {offeringEnabled ? `${planDef.emoji} Assinar plano ${planDef.nome}` : "Plano profissional"}
         </h1>
-        <p style={{ color: "rgba(242,242,242,0.82)", margin: "0 0 12px", lineHeight: 1.5 }}>{planDef.descricao}</p>
+        {offeringEnabled ? (
+          <p style={{ color: "rgba(242,242,242,0.82)", margin: "0 0 12px", lineHeight: 1.5 }}>{planDef.descricao}</p>
+        ) : null}
         <p style={{ color: "rgba(242,242,242,0.92)", margin: "0 0 24px", lineHeight: 1.5 }}>
           Situação da assinatura: <strong>{subscription ? accessLabel : "Consultando..."}</strong>
           {subscription?.isPremium && subscription.subscriptionExpiresAt
@@ -330,10 +336,14 @@ function PagamentoProfissional() {
             ? " O Premium não é ativado enquanto o pagamento estiver pendente."
             : ""}
           {accessState === "declined" || accessState === "canceled"
-            ? " O plano continua gratuito. Você pode tentar a contratação de novo."
+            ? (offeringEnabled
+              ? " O plano continua gratuito. Você pode tentar a contratação de novo."
+              : " O plano continua gratuito.")
             : ""}
           {accessState === "free" && subscription
-            ? " O plano gratuito continua com perfil, currículo, busca de vagas e candidatura manual."
+            ? (offeringEnabled
+              ? " O plano gratuito continua com perfil, currículo, busca de vagas e candidatura manual."
+              : " O plano gratuito continua com perfil, currículo, busca de vagas e candidatura. Novas contratações do Premium estão pausadas.")
             : ""}
           {needsSync
             ? " A última cobrança consta como paga no registro local, mas o Premium ainda não está ativo. Use Verificar agora para consultar o gateway."
@@ -343,14 +353,15 @@ function PagamentoProfissional() {
           <p style={{ color: "#E8C56A", margin: "0 0 16px", fontSize: 13, lineHeight: 1.45 }}>{subscriptionNote}</p>
         ) : null}
 
-        {gatewayReady === false && (
+        {offeringEnabled && gatewayReady === false && (
           <div style={{ background: "#E8D5A3", border: "2px solid #8D6B1F", borderRadius: 8, padding: 14, marginBottom: 20, fontSize: 13, lineHeight: 1.5 }}>
             <strong style={{ color: "#C89B3C" }}>Pagamento em configuração.</strong>{" "}
             Cobranças reais ainda não estão disponíveis neste ambiente. Tente mais tarde ou fale com o suporte.
           </div>
         )}
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: offeringEnabled ? "repeat(auto-fit, minmax(280px, 1fr))" : "minmax(280px, 1fr)", gap: 24 }}>
+          {offeringEnabled ? (
           <div style={{ background: "#E8D5A3", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
             <p style={{ color: "#C89B3C", fontWeight: "bold", fontSize: 28, margin: "0 0 4px" }}>
               {priceLabel.price}<span style={{ fontSize: 14, color: "var(--dash-text, #414141)" }}>{priceLabel.period}</span>
@@ -363,6 +374,7 @@ function PagamentoProfissional() {
               {planDef.inclui.map((item) => <li key={item}>✅ {item}</li>)}
             </ul>
           </div>
+          ) : null}
 
           <div style={{ background: "#E8D5A3", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
             {!paymentData && subscription === null ? (
@@ -373,7 +385,9 @@ function PagamentoProfissional() {
                 <p style={{ margin: "0 0 16px", fontSize: 13, lineHeight: 1.5 }}>
                   {subscription?.isPremium
                     ? "O Premium desta conta já está ativo. Não é necessário pagar de novo."
-                    : needsSync
+                    : !offeringEnabled
+                      ? "Novas contratações do Premium estão pausadas. O plano gratuito segue com perfil, currículo, busca de vagas e candidatura."
+                      : needsSync
                       ? "A confirmação local ainda precisa ser conferida no gateway antes de liberar o Premium."
                       : "A cobrança ainda não está confirmada. O botão de contratação fica disponível só para uma nova tentativa, depois que você escolher gerar outra cobrança."}
                 </p>
@@ -386,7 +400,7 @@ function PagamentoProfissional() {
                     Verificar agora
                   </button>
                 ) : null}
-                {!subscription?.isPremium ? (
+                {offeringEnabled && !subscription?.isPremium ? (
                   <button
                     type="button"
                     onClick={() => setAllowNewCharge(true)}

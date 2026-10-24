@@ -60,8 +60,8 @@ export const COMPANY_DASH_TABS: Array<{
   { id: "banco", label: "Banco", href: `${BASE}/banco` },
   { id: "alertas", label: "Alertas", href: `${BASE}/alertas` },
   { id: "contato", label: "Contato Recruta", href: `${BASE}/contato` },
-  { id: "meu-plano", label: "Meu Plano", href: `${BASE}/meu-plano` },
   { id: "perfil", label: "Perfil", href: `${BASE}?tab=perfil` },
+  { id: "meu-plano", label: "Meu Plano", href: `${BASE}/meu-plano` },
 ];
 
 function UpgradeNote({ texto }: { texto: string }) {

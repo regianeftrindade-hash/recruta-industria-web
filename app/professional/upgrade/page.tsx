@@ -17,8 +17,53 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 
 function UpgradePageContent() {
-  // ...removido useSession, ajuste lógica conforme NextAuth v5...
   const router = useRouter();
+  const [offering, setOffering] = React.useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    let ativo = true;
+    void fetch("/api/payment/config", { credentials: "same-origin" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (ativo) setOffering(data?.professionalPremiumOffering === true);
+      })
+      .catch(() => {
+        if (ativo) setOffering(false);
+      });
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  if (offering !== true) {
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: "#F3E6C8", color: "#414141", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <div style={{ maxWidth: 520, backgroundColor: "#E8D5A3", border: "2px solid #8D6B1F", borderRadius: 15, padding: 32, textAlign: "center" }}>
+          <p style={{ margin: "0 0 16px", lineHeight: 1.5 }}>
+            {offering === null
+              ? "Carregando..."
+              : "O plano Premium não está aberto para novas assinaturas. O plano gratuito continua no painel."}
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push("/professional/dashboard")}
+            style={{
+              background: "linear-gradient(180deg, #8D6B1F 0%, #C89B3C 45%, #A87E2E 100%)",
+              color: "#000",
+              padding: "14px 40px",
+              border: "1px solid #6b5218",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: "bold",
+              fontSize: "16px",
+            }}
+          >
+            ← Voltar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{

@@ -15,9 +15,17 @@ import {
   parseBillingMode,
   parseBillingPeriod,
 } from '@/lib/billing';
+import { isProfessionalPremiumOfferingEnabled } from '@/lib/professional/premium-offering';
 
 export async function POST(req: NextRequest) {
   try {
+    if (!isProfessionalPremiumOfferingEnabled()) {
+      return NextResponse.json(
+        { error: 'O plano Premium profissional não está disponível para novas contratações.' },
+        { status: 403 },
+      );
+    }
+
     const { apiKey, apiUrl } = getAsaasConfig();
     if (!apiKey) {
       return NextResponse.json(

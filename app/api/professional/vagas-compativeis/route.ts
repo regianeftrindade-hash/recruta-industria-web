@@ -6,6 +6,7 @@ import { searchPublicJobs } from "@/lib/jobs/job-posting-db";
 import { jsonError } from "@/lib/jobs/job-api";
 import { requireCurrentProfessional } from "@/lib/professional/current-professional";
 import { getProfessionalPlanContext } from "@/lib/professional/professional-plan";
+import { VAGAS_COMPATIVEIS_ENABLED } from "@/lib/jobs/vagas-compativeis-flag";
 
 function textList(value: string | null | undefined): string[] {
   if (!value) return [];
@@ -30,6 +31,10 @@ export async function GET(request: NextRequest) {
   try {
     const auth = await requireCurrentProfessional(request);
     if (!auth.ok) return auth.response;
+
+    if (!VAGAS_COMPATIVEIS_ENABLED) {
+      return NextResponse.json({ jobs: [], total: 0, enabled: false });
+    }
 
     const plan = await getProfessionalPlanContext(auth.user.id);
     if (!plan.isPremium) {
