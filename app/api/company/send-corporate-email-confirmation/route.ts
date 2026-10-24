@@ -62,13 +62,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
-    const { token, cooldownActive } = await createCorporateEmailConfirmation(email);
+    const { token, cooldownActive, alreadyVerified } = await createCorporateEmailConfirmation(email);
+
+    if (alreadyVerified) {
+      return NextResponse.json({
+        success: true,
+        verified: true,
+        message: 'E-mail corporativo já confirmado.',
+        email,
+      });
+    }
 
     if (cooldownActive) {
-      return NextResponse.json(
-        { error: 'Aguarde um minuto antes de solicitar um novo e-mail de confirmação.' },
-        { status: 429 },
-      );
+      return NextResponse.json({
+        success: true,
+        alreadySent: true,
+        message: `Já enviamos um e-mail de confirmação para ${email}. Acesse o link para continuar o cadastro.`,
+        email,
+      });
     }
 
     const confirmUrl = `${getAppBaseUrl()}/api/company/confirm-corporate-email?token=${token}`;

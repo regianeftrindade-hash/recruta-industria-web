@@ -14,6 +14,7 @@ export default function CadastroSimplesEmpresaPage() {
   const router = useRouter();
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
+  const [emailCorporativo, setEmailCorporativo] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -57,6 +58,7 @@ export default function CadastroSimplesEmpresaPage() {
           userType: "company",
           name: nomeTrim,
           email: emailTrim,
+          emailCorporativo: emailCorporativo.trim(),
           password,
           confirmPassword,
         }),
@@ -135,16 +137,32 @@ export default function CadastroSimplesEmpresaPage() {
 
             <div className={loginStyles.fieldGroup}>
               <label className={loginStyles.fieldLabel} htmlFor="empresa-email">
-                E-mail
+                E-mail pessoal
               </label>
               <input
                 id="empresa-email"
                 className={loginStyles.input}
                 type="email"
                 autoComplete="email"
+                placeholder="seu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+              />
+            </div>
+
+            <div className={loginStyles.fieldGroup}>
+              <label className={loginStyles.fieldLabel} htmlFor="empresa-email-corporativo">
+                E-mail corporativo
+              </label>
+              <input
+                id="empresa-email-corporativo"
+                className={loginStyles.input}
+                type="email"
+                autoComplete="off"
+                placeholder="contato@suaempresa.com.br"
+                value={emailCorporativo}
+                onChange={(e) => setEmailCorporativo(e.target.value)}
               />
             </div>
 

@@ -13,6 +13,12 @@ import {
 import { hashPassword } from "@/lib/security.server";
 import { validatePasswordStrength } from "@/lib/password-strength";
 import { logAudit as logSecurityAudit } from "@/lib/security-audit";
+import {
+  corporateEmailError,
+  resolveCompanyRegistrationEmails,
+} from "@/lib/company/corporate-email";
+import { isCorporateEmailVerified } from "@/lib/company/corporate-email-confirmation";
+import { saveCompanyExtraData } from "@/lib/company-storage";
 
 /**
  * Cadastro simples: profissional (nome) ou empresa (razão social) + e-mail + senha.
@@ -76,6 +82,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "E-mail inválido." }, { status: 400 });
     }
 
+    const emailsEmpresa = isCompany
+      ? resolveCompanyRegistrationEmails({
+          loginEmail: email,
+          emailCorporativo:
+            typeof body.emailCorporativo === "string" ? body.emailCorporativo : "",
+        })
+      : null;
+
+    if (emailsEmpresa?.emailCorporativo) {
+      const emailCorporativoErro = corporateEmailError(emailsEmpresa.emailCorporativo);
+      if (emailCorporativoErro) {
+        incrementRegisterAttempts(ip);
+        return NextResponse.json({ error: emailCorporativoErro }, { status: 400 });
+      }
+    }
+
     if (!password || !confirmPassword) {
       incrementRegisterAttempts(ip);
       return NextResponse.json(
@@ -109,7 +131,9 @@ export async function POST(request: NextRequest) {
         {
           error: contaOAuth
             ? "Este e-mail já foi usado no login com Google. Entre com Google e complete o cadastro no painel."
-            : "Este e-mail já está cadastrado. Faça login ou recupere a senha.",
+            : isCompany
+              ? "Este e-mail pessoal já está cadastrado. Use outro e-mail de login ou entre com essa conta."
+              : "Este e-mail já está cadastrado. Faça login ou recupere a senha.",
           code: contaOAuth ? "OAUTH_ACCOUNT_EXISTS" : "EMAIL_ALREADY_REGISTERED",
         },
         { status: 409 },
@@ -135,6 +159,16 @@ export async function POST(request: NextRequest) {
           name: nome,
         },
       });
+
+      if (emailsEmpresa?.emailCorporativo) {
+        const emailCorporativoVerificado = await isCorporateEmailVerified(
+          emailsEmpresa.emailCorporativo,
+        );
+        await saveCompanyExtraData(user.id, {
+          emailCorporativo: emailsEmpresa.emailCorporativo,
+          emailCorporativoVerificado,
+        });
+      }
     }
 
     resetRegisterAttempts(ip);

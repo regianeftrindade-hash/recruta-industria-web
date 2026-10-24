@@ -37,6 +37,21 @@ export function normalizeCorporateEmail(email: string): string {
   return email.toLowerCase().trim();
 }
 
+/**
+ * O login pessoal é único. O e-mail corporativo pode ser o mesmo em várias empresas.
+ * Não copia o login para o corporativo quando o corporativo não foi informado.
+ */
+export function resolveCompanyRegistrationEmails(input: {
+  loginEmail: string;
+  emailCorporativo?: string | null;
+}): { loginEmail: string; emailCorporativo: string } {
+  const informado = String(input.emailCorporativo || '').trim();
+  return {
+    loginEmail: normalizeCorporateEmail(input.loginEmail || ''),
+    emailCorporativo: informado ? normalizeCorporateEmail(informado) : '',
+  };
+}
+
 export function getEmailDomain(email: string): string | null {
   const normalized = normalizeCorporateEmail(email);
   const at = normalized.lastIndexOf('@');

@@ -80,9 +80,14 @@ export async function isCorporateEmailVerified(email: string): Promise<boolean> 
 export async function createCorporateEmailConfirmation(email: string): Promise<{
   token: string;
   cooldownActive: boolean;
+  alreadyVerified: boolean;
 }> {
   await ensureCorporateEmailConfirmationTable();
   const normalized = normalizeCorporateEmail(email);
+
+  if (await isCorporateEmailVerified(normalized)) {
+    return { token: '', cooldownActive: false, alreadyVerified: true };
+  }
 
   const latestRows = await prisma.$queryRaw<Array<ConfirmationRow>>`
     SELECT id, email, token, verified, "verifiedAt", "expiresAt", "createdAt"
@@ -96,7 +101,7 @@ export async function createCorporateEmailConfirmation(email: string): Promise<{
   if (latest && !latest.verified) {
     const createdRecently = latest.createdAt.getTime() + RESEND_COOLDOWN_MS > Date.now();
     if (createdRecently) {
-      return { token: latest.token, cooldownActive: true };
+      return { token: latest.token, cooldownActive: true, alreadyVerified: false };
     }
   }
 
@@ -113,7 +118,7 @@ export async function createCorporateEmailConfirmation(email: string): Promise<{
     VALUES (${id}, ${normalized}, ${token}, false, ${new Date(Date.now() + CONFIRMATION_TTL_MS)}, NOW())
   `;
 
-  return { token, cooldownActive: false };
+  return { token, cooldownActive: false, alreadyVerified: false };
 }
 
 export async function confirmCorporateEmailByToken(token: string): Promise<{
@@ -150,7 +155,14 @@ export async function confirmCorporateEmailByToken(token: string): Promise<{
     `;
   }
 
-  return { ok: true, email: row.email };
+  const confirmedEmail = normalizeCorporateEmail(row.email);
+  await prisma.$executeRaw`
+    UPDATE "Company"
+    SET "emailCorporativoVerificado" = true, "updatedAt" = NOW()
+    WHERE lower(trim("emailCorporativo")) = ${confirmedEmail}
+  `;
+
+  return { ok: true, email: confirmedEmail };
 }
 
 export async function assertCorporateEmailVerified(email: string): Promise<string | null> {

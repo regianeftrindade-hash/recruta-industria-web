@@ -97,9 +97,6 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
 
     if (emailFromUrl) {
       setEmailCorporativo(emailFromUrl);
-      if (!usuarioLogado) {
-        setFormData((prev) => ({ ...prev, email: emailFromUrl }));
-      }
     }
 
     if (verificado && emailFromUrl) {
@@ -108,7 +105,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
       setEmailMensagem('E-mail corporativo confirmado com sucesso. Você pode continuar o cadastro.');
       setEmailErro('');
     }
-  }, [searchParams, usuarioLogado]);
+  }, [searchParams]);
 
   useEffect(() => {
     if (!emailEnviado || emailVerificado || !emailCorporativo.trim()) return;
@@ -304,10 +301,6 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
     setEmailEnviado(false);
     setEmailMensagem('');
     setEmailErro('');
-    if (!usuarioLogado) {
-      setFormData((prev) => ({ ...prev, email: valor }));
-      setIsTestBypass(matchesCompanyTestBypass({ email: valor }));
-    }
   };
 
   const handleEnviarConfirmacaoEmail = async () => {
@@ -331,6 +324,13 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
 
       if (!res.ok) {
         setEmailErro(data?.error || 'Não foi possível enviar o e-mail de confirmação.');
+        return;
+      }
+
+      if (data?.verified) {
+        setEmailVerificado(true);
+        setEmailEnviado(true);
+        setEmailMensagem(data?.message || 'E-mail corporativo já confirmado.');
         return;
       }
 
@@ -513,15 +513,26 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
 
     const cnpjLimpo = cnpjValue.replace(/\D/g, '');
     const cpfLimpo = cpfValue.replace(/\D/g, '');
+    const emailLoginFinal = (emailLogin || formData.email).trim();
+    const emailCorpFinal = emailCorporativo.trim();
     const bypass =
       isTestBypass
       || matchesCompanyTestBypass({
-        email: session?.user?.email || emailLogin || formData.email,
+        email: session?.user?.email || emailLoginFinal,
         userName: formData.responsavelNome || session?.user?.name,
         companyName: formData.nome,
       });
 
-    const emailCorpFinal = (usuarioLogado ? emailCorporativo : formData.email).trim();
+    if (!usuarioLogado) {
+      if (!emailLoginFinal) {
+        setErrorMessage('Informe o e-mail pessoal de login.');
+        return;
+      }
+      if (!emailCorpFinal) {
+        setErrorMessage('Informe o e-mail corporativo da empresa.');
+        return;
+      }
+    }
 
     setLoading(true);
     if (isEditMode) setSalvoNoBotao(false);
@@ -600,7 +611,8 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userType: 'company',
-          email: emailCorpFinal,
+          email: emailLoginFinal,
+          emailCorporativo: emailCorpFinal,
           password: formData.password,
           confirmPassword: formData.confirmPassword,
           name: formData.nome.trim(),
@@ -951,7 +963,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                         id="empresa-email"
                         type="email"
                         placeholder="contato@suaempresa.com.br"
-                        value={usuarioLogado ? emailCorporativo : (emailCorporativo || formData.email)}
+                        value={emailCorporativo}
                         onChange={(e) => atualizarEmailCorporativo(e.target.value)}
                         style={{
                           width: '100%',
@@ -1073,9 +1085,13 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                       id="empresa-email-login"
                       type="email"
                       className={styles.input}
-                      placeholder="acesso@suaempresa.com.br"
+                      placeholder="seu@email.com"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) => {
+                        const valor = e.target.value;
+                        setFormData({ ...formData, email: valor });
+                        setIsTestBypass(matchesCompanyTestBypass({ email: valor }));
+                      }}
                     />
                   )}
                 </div>

@@ -179,8 +179,8 @@ export async function POST(request: NextRequest) {
 
     if (emailCorporativo && !emailCorporativoVerificado) {
       try {
-        const { token, cooldownActive } = await createCorporateEmailConfirmation(emailCorporativo)
-        if (!cooldownActive) {
+        const { token, cooldownActive, alreadyVerified } = await createCorporateEmailConfirmation(emailCorporativo)
+        if (!alreadyVerified && !cooldownActive) {
           const confirmUrl = `${getAppBaseUrl()}/api/company/confirm-corporate-email?token=${token}`
           const subject = 'Confirme seu e-mail corporativo — Recruta Indústria'
           const text = `Confirme seu e-mail corporativo no Recruta Indústria: ${confirmUrl}`

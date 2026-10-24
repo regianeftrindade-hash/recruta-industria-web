@@ -22,7 +22,7 @@ import { logAudit as logSecurityAudit } from '@/lib/security-audit'
 import { buildProfileUpsertPayload } from '@/lib/professional-profile-map'
 import { saveProfileFormSnapshot } from '@/lib/profile-snapshot'
 import { saveCompanyExtraData, findCompanyByResponsavelCpf } from '@/lib/company-storage'
-import { corporateEmailError, normalizeCorporateEmail } from '@/lib/company/corporate-email'
+import { corporateEmailError, resolveCompanyRegistrationEmails } from '@/lib/company/corporate-email'
 import { isCorporateEmailVerified } from '@/lib/company/corporate-email-confirmation'
 
 async function completarPerfilProfissionalExistente(
@@ -104,6 +104,7 @@ export async function POST(request: NextRequest) {
       cartaoCnpjUrl,
       logoUrl,
       fotoResponsavelUrl,
+      emailCorporativo: emailCorporativoBody,
     } = body
 
     const nomeProfissional = String(name || (body as Record<string, unknown>).nome || '').trim()
@@ -213,7 +214,7 @@ export async function POST(request: NextRequest) {
         {
           error:
             userType === 'company'
-              ? 'Este e-mail já é login no site. Use outro (ex.: contato+teste@suaempresa.com.br) ou entre com essa conta e complete o cadastro.'
+              ? 'Este e-mail pessoal já é login no site. Use outro e-mail de login ou entre com essa conta.'
               : 'Email já cadastrado',
           code: 'EMAIL_ALREADY_REGISTERED',
         },
@@ -257,13 +258,18 @@ export async function POST(request: NextRequest) {
         incrementRegisterAttempts(ip)
         return NextResponse.json({ error: 'Telefone inválido. Informe DDD + número.' }, { status: 400 })
       }
-      const emailCorporativo = normalizeCorporateEmail(String(email || ''))
-      if (emailCorporativo) {
-        const emailValidationError = corporateEmailError(emailCorporativo)
-        if (emailValidationError) {
-          incrementRegisterAttempts(ip)
-          return NextResponse.json({ error: emailValidationError }, { status: 400 })
-        }
+      const emailsEmpresa = resolveCompanyRegistrationEmails({
+        loginEmail: normalizedEmail,
+        emailCorporativo: typeof emailCorporativoBody === 'string' ? emailCorporativoBody : '',
+      })
+      if (!emailsEmpresa.emailCorporativo) {
+        incrementRegisterAttempts(ip)
+        return NextResponse.json({ error: 'Informe o e-mail corporativo da empresa.' }, { status: 400 })
+      }
+      const emailValidationError = corporateEmailError(emailsEmpresa.emailCorporativo)
+      if (emailValidationError) {
+        incrementRegisterAttempts(ip)
+        return NextResponse.json({ error: emailValidationError }, { status: 400 })
       }
     }
 
@@ -290,7 +296,10 @@ export async function POST(request: NextRequest) {
           name: name || normalizedEmail.split('@')[0],
         },
       })
-      const emailCorporativo = normalizeCorporateEmail(String(email || ''))
+      const { emailCorporativo } = resolveCompanyRegistrationEmails({
+        loginEmail: normalizedEmail,
+        emailCorporativo: typeof emailCorporativoBody === 'string' ? emailCorporativoBody : '',
+      })
       const emailCorporativoVerificado = emailCorporativo
         ? await isCorporateEmailVerified(emailCorporativo)
         : false

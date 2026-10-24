@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   corporateEmailError,
   isCorporateEmail,
+  resolveCompanyRegistrationEmails,
 } from '@/lib/company/corporate-email';
 import {
   calcExtraSeatsAmountCentavos,
@@ -30,6 +31,26 @@ describe('e-mail corporativo', () => {
 
   it('libera Gmail na conta bypass paizaonacozinha', () => {
     expect(corporateEmailError('paizaonacozinha@gmail.com')).toBeNull();
+  });
+
+  it('repete o e-mail corporativo e mantém o login pessoal separado', () => {
+    const primeira = resolveCompanyRegistrationEmails({
+      loginEmail: 'Marina@gmail.com',
+      emailCorporativo: 'contato@metalurgica.com.br',
+    });
+    const segunda = resolveCompanyRegistrationEmails({
+      loginEmail: 'joao@gmail.com',
+      emailCorporativo: 'contato@metalurgica.com.br',
+    });
+
+    expect(primeira.loginEmail).toBe('marina@gmail.com');
+    expect(primeira.emailCorporativo).toBe('contato@metalurgica.com.br');
+    expect(segunda.emailCorporativo).toBe(primeira.emailCorporativo);
+    expect(segunda.loginEmail).not.toBe(primeira.loginEmail);
+    expect(corporateEmailError(primeira.emailCorporativo)).toBeNull();
+    expect(
+      resolveCompanyRegistrationEmails({ loginEmail: 'rh@empresa.com.br' }).emailCorporativo,
+    ).toBe('');
   });
 });
 
