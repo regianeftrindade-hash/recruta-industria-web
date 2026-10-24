@@ -789,35 +789,26 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
       <div className={styles.card} style={{ maxWidth: 1100 }}>
         {isEditMode ? (
           <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <div className={layout.topoPerfil}>
               <button type="button" className={styles.anexoBtn} onClick={voltarAoPainel}>
                 Voltar
               </button>
-              <DeleteAccountControl variant="compact" />
+              <div className={layout.topoPerfilAcoes}>
+                <span
+                  className={layout.statusConta}
+                  style={{ background: corStatus.background, color: corStatus.color }}
+                >
+                  {rotuloStatus}
+                </span>
+                <DeleteAccountControl variant="compact" />
+              </div>
             </div>
-            <div style={{ textAlign: 'center', marginBottom: 16 }}>
-              <span
-                style={{
-                  display: 'inline-block',
-                  padding: '6px 14px',
-                  borderRadius: 999,
-                  border: '2px solid #8D6B1F',
-                  background: corStatus.background,
-                  color: corStatus.color,
-                  fontSize: 13,
-                  fontWeight: 800,
-                  letterSpacing: '0.04em',
-                }}
-              >
-                {rotuloStatus}
-              </span>
-              {rotuloStatus === 'Reprovado' && motivoReprovacao.trim() ? (
-                <p style={{ margin: '8px 0 0', fontSize: 13, color: '#3d1a1a', lineHeight: 1.45 }}>
-                  <strong>Justificativa: </strong>
-                  {motivoReprovacao.trim()}
-                </p>
-              ) : null}
-            </div>
+            {rotuloStatus === 'Reprovado' && motivoReprovacao.trim() ? (
+              <p style={{ margin: '0 0 12px', fontSize: 13, color: '#3d1a1a', lineHeight: 1.45, textAlign: 'right' }}>
+                <strong>Justificativa: </strong>
+                {motivoReprovacao.trim()}
+              </p>
+            ) : null}
           </>
         ) : null}
         {incorporado ? null : (
@@ -1100,7 +1091,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
               ) : null}
             </div>
             <div inert={responsavelTravado ? true : undefined} className={responsavelTravado ? styles.cadastroTravado : undefined}>
-              <div className={styles.fieldsRow} style={twoCols}>
+              <div className={layout.linhaResponsavel}>
                 <div>
                   <label className={styles.label}>NOME DO RESPONSÁVEL</label>
                   <input

@@ -13,6 +13,41 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.linhaResponsavel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.topoPerfil {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.topoPerfilAcoes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.statusConta {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 2px solid #8d6b1f;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
 .linhaCheia {
   margin-bottom: 12px;
 }
@@ -55,7 +90,8 @@
 
 @media (max-width: 768px) {
   .linhaTripla,
-  .linhaDupla {
+  .linhaDupla,
+  .linhaResponsavel {
     grid-template-columns: 1fr;
   }
 }
