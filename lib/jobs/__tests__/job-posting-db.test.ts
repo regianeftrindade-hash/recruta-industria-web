@@ -188,6 +188,17 @@ describe.skipIf(!canRun)("gravação de vagas e candidaturas", () => {
     expect(stranger.applied).toBe(false);
     expect(stranger.canApply).toBe(true);
 
+    const ownList = await db.listOwnJobApplications(proEmail);
+    expect(ownList.map((item) => item.jobId).sort()).toEqual([confidential.id, openSalary.id].sort());
+    const hidden = ownList.find((item) => item.jobId === confidential.id);
+    const named = ownList.find((item) => item.jobId === openSalary.id);
+    expect(hidden?.companyLabel).toBe("Empresa confidencial");
+    expect(hidden?.title).toBe("Analista de Qualidade");
+    expect(JSON.stringify(hidden)).not.toContain("MetalurgicaSigilosaXYZ");
+    expect(named?.companyLabel).toBe("Indústria Teste Recruta");
+    expect(named?.stageLabel).toBe("Novo candidato");
+    await expect(db.listOwnJobApplications(companyEmail)).rejects.toMatchObject({ status: 403 });
+
     await expect(db.listJobApplicationsForCompany(confidential.id, companyUser.id)).rejects.toMatchObject({
       status: 403,
     });

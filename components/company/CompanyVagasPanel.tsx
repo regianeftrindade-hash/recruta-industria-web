@@ -963,12 +963,14 @@ export default function CompanyVagasPanel({
           {!loadingApplications && applications.length > 0 && visibleApplications.length === 0 ? (
             <p className={styles.empty}>Nenhum candidato com esse nome.</p>
           ) : null}
+          {visibleApplications.length > 0 ? (
+          <div className={styles.candidateList}>
           {visibleApplications.map((application) => {
             const stage = isStage(application.stage) ? application.stage : "NEW";
             return (
               <div key={application.id} className={styles.candidate}>
                 <FotoPerfilAvatar value={application.avatar} size={40} alt="" />
-                <div>
+                <div className={styles.candidateMain}>
                   {profilePath && application.profileId ? (
                     <button type="button" className={styles.name} onClick={() => openProfile(application)}>
                       {application.name || "Nome não informado"}
@@ -979,7 +981,7 @@ export default function CompanyVagasPanel({
                   <span className={styles.stage}>{applicationStageLabel(stage)}</span>
                 </div>
                 <div className={styles.candidateActions}>
-                  <label>
+                  <label className={styles.stageField}>
                     <span className={styles.stage}>Etapa</span>
                     <select
                       className={styles.stageSelect}
@@ -1005,6 +1007,8 @@ export default function CompanyVagasPanel({
               </div>
             );
           })}
+          </div>
+          ) : null}
         </div>
       ) : null}
     </section>

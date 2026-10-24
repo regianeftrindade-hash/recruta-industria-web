@@ -140,6 +140,24 @@ export type AdminJob = PublicJob & {
   closedAt: string | null;
 };
 
+/** Candidatura do próprio profissional. Não inclui o nome real de vaga confidencial. */
+export type OwnJobApplicationView = {
+  id: string;
+  jobId: string;
+  stage: string;
+  stageLabel: string;
+  appliedAt: string;
+  title: string;
+  companyLabel: string;
+  status: string;
+  statusLabel: string;
+  workplace: string | null;
+  contractLabel: string | null;
+  workModeLabel: string | null;
+  salaryLabel: string | null;
+  open: boolean;
+};
+
 export type JobWriteData = {
   companyName: string;
   confidential: boolean;

@@ -9,14 +9,21 @@ import {
   type JobStatus,
   type JobWriteData,
   type PublicJob,
+  type OwnJobApplicationView,
   JobPostingError,
+  applicationStageLabel,
   assertJobId,
   companyCanReadJobApplications,
+  contractLabel,
   isProfessionalAccount,
+  jobStatusLabel,
   parseApplicationStage,
   parseJobWrite,
+  publicCompanyLabel,
+  publicSalaryLabel,
   toAdminJob,
   toPublicJob,
+  workModeLabel,
 } from "@/lib/jobs/job-posting";
 import {
   assertServerDelivery,
@@ -526,6 +533,68 @@ export async function listJobApplicationsForCompany(
     throw new JobPostingError("Você não pode consultar as candidaturas desta vaga.", 403);
   }
   return listJobApplicationsForAdmin(id);
+}
+
+export async function listOwnJobApplications(email: string): Promise<OwnJobApplicationView[]> {
+  await ensureJobApplicationWhatsappColumn();
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      role: true,
+      professional: { select: { id: true } },
+      company: { select: { id: true } },
+    },
+  });
+  if (!user) {
+    throw new JobPostingError("Entre com uma conta de profissional para ver suas candidaturas.", 401);
+  }
+  if (!isProfessionalAccount({
+    role: user.role,
+    hasProfessional: Boolean(user.professional),
+    hasCompany: Boolean(user.company),
+  })) {
+    throw new JobPostingError("Acesso restrito a profissionais.", 403);
+  }
+
+  const rows = await prisma.jobApplication.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: "desc" },
+    include: {
+      job: {
+        select: {
+          id: true,
+          title: true,
+          companyName: true,
+          confidential: true,
+          status: true,
+          workplace: true,
+          contractType: true,
+          contractTypeOther: true,
+          workMode: true,
+          salaryCents: true,
+          salaryNegotiable: true,
+        },
+      },
+    },
+  });
+
+  return rows.map((row) => ({
+    id: row.id,
+    jobId: row.job.id,
+    stage: row.stage,
+    stageLabel: applicationStageLabel(row.stage),
+    appliedAt: row.createdAt.toISOString(),
+    title: row.job.title,
+    companyLabel: publicCompanyLabel(row.job),
+    status: row.job.status,
+    statusLabel: jobStatusLabel(row.job.status),
+    workplace: row.job.workplace?.trim() ? row.job.workplace.trim() : null,
+    contractLabel: contractLabel(row.job.contractType, row.job.contractTypeOther),
+    workModeLabel: workModeLabel(row.job.workMode),
+    salaryLabel: publicSalaryLabel(row.job),
+    open: row.job.status === "PUBLISHED",
+  }));
 }
 
 export type OwnApplicationState = {

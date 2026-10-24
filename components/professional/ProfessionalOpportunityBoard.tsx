@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { DASH, dashCard, dashInnerBox, dashSectionTitle } from "@/lib/dashboard-theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
+import type { OwnJobApplicationView } from "@/lib/jobs/job-posting";
 import {
   formatInterviewComprovante,
   isArquivada,
@@ -58,10 +59,56 @@ function trackingOf(p: JobProposalDTO) {
   );
 }
 
+function dataCandidatura(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+}
+
+function detalheCandidatura(item: OwnJobApplicationView): string {
+  const quando = dataCandidatura(item.appliedAt);
+  const partes = [
+    item.companyLabel,
+    item.workplace,
+    item.workModeLabel,
+    item.contractLabel,
+    item.salaryLabel,
+    item.stageLabel,
+    quando ? `Candidatura em ${quando}` : null,
+    item.open ? null : item.statusLabel,
+  ].filter(Boolean);
+  return partes.join(" · ");
+}
+
 export default function ProfessionalOpportunityBoard({ proposals, onChanged }: Props) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [abertaId, setAbertaId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
+  const [candidaturas, setCandidaturas] = useState<OwnJobApplicationView[]>([]);
+  const [candidaturasEstado, setCandidaturasEstado] = useState<"carregando" | "pronto" | "erro">("carregando");
+
+  useEffect(() => {
+    let ativo = true;
+    const carregar = async () => {
+      try {
+        const res = await fetch("/api/professional/candidaturas", { credentials: "include" });
+        const data = await res.json();
+        if (!ativo) return;
+        if (!res.ok || !Array.isArray(data.applications)) {
+          setCandidaturasEstado("erro");
+          return;
+        }
+        setCandidaturas(data.applications as OwnJobApplicationView[]);
+        setCandidaturasEstado("pronto");
+      } catch {
+        if (ativo) setCandidaturasEstado("erro");
+      }
+    };
+    void carregar();
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   const listas = useMemo(() => {
     const propostas = proposals.filter(isPropostaAtiva);
@@ -610,6 +657,38 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
       )}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={nestedCard}>
+          <h4 style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 600, color: DASH.muted }}>
+            Vagas candidatadas{candidaturasEstado === "pronto" ? ` (${candidaturas.length})` : ""}
+          </h4>
+          {candidaturasEstado === "carregando" ? (
+            <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Carregando candidaturas...</p>
+          ) : null}
+          {candidaturasEstado === "erro" ? (
+            <p style={{ margin: 0, fontSize: 12, color: "#e57373" }}>Não foi possível carregar as vagas candidatadas.</p>
+          ) : null}
+          {candidaturasEstado === "pronto" && candidaturas.length === 0 ? (
+            <div className="ri-dash-empty">
+              <strong>Nenhuma vaga candidatada</strong>
+              <span>Quando você se candidatar a uma vaga, ela aparece nesta lista.</span>
+            </div>
+          ) : null}
+          {candidaturasEstado === "pronto" && candidaturas.length > 0 ? (
+            <div className={css.listaCandidaturas}>
+              {candidaturas.map((item) => (
+                <article key={item.id} className={css.candidatura}>
+                  <a className={css.tagNome} href={`/vagas/${item.jobId}`}>
+                    {item.title}
+                  </a>
+                  <p className={css.candidaturaMeta} style={{ color: DASH.text }}>
+                    {detalheCandidatura(item)}
+                  </p>
+                </article>
+              ))}
+            </div>
+          ) : null}
+        </div>
+
         <div style={nestedCard}>
           <h4 style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 600, color: DASH.muted }}>
             Propostas recebidas ({listas.propostas.length})
