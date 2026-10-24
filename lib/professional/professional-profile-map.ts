@@ -1,4 +1,5 @@
 import type { Profile, User } from '@prisma/client';
+import { fotoPerfilParaSalvar } from '@/lib/professional/foto-perfil';
 import { calculateProfileCompletion } from '@/lib/profile-completion';
 import {
   parseCursosDetalhados,
@@ -345,7 +346,18 @@ export function mergeFormEditWithStored(
 }
 
 export function prepareFormSnapshot(body: Record<string, unknown>): string {
-  return JSON.stringify(body);
+  const next = { ...body };
+  const rawFoto = typeof next.fotoPerfil === "string" && next.fotoPerfil.trim()
+    ? next.fotoPerfil
+    : typeof next.avatar === "string"
+      ? next.avatar
+      : "";
+  if (rawFoto) {
+    const saved = fotoPerfilParaSalvar(rawFoto);
+    if (saved) next.fotoPerfil = saved;
+    else if (rawFoto.startsWith("data:") || rawFoto.startsWith("blob:")) delete next.fotoPerfil;
+  }
+  return JSON.stringify(next);
 }
 
 function parseQuantidadeFilhos(value: unknown): number | null {
@@ -584,8 +596,9 @@ export function buildProfileUpsertData(body: Record<string, unknown>, userEmail:
   const cargoDesejado =
     getStringValue(body.cargoDesejado) || cargoDerivado || getStringValue(body.profissao);
 
-  const cleanedAvatar =
-    getStringValue(body.fotoPerfil) || getStringValue(body.avatar) || null;
+  const cleanedAvatar = fotoPerfilParaSalvar(
+    getStringValue(body.fotoPerfil) || getStringValue(body.avatar),
+  );
 
   const cleanedPortfolio =
     getStringValue(body.curriculo) ||

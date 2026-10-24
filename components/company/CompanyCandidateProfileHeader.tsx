@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { avatarImageStyle } from "@/lib/theme";
+import { fotoPerfilSrc } from "@/lib/professional/foto-perfil";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import {
   DASH,
@@ -39,6 +40,7 @@ export default function CompanyCandidateProfileHeader({
   onUnlock,
   actionFeedback,
 }: Props) {
+  const avatarSrc = fotoPerfilSrc(resumo.avatar);
   return (
     <div
       style={{
@@ -48,9 +50,9 @@ export default function CompanyCandidateProfileHeader({
         minWidth: 0,
       }}
     >
-      {resumo.avatar ? (
+      {avatarSrc ? (
         <img
-          src={resumo.avatar}
+          src={avatarSrc}
           alt=""
           style={{
             ...avatarImageStyle(88),

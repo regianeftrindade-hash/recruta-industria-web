@@ -74,6 +74,7 @@ import { AuthAtmosphere } from '@/components/shared/AuthAtmosphere';
 import LogoRecruta from '@/app/components/LogoRecruta';
 import { reportProfessionalSignupConversion } from '@/lib/analytics/google-ads';
 import type { ResumeStructuredFields } from '@/lib/curriculum/types';
+import { caminhoFotoPerfil, fotoPerfilSrc } from '@/lib/professional/foto-perfil';
 
 const BACKUP_STORAGE_KEY = 'dadosFormularioBackup';
 const FORM_STORAGE_KEY = 'dadosFormularioCompleto';
@@ -201,18 +202,6 @@ function lerImagemComoDataUrl(file: File): Promise<string> {
   });
 }
 
-function isFotoPerfilPreviewable(value: string | null): boolean {
-  if (!value) return false;
-  const src = String(value);
-  return (
-    src.startsWith('data:image') ||
-    src.startsWith('/uploads') ||
-    src.startsWith('http://') ||
-    src.startsWith('https://') ||
-    src.startsWith('blob:')
-  );
-}
-
 function parseJsonSafe(res: Response): Promise<Record<string, unknown>> {
   return res.text().then((text) => {
     try {
@@ -260,7 +249,8 @@ function CampoFotoPerfil({
   avisoSalvar?: boolean;
 }) {
   const [erro, setErro] = useState('');
-  const temFoto = isFotoPerfilPreviewable(value);
+  const fotoSrc = fotoPerfilSrc(value);
+  const temFoto = Boolean(fotoSrc);
 
   const inputFoto = (
     <input
@@ -288,7 +278,7 @@ function CampoFotoPerfil({
       {temFoto && (
         <div className={styles.fotoComAnexo}>
           <img
-            src={String(value)}
+            src={fotoSrc}
             alt="Foto de perfil"
             className={styles.avatarPreview}
             decoding="async"
@@ -1896,14 +1886,30 @@ export default function CadastroProfissional({
               fd.append('type', 'avatars');
               const res = await fetch('/api/upload', { method: 'POST', body: fd, credentials: 'include' });
               const data = await res.json().catch(() => ({}));
-              if (!res.ok || !data.success || !data.file?.url) {
+              if (!res.ok || !data.success) {
                 throw new Error(typeof data.error === 'string' && data.error.trim()
                   ? data.error
                   : 'Não foi possível enviar a foto. A prévia ficou só nesta tela.');
               }
-              const url = String(data.file.url);
-              if (isFotoPerfilPreviewable(url)) {
-                setFormData((prev) => ({ ...prev, fotoPerfil: url }));
+              const path = caminhoFotoPerfil(String(data.file?.path || ''))
+                || caminhoFotoPerfil(String(data.file?.url || ''));
+              if (!path) {
+                throw new Error('A foto foi enviada, mas não foi possível gravá-la no perfil.');
+              }
+              setFormData((prev) => ({ ...prev, fotoPerfil: path }));
+              if (isEditMode) {
+                const saveRes = await fetch('/api/professional/profile', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({ apenasFoto: true, fotoPerfil: path }),
+                });
+                if (!saveRes.ok) {
+                  const err = await saveRes.json().catch(() => ({} as { error?: unknown }));
+                  throw new Error(typeof err.error === 'string' && err.error.trim()
+                    ? err.error
+                    : 'A foto foi enviada, mas não ficou salva no perfil.');
+                }
               }
             }}
           />

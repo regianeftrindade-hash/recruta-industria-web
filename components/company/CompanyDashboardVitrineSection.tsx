@@ -5,6 +5,7 @@ import React from "react";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 import { dedupeStrings } from "@/lib/company-profile-display";
 import { avatarImageStyle } from "@/lib/theme";
+import { fotoPerfilSrc } from "@/lib/professional/foto-perfil";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import {
   DASH,
@@ -160,6 +161,7 @@ function CardPerfil({
   const idiomas = dedupeStrings(p.idiomas || []);
   const isFull = variant === "full";
   const avatarSize = isFull ? 80 : 56;
+  const avatarSrc = fotoPerfilSrc(p.avatar);
   const btnCard = { ...btnGold, padding: "6px 10px", fontSize: 10 } as const;
 
   const stopCardClick = (event: React.MouseEvent) => {
@@ -333,9 +335,9 @@ function CardPerfil({
         alignItems: "flex-start",
         paddingTop: temBadgesTopo ? (isFull ? 36 : 30) : p.emDestaque ? 24 : 0,
       }}>
-        {p.avatar ? (
+        {avatarSrc ? (
           <img
-            src={p.avatar}
+            src={avatarSrc}
             alt=""
             style={{
               ...avatarImageStyle(avatarSize),

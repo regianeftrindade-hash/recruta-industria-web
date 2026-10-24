@@ -30,6 +30,7 @@ import ProfessionalRecruitmentHistory, {
 import PlatformVideoCall from "@/components/shared/PlatformVideoCall";
 import DeleteAccountControl from "@/components/shared/DeleteAccountControl";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
+import { caminhoFotoPerfil, fotoPerfilSrc } from "@/lib/professional/foto-perfil";
 
 const VAZIO = "—";
 /** Títulos de seção — quietos; ouro fica em h1, métricas e CTAs */
@@ -336,10 +337,36 @@ export default function DashboardProfissional() {
         return;
       }
       const uploadData = await uploadRes.json();
-      setProfileData((prev) => (prev ? { ...prev, avatar: uploadData.file.url } : prev));
+      const path = caminhoFotoPerfil(String(uploadData.file?.path || ""))
+        || caminhoFotoPerfil(String(uploadData.file?.url || ""));
+      if (!path) {
+        alert("A foto foi enviada, mas não foi possível gravá-la no perfil.");
+        return;
+      }
+      const saveRes = await fetch("/api/professional/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ apenasFoto: true, fotoPerfil: path }),
+      });
+      if (!saveRes.ok) {
+        const err = await saveRes.json().catch(() => ({} as { error?: unknown }));
+        alert(typeof err.error === "string" && err.error.trim()
+          ? err.error
+          : "A foto foi enviada, mas não ficou salva no perfil.");
+        return;
+      }
+      setProfileData((prev) => (prev ? { ...prev, avatar: path, fotoPerfil: path } : prev));
+      setFormEdit((prev) => {
+        const base = prev ?? profileData?.formEdit ?? null;
+        if (!base) return prev;
+        return { ...base, formData: { ...base.formData, fotoPerfil: path } };
+      });
       alert("Foto salva com sucesso!");
     } catch {
       alert("Erro ao fazer upload da foto. Tente novamente.");
+    } finally {
+      e.target.value = "";
     }
   };
 
@@ -388,6 +415,7 @@ export default function DashboardProfissional() {
   const edit = formEdit ?? profileData.formEdit ?? null;
   const fd = edit?.formData ?? {};
   const fotoPerfil = fd.fotoPerfil || profileData.fotoPerfil || profileData.avatar;
+  const fotoSrc = fotoPerfilSrc(typeof fotoPerfil === "string" ? fotoPerfil : "");
 
   const nomeExibicao = (() => {
     const n = fd.nome ?? profileData.nome;
@@ -630,8 +658,8 @@ export default function DashboardProfissional() {
             <>
               <section className="dash-card" style={{ ...dashCard, padding: "14px 14px 18px", overflow: "visible", boxShadow: DASH.shadow, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
                 <div onClick={handleFotoClick} style={{ cursor: "pointer", flexShrink: 0 }} title="Clique para alterar a foto">
-                  {fotoPerfil ? (
-                    <img src={String(fotoPerfil)} alt="Foto do profissional" style={avatarImageStyle(56)} decoding="async" />
+                  {fotoSrc ? (
+                    <img src={fotoSrc} alt="Foto do profissional" style={avatarImageStyle(56)} decoding="async" />
                   ) : (
                     <div style={{ width: 56, height: 56, borderRadius: "50%", background: DASH.input, border: `2px solid #8D6B1F`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>👤</div>
                   )}

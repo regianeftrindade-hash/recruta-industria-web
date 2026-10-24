@@ -16,6 +16,7 @@ import {
 } from '@/lib/profile-snapshot';
 import { isProfessionalRegistrationComplete } from '@/lib/professional-registration';
 import { getVideoApresentacaoPath } from '@/lib/professional/professional-video-db';
+import { caminhoFotoPerfil, patchFotoNoSnapshot } from '@/lib/professional/foto-perfil';
 import type { User, Prisma } from '@prisma/client';
 
 const userAuthSelect = {
@@ -273,6 +274,46 @@ export async function POST(request: NextRequest) {
         data: { name: body.nome.trim() },
       });
       user = { ...user, name: body.nome.trim() };
+    }
+
+    if (body.apenasFoto === true) {
+      const path = caminhoFotoPerfil(typeof body.fotoPerfil === "string" ? body.fotoPerfil : "");
+      if (!path) {
+        return NextResponse.json({ error: "Foto inválida" }, { status: 400 });
+      }
+
+      const existing = await prisma.profile.findUnique({
+        where: { userId: user.id },
+        select: { formDataJSON: true },
+      });
+
+      const profile = await prisma.profile.upsert({
+        where: { userId: user.id },
+        update: { avatar: path, updatedAt: new Date() },
+        create: {
+          userId: user.id,
+          title: "Profissional",
+          location: "Não informado",
+          email: user.email,
+          avatar: path,
+          isVisible: false,
+        },
+      });
+
+      const previous = existing?.formDataJSON?.trim()
+        ? existing.formDataJSON
+        : await getProfileFormSnapshot(user.id);
+      await saveProfileFormSnapshot(user.id, patchFotoNoSnapshot(previous, path));
+      const savedSnapshot = await getProfileFormSnapshot(user.id);
+      const mappedUser = toUser(user);
+      const savedProfile = { ...profile, avatar: path, formDataJSON: savedSnapshot };
+
+      return NextResponse.json({
+        success: true,
+        message: "Foto salva",
+        profile: mapProfileToDashboard(savedProfile, mappedUser),
+        formEdit: mapProfileToFormEdit(savedProfile, mappedUser, savedSnapshot),
+      });
     }
 
     const { prismaData: profileData, formDataJSON } = buildProfileUpsertPayload(
