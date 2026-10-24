@@ -161,6 +161,12 @@
   padding: 8px 12px 14px;
 }
 
+/* Nome, foto e termômetro ficam fora do painel das abas.
+   O afastamento soma o respiro do painel (8px 12px) com o das outras abas (16px 24px). */
+.ri-company-dash-grid > .ri-company-profile-card {
+  margin: 24px 36px 0;
+}
+
 .ri-company-dash [data-company-main] h2 {
   font-size: 15px;
   font-weight: 700;

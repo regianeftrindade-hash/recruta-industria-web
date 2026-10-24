@@ -56,7 +56,10 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
   if (compact) {
     const pct = companyProfile ? completude : 0;
     return (
-      <section style={{ ...dashCard, padding: 14, display: "flex", gap: 12, alignItems: "center" }}>
+      <section
+        className="ri-company-profile-card"
+        style={{ ...dashCard, padding: 14, display: "flex", gap: 12, alignItems: "center" }}
+      >
         <div
           style={{
             width: 56,
