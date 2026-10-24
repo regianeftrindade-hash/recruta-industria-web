@@ -7,11 +7,11 @@ test.describe("smoke público", () => {
     await expect(page.locator("body")).toBeVisible();
   });
 
-  test("home: Cadastre-se abre o cadastro do profissional e da empresa", async ({ page }) => {
+  test("home: Cadastre-se abre o cadastro completo do profissional e o da empresa", async ({ page }) => {
     await page.goto("/");
-    await page.locator('a[href="/professional/cadastro"]').click();
-    await expect(page).toHaveURL(/\/professional\/cadastro/);
-    await expect(page.getByText(/cadastro profissional/i).first()).toBeVisible();
+    await page.locator('a[href="/professional/register"]').click();
+    await expect(page).toHaveURL(/\/professional\/register/);
+    await expect(page.getByRole("heading", { name: /complete seu perfil/i })).toBeVisible();
 
     await page.goto("/");
     await page.locator('a[href="/company/cadastro"]').click();
@@ -25,8 +25,8 @@ test.describe("smoke público", () => {
 
     await page.goto("/login");
     await page.getByRole("button", { name: /fazer cadastro/i }).click();
-    await expect(page).toHaveURL(/\/professional\/cadastro/);
-    await expect(page.getByText(/cadastro profissional/i).first()).toBeVisible();
+    await expect(page).toHaveURL(/\/professional\/register/);
+    await expect(page.getByRole("heading", { name: /complete seu perfil/i })).toBeVisible();
 
     await page.goto("/login?tipo=empresa");
     await page.getByRole("button", { name: /fazer cadastro/i }).click();
@@ -42,20 +42,12 @@ test.describe("smoke público", () => {
     await expect(page.getByText(/acesso empresa|empresa/i).first()).toBeVisible();
   });
 
-  test("cadastro profissional mostra o formulário e recusa senhas diferentes", async ({ page }) => {
+  test("cadastro profissional abre o formulário completo", async ({ page }) => {
     await page.goto("/professional/cadastro");
-    await expect(page.getByText(/cadastro profissional/i).first()).toBeVisible();
+    await expect(page).toHaveURL(/\/professional\/register/);
+    await expect(page.getByRole("heading", { name: /complete seu perfil/i })).toBeVisible();
     await expect(page.getByLabel(/nome completo/i)).toBeVisible();
-    await expect(page.getByLabel(/^e-mail$/i)).toBeVisible();
-    await expect(page.getByRole("button", { name: /criar conta/i })).toBeVisible();
-
-    await page.getByLabel(/nome completo/i).fill("Ana Teste");
-    await page.getByLabel(/^e-mail$/i).fill("e2e-smoke-profissional@example.invalid");
-    await page.getByLabel(/^criar senha$/i).fill("SenhaForte!2026");
-    await page.getByLabel(/^confirmar senha$/i).fill("OutraSenha!2026");
-    await page.getByRole("button", { name: /criar conta/i }).click();
-    await expect(page.getByText(/senhas não conferem/i)).toBeVisible();
-    await expect(page).toHaveURL(/\/professional\/cadastro/);
+    await expect(page.getByText(/cadastro em 4 etapas/i)).toBeVisible();
   });
 
   test("cadastro empresa mostra o formulário e recusa senhas diferentes", async ({ page }) => {

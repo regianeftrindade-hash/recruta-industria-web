@@ -981,9 +981,6 @@ export default function CadastroProfissional({
     if (sessionStatus === 'unauthenticated') {
       setCheckingRegistration(false);
       setContaJaCompleta(false);
-      if (!safeJobReturnPath(searchParams.get('redirect'))) {
-        router.replace('/professional/cadastro');
-      }
       return;
     }
 
@@ -1793,7 +1790,7 @@ export default function CadastroProfissional({
               type="button"
               className={styles.secondaryLinkBtn}
               onClick={() => {
-                void signOut({ callbackUrl: '/professional/cadastro' });
+                void signOut({ callbackUrl: '/professional/register' });
               }}
             >
               Sair e criar outro cadastro

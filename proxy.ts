@@ -18,6 +18,12 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  if (pathname === '/professional/cadastro') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/professional/register';
+    return NextResponse.redirect(url);
+  }
+
   if (
     pathname === '/login'
     && request.nextUrl.searchParams.get('tipo') === 'profissional'

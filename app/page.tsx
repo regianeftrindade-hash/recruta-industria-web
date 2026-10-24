@@ -177,7 +177,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <HomeAccessForm role="professional" registerHref="/professional/cadastro" />
+            <HomeAccessForm role="professional" registerHref="/professional/register" />
           </article>
         </section>
 

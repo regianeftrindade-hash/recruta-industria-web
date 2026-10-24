@@ -200,8 +200,8 @@ function LoginContent() {
     }
     const jobReturn = safeJobReturnPath(redirectTo);
     router.push(jobReturn
-      ? `/professional/cadastro?redirect=${encodeURIComponent(jobReturn)}`
-      : '/professional/cadastro');
+      ? `/professional/register?redirect=${encodeURIComponent(jobReturn)}`
+      : '/professional/register');
   };
 
   return (
