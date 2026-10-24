@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { DASH, dashCard, dashSectionTitle } from "@/lib/dashboard-theme";
-import { btnGoldStyle as btnGold } from "@/lib/button-3d";
+import { botaoPerfil, COR_PRETO, textoAviso, textoDourado, textoPreto } from "@/lib/ui/perfil-empresa-cores";
 import type { JobProposalDTO, InterviewLocationType } from "@/lib/company/job-proposals-shared";
 import { formatInterviewComprovante } from "@/lib/company/job-proposals-shared";
 import { formatReaisDisplay } from "@/lib/format-reais";
@@ -133,16 +133,16 @@ export default function PropostasEntrevistasEmpresa({
     cursor: "pointer",
     whiteSpace: "nowrap",
     flexShrink: 0,
-    border: `1px solid ${active ? DASH.gold : DASH.border}`,
-    background: active ? "rgba(200,155,60,0.22)" : "transparent",
-    color: active ? DASH.gold : DASH.muted,
+    border: "2px solid #000",
+    background: "transparent",
+    ...(active ? textoDourado : textoPreto),
     fontFamily: "inherit",
   });
 
   const btnGhost: React.CSSProperties = {
     background: "transparent",
-    border: `1px solid ${DASH.border}`,
-    color: DASH.text,
+    border: "2px solid #000",
+    color: COR_PRETO,
     borderRadius: 8,
     padding: "5px 8px",
     fontSize: 10,
@@ -274,6 +274,7 @@ export default function PropostasEntrevistasEmpresa({
   const botaoExcluir = (id: string) => (
     <button
       type="button"
+      className="ri-tinta-aviso"
       disabled={busyId === id || saving}
       onClick={() => void excluir(id)}
       style={{
@@ -281,8 +282,8 @@ export default function PropostasEntrevistasEmpresa({
         marginTop: 8,
         padding: "6px 10px",
         fontSize: 11,
-        color: "#e57373",
-        borderColor: "rgba(229,115,115,0.55)",
+        ...textoAviso,
+        borderColor: "#000",
       }}
     >
       Excluir
@@ -290,7 +291,7 @@ export default function PropostasEntrevistasEmpresa({
   );
 
   const cardBase: React.CSSProperties = {
-    border: `2px solid #8D6B1F`,
+    border: "2px solid #000",
     borderRadius: 10,
     padding: 12,
     background: DASH.inner,
@@ -302,10 +303,10 @@ export default function PropostasEntrevistasEmpresa({
   if (!canSend && proposals.length === 0) {
     return (
       <section className="dash-card" style={{ ...dashCard, padding: 18, minWidth: 0, maxWidth: "100%", boxSizing: "border-box" }}>
-        <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 12px", fontSize: 16 }}>
+        <h3 style={{ ...dashSectionTitle, ...textoDourado, margin: "0 0 12px", fontSize: 16 }}>
           Propostas e entrevistas
         </h3>
-        <p style={{ margin: "0 0 12px", fontSize: 13, color: DASH.text, lineHeight: 1.5 }}>
+        <p style={{ margin: "0 0 12px", fontSize: 13, color: COR_PRETO, lineHeight: 1.5 }}>
           Para enviar propostas a este profissional, é preciso plano pago (Basic ou superior) e
           verificação da empresa (e-mail corporativo + cartão CNPJ).
         </p>
@@ -313,7 +314,7 @@ export default function PropostasEntrevistasEmpresa({
           <a
             href="/company/pagamento?plan=BASIC"
             style={{
-              ...btnGold,
+              ...botaoPerfil,
               display: "inline-block",
               padding: "8px 14px",
               fontSize: 12,
@@ -328,9 +329,8 @@ export default function PropostasEntrevistasEmpresa({
               display: "inline-block",
               padding: "8px 14px",
               fontSize: 12,
-              fontWeight: 700,
-              color: DASH.gold,
-              border: `2px solid #8D6B1F`,
+              ...textoDourado,
+              border: "2px solid #000",
               borderRadius: 8,
               textDecoration: "none",
             }}
@@ -344,7 +344,7 @@ export default function PropostasEntrevistasEmpresa({
 
   return (
     <section className="dash-card" style={{ ...dashCard, padding: 18, minWidth: 0, maxWidth: "100%", boxSizing: "border-box" }}>
-      <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 12px", fontSize: 16 }}>
+      <h3 style={{ ...dashSectionTitle, ...textoDourado, margin: "0 0 12px", fontSize: 16 }}>
         Propostas e entrevistas
       </h3>
 
@@ -355,7 +355,7 @@ export default function PropostasEntrevistasEmpresa({
             margin: "0 0 12px",
             fontSize: 12,
             lineHeight: 1.45,
-            color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+            ...(feedback.tone === "ok" ? textoDourado : textoAviso),
           }}
         >
           {feedback.text}
@@ -365,17 +365,17 @@ export default function PropostasEntrevistasEmpresa({
       {canSend && <CompanyEnviarPropostaForm profileId={profileId} onChanged={onChanged} />}
 
       {proposals.length === 0 ? (
-        <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
+        <p style={{ margin: 0, fontSize: 12, color: COR_PRETO }}>
           Nenhuma proposta enviada ainda para este profissional.
         </p>
       ) : (
         <div style={{ display: "grid", gap: 16 }}>
           <div>
-            <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 800, color: DASH.gold }}>
+            <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 800, ...textoDourado }}>
               Propostas ativas ({listas.propostas.length})
             </h4>
             {listas.propostas.length === 0 ? (
-              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Nenhuma proposta ativa.</p>
+              <p style={{ margin: 0, fontSize: 12, color: COR_PRETO }}>Nenhuma proposta ativa.</p>
             ) : (
               <div style={{ display: "grid", gap: 12 }}>
                 {listas.propostas.map((p) => (
@@ -398,11 +398,11 @@ export default function PropostasEntrevistasEmpresa({
           </div>
 
           <div>
-            <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 800, color: DASH.gold }}>
+            <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 800, ...textoDourado }}>
               Entrevistas agendadas ({listas.entrevistas.length})
             </h4>
             {listas.entrevistas.length === 0 ? (
-              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
+              <p style={{ margin: 0, fontSize: 12, color: COR_PRETO }}>
                 Nenhuma entrevista agendada. Após o interesse do profissional, use Agendar entrevista na proposta.
               </p>
             ) : (
@@ -419,18 +419,18 @@ export default function PropostasEntrevistasEmpresa({
                   });
                   return (
                     <div key={p.id} style={cardBase}>
-                      <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: DASH.text }}>
+                      <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: COR_PRETO }}>
                         {p.cargo} · {formatReaisDisplay(p.salario)}
                       </p>
-                      <p style={{ margin: "0 0 2px", fontSize: 11, color: DASH.gold, fontWeight: 700 }}>
+                      <p style={{ margin: "0 0 2px", fontSize: 11, ...textoDourado, fontWeight: 700 }}>
                         {STATUS_LABEL[p.status] || p.status}
                       </p>
-                      <p style={{ margin: "0 0 2px", fontSize: 11, color: DASH.muted }}>
+                      <p style={{ margin: "0 0 2px", fontSize: 11, color: COR_PRETO }}>
                         {comprovante.dataLabel} · {comprovante.horaLabel}
                       </p>
-                      <p style={{ margin: "0 0 4px", fontSize: 11, color: DASH.text }}>{comprovante.localLabel}</p>
+                      <p style={{ margin: "0 0 4px", fontSize: 11, color: COR_PRETO }}>{comprovante.localLabel}</p>
                       {p.interview.observacoes?.trim() ? (
-                        <p style={{ margin: "0 0 4px", fontSize: 12, color: DASH.text, whiteSpace: "pre-wrap" }}>
+                        <p style={{ margin: "0 0 4px", fontSize: 12, color: COR_PRETO, whiteSpace: "pre-wrap" }}>
                           <strong>Observação:</strong> {p.interview.observacoes.trim()}
                         </p>
                       ) : null}
@@ -444,11 +444,11 @@ export default function PropostasEntrevistasEmpresa({
           </div>
 
           <div>
-            <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 800, color: DASH.gold }}>
+            <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 800, ...textoDourado }}>
               Arquivadas ({listas.arquivadas.length})
             </h4>
             {listas.arquivadas.length === 0 ? (
-              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Nenhum item arquivado.</p>
+              <p style={{ margin: 0, fontSize: 12, color: COR_PRETO }}>Nenhum item arquivado.</p>
             ) : (
               <div style={{ display: "grid", gap: 10 }}>
                 {listas.arquivadas.map((p) => {
@@ -466,10 +466,10 @@ export default function PropostasEntrevistasEmpresa({
                             : "Arquivada";
                   return (
                     <div key={p.id} style={cardBase}>
-                      <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: DASH.text }}>
+                      <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: COR_PRETO }}>
                         {p.cargo} · {formatReaisDisplay(p.salario)}
                       </p>
-                      <p style={{ margin: "0 0 8px", fontSize: 11, color: DASH.gold }}>{motivo}</p>
+                      <p style={{ margin: "0 0 8px", fontSize: 11, ...textoDourado }}>{motivo}</p>
                       {botaoExcluir(p.id)}
                     </div>
                   );

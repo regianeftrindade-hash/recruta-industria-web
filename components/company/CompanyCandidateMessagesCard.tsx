@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { btnGoldStyle as btnGold } from "@/lib/button-3d";
+import { botaoPerfil, textoAviso, textoDourado, textoPreto } from "@/lib/ui/perfil-empresa-cores";
 import { DASH, dashCard, dashInput } from "@/lib/dashboard-theme";
 import { goldTitle } from "@/components/company/candidate-profile-bits";
 import { AVISO_RETENCAO_INBOX } from "@/lib/profile/inbox-retention";
@@ -91,16 +91,16 @@ export default function CompanyCandidateMessagesCard({
   return (
     <section id="empresa-mensagens-candidato" style={{ ...dashCard, padding: 18 }}>
       <h3 style={{ ...goldTitle, margin: "0 0 12px", fontSize: 16 }}>✉️ Mensagem para o candidato</h3>
-      <p style={{ fontSize: 11, color: DASH.muted, margin: "0 0 10px", lineHeight: 1.45 }}>
+      <p style={{ fontSize: 11, color: "#000", margin: "0 0 10px", lineHeight: 1.45 }}>
         {AVISO_RETENCAO_INBOX}
       </p>
       {bloqueado ? (
-        <p style={{ fontSize: 13, color: DASH.muted, margin: 0 }}>
+        <p style={{ fontSize: 13, color: "#000", margin: 0 }}>
           Libere o contato para enviar mensagem direta ao profissional.
         </p>
       ) : (
         <>
-          <p style={{ fontSize: 12, color: DASH.muted, margin: "0 0 10px", lineHeight: 1.45 }}>
+          <p style={{ fontSize: 12, color: "#000", margin: "0 0 10px", lineHeight: 1.45 }}>
             A mensagem aparece na caixa de entrada do candidato. Ele pode ler e responder por lá.
           </p>
 
@@ -132,17 +132,18 @@ export default function CompanyCandidateMessagesCard({
                       gap: 8,
                       padding: "8px 10px",
                       borderRadius: 10,
-                      border: `2px solid #8D6B1F`,
-                      background: isProf ? "rgba(200,155,60,0.12)" : DASH.inner,
+                      border: "2px solid #000",
+                      background: DASH.inner,
                     }}
                   >
                     <button
                       type="button"
+                      className="ri-tinta-aviso"
                       onClick={() => void handleExcluirMensagem(m.id)}
                       style={{
                         background: "transparent",
                         border: "1px solid rgba(229,115,115,0.55)",
-                        color: "#e57373",
+                        ...textoAviso,
                         borderRadius: 8,
                         padding: "4px 8px",
                         fontSize: 10,
@@ -161,7 +162,7 @@ export default function CompanyCandidateMessagesCard({
                           margin: 0,
                           fontSize: 10,
                           fontWeight: 700,
-                          color: isProf ? DASH.gold : DASH.muted,
+                          ...(isProf ? textoDourado : textoPreto),
                           whiteSpace: "nowrap",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
@@ -174,7 +175,7 @@ export default function CompanyCandidateMessagesCard({
                           margin: "3px 0 0",
                           fontSize: 12,
                           lineHeight: 1.4,
-                          color: DASH.text,
+                          color: "#000",
                           whiteSpace: "nowrap",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
@@ -189,7 +190,7 @@ export default function CompanyCandidateMessagesCard({
                         flexShrink: 0,
                         fontSize: 10,
                         fontWeight: 700,
-                        color: isProf ? DASH.gold : DASH.muted,
+                        ...(isProf ? textoDourado : textoPreto),
                         whiteSpace: "nowrap",
                       }}
                     >
@@ -228,7 +229,7 @@ export default function CompanyCandidateMessagesCard({
                 margin: "8px 0 0",
                 fontSize: 12,
                 fontWeight: 700,
-                color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+                ...(feedback.tone === "ok" ? textoDourado : textoAviso),
                 lineHeight: 1.45,
               }}
             >
@@ -240,7 +241,7 @@ export default function CompanyCandidateMessagesCard({
             onClick={() => void handleSendMessage()}
             disabled={enviandoMensagem || !mensagemTexto.trim()}
             style={{
-              ...btnGold,
+              ...botaoPerfil,
               width: "100%",
               marginTop: 8,
               padding: 10,

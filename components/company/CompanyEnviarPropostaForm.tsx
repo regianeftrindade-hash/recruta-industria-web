@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { DASH, dashInput, dashLabel } from "@/lib/dashboard-theme";
-import { btnGoldStyle as btnGold } from "@/lib/button-3d";
+import { dashInput } from "@/lib/dashboard-theme";
+import { botaoPerfil, textoAviso, textoDourado } from "@/lib/ui/perfil-empresa-cores";
 import { maskReaisInput, TURNOS_PROPOSTA, formatReaisDisplay } from "@/lib/format-reais";
 
 type Props = {
@@ -13,7 +13,8 @@ type Props = {
 function inputStyle(hasError: boolean): React.CSSProperties {
   return {
     ...dashInput,
-    border: hasError ? "1px solid #e57373" : dashInput.border,
+    border: "2px solid #000",
+    color: "#000",
   };
 }
 
@@ -86,7 +87,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
 
   const fieldHint = (key: string) =>
     fieldErrors[key] ? (
-      <p style={{ margin: "4px 0 0", fontSize: 11, color: "#e57373" }}>{fieldErrors[key]}</p>
+      <p style={{ margin: "4px 0 0", fontSize: 11, ...textoAviso }}>{fieldErrors[key]}</p>
     ) : null;
 
   return (
@@ -98,19 +99,19 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
           setError(null);
           setSuccess(null);
         }}
-        style={{ ...btnGold, width: "100%", padding: "10px 14px", fontSize: 13, marginBottom: 12 }}
+        style={{ ...botaoPerfil, width: "100%", padding: "10px 14px", fontSize: 13, marginBottom: 12 }}
       >
         {showForm ? "Fechar formulário" : "Enviar Proposta"}
       </button>
 
       {success && (
-        <p style={{ margin: "0 0 12px", fontSize: 12, color: "#8bc34a", lineHeight: 1.45 }}>{success}</p>
+        <p style={{ margin: "0 0 12px", fontSize: 12, ...textoDourado, lineHeight: 1.45 }}>{success}</p>
       )}
 
       {showForm && (
         <div style={{ display: "grid", gap: 10, marginBottom: 14 }}>
           <div>
-            <p style={dashLabel}>Cargo</p>
+            <p style={{ ...textoDourado, fontSize: 11, textTransform: "uppercase", margin: "0 0 4px" }}>Cargo</p>
             <input
               value={form.cargo}
               placeholder="Inspetor de Qualidade"
@@ -123,7 +124,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             {fieldHint("cargo")}
           </div>
           <div>
-            <p style={dashLabel}>Salário (R$)</p>
+            <p style={{ ...textoDourado, fontSize: 11, textTransform: "uppercase", margin: "0 0 4px" }}>Salário (R$)</p>
             <input
               value={form.salario}
               placeholder="R$ 4.200"
@@ -137,7 +138,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             {fieldHint("salario")}
           </div>
           <div>
-            <p style={dashLabel}>Turno</p>
+            <p style={{ ...textoDourado, fontSize: 11, textTransform: "uppercase", margin: "0 0 4px" }}>Turno</p>
             <select
               value={form.turno}
               onChange={(e) => {
@@ -156,7 +157,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             {fieldHint("turno")}
           </div>
           <div>
-            <p style={dashLabel}>Cidade</p>
+            <p style={{ ...textoDourado, fontSize: 11, textTransform: "uppercase", margin: "0 0 4px" }}>Cidade</p>
             <input
               value={form.cidade}
               placeholder="Campinas/SP"
@@ -169,7 +170,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             {fieldHint("cidade")}
           </div>
           <div>
-            <p style={dashLabel}>Benefícios</p>
+            <p style={{ ...textoDourado, fontSize: 11, textTransform: "uppercase", margin: "0 0 4px" }}>Benefícios</p>
             <textarea
               value={form.beneficios}
               placeholder={"Convênio médico\nVA R$ 500\nPLR"}
@@ -179,7 +180,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             />
           </div>
           <div>
-            <p style={dashLabel}>Mensagem</p>
+            <p style={{ ...textoDourado, fontSize: 11, textTransform: "uppercase", margin: "0 0 4px" }}>Mensagem</p>
             <textarea
               value={form.mensagem}
               rows={3}
@@ -192,13 +193,13 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             {fieldHint("mensagem")}
           </div>
           {error && (
-            <p style={{ margin: 0, fontSize: 12, color: "#e57373", lineHeight: 1.45 }}>{error}</p>
+            <p style={{ margin: 0, fontSize: 12, ...textoAviso, lineHeight: 1.45 }}>{error}</p>
           )}
           <button
             type="button"
             disabled={saving}
             onClick={() => void enviarProposta()}
-            style={{ ...btnGold, padding: "10px", fontSize: 13, opacity: saving ? 0.7 : 1 }}
+            style={{ ...botaoPerfil, padding: "10px", fontSize: 13, opacity: saving ? 0.7 : 1 }}
           >
             {saving ? "Enviando..." : "Enviar proposta"}
           </button>
@@ -206,7 +207,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
       )}
 
       {!showForm && error && (
-        <p style={{ margin: "0 0 12px", fontSize: 12, color: "#e57373", lineHeight: 1.45 }}>{error}</p>
+        <p style={{ margin: "0 0 12px", fontSize: 12, ...textoAviso, lineHeight: 1.45 }}>{error}</p>
       )}
     </>
   );

@@ -1,0 +1,126 @@
+/* Perfil do profissional visto pela empresa.
+   O tema do dashboard força dourado claro e cinza nos títulos com !important.
+   Aqui a hierarquia fica nas quatro tintas: preto, preto negrito, dourado escuro e vermelho. */
+
+.ri-dashboard .ri-perfil-empresa {
+  color: #000;
+}
+
+.ri-dashboard .ri-perfil-empresa h1,
+.ri-dashboard .ri-perfil-empresa h2,
+.ri-dashboard .ri-perfil-empresa h3,
+.ri-dashboard .ri-perfil-empresa h4,
+.ri-dashboard .ri-perfil-empresa h5,
+.ri-dashboard .ri-perfil-empresa h6 {
+  color: #5c3d07 !important;
+  -webkit-text-stroke: 0 !important;
+  paint-order: stroke fill;
+  font-weight: 800 !important;
+  text-shadow:
+    0 0 1px #000,
+    1px 0 0 #000,
+    -1px 0 0 #000,
+    0 1px 0 #000,
+    0 -1px 0 #000,
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000 !important;
+}
+
+/* Dourado do tema (var(--dash-gold)) some no creme. O rótulo sobre o vídeo preto fica de fora. */
+.ri-dashboard .ri-perfil-empresa [style*="--dash-gold"]:not([style*="rgba(0,0,0"]) {
+  color: #5c3d07 !important;
+  text-shadow:
+    0 0 1px #000,
+    1px 0 0 #000,
+    -1px 0 0 #000,
+    0 1px 0 #000,
+    0 -1px 0 #000,
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000 !important;
+}
+
+.ri-dashboard .ri-perfil-empresa [style*="8D6B1F"] {
+  border-color: #000 !important;
+}
+
+.ri-dashboard .ri-perfil-empresa button:not([aria-pressed]) {
+  background: transparent !important;
+  background-image: none !important;
+  border: 2px solid #000 !important;
+  box-shadow: none !important;
+  color: #000 !important;
+  text-shadow: none !important;
+}
+
+.ri-dashboard .ri-perfil-empresa button.ri-tinta-aviso {
+  color: #c40000 !important;
+  border-color: #000 !important;
+  text-shadow:
+    0 0 1px #000,
+    1px 0 0 #000,
+    -1px 0 0 #000,
+    0 1px 0 #000,
+    0 -1px 0 #000,
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000 !important;
+}
+
+.ri-dashboard .ri-perfil-empresa button:not([aria-pressed])[style*="5C3D07"],
+.ri-dashboard .ri-perfil-empresa button:not([aria-pressed])[style*="5c3d07"] {
+  color: #5c3d07 !important;
+  text-shadow:
+    0 0 1px #000,
+    1px 0 0 #000,
+    -1px 0 0 #000,
+    0 1px 0 #000,
+    0 -1px 0 #000,
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000 !important;
+}
+
+.ri-dashboard .ri-perfil-empresa button[style*="f87171"],
+.ri-dashboard .ri-perfil-empresa button[style*="e57373"],
+.ri-dashboard .ri-perfil-empresa button[style*="C40000"],
+.ri-dashboard .ri-perfil-empresa button[style*="c40000"],
+.ri-dashboard .ri-perfil-empresa [style*="f87171"],
+.ri-dashboard .ri-perfil-empresa [style*="e57373"] {
+  color: #c40000 !important;
+  border-color: #000 !important;
+  text-shadow:
+    0 0 1px #000,
+    1px 0 0 #000,
+    -1px 0 0 #000,
+    0 1px 0 #000,
+    0 -1px 0 #000,
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000 !important;
+}
+
+.ri-dashboard .ri-perfil-empresa .dash-card,
+.ri-dashboard .ri-perfil-empresa [data-card="1"],
+.ri-dashboard .ri-perfil-empresa [data-perfil-card="1"] {
+  border-color: #000 !important;
+}
+
+.ri-dashboard .ri-perfil-empresa .dash-card:hover,
+.ri-dashboard .ri-perfil-empresa [data-card="1"]:hover,
+.ri-dashboard .ri-perfil-empresa [data-perfil-card="1"]:hover {
+  border-color: #000 !important;
+}
+
+.ri-dashboard .ri-perfil-empresa input,
+.ri-dashboard .ri-perfil-empresa select,
+.ri-dashboard .ri-perfil-empresa textarea {
+  color: #000 !important;
+  border-color: #000 !important;
+}

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { btnGoldStyle as btnGold } from "@/lib/button-3d";
-import { DASH, dashCard, dashInnerBox, dashInput } from "@/lib/dashboard-theme";
+import { botaoPerfil, textoAviso, textoDourado } from "@/lib/ui/perfil-empresa-cores";
+import { dashCard, dashInnerBox, dashInput } from "@/lib/dashboard-theme";
 import { goldTitle } from "@/components/company/candidate-profile-bits";
 
 type FeedbackItem = {
@@ -91,7 +91,7 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
   return (
     <section style={{ ...dashCard, padding: 18 }}>
       <h3 style={{ ...goldTitle, margin: "0 0 12px", fontSize: 16 }}>💬 Feedback da equipe</h3>
-      <p style={{ margin: "0 0 10px", fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>
+      <p style={{ margin: "0 0 10px", fontSize: 12, color: "#000", lineHeight: 1.45 }}>
         Todos da mesma assinatura veem os feedbacks deixados sobre este candidato.
       </p>
 
@@ -99,7 +99,7 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
         style={{
           ...dashInnerBox,
           padding: 10,
-          border: `2px solid #8D6B1F`,
+          border: "2px solid #000",
           display: "grid",
           gap: 8,
           marginBottom: 12,
@@ -123,14 +123,14 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
           }}
         />
         {feedbackMsg ? (
-          <p style={{ margin: 0, fontSize: 11, color: "#f87171" }}>{feedbackMsg}</p>
+          <p style={{ ...textoAviso, margin: 0, fontSize: 11 }}>{feedbackMsg}</p>
         ) : null}
         <button
           type="button"
           onClick={() => void handleSendFeedback()}
           disabled={sendingFeedback || !feedbackText.trim()}
           style={{
-            ...btnGold,
+            ...botaoPerfil,
             padding: "6px 12px",
             fontSize: 12,
             width: "fit-content",
@@ -143,7 +143,7 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
       </div>
 
       {feedbacks.length === 0 ? (
-        <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
+        <p style={{ margin: 0, fontSize: 12, color: "#000" }}>
           Nenhum feedback ainda. Seja o primeiro a avaliar.
         </p>
       ) : (
@@ -163,12 +163,13 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
               {fb.mine ? (
                 <button
                   type="button"
+                  className="ri-tinta-aviso"
                   disabled={deletingFeedbackId === fb.id}
                   onClick={() => void handleExcluirFeedback(fb.id)}
                   style={{
                     background: "transparent",
                     border: "1px solid rgba(229,115,115,0.55)",
-                    color: "#e57373",
+                    ...textoAviso,
                     borderRadius: 8,
                     padding: "4px 8px",
                     fontSize: 10,
@@ -193,8 +194,8 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
                     marginBottom: 4,
                   }}
                 >
-                  <strong style={{ fontSize: 12, color: DASH.gold }}>{fb.authorName}</strong>
-                  <span style={{ fontSize: 10, color: DASH.muted, flexShrink: 0 }}>
+                  <strong style={{ fontSize: 12, ...textoDourado }}>{fb.authorName}</strong>
+                  <span style={{ fontSize: 10, color: "#000", flexShrink: 0 }}>
                     {new Date(fb.createdAt).toLocaleDateString("pt-BR", {
                       day: "2-digit",
                       month: "2-digit",
@@ -204,7 +205,7 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
                     })}
                   </span>
                 </div>
-                <p style={{ margin: 0, fontSize: 12, color: DASH.text, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+                <p style={{ margin: 0, fontSize: 12, color: "#000", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
                   {fb.body}
                 </p>
               </div>

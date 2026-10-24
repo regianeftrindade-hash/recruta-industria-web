@@ -11,11 +11,11 @@ import { isArquivoAnexado, nomeArquivoAnexado } from "@/lib/arquivo-anexo";
 import type { SobreMimData } from "@/lib/sobre-mim";
 import { PERFIL_INFO, type ResultadoTesteComportamental } from "@/lib/teste-comportamental";
 import {
-  DASH,
   dashCard,
   dashInnerBox,
 } from "@/lib/dashboard-theme";
 import CarreiraTimeline from "@/components/professional/CarreiraTimeline";
+import { COR_PRETO, textoDourado } from "@/lib/ui/perfil-empresa-cores";
 import {
   CAMPOS_SOBRE_MIM,
   CardSecaoPerfil,
@@ -193,7 +193,7 @@ export default function CompanyCandidateProfileDetails({
                 <span aria-hidden>📅</span>
                 Linha do tempo profissional
               </h4>
-              <CarreiraTimeline experiencias={empresas} showDescricao />
+              <CarreiraTimeline experiencias={empresas} showDescricao paraEmpresa />
             </div>
           )}
 
@@ -289,7 +289,7 @@ export default function CompanyCandidateProfileDetails({
           Sobre mim
         </h4>
         {resumo.bloqueado ? (
-          <p style={{ margin: 0, fontSize: 13, color: DASH.muted }}>
+          <p style={{ margin: 0, fontSize: 13, color: COR_PRETO }}>
             Libere o contato para ver as informações pessoais do candidato.
           </p>
         ) : sobreMimPreenchido && sobreMim ? (
@@ -300,7 +300,7 @@ export default function CompanyCandidateProfileDetails({
             }))}
           />
         ) : (
-          <p style={{ margin: 0, fontSize: 13, color: DASH.muted }}>
+          <p style={{ margin: 0, fontSize: 13, color: COR_PRETO }}>
             O candidato ainda não preencheu esta seção.
           </p>
         )}
@@ -325,7 +325,7 @@ export default function CompanyCandidateProfileDetails({
             const info = PERFIL_INFO[testeComportamental.perfilPrincipal];
             return (
               <div>
-                <p style={{ margin: "0 0 12px", fontSize: 15, fontWeight: 800, color: DASH.gold }}>
+                <p style={{ ...textoDourado, margin: "0 0 12px", fontSize: 15 }}>
                   {info.emoji} Perfil predominante: {info.titulo}
                 </p>
                 <div>
@@ -336,7 +336,7 @@ export default function CompanyCandidateProfileDetails({
             );
           })()
         ) : (
-          <p style={{ margin: 0, fontSize: 13, color: DASH.muted }}>
+          <p style={{ margin: 0, fontSize: 13, color: COR_PRETO }}>
             O candidato ainda não realizou o teste de perfil pessoal.
           </p>
         )}
@@ -357,7 +357,7 @@ export default function CompanyCandidateProfileDetails({
           Currículo e anexos
         </h4>
         {resumo.bloqueado ? (
-          <p style={{ margin: 0, fontSize: 13, color: DASH.muted }}>
+          <p style={{ margin: 0, fontSize: 13, color: COR_PRETO }}>
             Libere o contato para acessar currículo, atestados e demais anexos.
           </p>
         ) : (
@@ -372,7 +372,7 @@ export default function CompanyCandidateProfileDetails({
             }
             if (lista.length === 0) {
               return (
-                <p style={{ margin: 0, fontSize: 13, color: DASH.muted }}>
+                <p style={{ margin: 0, fontSize: 13, color: COR_PRETO }}>
                   Nenhum arquivo anexado pelo candidato.
                 </p>
               );
@@ -394,11 +394,11 @@ export default function CompanyCandidateProfileDetails({
                       ...dashInnerBox,
                       borderRadius: 8,
                       textDecoration: "none",
-                      color: DASH.text,
+                      color: COR_PRETO,
                     }}
                   >
                     <span style={{ fontSize: 13, fontWeight: 600 }}>📄 {doc.label}</span>
-                    <span style={{ fontSize: 11, color: DASH.muted }}>{nomeArquivoAnexado(doc.url)}</span>
+                    <span style={{ fontSize: 11, color: COR_PRETO }}>{nomeArquivoAnexado(doc.url)}</span>
                   </a>
                 ))}
               </div>

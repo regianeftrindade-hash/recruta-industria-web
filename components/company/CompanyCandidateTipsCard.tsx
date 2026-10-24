@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { btnGoldStyle as btnGold } from "@/lib/button-3d";
-import { DASH, dashCard, dashInnerBox, dashInput } from "@/lib/dashboard-theme";
+import { botaoPerfil, textoAviso, textoDourado } from "@/lib/ui/perfil-empresa-cores";
+import { dashCard, dashInnerBox, dashInput } from "@/lib/dashboard-theme";
 import { goldTitle } from "@/components/company/candidate-profile-bits";
 import { AVISO_RETENCAO_INBOX } from "@/lib/profile/inbox-retention";
 
@@ -100,7 +100,7 @@ export default function CompanyCandidateTipsCard({
   return (
     <section style={{ ...dashCard, padding: 18 }}>
       <h3 style={{ ...goldTitle, margin: "0 0 8px", fontSize: 16 }}>💡 Dicas enviadas ao candidato</h3>
-      <p style={{ fontSize: 11, color: DASH.muted, margin: "0 0 12px", lineHeight: 1.45 }}>
+      <p style={{ fontSize: 11, color: "#000", margin: "0 0 12px", lineHeight: 1.45 }}>
         {AVISO_RETENCAO_INBOX}
       </p>
       {tips.length > 0 ? (
@@ -114,16 +114,17 @@ export default function CompanyCandidateTipsCard({
                 gap: 8,
                 padding: 10,
                 ...dashInnerBox,
-                borderLeft: `3px solid ${DASH.gold}`,
+                borderLeft: "3px solid #000",
               }}
             >
               <button
                 type="button"
+                className="ri-tinta-aviso"
                 onClick={() => void handleExcluirDica(tip.id)}
                 style={{
                   background: "transparent",
                   border: "1px solid rgba(229,115,115,0.55)",
-                  color: "#e57373",
+                  ...textoAviso,
                   borderRadius: 8,
                   padding: "4px 8px",
                   fontSize: 10,
@@ -137,14 +138,14 @@ export default function CompanyCandidateTipsCard({
                 Excluir
               </button>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: "0 0 4px", fontSize: 13, lineHeight: 1.5, color: DASH.text }}>{tip.message}</p>
-                <p style={{ margin: 0, fontSize: 11, color: DASH.muted }}>{new Date(tip.createdAt).toLocaleString("pt-BR")}</p>
+                <p style={{ margin: "0 0 4px", fontSize: 13, lineHeight: 1.5, color: "#000" }}>{tip.message}</p>
+                <p style={{ margin: 0, fontSize: 11, color: "#000" }}>{new Date(tip.createdAt).toLocaleString("pt-BR")}</p>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <p style={{ fontSize: 13, color: DASH.muted, margin: "0 0 14px" }}>Nenhuma dica enviada ainda.</p>
+        <p style={{ fontSize: 13, color: "#000", margin: "0 0 14px" }}>Nenhuma dica enviada ainda.</p>
       )}
       {canSendTips && !bloqueado && (
         <>
@@ -173,7 +174,7 @@ export default function CompanyCandidateTipsCard({
                 margin: "8px 0 0",
                 fontSize: 12,
                 fontWeight: 700,
-                color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+                ...(feedback.tone === "ok" ? textoDourado : textoAviso),
                 lineHeight: 1.45,
               }}
             >
@@ -184,7 +185,7 @@ export default function CompanyCandidateTipsCard({
             type="button"
             onClick={() => void handleSendTip()}
             disabled={sendingTip || !tipText.trim()}
-            style={{ ...btnGold, width: "100%", marginTop: 8, padding: 10, fontSize: 13, opacity: sendingTip || !tipText.trim() ? 0.7 : 1 }}
+            style={{ ...botaoPerfil, width: "100%", marginTop: 8, padding: 10, fontSize: 13, opacity: sendingTip || !tipText.trim() ? 0.7 : 1 }}
           >
             {sendingTip ? "Enviando..." : "Enviar dica"}
           </button>
@@ -197,7 +198,7 @@ export default function CompanyCandidateTipsCard({
             margin: "8px 0 0",
             fontSize: 12,
             fontWeight: 700,
-            color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+            ...(feedback.tone === "ok" ? textoDourado : textoAviso),
             lineHeight: 1.45,
           }}
         >

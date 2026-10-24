@@ -1,11 +1,8 @@
 "use client";
 
 import React from "react";
-import { GOLD_GRADIENT_STOPS } from "@/lib/decorative-gold-line";
-import {
-  DASH,
-  dashGhostBtn,
-} from "@/lib/dashboard-theme";
+import { botaoPerfil, CLASSE_PERFIL, COR_DOURADO, textoAviso } from "@/lib/ui/perfil-empresa-cores";
+import "@/styles/perfil-empresa-cores.css";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 import CompanyCandidateProfileHeader from "@/components/company/CompanyCandidateProfileHeader";
 import CompanyCandidateProfileDetails from "@/components/company/CompanyCandidateProfileDetails";
@@ -68,7 +65,7 @@ export default function CompanyCandidateProfilePanel({
     handleShareProfile,
   } = useCompanyCandidateProfile(profileId, onUnlocked);
 
-  const { headerRef, infoRef, videoRef, lineGradId, goldLine } = useCandidateProfileGoldLine({
+  const { headerRef, infoRef, videoRef, goldLine } = useCandidateProfileGoldLine({
     resumo,
     videoApresentacaoUrl,
     loading,
@@ -76,17 +73,17 @@ export default function CompanyCandidateProfilePanel({
 
   if (loading) {
     return (
-      <div style={{ padding: "40px 0", display: "flex", justifyContent: "center" }}>
-        <AmpulhetaLoading label="Carregando perfil..." size={36} color={DASH.gold} />
+      <div className={CLASSE_PERFIL} style={{ padding: "40px 0", display: "flex", justifyContent: "center" }}>
+        <AmpulhetaLoading label="Carregando perfil..." size={36} color={COR_DOURADO} />
       </div>
     );
   }
 
   if (error || !resumo) {
     return (
-      <div style={{ padding: "20px 0" }}>
-        <p style={{ color: "#f88", marginBottom: 16 }}>{error || "Perfil não encontrado"}</p>
-        <button type="button" onClick={onBack} style={{ ...dashGhostBtn, padding: "8px 16px", fontSize: 13 }}>
+      <div className={CLASSE_PERFIL} style={{ padding: "20px 0" }}>
+        <p style={{ ...textoAviso, marginBottom: 16 }}>{error || "Perfil não encontrado"}</p>
+        <button type="button" onClick={onBack} style={{ ...botaoPerfil, padding: "8px 16px", fontSize: 13 }}>
           ← Voltar aos perfis
         </button>
       </div>
@@ -94,7 +91,7 @@ export default function CompanyCandidateProfilePanel({
   }
 
   return (
-    <div style={{ width: "100%", maxWidth: "100%", minWidth: 0, overflowX: "hidden", boxSizing: "border-box" }}>
+    <div className={CLASSE_PERFIL} style={{ width: "100%", maxWidth: "100%", minWidth: 0, overflowX: "hidden", boxSizing: "border-box" }}>
       <div
         className="ri-candidate-profile-head"
         ref={headerRef}
@@ -125,17 +122,18 @@ export default function CompanyCandidateProfilePanel({
               gridRow: "1 / -1",
             }}
           >
-            <defs>
-              <linearGradient id={lineGradId} x1="0%" y1="0%" x2="100%" y2="100%">
-                {GOLD_GRADIENT_STOPS.map((stop) => (
-                  <stop key={stop.offset} offset={stop.offset} stopColor={stop.color} />
-                ))}
-              </linearGradient>
-            </defs>
             <path
               d={goldLine.d}
               fill="none"
-              stroke={`url(#${lineGradId})`}
+              stroke="#000"
+              strokeWidth={4.4}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d={goldLine.d}
+              fill="none"
+              stroke={COR_DOURADO}
               strokeWidth={2.2}
               strokeLinecap="round"
               strokeLinejoin="round"

@@ -6,6 +6,7 @@ import {
   type CareerTimelineInput,
 } from "@/lib/professional/career-timeline";
 import { DASH } from "@/lib/dashboard-theme";
+import { COR_DOURADO, COR_PRETO, textoDourado } from "@/lib/ui/perfil-empresa-cores";
 
 type Props = {
   experiencias: CareerTimelineInput[] | null | undefined;
@@ -13,6 +14,8 @@ type Props = {
   compact?: boolean;
   /** Mostra descrição da experiência (painel completo do recrutador). */
   showDescricao?: boolean;
+  /** Perfil visto pela empresa: dourado escuro com contorno e texto preto. */
+  paraEmpresa?: boolean;
   style?: CSSProperties;
 };
 
@@ -20,12 +23,15 @@ export default function CarreiraTimeline({
   experiencias,
   compact = false,
   showDescricao = false,
+  paraEmpresa = false,
   style,
 }: Props) {
   const items = buildCareerTimeline(experiencias);
   if (items.length === 0) return null;
 
-  const lineColor = DASH.gold;
+  const lineColor = paraEmpresa ? COR_DOURADO : DASH.gold;
+  const corTexto = paraEmpresa ? COR_PRETO : DASH.text;
+  const corSecundaria = paraEmpresa ? COR_PRETO : DASH.muted;
   const padLeft = compact ? 18 : 22;
   const fontSize = compact ? 11 : 13;
   const periodoSize = compact ? 10 : 12;
@@ -79,8 +85,7 @@ export default function CarreiraTimeline({
             style={{
               margin: 0,
               fontSize: periodoSize,
-              fontWeight: 700,
-              color: lineColor,
+              ...(paraEmpresa ? textoDourado : { fontWeight: 700, color: lineColor }),
               letterSpacing: "0.02em",
               textTransform: "uppercase",
             }}
@@ -92,15 +97,15 @@ export default function CarreiraTimeline({
               margin: "2px 0 0",
               fontSize,
               fontWeight: 650,
-              color: DASH.text,
+              color: corTexto,
               lineHeight: 1.35,
             }}
           >
             {item.cargo}
-            <span style={{ fontWeight: 500, color: DASH.muted }}> – {item.empresa}</span>
+            <span style={{ fontWeight: 500, color: corSecundaria }}> – {item.empresa}</span>
           </p>
           {item.segmento && !compact ? (
-            <p style={{ margin: "2px 0 0", fontSize: 11, color: DASH.muted }}>
+            <p style={{ margin: "2px 0 0", fontSize: 11, color: corSecundaria }}>
               {item.segmento}
             </p>
           ) : null}
@@ -109,7 +114,7 @@ export default function CarreiraTimeline({
               style={{
                 margin: "4px 0 0",
                 fontSize: 11,
-                color: DASH.muted,
+                color: corSecundaria,
                 lineHeight: 1.45,
               }}
             >

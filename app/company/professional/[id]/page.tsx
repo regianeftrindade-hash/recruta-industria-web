@@ -6,9 +6,9 @@ import { useSession } from "next-auth/react";
 import CompanyCandidateProfilePanel from "@/app/components/CompanyCandidateProfilePanel";
 import DashboardThemeToggle from "@/app/components/DashboardThemeToggle";
 import LogoRecruta from "@/app/components/LogoRecruta";
-import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import "@/app/dashboard/dashboard-theme.css";
-import { DASH, DashboardThemeShell, dashHeader } from "@/lib/dashboard-theme";
+import { DashboardThemeShell, dashHeader } from "@/lib/dashboard-theme";
+import { botaoPerfil, COR_DOURADO, COR_PRETO } from "@/lib/ui/perfil-empresa-cores";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 
 /** Perfil do candidato (empresa) — abre direto pelo id, sem API de resolve. */
@@ -22,7 +22,7 @@ export default function CompanyProfessionalPage() {
     return (
       <DashboardThemeShell>
         <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <AmpulhetaLoading label="Carregando perfil..." size={42} color={DASH.gold} />
+          <AmpulhetaLoading label="Carregando perfil..." size={42} color={COR_DOURADO} />
         </div>
       </DashboardThemeShell>
     );
@@ -32,7 +32,7 @@ export default function CompanyProfessionalPage() {
     return (
       <DashboardThemeShell>
         <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <p style={{ color: DASH.muted }}>Perfil inválido.</p>
+          <p style={{ color: COR_PRETO }}>Perfil inválido.</p>
         </div>
       </DashboardThemeShell>
     );
@@ -47,7 +47,7 @@ export default function CompanyProfessionalPage() {
           <button
             type="button"
             onClick={() => router.push("/company/dashboard-empresa")}
-            style={{ ...btnGold, padding: "8px 14px", fontSize: 12 }}
+            style={{ ...botaoPerfil, padding: "8px 14px", fontSize: 12 }}
           >
             Voltar à vitrine
           </button>

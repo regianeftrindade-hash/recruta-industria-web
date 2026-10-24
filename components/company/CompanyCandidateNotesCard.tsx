@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { btnGoldStyle as btnGold } from "@/lib/button-3d";
-import { DASH, dashCard, dashGhostBtn, dashInnerBox, dashInput } from "@/lib/dashboard-theme";
+import { botaoPerfil, textoAviso, textoDourado } from "@/lib/ui/perfil-empresa-cores";
+import { dashCard, dashInnerBox, dashInput } from "@/lib/dashboard-theme";
 import { goldTitle } from "@/components/company/candidate-profile-bits";
 
 type NotaInterna = {
@@ -97,7 +97,7 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
   return (
     <section style={{ ...dashCard, padding: 18, minWidth: 0, maxWidth: "100%", boxSizing: "border-box" }}>
       <h3 style={{ ...goldTitle, margin: "0 0 8px", fontSize: 16 }}>📝 Anotações internas</h3>
-      <p style={{ margin: "0 0 10px", fontSize: 11, color: DASH.muted, lineHeight: 1.4 }}>
+      <p style={{ margin: "0 0 10px", fontSize: 11, color: "#000", lineHeight: 1.4 }}>
         Visível só para a sua empresa. Salve para virar um card. Use Apagar para remover.
       </p>
       <textarea
@@ -115,7 +115,7 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
           padding: 12,
           borderRadius: 8,
           ...dashInput,
-          border: `2px solid #8D6B1F`,
+          border: "2px solid #000",
           fontSize: 14,
           lineHeight: 1.5,
           resize: "vertical",
@@ -128,7 +128,7 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
             margin: "8px 0 0",
             fontSize: 12,
             fontWeight: 700,
-            color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+            ...(feedback.tone === "ok" ? textoDourado : textoAviso),
             lineHeight: 1.45,
           }}
         >
@@ -140,7 +140,7 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
         disabled={savingNotes || !notaTexto.trim()}
         onClick={() => void salvarNotaInterna()}
         style={{
-          ...btnGold,
+          ...botaoPerfil,
           width: "100%",
           marginTop: 8,
           padding: 10,
@@ -157,7 +157,7 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
             style={{
               ...dashInnerBox,
               padding: 12,
-              border: `2px solid #8D6B1F`,
+              border: "2px solid #000",
               borderRadius: 10,
               minWidth: 0,
             }}
@@ -166,7 +166,7 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
               style={{
                 margin: 0,
                 fontSize: 13,
-                color: DASH.text,
+                color: "#000",
                 lineHeight: 1.5,
                 whiteSpace: "pre-wrap",
                 overflowWrap: "anywhere",
@@ -174,19 +174,20 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
             >
               {nota.text}
             </p>
-            <p style={{ margin: "8px 0 0", fontSize: 10, color: DASH.muted }}>
+            <p style={{ margin: "8px 0 0", fontSize: 10, color: "#000" }}>
               {new Date(nota.createdAt).toLocaleString("pt-BR")}
             </p>
             <button
               type="button"
+              className="ri-tinta-aviso"
               disabled={savingNotes}
               onClick={() => void apagarNotaInterna(nota.id)}
               style={{
-                ...dashGhostBtn,
+                ...botaoPerfil,
                 marginTop: 8,
                 padding: "5px 8px",
                 fontSize: 10,
-                color: "#e57373",
+                ...textoAviso,
                 borderColor: "rgba(229,115,115,0.55)",
               }}
             >

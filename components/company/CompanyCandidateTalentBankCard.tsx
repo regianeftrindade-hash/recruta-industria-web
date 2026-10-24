@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { btnGoldStyle as btnGold } from "@/lib/button-3d";
-import { DASH, dashCard, dashInput } from "@/lib/dashboard-theme";
+import { botaoPerfil, textoAviso, textoDourado } from "@/lib/ui/perfil-empresa-cores";
+import { dashCard, dashInput } from "@/lib/dashboard-theme";
 import { goldTitle } from "@/components/company/candidate-profile-bits";
 
 export type TalentListItem = { id: string; name: string };
@@ -33,12 +33,12 @@ export default function CompanyCandidateTalentBankCard({
         📁 Adicionar ao banco de talentos
       </h3>
       {bloqueado ? (
-        <p style={{ margin: 0, fontSize: 13, color: DASH.muted, lineHeight: 1.45 }}>
+        <p style={{ margin: 0, fontSize: 13, color: "#000", lineHeight: 1.45 }}>
           Libere o contato para adicionar este profissional às suas listas.
         </p>
       ) : (
         <>
-          <p style={{ margin: "0 0 8px", fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>
+          <p style={{ margin: "0 0 8px", fontSize: 12, color: "#000", lineHeight: 1.45 }}>
             Selecione uma ou mais listas (Ctrl/Cmd + clique) e salve.
           </p>
           <select
@@ -103,7 +103,7 @@ export default function CompanyCandidateTalentBankCard({
                   setSalvandoTalent(false);
                 }
               }}
-              style={{ ...btnGold, padding: "8px 14px", fontSize: 12, opacity: salvandoTalent ? 0.7 : 1 }}
+              style={{ ...botaoPerfil, padding: "8px 14px", fontSize: 12, opacity: salvandoTalent ? 0.7 : 1 }}
             >
               {salvandoTalent ? "Salvando..." : "Salvar"}
             </button>
@@ -151,8 +151,8 @@ export default function CompanyCandidateTalentBankCard({
               }}
               style={{
                 background: "transparent",
-                border: `2px solid #8D6B1F`,
-                color: DASH.gold,
+                border: "2px solid #000",
+                ...textoDourado,
                 borderRadius: 8,
                 padding: "8px 12px",
                 fontSize: 12,
@@ -171,7 +171,7 @@ export default function CompanyCandidateTalentBankCard({
                 margin: "10px 0 0",
                 fontSize: 12,
                 fontWeight: 700,
-                color: feedback.tone === "ok" ? "#8bc34a" : "#e57373",
+                ...(feedback.tone === "ok" ? textoDourado : textoAviso),
                 lineHeight: 1.45,
               }}
             >

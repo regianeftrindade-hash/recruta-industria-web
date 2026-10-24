@@ -4,11 +4,16 @@ import React from "react";
 import Link from "next/link";
 import { avatarImageStyle } from "@/lib/theme";
 import { fotoPerfilSrc } from "@/lib/professional/foto-perfil";
-import { btnGoldStyle as btnGold } from "@/lib/button-3d";
+import { DASH } from "@/lib/dashboard-theme";
 import {
-  DASH,
-  dashPlanAccent,
-} from "@/lib/dashboard-theme";
+  botaoPerfil,
+  COR_DOURADO,
+  COR_PRETO,
+  textoAviso,
+  textoDourado,
+  textoPreto,
+  textoPretoNegrito,
+} from "@/lib/ui/perfil-empresa-cores";
 import BandeiraFavoritoIcon from "@/components/company/BandeiraFavoritoIcon";
 import OnlineStatusDot from "@/components/shared/OnlineStatusDot";
 import type { Resumo } from "@/components/company/company-candidate-profile-types";
@@ -68,7 +73,7 @@ export default function CompanyCandidateProfileHeader({
             flexShrink: 0,
             borderRadius: "50%",
             background: DASH.inner,
-            border: `2px solid #8D6B1F`,
+            border: "2px solid #000",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -82,7 +87,7 @@ export default function CompanyCandidateProfileHeader({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div ref={infoRef}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 10, justifyContent: "space-between" }}>
-            <h2 style={{ color: DASH.gold, margin: "0 0 6px", fontSize: 24, fontWeight: 700, flex: 1, minWidth: 0 }}>
+            <h2 style={{ ...textoDourado, margin: "0 0 6px", fontSize: 24, flex: 1, minWidth: 0 }}>
               {resumo.nome}
             </h2>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
@@ -94,12 +99,19 @@ export default function CompanyCandidateProfileHeader({
                   gap: 4,
                 }}
               >
-                <OnlineStatusDot online={profissionalOnline} size={14} />
+                <OnlineStatusDot
+                  online={profissionalOnline}
+                  size={14}
+                  style={{
+                    background: profissionalOnline ? COR_DOURADO : "transparent",
+                    border: "2px solid #000",
+                    boxShadow: "none",
+                  }}
+                />
                 <span
                   style={{
+                    ...(profissionalOnline ? textoDourado : textoPreto),
                     fontSize: 9,
-                    fontWeight: 700,
-                    color: profissionalOnline ? "#22c55e" : DASH.muted,
                     lineHeight: 1,
                     textTransform: "uppercase",
                     letterSpacing: "0.02em",
@@ -124,7 +136,7 @@ export default function CompanyCandidateProfileHeader({
                     margin: 0,
                     cursor: favoriting ? "wait" : "pointer",
                     lineHeight: 0,
-                    color: resumo.favorito ? "#e53935" : DASH.muted,
+                    color: COR_PRETO,
                     flexShrink: 0,
                     opacity: favoriting ? 0.7 : 1,
                   }}
@@ -134,22 +146,22 @@ export default function CompanyCandidateProfileHeader({
               )}
             </div>
           </div>
-          <p style={{ margin: 0, fontSize: 15, color: DASH.text }}>
+          <p style={{ ...textoPretoNegrito, margin: 0, fontSize: 15 }}>
             {resumo.cargo || "—"} · {resumo.area || "—"}
           </p>
           {resumo.local && (
-            <p style={{ margin: "4px 0 0", fontSize: 13, color: DASH.muted }}>{resumo.local}</p>
+            <p style={{ ...textoPreto, margin: "4px 0 0", fontSize: 13 }}>{resumo.local}</p>
           )}
-          <p style={{ margin: "6px 0 0", fontSize: 13, color: DASH.muted }}>
+          <p style={{ ...textoPreto, margin: "6px 0 0", fontSize: 13 }}>
             {typeof resumo.compatibilidade === "number" && (
-              <span style={dashPlanAccent}>Compatibilidade: {resumo.compatibilidade}% · </span>
+              <span style={textoPretoNegrito}>Compatibilidade: {resumo.compatibilidade}% · </span>
             )}
             Completude: {resumo.profileCompletion ?? 0}%
           </p>
         </div>
         {resumo.bloqueado && (
           <div style={{ marginTop: 14 }}>
-            <p style={{ fontSize: 13, color: DASH.muted, margin: "0 0 10px" }}>
+            <p style={{ ...textoPreto, fontSize: 13, margin: "0 0 10px" }}>
               {!companyVerified
                 ? "Para ver dados sensíveis, confirme o e-mail corporativo e aguarde a aprovação do cartão CNPJ — mesmo com plano pago."
                 : !canUnlock
@@ -160,7 +172,7 @@ export default function CompanyCandidateProfileHeader({
               <Link
                 href="/company/register"
                 style={{
-                  ...btnGold,
+                  ...botaoPerfil,
                   display: "inline-block",
                   padding: "10px 18px",
                   fontSize: 13,
@@ -175,7 +187,7 @@ export default function CompanyCandidateProfileHeader({
                 onClick={onUnlock}
                 disabled={unlocking}
                 style={{
-                  ...btnGold,
+                  ...botaoPerfil,
                   padding: "10px 18px",
                   fontSize: 13,
                   opacity: unlocking ? 0.7 : 1,
@@ -187,7 +199,7 @@ export default function CompanyCandidateProfileHeader({
               <Link
                 href="/company/dashboard-empresa"
                 style={{
-                  ...btnGold,
+                  ...botaoPerfil,
                   display: "inline-block",
                   padding: "10px 18px",
                   fontSize: 13,
@@ -206,7 +218,7 @@ export default function CompanyCandidateProfileHeader({
               margin: "10px 0 0",
               fontSize: 12,
               fontWeight: 700,
-              color: actionFeedback.tone === "ok" ? "#8bc34a" : "#e57373",
+              ...(actionFeedback.tone === "ok" ? textoDourado : textoAviso),
               lineHeight: 1.45,
             }}
           >

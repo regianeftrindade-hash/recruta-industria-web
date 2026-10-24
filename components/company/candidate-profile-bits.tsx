@@ -7,19 +7,29 @@ import {
   type CursoDetalhado,
   type CertificacaoDetalhada,
 } from "@/lib/professional-form-config";
-import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import type { SobreMimData } from "@/lib/sobre-mim";
 import {
   DASH,
   dashCard,
   dashInnerBox,
-  dashLabel,
-  dashSectionTitle,
 } from "@/lib/dashboard-theme";
+import {
+  botaoPerfil,
+  COR_PRETO,
+  textoAviso,
+  textoDourado,
+  textoPretoNegrito,
+} from "@/lib/ui/perfil-empresa-cores";
+
+function tintaSelo(status: ReturnType<typeof getCursoStatus>): React.CSSProperties {
+  if (status === "vencido" || status === "nao_enviado" || status === "sem_certificado") return textoAviso;
+  return textoDourado;
+}
 
 export const goldTitle: React.CSSProperties = {
-  ...dashSectionTitle,
-  color: DASH.gold,
+  ...textoDourado,
+  letterSpacing: "0.01em",
+  textDecoration: "none",
 };
 
 export const CAMPOS_SOBRE_MIM: Array<{ key: keyof SobreMimData; label: string }> = [
@@ -34,21 +44,23 @@ export const CAMPOS_SOBRE_MIM: Array<{ key: keyof SobreMimData; label: string }>
 const fieldBox: React.CSSProperties = {
   padding: "10px 12px",
   ...dashInnerBox,
-  border: `2px solid #8D6B1F`,
+  border: "2px solid #000",
   borderRadius: 8,
   minHeight: 40,
   background: DASH.inner,
 };
 
 export const labelStyle: React.CSSProperties = {
-  ...dashLabel,
+  ...textoDourado,
   margin: "0 0 4px",
+  fontSize: 11,
   textTransform: "uppercase",
 };
 
 export const valueStyle: React.CSSProperties = {
-  color: DASH.text,
+  color: COR_PRETO,
   fontSize: 14,
+  fontWeight: 400,
   margin: 0,
   lineHeight: 1.55,
   wordBreak: "break-word",
@@ -104,7 +116,7 @@ export function PerfilTextoCorrido({
     .filter(Boolean) as Array<{ label: string; texto: string; vazio: boolean }>;
 
   if (partes.length === 0) {
-    return <p style={{ ...valueStyle, color: DASH.muted }}>Sem dados para exibir.</p>;
+    return <p style={valueStyle}>Sem dados para exibir.</p>;
   }
 
   const linhaInteira = (label: string, texto: string) => {
@@ -117,10 +129,9 @@ export function PerfilTextoCorrido({
   const labelEl = (label: string) => (
     <span
       style={{
-        color: DASH.gold,
+        ...textoDourado,
         textDecoration: "underline",
         textUnderlineOffset: 3,
-        fontWeight: 600,
       }}
     >
       {label}
@@ -146,12 +157,11 @@ export function PerfilTextoCorrido({
               style={{
                 display: "inline-flex",
                 alignItems: "center",
+                ...textoAviso,
                 padding: "3px 10px",
-                border: "1px solid #ef4444",
+                border: "2px solid #000",
                 borderRadius: 999,
-                color: "#fca5a5",
                 fontSize: 12,
-                fontWeight: 700,
                 lineHeight: 1.3,
               }}
             >
@@ -163,11 +173,12 @@ export function PerfilTextoCorrido({
         return (
           <p
             key={`${item.label}-${item.texto}`}
-            style={{
-              margin: 0,
-              color: DASH.text,
-              fontSize: 14,
-              lineHeight: 1.4,
+              style={{
+                margin: 0,
+                color: COR_PRETO,
+                fontSize: 14,
+                fontWeight: 400,
+                lineHeight: 1.4,
               flex: full ? "1 1 100%" : "0 0 auto",
               whiteSpace: full ? "normal" : "nowrap",
               wordBreak: full ? "break-word" : undefined,
@@ -232,7 +243,7 @@ export function listaDeStrings(value: unknown): string[] {
 
 export function TagList({ items }: { items: string[] }) {
   if (!items.length) {
-    return <p style={{ ...valueStyle, color: DASH.muted }}>—</p>;
+    return <p style={valueStyle}>—</p>;
   }
   return (
     <p style={{ ...valueStyle, margin: 0 }}>
@@ -260,24 +271,23 @@ export function CursoDetalheItem({ curso }: { curso: CursoDetalhado }) {
       style={{
         padding: "8px 10px",
         borderRadius: 8,
-        border: `1px solid ${badge.border}`,
-        background: badge.bg,
+        border: "2px solid #000",
+        background: "transparent",
         display: "flex",
         flexDirection: "column",
         gap: 4,
       }}
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: DASH.text }}>{curso.nome}</p>
+        <p style={{ margin: 0, fontSize: 13, ...textoPretoNegrito }}>{curso.nome}</p>
         <span
           style={{
+            ...tintaSelo(status),
             fontSize: 10,
-            fontWeight: 700,
-            color: badge.color,
             padding: "3px 8px",
             borderRadius: 999,
-            border: `1px solid ${badge.border}`,
-            background: "rgba(0,0,0,0.25)",
+            border: "2px solid #000",
+            background: "transparent",
             whiteSpace: "nowrap",
           }}
         >
@@ -285,14 +295,14 @@ export function CursoDetalheItem({ curso }: { curso: CursoDetalhado }) {
         </span>
       </div>
       {linhaSecundaria && (
-        <p style={{ margin: 0, fontSize: 11, color: DASH.muted }}>{linhaSecundaria}</p>
+        <p style={{ margin: 0, fontSize: 11, color: COR_PRETO }}>{linhaSecundaria}</p>
       )}
       {curso.certificadoUrl && (
         <a
           href={curso.certificadoUrl}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ fontSize: 10, color: DASH.gold, textDecoration: "underline", marginTop: 2 }}
+          style={{ ...textoDourado, fontSize: 10, textDecoration: "underline", marginTop: 2 }}
         >
           Ver anexo
         </a>
@@ -317,25 +327,24 @@ export function CertificacaoDetalheItem({ cert }: { cert: CertificacaoDetalhada 
       style={{
         padding: "8px 10px",
         borderRadius: 8,
-        border: `1px solid ${badge.border}`,
-        background: badge.bg,
+        border: "2px solid #000",
+        background: "transparent",
         display: "flex",
         flexDirection: "column",
         gap: 4,
       }}
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: DASH.text }}>{cert.nome}</p>
+        <p style={{ margin: 0, fontSize: 13, ...textoPretoNegrito }}>{cert.nome}</p>
         {cert.certificadoUrl && (
           <span
             style={{
+              ...tintaSelo(status),
               fontSize: 10,
-              fontWeight: 700,
-              color: badge.color,
               padding: "3px 8px",
               borderRadius: 999,
-              border: `1px solid ${badge.border}`,
-              background: "rgba(0,0,0,0.25)",
+              border: "2px solid #000",
+              background: "transparent",
               whiteSpace: "nowrap",
             }}
           >
@@ -344,14 +353,14 @@ export function CertificacaoDetalheItem({ cert }: { cert: CertificacaoDetalhada 
         )}
       </div>
       {linhaSecundaria && (
-        <p style={{ margin: 0, fontSize: 11, color: DASH.muted }}>{linhaSecundaria}</p>
+        <p style={{ margin: 0, fontSize: 11, color: COR_PRETO }}>{linhaSecundaria}</p>
       )}
       {cert.certificadoUrl && (
         <a
           href={cert.certificadoUrl}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ fontSize: 10, color: DASH.gold, textDecoration: "underline", marginTop: 2 }}
+          style={{ ...textoDourado, fontSize: 10, textDecoration: "underline", marginTop: 2 }}
         >
           Ver anexo
         </a>
@@ -395,14 +404,7 @@ export function SimNaoToggle({
               borderRadius: 7,
               cursor: "pointer",
               fontWeight: 600,
-              ...(opt.active
-                ? btnGold
-                : {
-                    background: "transparent",
-                    color: DASH.text,
-                    border: `2px solid #8D6B1F`,
-                    boxShadow: "none",
-                  }),
+              ...(opt.active ? { ...botaoPerfil, ...textoDourado } : botaoPerfil),
             }}
           >
             {opt.label}

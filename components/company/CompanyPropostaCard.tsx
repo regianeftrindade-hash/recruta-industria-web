@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { DASH, dashInput, dashLabel } from "@/lib/dashboard-theme";
-import { btnGoldStyle as btnGold } from "@/lib/button-3d";
+import { DASH, dashInput } from "@/lib/dashboard-theme";
+import { botaoPerfil, COR_PRETO, textoAviso, textoDourado } from "@/lib/ui/perfil-empresa-cores";
 import type { JobProposalDTO, InterviewLocationType } from "@/lib/company/job-proposals-shared";
 import { formatInterviewComprovante } from "@/lib/company/job-proposals-shared";
 import { formatReaisDisplay, turnoPropostaLabel } from "@/lib/format-reais";
@@ -18,10 +18,17 @@ const STATUS_LABEL: Record<string, string> = {
   INTERVIEW_CANCELLED: "Entrevista cancelada",
 };
 
+const rotulo: React.CSSProperties = {
+  ...textoDourado,
+  fontSize: 11,
+  textTransform: "uppercase",
+  margin: "0 0 4px",
+};
+
 const btnGhost: React.CSSProperties = {
   background: "transparent",
-  border: `1px solid ${DASH.border}`,
-  color: DASH.text,
+  border: "2px solid #000",
+  color: COR_PRETO,
   borderRadius: 8,
   padding: "5px 8px",
   fontSize: 10,
@@ -79,33 +86,33 @@ export default function CompanyPropostaCard({
   return (
     <div
       style={{
-        border: `2px solid #8D6B1F`,
+        border: "2px solid #000",
         borderRadius: 10,
         padding: 12,
         background: DASH.inner,
       }}
     >
-      <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: DASH.text }}>
+      <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: COR_PRETO }}>
         {`${p.cargo} · ${formatReaisDisplay(p.salario)}`}
       </p>
-      <p style={{ margin: "0 0 2px", fontSize: 11, color: DASH.muted }}>
-        <strong style={{ color: DASH.text }}>Turno:</strong> {turnoPropostaLabel(p.turno)}
+      <p style={{ margin: "0 0 2px", fontSize: 11, color: COR_PRETO }}>
+        <strong style={{ color: COR_PRETO }}>Turno:</strong> {turnoPropostaLabel(p.turno)}
       </p>
       {p.cidade?.trim() ? (
-        <p style={{ margin: "0 0 2px", fontSize: 11, color: DASH.muted }}>
-          <strong style={{ color: DASH.text }}>Cidade:</strong> {p.cidade}
+        <p style={{ margin: "0 0 2px", fontSize: 11, color: COR_PRETO }}>
+          <strong style={{ color: COR_PRETO }}>Cidade:</strong> {p.cidade}
         </p>
       ) : null}
       {p.beneficios?.trim() ? (
-        <p style={{ margin: "0 0 6px", fontSize: 11, color: DASH.muted, whiteSpace: "pre-wrap" }}>
-          <strong style={{ color: DASH.text }}>Benefícios:</strong> {p.beneficios}
+        <p style={{ margin: "0 0 6px", fontSize: 11, color: COR_PRETO, whiteSpace: "pre-wrap" }}>
+          <strong style={{ color: COR_PRETO }}>Benefícios:</strong> {p.beneficios}
         </p>
       ) : null}
-      <p style={{ margin: "0 0 8px", fontSize: 11, color: DASH.gold, fontWeight: 700 }}>
+      <p style={{ margin: "0 0 8px", fontSize: 11, ...textoDourado, fontWeight: 700 }}>
         {STATUS_LABEL[p.status] || p.status}
       </p>
       {(p.status === "SENT" || p.status === "MORE_INFO") && (
-        <p style={{ margin: "0 0 8px", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
+        <p style={{ margin: "0 0 8px", fontSize: 11, color: COR_PRETO, lineHeight: 1.45 }}>
           {p.status === "MORE_INFO"
             ? "O profissional pediu mais informações. Responda na seção de Mensagens abaixo."
             : "O agendamento fica disponível depois que o profissional confirmar interesse."}
@@ -118,13 +125,14 @@ export default function CompanyPropostaCard({
             const el = document.getElementById("empresa-mensagens-candidato");
             el?.scrollIntoView({ behavior: "smooth", block: "start" });
           }}
-          style={{ ...btnGold, padding: "8px 12px", fontSize: 12, marginBottom: 8 }}
+          style={{ ...botaoPerfil, padding: "8px 12px", fontSize: 12, marginBottom: 8 }}
         >
           Responder em Mensagens
         </button>
       )}
       <button
         type="button"
+        className="ri-tinta-aviso"
         disabled={busy || saving}
         onClick={onExcluir}
         style={{
@@ -132,8 +140,8 @@ export default function CompanyPropostaCard({
           marginTop: 8,
           padding: "6px 10px",
           fontSize: 11,
-          color: "#e57373",
-          borderColor: "rgba(229,115,115,0.55)",
+          ...textoAviso,
+          borderColor: "#000",
         }}
       >
         Excluir
@@ -144,8 +152,8 @@ export default function CompanyPropostaCard({
             margin: "8px 0 12px",
             padding: 12,
             borderRadius: 10,
-            border: `2px solid #8D6B1F`,
-            background: "rgba(200,155,60,0.08)",
+            border: "2px solid #000",
+            background: DASH.inner,
           }}
         >
           <p
@@ -153,27 +161,27 @@ export default function CompanyPropostaCard({
               margin: "0 0 8px",
               fontSize: 11,
               fontWeight: 800,
-              color: DASH.gold,
+              ...textoDourado,
               textTransform: "uppercase",
               letterSpacing: "0.04em",
             }}
           >
             Comprovante de agendamento
           </p>
-          <p style={{ margin: "0 0 4px", fontSize: 12, color: DASH.text }}>
+          <p style={{ margin: "0 0 4px", fontSize: 12, color: COR_PRETO }}>
             <strong>Empresa:</strong> {p.companyName}
           </p>
-          <p style={{ margin: "0 0 4px", fontSize: 12, color: DASH.text }}>
+          <p style={{ margin: "0 0 4px", fontSize: 12, color: COR_PRETO }}>
             <strong>Data:</strong> {comprovante.dataLabel}
           </p>
-          <p style={{ margin: "0 0 4px", fontSize: 12, color: DASH.text }}>
+          <p style={{ margin: "0 0 4px", fontSize: 12, color: COR_PRETO }}>
             <strong>Horário:</strong> {comprovante.horaLabel}
           </p>
-          <p style={{ margin: "0 0 4px", fontSize: 12, color: DASH.text }}>
+          <p style={{ margin: "0 0 4px", fontSize: 12, color: COR_PRETO }}>
             <strong>Local:</strong> {comprovante.localLabel}
           </p>
           {p.interview?.observacoes?.trim() ? (
-            <p style={{ margin: 0, fontSize: 12, color: DASH.text, whiteSpace: "pre-wrap" }}>
+            <p style={{ margin: 0, fontSize: 12, color: COR_PRETO, whiteSpace: "pre-wrap" }}>
               <strong>Observações:</strong> {p.interview.observacoes}
             </p>
           ) : null}
@@ -186,7 +194,7 @@ export default function CompanyPropostaCard({
             <button
               type="button"
               onClick={onStartScheduling}
-              style={{ ...btnGold, padding: "8px 12px", fontSize: 12 }}
+              style={{ ...botaoPerfil, padding: "8px 12px", fontSize: 12 }}
             >
               Agendar Entrevista
             </button>
@@ -194,7 +202,7 @@ export default function CompanyPropostaCard({
             <div style={{ display: "grid", gap: 8 }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                 <div>
-                  <p style={dashLabel}>Data</p>
+                  <p style={rotulo}>Data</p>
                   <input
                     type="date"
                     value={interviewForm.date}
@@ -203,7 +211,7 @@ export default function CompanyPropostaCard({
                   />
                 </div>
                 <div>
-                  <p style={dashLabel}>Horário</p>
+                  <p style={rotulo}>Horário</p>
                   <input
                     type="time"
                     value={interviewForm.time}
@@ -213,7 +221,7 @@ export default function CompanyPropostaCard({
                 </div>
               </div>
               <div>
-                <p style={dashLabel}>Modalidade</p>
+                <p style={rotulo}>Modalidade</p>
                 <select
                   value={interviewForm.locationType}
                   onChange={(e) =>
@@ -231,7 +239,7 @@ export default function CompanyPropostaCard({
               </div>
               {interviewForm.locationType === "ONLINE" ? (
                 <div>
-                  <p style={dashLabel}>Link (Google Meet ou Teams)</p>
+                  <p style={rotulo}>Link (Google Meet ou Teams)</p>
                   <input
                     value={interviewForm.meetingUrl}
                     placeholder="https://meet.google.com/..."
@@ -243,7 +251,7 @@ export default function CompanyPropostaCard({
                 </div>
               ) : interviewForm.locationType === "PRESENTIAL" ? (
                 <div>
-                  <p style={dashLabel}>Endereço</p>
+                  <p style={rotulo}>Endereço</p>
                   <input
                     value={interviewForm.address}
                     placeholder="Rua, número, cidade"
@@ -254,12 +262,12 @@ export default function CompanyPropostaCard({
                   />
                 </div>
               ) : (
-                <p style={{ margin: 0, fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
+                <p style={{ margin: 0, fontSize: 11, color: COR_PRETO, lineHeight: 1.45 }}>
                   A entrevista será pela chamada de vídeo da plataforma. Não é necessário link externo.
                 </p>
               )}
               <div>
-                <p style={dashLabel}>Observações (opcional)</p>
+                <p style={rotulo}>Observações (opcional)</p>
                 <textarea
                   value={interviewForm.observacoes}
                   rows={3}
@@ -275,7 +283,7 @@ export default function CompanyPropostaCard({
                   type="button"
                   disabled={saving}
                   onClick={onAgendar}
-                  style={{ ...btnGold, padding: "8px 12px", fontSize: 12, flex: 1 }}
+                  style={{ ...botaoPerfil, padding: "8px 12px", fontSize: 12, flex: 1 }}
                 >
                   {saving ? "Enviando..." : "Enviar convite"}
                 </button>
@@ -284,8 +292,8 @@ export default function CompanyPropostaCard({
                   onClick={onCancelScheduling}
                   style={{
                     background: "transparent",
-                    border: `1px solid ${DASH.border}`,
-                    color: DASH.muted,
+                    border: "2px solid #000",
+                    color: COR_PRETO,
                     borderRadius: 8,
                     padding: "8px 12px",
                     fontSize: 12,

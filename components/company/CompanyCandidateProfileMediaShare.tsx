@@ -1,14 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { btnGoldStyle as btnGold } from "@/lib/button-3d";
+import { botaoPerfil, textoAviso, textoDourado, textoPreto } from "@/lib/ui/perfil-empresa-cores";
 import SecureVideoPlayer from "@/components/shared/SecureVideoPlayer";
 import {
   DASH,
   dashInnerBox,
   dashInput,
-  dashLabel,
-  dashTag,
 } from "@/lib/dashboard-theme";
 import PlatformVideoCall from "@/components/shared/PlatformVideoCall";
 
@@ -85,9 +83,9 @@ export default function CompanyCandidateProfileMediaShare({
                 height: 228,
                 borderRadius: 12,
                 overflow: "hidden",
-                border: `2px solid #8D6B1F`,
+                border: "2px solid #000",
                 background: "#000",
-                boxShadow: `0 0 0 1px rgba(200,155,60,0.25)`,
+                boxShadow: "none",
               }}
             >
               <SecureVideoPlayer
@@ -103,11 +101,15 @@ export default function CompanyCandidateProfileMediaShare({
             </div>
             <p
               style={{
-                ...dashTag,
+                ...textoDourado,
                 margin: 0,
                 display: "inline-block",
                 fontSize: 10,
                 textAlign: "center",
+                border: "2px solid #000",
+                borderRadius: 999,
+                padding: "4px 8px",
+                background: "transparent",
               }}
             >
               Vídeo de apresentação
@@ -119,7 +121,7 @@ export default function CompanyCandidateProfileMediaShare({
               width: 128,
               height: 228,
               borderRadius: 12,
-              border: `1px dashed ${DASH.border}`,
+              border: "2px dashed #000",
               background: DASH.inner,
               display: "flex",
               alignItems: "center",
@@ -128,7 +130,7 @@ export default function CompanyCandidateProfileMediaShare({
               textAlign: "center",
             }}
           >
-            <p style={{ margin: 0, fontSize: 11, color: DASH.muted, lineHeight: 1.4 }}>
+            <p style={{ margin: 0, fontSize: 11, color: "#000", lineHeight: 1.4 }}>
               Sem vídeo de apresentação
             </p>
           </div>
@@ -153,7 +155,7 @@ export default function CompanyCandidateProfileMediaShare({
             onClick={() => void onToggleShare()}
             title="Compartilhar com a equipe do mesmo plano"
             style={{
-              ...btnGold,
+              ...botaoPerfil,
               padding: "8px 12px",
               fontSize: 12,
               width: "100%",
@@ -167,22 +169,22 @@ export default function CompanyCandidateProfileMediaShare({
               style={{
                 ...dashInnerBox,
                 padding: 12,
-                border: `2px solid #8D6B1F`,
+                border: "2px solid #000",
                 display: "grid",
                 gap: 10,
               }}
             >
-              <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: DASH.gold }}>
+              <p style={{ margin: 0, fontSize: 12, fontWeight: 700, ...textoDourado }}>
                 Compartilhar com a equipe (mesmo plano)
               </p>
-              <p style={{ margin: 0, fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
+              <p style={{ margin: 0, fontSize: 11, color: "#000", lineHeight: 1.45 }}>
                 Só aparecem pessoas da mesma assinatura. Elas recebem o link no chat e em
                 compartilhados.
               </p>
               {loadingShareMembers ? (
-                <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Buscando equipe...</p>
+                <p style={{ margin: 0, fontSize: 12, color: "#000" }}>Buscando equipe...</p>
               ) : shareMembers.length === 0 ? (
-                <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
+                <p style={{ margin: 0, fontSize: 12, color: "#000" }}>
                   Nenhuma outra pessoa no mesmo plano. Cadastre usuários na aba Equipe.
                 </p>
               ) : (
@@ -200,22 +202,22 @@ export default function CompanyCandidateProfileMediaShare({
                           gap: 8,
                           alignItems: "center",
                           padding: "8px 10px",
-                          border: `2px solid #8D6B1F`,
+                          border: "2px solid #000",
                           borderRadius: 10,
-                          background: selected ? "rgba(200,155,60,0.18)" : DASH.inner,
-                          color: DASH.text,
+                          background: DASH.inner,
+                          color: "#000",
                           cursor: "pointer",
                           fontFamily: "inherit",
                           textAlign: "left",
                         }}
                       >
                         <span>
-                          <strong style={{ color: DASH.gold }}>{member.name}</strong>
-                          <span style={{ display: "block", fontSize: 10, color: DASH.muted }}>
+                          <strong style={{ ...textoDourado }}>{member.name}</strong>
+                          <span style={{ display: "block", fontSize: 10, color: "#000" }}>
                             {member.department} · {member.email}
                           </span>
                         </span>
-                        <span style={{ fontSize: 11, color: selected ? DASH.gold : DASH.muted }}>
+                        <span style={{ fontSize: 11, ...(selected ? textoDourado : textoPreto) }}>
                           {selected ? "Selecionado" : "Selecionar"}
                         </span>
                       </button>
@@ -224,7 +226,7 @@ export default function CompanyCandidateProfileMediaShare({
                 </div>
               )}
               <label>
-                <span style={{ ...dashLabel, display: "block", marginBottom: 4 }}>
+                <span style={{ ...textoDourado, display: "block", marginBottom: 4, fontSize: 11, textTransform: "uppercase" }}>
                   Nota (opcional)
                 </span>
                 <input
@@ -240,7 +242,7 @@ export default function CompanyCandidateProfileMediaShare({
                   style={{
                     margin: 0,
                     fontSize: 12,
-                    color: shareMsg.includes("compartilhado") ? "#4ade80" : "#f87171",
+                    ...(shareMsg.includes("compartilhado") ? textoDourado : textoAviso),
                   }}
                 >
                   {shareMsg}
@@ -252,7 +254,7 @@ export default function CompanyCandidateProfileMediaShare({
                   disabled={sharing || shareSelected.length === 0}
                   onClick={() => void onShare()}
                   style={{
-                    ...btnGold,
+                    ...botaoPerfil,
                     padding: "8px 12px",
                     fontSize: 12,
                     width: "fit-content",
