@@ -13,7 +13,7 @@ import {
   type ApplicationStage,
 } from "@/lib/jobs/job-posting";
 import ApplicationModeFields from "@/components/jobs/ApplicationModeFields";
-import { INSTAGRAM_SHARE_URL, facebookShareUrl, publicJobUrl, whatsAppShareUrl } from "@/lib/jobs/public-job-link";
+import { INSTAGRAM_SHARE_URL, facebookShareUrl, jobShareMessage, whatsAppShareUrl } from "@/lib/jobs/public-job-link";
 import fields from "@/app/admin/vagas/vagas-admin.module.css";
 import styles from "./company-vagas.module.css";
 import { useCompanyDashboardDataOptional } from "@/components/company/CompanyDashboardDataContext";
@@ -882,7 +882,7 @@ export default function CompanyVagasPanel({
                       <details className={styles.more}>
                         <summary>Compartilhar vaga</summary>
                         <div className={`${styles.moreMenu} ${styles.shareMenu}`}>
-                          <a className={styles.ghost} href={whatsAppShareUrl(job.title, job.id)} target="_blank" rel="noopener noreferrer">
+                          <a className={styles.ghost} href={whatsAppShareUrl(job)} target="_blank" rel="noopener noreferrer">
                             WhatsApp
                           </a>
                           <a className={styles.ghost} href={facebookShareUrl(job.id)} target="_blank" rel="noopener noreferrer">
@@ -892,13 +892,13 @@ export default function CompanyVagasPanel({
                             type="button"
                             className={styles.ghost}
                             onClick={() => {
-                              const url = publicJobUrl(job.id);
-                              void navigator.clipboard?.writeText(url).then(
+                              const texto = jobShareMessage(job);
+                              void navigator.clipboard?.writeText(texto).then(
                                 () => {
                                   setError("");
-                                  setMessage("Link copiado. Cole no Instagram.");
+                                  setMessage("Resumo da vaga copiado. Cole no Instagram.");
                                 },
-                                () => setError("Não foi possível copiar o link da vaga."),
+                                () => setError("Não foi possível copiar o resumo da vaga."),
                               );
                               window.open(INSTAGRAM_SHARE_URL, "_blank", "noopener,noreferrer");
                             }}
@@ -909,17 +909,17 @@ export default function CompanyVagasPanel({
                             type="button"
                             className={styles.ghost}
                             onClick={() => {
-                              const url = publicJobUrl(job.id);
+                              const texto = jobShareMessage(job);
                               if (!navigator.clipboard?.writeText) {
-                                setError("Não foi possível copiar o link da vaga.");
+                                setError("Não foi possível copiar o resumo da vaga.");
                                 return;
                               }
-                              void navigator.clipboard.writeText(url).then(
+                              void navigator.clipboard.writeText(texto).then(
                                 () => {
                                   setError("");
-                                  setMessage("Link da vaga copiado com sucesso");
+                                  setMessage("Resumo e link da vaga copiados.");
                                 },
-                                () => setError("Não foi possível copiar o link da vaga."),
+                                () => setError("Não foi possível copiar o resumo da vaga."),
                               );
                             }}
                           >

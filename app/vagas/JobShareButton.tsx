@@ -2,12 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  INSTAGRAM_SHARE_URL,
-  facebookShareUrl,
-  publicJobUrl,
-  whatsAppShareUrl,
-} from "@/lib/jobs/public-job-link";
+import { INSTAGRAM_SHARE_URL, facebookShareUrl } from "@/lib/jobs/public-job-link";
 import styles from "./vagas.module.css";
 
 async function copyText(value: string): Promise<boolean> {
@@ -40,18 +35,17 @@ async function copyText(value: string): Promise<boolean> {
   }
 }
 
-export default function JobShareButton({ jobId, title }: { jobId: string; title: string }) {
+export default function JobShareButton({ jobId, shareText }: { jobId: string; shareText: string }) {
   const [notice, setNotice] = useState("");
-  const url = publicJobUrl(jobId);
 
   async function copyLink(message: string) {
-    const ok = await copyText(url);
-    setNotice(ok ? message : "Não foi possível copiar o link.");
+    const ok = await copyText(shareText);
+    setNotice(ok ? message : "Não foi possível copiar o resumo da vaga.");
   }
 
   return (
     <div className={styles.shareRow}>
-      <a className={styles.shareButton} href={whatsAppShareUrl(title, jobId)} target="_blank" rel="noopener noreferrer">
+      <a className={styles.shareButton} href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer">
         WhatsApp
       </a>
       <a className={styles.shareButton} href={facebookShareUrl(jobId)} target="_blank" rel="noopener noreferrer">
@@ -61,13 +55,13 @@ export default function JobShareButton({ jobId, title }: { jobId: string; title:
         type="button"
         className={styles.shareButton}
         onClick={() => {
-          void copyLink("Link copiado. Cole no Instagram.");
+          void copyLink("Resumo da vaga copiado. Cole no Instagram.");
           window.open(INSTAGRAM_SHARE_URL, "_blank", "noopener,noreferrer");
         }}
       >
         Instagram
       </button>
-      <button type="button" className={styles.shareButton} onClick={() => void copyLink("Link copiado")}>
+      <button type="button" className={styles.shareButton} onClick={() => void copyLink("Resumo e link da vaga copiados.")}>
         Copiar link
       </button>
       <Link className={styles.shareButton} href="/vagas">

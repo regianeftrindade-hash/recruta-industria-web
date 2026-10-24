@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import { JobPostingError } from "@/lib/jobs/job-posting";
 import { getPublicJobView } from "@/lib/jobs/job-posting-db";
-import { jobSocialMetadata, publicJobUrl } from "@/lib/jobs/public-job-link";
+import { jobShareMessage, jobSocialMetadata, publicJobUrl } from "@/lib/jobs/public-job-link";
 import { jobApplicationDeadline, textWithoutJobSource } from "@/lib/jobs/public-job-display";
 import JobApplyButton from "../JobApplyButton";
 import JobBackButton from "../JobBackButton";
@@ -140,7 +140,7 @@ export default async function VagaPage({ params, searchParams }: Props) {
           <p className={styles.company}>{view.job.companyLabel}</p>
           <div className={styles.titleRow}>
             <h1 className={styles.title}>{view.job.title}</h1>
-            <JobShareButton jobId={view.job.id} title={view.job.title} />
+            <JobShareButton jobId={view.job.id} shareText={jobShareMessage(view.job)} />
           </div>
           <div className={styles.facts}>
             <Fact label="Data da publicação" value={view.job.publicationDate} />

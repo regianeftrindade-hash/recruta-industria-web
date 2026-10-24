@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   INSTAGRAM_SHARE_URL,
   facebookShareUrl,
+  jobShareMessage,
   jobSocialMetadata,
   publicJobUrl,
   safeJobReturnPath,
@@ -24,14 +25,29 @@ describe("link público da vaga", () => {
     expect(url).not.toContain("@");
   });
 
-  it("prepara o WhatsApp com o cargo e sem o nome da empresa", () => {
-    const text = whatsAppShareText("Auxiliar Administrativo", JOB_ID);
-    expect(text).toBe(
-      `Confira esta oportunidade no Recruta Indústria: Auxiliar Administrativo. Veja os detalhes e saiba como se candidatar: https://www.recrutaindustria.com/vagas/${JOB_ID}`,
-    );
+  it("prepara o WhatsApp com o resumo público da vaga", () => {
+    const vaga = {
+      id: JOB_ID,
+      title: "Auxiliar Administrativo",
+      companyLabel: "Empresa confidencial",
+      anonymous: true,
+      workplace: "Campinas/SP",
+      workModeLabel: "Presencial",
+      contractLabel: "CLT",
+      salaryLabel: "A combinar",
+      description: "Atuação no chão de fábrica. Contato rh@secreta.com ou 11988887777.",
+    };
+    const text = whatsAppShareText(vaga);
+    expect(text).toContain("Auxiliar Administrativo");
+    expect(text).toContain("Empresa confidencial · Campinas/SP · Presencial · CLT · A combinar");
+    expect(text).toContain("Atuação no chão de fábrica");
+    expect(text).toContain(`https://www.recrutaindustria.com/vagas/${JOB_ID}`);
     expect(text).not.toContain("MetalurgicaSigilosaXYZ");
-    expect(text).not.toMatch(/@/);
-    expect(whatsAppShareUrl("Auxiliar Administrativo", JOB_ID)).toContain("https://wa.me/?text=");
+    expect(text).not.toContain("rh@secreta.com");
+    expect(text).not.toContain("11988887777");
+    expect(jobShareMessage(vaga)).toBe(text);
+    expect(whatsAppShareUrl(vaga)).toContain("https://wa.me/?text=");
+    expect(decodeURIComponent(whatsAppShareUrl(vaga))).toContain("Atuação no chão de fábrica");
     expect(INSTAGRAM_SHARE_URL).toBe("https://www.instagram.com/");
   });
 
@@ -66,8 +82,12 @@ describe("link público da vaga", () => {
       companyLabel: "Paizao na Cozinha",
       description: "Vaga aberta.",
       anonymous: false,
+      workplace: "Campinas/SP",
+      salaryLabel: "A combinar",
     });
     expect(social.title).toBe("Soldador · Paizao na Cozinha");
     expect(social.description).toContain("Paizao na Cozinha");
+    expect(social.description).toContain("Campinas/SP");
+    expect(social.description).toContain("A combinar");
   });
 });

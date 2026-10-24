@@ -8,13 +8,59 @@ export function publicJobUrl(jobId: string): string {
   return `${PUBLIC_SITE_ORIGIN}/vagas/${jobId}`;
 }
 
-export function whatsAppShareText(title: string, jobId: string): string {
-  const cargo = title.trim() || "esta vaga";
-  return `Confira esta oportunidade no Recruta Indústria: ${cargo}. Veja os detalhes e saiba como se candidatar: ${publicJobUrl(jobId)}`;
+export type JobShareSource = {
+  id: string;
+  title: string;
+  companyLabel: string;
+  anonymous?: boolean;
+  salaryLabel?: string | null;
+  contractLabel?: string | null;
+  workModeLabel?: string | null;
+  workplace?: string | null;
+  description?: string | null;
+};
+
+function publicExcerpt(text: string): string {
+  const plain = text
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "")
+    .replace(/\+?\d[\d\s().-]{8,}\d/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (plain.length <= 180) return plain;
+  return `${plain.slice(0, 177).trimEnd()}...`;
 }
 
-export function whatsAppShareUrl(title: string, jobId: string): string {
-  return `https://wa.me/?text=${encodeURIComponent(whatsAppShareText(title, jobId))}`;
+function limitShareText(text: string, max = 280): string {
+  if (text.length <= max) return text;
+  return `${text.slice(0, max - 3).trimEnd()}...`;
+}
+
+/** Resumo público: empresa visível, local, contrato e um trecho da descrição. Sem e-mail nem telefone. */
+export function jobShareSummary(
+  job: Pick<JobShareSource, "companyLabel" | "salaryLabel" | "contractLabel" | "workModeLabel" | "workplace" | "description">,
+): string {
+  const facts = [job.companyLabel, job.workplace, job.workModeLabel, job.contractLabel, job.salaryLabel]
+    .map((item) => item?.trim())
+    .filter((item): item is string => Boolean(item))
+    .join(" · ");
+  const excerpt = publicExcerpt(job.description || "");
+  if (facts && excerpt) return limitShareText(`${facts}. ${excerpt}`);
+  return limitShareText(facts || excerpt);
+}
+
+export function jobShareMessage(job: JobShareSource): string {
+  const title = job.title.trim() || "Vaga";
+  const summary = jobShareSummary(job);
+  const url = publicJobUrl(job.id);
+  return summary ? `${title}\n${summary}\n${url}` : `${title}\n${url}`;
+}
+
+export function whatsAppShareText(job: JobShareSource): string {
+  return jobShareMessage(job);
+}
+
+export function whatsAppShareUrl(job: JobShareSource): string {
+  return `https://wa.me/?text=${encodeURIComponent(jobShareMessage(job))}`;
 }
 
 export function facebookShareUrl(jobId: string): string {
@@ -50,24 +96,12 @@ export function safeJobReturnPath(value: string | null | undefined): string | nu
   return `/vagas/${match[1]}?candidatar=1`;
 }
 
-function publicExcerpt(text: string): string {
-  const plain = text
-    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "")
-    .replace(/\+?\d[\d\s().-]{8,}\d/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (plain.length <= 180) return plain;
-  return `${plain.slice(0, 177).trimEnd()}...`;
-}
-
-export function jobSocialMetadata(job: Pick<PublicJob, "title" | "companyLabel" | "description" | "anonymous">): {
+export function jobSocialMetadata(job: Pick<PublicJob, "title" | "companyLabel" | "description" | "anonymous" | "salaryLabel" | "contractLabel" | "workModeLabel" | "workplace"> & { id?: string }): {
   title: string;
   description: string;
 } {
   const title = job.anonymous ? job.title : `${job.title} · ${job.companyLabel}`;
-  const excerpt = publicExcerpt(job.description);
-  const description = excerpt
-    ? `${job.companyLabel}. ${excerpt}`
-    : `${job.companyLabel}. Confira esta oportunidade no Recruta Indústria.`;
+  const summary = jobShareSummary(job);
+  const description = summary || `${job.companyLabel}. Confira esta oportunidade no Recruta Indústria.`;
   return { title, description };
 }

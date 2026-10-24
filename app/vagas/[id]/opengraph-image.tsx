@@ -11,12 +11,18 @@ export default async function OpenGraphImage({ params }: { params: Promise<{ id:
   const { id } = await params;
   let title = "Oportunidade";
   let detail = "Recruta Indústria";
+  let facts = "";
 
   try {
     const view = await getPublicJobView(id);
     if (view?.availability === "open") {
       title = view.job.title;
       detail = view.job.companyLabel;
+      facts = [view.job.workplace, view.job.workModeLabel, view.job.contractLabel, view.job.salaryLabel]
+        .map((item) => item?.trim())
+        .filter((item): item is string => Boolean(item))
+        .join(" · ")
+        .slice(0, 110);
     } else if (view?.availability === "unavailable") {
       title = view.title;
       detail = "Candidatura indisponível";
@@ -65,6 +71,11 @@ export default async function OpenGraphImage({ params }: { params: Promise<{ id:
           <div style={{ display: "flex", fontSize: 32, color: "#c89b3c" }}>
             {detail}
           </div>
+          {facts ? (
+            <div style={{ display: "flex", fontSize: 26, color: "#f5f5f5" }}>
+              {facts}
+            </div>
+          ) : null}
         </div>
       </div>
     ),
