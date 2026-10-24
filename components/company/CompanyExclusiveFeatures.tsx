@@ -2,6 +2,10 @@
 
 import React from "react";
 import { DASH, dashCard, dashInnerBox, dashPlanAccent, dashSectionTitle } from "@/lib/dashboard-theme";
+import {
+  VIDEO_INTERVIEW_EXCLUDED,
+  VIDEO_INTERVIEW_INCLUDED,
+} from "@/lib/company/company-premium-plans";
 
 const blockStyle: React.CSSProperties = {
   margin: 0,
@@ -264,14 +268,16 @@ export default function CompanyExclusiveFeatures({
         <FeatureSection
           emoji="📅"
           title="Propostas, entrevistas e videochamada"
-          description="Envie propostas, agende entrevistas e chame o candidato pela videochamada da plataforma."
+          description="Envie propostas, agende entrevistas e faça a entrevista individual pela chamada de vídeo da plataforma. O profissional entra pelo convite, sem plano pago."
           items={[
             "Propostas de entrevista",
             "Agenda de entrevistas no painel",
-            "Videochamada com o profissional",
+            VIDEO_INTERVIEW_INCLUDED,
+            `Não inclui: ${VIDEO_INTERVIEW_EXCLUDED} no plano Free`,
+            "O profissional convidado participa sem assinar plano",
             "Convite de colegas da equipe (assinatura compartilhada)",
           ]}
-          plano="Basic+"
+          plano="Basic, Premium e Empresarial"
         />
 
         <FeatureSection

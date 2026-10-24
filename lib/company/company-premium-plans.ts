@@ -1,5 +1,13 @@
 export type CompanyPlanTier = 'FREE' | 'BASIC' | 'PREMIUM' | 'EMPRESARIAL';
 
+/** Benefício comercial dos planos pagos. O profissional entra pelo convite, sem plano próprio. */
+export const VIDEO_INTERVIEW_INCLUDED =
+  'Entrevistas individuais por chamada de vídeo na plataforma';
+
+/** Exclusão do plano Free — a empresa não inicia a chamada. */
+export const VIDEO_INTERVIEW_EXCLUDED =
+  'Entrevistas por chamada de vídeo na plataforma';
+
 export interface CompanyPlanDefinition {
   id: CompanyPlanTier;
   emoji: string;
@@ -42,6 +50,7 @@ export const COMPANY_PLAN_TIERS: CompanyPlanDefinition[] = [
       'Banco de talentos',
       'Favoritos',
       'Convites para entrevista',
+      VIDEO_INTERVIEW_EXCLUDED,
       'Histórico de pesquisas',
       'Gestão de equipe RH',
     ],
@@ -67,6 +76,7 @@ export const COMPANY_PLAN_TIERS: CompanyPlanDefinition[] = [
       'Acompanhamento de candidatos favoritos',
       'Histórico de disponibilidade e atualização do perfil',
       '1 usuário incluso',
+      VIDEO_INTERVIEW_INCLUDED,
     ],
     limites: [
       'Até 150 liberações de contato por mês',
@@ -92,6 +102,7 @@ export const COMPANY_PLAN_TIERS: CompanyPlanDefinition[] = [
       'Exportação de perfis em PDF',
       'Histórico avançado de pesquisas',
       'Convites para entrevistas',
+      VIDEO_INTERVIEW_INCLUDED,
       'Registro de candidatos visualizados',
       'Dashboard completo de recrutamento',
       'Relatórios básicos de utilização',
@@ -125,6 +136,7 @@ export const COMPANY_PLAN_TIERS: CompanyPlanDefinition[] = [
       'Atendimento prioritário',
       'Selo Empresa Verificada Recruta Indústria',
       'Prioridade em novos recursos e testes',
+      VIDEO_INTERVIEW_INCLUDED,
     ],
     limites: [
       'Até 4 usuários inclusos',
@@ -135,6 +147,15 @@ export const COMPANY_PLAN_TIERS: CompanyPlanDefinition[] = [
 
 export function getPlanDefinition(tier: string): CompanyPlanDefinition {
   return COMPANY_PLAN_TIERS.find((p) => p.id === tier) ?? COMPANY_PLAN_TIERS[0];
+}
+
+/** Três destaques atuais do card, mais a entrevista por vídeo quando o plano a inclui. */
+export function destaquesComerciaisDoPlano(plano: CompanyPlanDefinition): string[] {
+  const base = plano.inclui.filter((item) => !item.startsWith('Tudo do ')).slice(0, 3);
+  if (!plano.inclui.includes(VIDEO_INTERVIEW_INCLUDED) || base.includes(VIDEO_INTERVIEW_INCLUDED)) {
+    return base;
+  }
+  return [...base, VIDEO_INTERVIEW_INCLUDED];
 }
 
 export const VIDEO_INTERVIEW_PAID_ONLY =

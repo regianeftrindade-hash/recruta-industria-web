@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { applyVerificationToFeatures, getPlanFeatures } from "@/lib/company/company-plan";
 import { getIncludedSeatsForTier } from "@/lib/company/company-extra-seats";
+import {
+  COMPANY_PLAN_TIERS,
+  VIDEO_INTERVIEW_EXCLUDED,
+  VIDEO_INTERVIEW_INCLUDED,
+  destaquesComerciaisDoPlano,
+} from "@/lib/company/company-premium-plans";
 
 describe("planos empresa (proposta e contato)", () => {
   it("FREE não envia proposta nem vê contato", () => {
@@ -25,6 +31,7 @@ describe("planos empresa (proposta e contato)", () => {
     const locked = applyVerificationToFeatures(getPlanFeatures("BASIC"), false);
     expect(locked.canSendProposals).toBe(false);
     expect(locked.canViewContacts).toBe(false);
+    expect(locked.canUseVideoInterview).toBe(true);
     expect(applyVerificationToFeatures(getPlanFeatures("BASIC"), true).canSendProposals).toBe(true);
   });
 
@@ -32,5 +39,33 @@ describe("planos empresa (proposta e contato)", () => {
     expect(getIncludedSeatsForTier("BASIC")).toBe(1);
     expect(getIncludedSeatsForTier("PREMIUM")).toBe(2);
     expect(getIncludedSeatsForTier("EMPRESARIAL")).toBe(4);
+  });
+
+  it("mantém preços e lista a entrevista por vídeo só nos planos pagos", () => {
+    const porId = Object.fromEntries(COMPANY_PLAN_TIERS.map((plano) => [plano.id, plano]));
+    expect(porId.FREE.preco).toBe("R$ 0");
+    expect(porId.FREE.precoCentavos).toBe(0);
+    expect(porId.BASIC.preco).toBe("R$ 249");
+    expect(porId.BASIC.precoCentavos).toBe(24900);
+    expect(porId.PREMIUM.preco).toBe("R$ 499");
+    expect(porId.PREMIUM.precoCentavos).toBe(49900);
+    expect(porId.EMPRESARIAL.preco).toBe("R$ 1.299");
+    expect(porId.EMPRESARIAL.precoCentavos).toBe(129900);
+
+    expect(porId.FREE.naoInclui).toContain(VIDEO_INTERVIEW_EXCLUDED);
+    expect(porId.FREE.inclui).not.toContain(VIDEO_INTERVIEW_INCLUDED);
+    expect(destaquesComerciaisDoPlano(porId.FREE)).not.toContain(VIDEO_INTERVIEW_INCLUDED);
+
+    for (const id of ["BASIC", "PREMIUM", "EMPRESARIAL"] as const) {
+      expect(porId[id].inclui).toContain(VIDEO_INTERVIEW_INCLUDED);
+      expect(porId[id].naoInclui ?? []).not.toContain(VIDEO_INTERVIEW_EXCLUDED);
+      const destaques = destaquesComerciaisDoPlano(porId[id]);
+      expect(destaques.at(-1)).toBe(VIDEO_INTERVIEW_INCLUDED);
+      expect(destaques.slice(0, 3)).not.toContain(VIDEO_INTERVIEW_INCLUDED);
+    }
+
+    expect(getPlanFeatures("BASIC").maxUnlocksPerMonth).toBe(150);
+    expect(getPlanFeatures("PREMIUM").unlimitedUnlocks).toBe(true);
+    expect(getPlanFeatures("BASIC").maxUsers).toBe(1);
   });
 });

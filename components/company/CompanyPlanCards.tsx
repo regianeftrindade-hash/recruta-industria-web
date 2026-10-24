@@ -4,7 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import {
   COMPANY_PLAN_TIERS,
-  type CompanyPlanDefinition,
+  destaquesComerciaisDoPlano,
   type CompanyPlanTier,
 } from "@/lib/company-premium-plans";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
@@ -19,10 +19,6 @@ interface CompanyPlanCardsProps {
 function primeiraFrase(texto: string): string {
   const match = texto.match(/^.*?[.!?](?:\s|$)/);
   return (match?.[0] ?? texto).trim();
-}
-
-function destaquesDoPlano(plano: CompanyPlanDefinition): string[] {
-  return plano.inclui.filter((item) => !item.startsWith("Tudo do ")).slice(0, 3);
 }
 
 export default function CompanyPlanCards({ currentTier, onSelectFree }: CompanyPlanCardsProps) {
@@ -49,7 +45,7 @@ export default function CompanyPlanCards({ currentTier, onSelectFree }: CompanyP
         {COMPANY_PLAN_TIERS.map((plano) => {
           const isCurrent = currentTier != null && plano.id === currentTier;
           const isPaid = plano.precoCentavos > 0;
-          const destaques = destaquesDoPlano(plano);
+          const destaques = destaquesComerciaisDoPlano(plano);
 
           return (
             <div
