@@ -136,6 +136,14 @@ export function preprocessResumeText(raw: string): string {
     '\n',
   );
 
+  // Rótulos de experiência colados no texto, sem quebrar "Empresa ABC | Cargo"
+  t = t.replace(/(?<=\S)\s*(?=(?:Empresa|Cargo|Fun[cç][aã]o)\s*[:\-–])/gi, '\n');
+  t = t.replace(/\s+(?=[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/gi, '\n');
+  t = t.replace(/([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})\s+(?=[A-Za-zÀ-ÿ])/gi, '$1\n');
+
+  // PDF sem quebra de linha cola a UF no próximo título: "PRSuperior"
+  t = t.replace(/\b([A-Z]{2})(?=[A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][a-záàâãéêíóôõúç])/g, '$1\n');
+
   // Tabela Word cola rótulo+valor: "Cidade:CuritibaEstado:PR"
   t = t.replace(
     /(Cidade|Munic[ií]pio|Estado|UF|Naturalidade|Endere[cç]o|CEP)\s*[:\-–]?\s*/gi,
@@ -538,11 +546,16 @@ function extractExperiencias(section: string): ExpItem[] {
     const pipe = line.match(/^(.+?)\s*[|–—]\s*(.+?)\s*[|–—]\s*(.+)$/);
     if (pipe) {
       flush();
-      const periodo = parsePeriodo(pipe[3]);
+      const parts = [pipe[1], pipe[2], pipe[3]].map((part) => normalizeSpaces(part));
+      const periodoIdx = parts.findIndex((part) => parsePeriodo(part));
+      const periodoPart = periodoIdx >= 0 ? parts[periodoIdx] : parts[2];
+      const rest = parts.filter((_, index) => index !== (periodoIdx >= 0 ? periodoIdx : 2));
+      const periodo = parsePeriodo(periodoPart);
+      const dataPrimeiro = periodoIdx === 0;
       items.push({
-        cargo: normalizeSpaces(pipe[1]),
-        empresa: normalizeSpaces(pipe[2]),
-        periodo: periodo?.label || normalizeSpaces(pipe[3]),
+        empresa: (dataPrimeiro ? rest[0] : rest[1] || rest[0]) || null,
+        cargo: (dataPrimeiro ? rest[1] : rest[0]) || null,
+        periodo: periodo?.label || periodoPart,
         dataInicio: periodo?.inicio || null,
         dataFim: periodo?.fim || null,
         descricao: null,
@@ -585,6 +598,22 @@ function extractExperiencias(section: string): ExpItem[] {
   }
   flush();
   return items.slice(0, 8);
+}
+
+/** Currículos sem o título "Experiência" ainda trazem Empresa/Cargo ou período | empresa | cargo. */
+function extractExperienciasRotuladas(text: string): ExpItem[] {
+  const all = linesOf(text);
+  const marcado = all.map((line) =>
+    /^(?:empresa|companhia|cargo|fun[cç][aã]o|posto)\s*[:\-–]/i.test(line)
+    || (/[|–—]/.test(line) && Boolean(parsePeriodo(line))),
+  );
+  const lines = all.filter((line, index) => {
+    if (marcado[index]) return true;
+    if (!parsePeriodo(line)) return false;
+    return Boolean(marcado[index - 1] || marcado[index + 1]);
+  });
+  if (!lines.length) return [];
+  return extractExperiencias(lines.join('\n'));
 }
 
 function extractCursos(section: string, fullText: string): string[] {
@@ -766,10 +795,10 @@ export function parseResumePatterns(rawText: string): ResumePatternParseResult {
     formacaoInfo.escolaridade = matchEscolaridade(text);
   }
 
-  const expFinal =
-    sections.experiencia.trim().length > 0
-      ? extractExperiencias(sections.experiencia)
-      : [];
+  const expDaSecao = sections.experiencia.trim()
+    ? extractExperiencias(sections.experiencia)
+    : [];
+  const expFinal = expDaSecao.length ? expDaSecao : extractExperienciasRotuladas(text);
 
   const cursos = extractCursos(sections.cursos, text);
   const cnh = extractCnh(text);

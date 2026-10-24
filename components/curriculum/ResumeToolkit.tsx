@@ -36,6 +36,8 @@ type Props = {
   notice?: string;
   getLocalDraft?: () => ResumeDraft;
   onDraftApplied?: (draft: ResumeDraft) => void;
+  /** Lê o arquivo e preenche o cadastro. A mensagem volta para o aviso do card. */
+  onAttachFile?: (file: File) => Promise<string | void>;
   onHoldFile?: (file: File | null) => void;
   onSaved?: () => void;
   onCancel?: () => void;
@@ -139,6 +141,7 @@ export default function ResumeToolkit({
   notice,
   getLocalDraft,
   onDraftApplied,
+  onAttachFile,
   onHoldFile,
   onSaved,
   onCancel,
@@ -210,6 +213,17 @@ export default function ResumeToolkit({
     }
   }
 
+  async function preencherComArquivo(file: File): Promise<string> {
+    if (!onAttachFile) return "";
+    try {
+      const aviso = await onAttachFile(file);
+      return typeof aviso === "string" ? aviso : "";
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível ler o currículo.");
+      return "";
+    }
+  }
+
   async function onAttach(file: File | undefined) {
     if (!file) return;
     setBusy(true);
@@ -226,19 +240,21 @@ export default function ResumeToolkit({
           setError("Arquivo muito grande (máx. 10MB).");
           return;
         }
+        const aviso = await preencherComArquivo(file);
         onHoldFile?.(file);
         setHeldName(file.name);
-        setMessage("Arquivo selecionado. Ele ainda não está no perfil.");
+        setMessage(aviso || "Arquivo selecionado. Ele ainda não está no perfil.");
         return;
       }
 
+      const aviso = await preencherComArquivo(file);
       const result = await attachResumeFile(file);
       if (!result.ok) {
         setError(result.error);
-        setMessage("");
+        setMessage(aviso);
         return;
       }
-      setMessage("Currículo salvo no perfil.");
+      setMessage([aviso, "Currículo salvo no perfil."].filter(Boolean).join(" "));
       await loadStatus();
       onSaved?.();
       setView("home");

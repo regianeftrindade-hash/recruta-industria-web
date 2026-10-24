@@ -612,6 +612,10 @@ export default function CadastroProfissional({
   /** Cidade vinda do currículo — aplica quando a lista IBGE do estado carregar. */
   const pendingCidadeImportRef = useRef<string | null>(null);
   const pendingResumeRef = useRef<File | null>(null);
+  /** Impede que um reload da sessão ou do perfil apague o que o currículo acabou de preencher. */
+  const curriculoImportadoRef = useRef(false);
+  const hidratacaoEmailRef = useRef<string | null>(null);
+  const checagemCadastroFeitaRef = useRef(false);
 
   const aplicarDadosDoPerfil = (formEdit: {
     formData: Record<string, unknown>;
@@ -840,6 +844,9 @@ export default function CadastroProfissional({
         return res.json();
       })
       .then((data) => {
+        if (curriculoImportadoRef.current) {
+          return fetch('/api/professional/sobre-mim', { credentials: 'include' });
+        }
         if (data.formEdit) {
           aplicarDadosDoPerfil(data.formEdit);
         } else if (data.email) {
@@ -886,6 +893,11 @@ export default function CadastroProfissional({
     if (!emailSessao) {
       return;
     }
+    if (curriculoImportadoRef.current || hidratacaoEmailRef.current === emailSessao) {
+      setProfileLoaded(true);
+      return;
+    }
+    hidratacaoEmailRef.current = emailSessao;
 
     const lerJsonSeguro = (raw: string | null) => {
       if (!raw) return null;
@@ -977,6 +989,8 @@ export default function CadastroProfissional({
       return;
     }
 
+    if (checagemCadastroFeitaRef.current || curriculoImportadoRef.current) return;
+
     setSenhaPreenchida(true);
     setPassword('');
     setConfirmPassword('');
@@ -991,7 +1005,7 @@ export default function CadastroProfissional({
     fetch('/api/professional/profile', { credentials: 'include' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (cancelled) return;
+        if (cancelled || curriculoImportadoRef.current) return;
         if (data?.registrationComplete) {
           setContaJaCompleta(true);
           return;
@@ -1015,7 +1029,10 @@ export default function CadastroProfissional({
       .catch(() => {})
       .finally(() => {
         window.clearTimeout(timeoutId);
-        if (!cancelled) setCheckingRegistration(false);
+        if (!cancelled) {
+          checagemCadastroFeitaRef.current = true;
+          setCheckingRegistration(false);
+        }
       });
 
     return () => {
@@ -1334,10 +1351,18 @@ export default function CadastroProfissional({
         : 'Não foi possível ler o currículo.');
     }
 
-    const structured =
-      (typeof data?.extraction?.rawText === 'string'
-        ? parseResumePatterns(data.extraction.rawText)
-        : null) || data?.extraction?.structured;
+    const doServidor = data?.extraction?.structured ?? null;
+    let structured = doServidor;
+    if (typeof data?.extraction?.rawText === 'string') {
+      try {
+        const lidoAgora = parseResumePatterns(data.extraction.rawText);
+        const camposAgora = lidoAgora.matchedFields?.length || 0;
+        const camposServidor = doServidor?.matchedFields?.length || 0;
+        if (!doServidor || camposAgora >= camposServidor) structured = lidoAgora;
+      } catch {
+        structured = doServidor;
+      }
+    }
     const patch = buildResumeFormApplyPatch(
       structured,
       { formData, telefone, telefone2 },
@@ -1356,6 +1381,8 @@ export default function CadastroProfissional({
       }
     }
 
+    if (patch.filledLabels.length) curriculoImportadoRef.current = true;
+
     setFormData((prev) => ({
       ...prev,
       ...(formDataPatch as Partial<typeof prev>),
@@ -1372,7 +1399,21 @@ export default function CadastroProfissional({
     if (!patch.filledLabels.length) {
       return 'Arquivo anexado. Não encontramos dados para preencher. Complete o cadastro e, no fim da página, geramos o PDF gratuito.';
     }
-    return `Cadastro preenchido automaticamente: ${patch.filledLabels.join(', ')}.`;
+
+    const etiquetas = patch.filledLabels.join(' ');
+    const blocos: Record<string, boolean> = {};
+    if (/Nome|Nascimento|Idade|CNH/.test(etiquetas)) blocos['dados-pessoais'] = true;
+    if (/E-mail|Telefone|WhatsApp/.test(etiquetas)) blocos.contato = true;
+    if (/Estado|Cidade/.test(etiquetas)) blocos.localizacao = true;
+    if (/Escolaridade|Curso|Instituição|Ano|Cursos/.test(etiquetas)) blocos.formacao = true;
+    if (/Experiências|Máquinas|Qualidade|Informática/.test(etiquetas)) blocos.experiencia = true;
+    if (Object.keys(blocos).length) {
+      setBlocosAbertos((prev) => ({ ...prev, ...blocos }));
+      requestAnimationFrame(() => {
+        document.getElementById('nome')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    }
+    return `Cadastro preenchido automaticamente: ${patch.filledLabels.join(', ')}. Revise os campos e salve.`;
   }
 
   const montarRascunhoCurriculo = () => sanitizeResumeDraft({
@@ -3229,6 +3270,7 @@ export default function CadastroProfissional({
               authenticated={Boolean(session?.user?.email)}
               getLocalDraft={montarRascunhoCurriculo}
               onDraftApplied={aplicarRascunhoCurriculo}
+              onAttachFile={importarCurriculoArquivo}
               onHoldFile={(file) => {
                 pendingResumeRef.current = file;
               }}

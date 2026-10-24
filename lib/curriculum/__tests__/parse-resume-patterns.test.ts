@@ -83,6 +83,40 @@ Estado: Paraná
     expect(r.estado).toBe('PR');
   });
 
+  it('lê empresa e cargo mesmo sem o título Experiência', () => {
+    const r = parseResumePatterns(`
+João da Silva Santos
+joao.silva@email.com
+(41) 99999-8877
+Empresa: Metalúrgica Paraná
+Cargo: Operador CNC
+01/2020 - 12/2023
+`);
+    expect(r.nome).toMatch(/João/i);
+    expect(r.experiencias?.[0]?.empresa).toMatch(/Metalúrgica/i);
+    expect(r.experiencias?.[0]?.cargo).toMatch(/Operador/i);
+    expect(r.experiencias?.[0]?.dataInicio).toBe('2020-01');
+  });
+
+  it('separa período, empresa e cargo quando a data vem primeiro', () => {
+    const r = parseResumePatterns(`
+Maria Souza
+maria.souza@empresa.com.br
+Experiência Profissional
+2015 - 2020 | Empresa ABC Ltda | Auxiliar de produção
+`);
+    expect(r.experiencias?.[0]?.empresa).toMatch(/ABC/i);
+    expect(r.experiencias?.[0]?.cargo).toMatch(/Auxiliar/i);
+    expect(r.experiencias?.[0]?.dataInicio).toBe('2015-01');
+  });
+
+  it('separa a UF colada no próximo título do PDF', () => {
+    const r = parseResumePatterns('Joao da Silva Santos joao.silva@email.com Curitiba - PRSuperior completo');
+    expect(r.nome).toMatch(/Joao/i);
+    expect(r.estado).toBe('PR');
+    expect(r.escolaridade).toBe('Superior completo');
+  });
+
   it('entende cidade com estado por extenso e data por extenso', () => {
     const r = parseResumePatterns(`
 Maria Souza
