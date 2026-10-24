@@ -8,15 +8,18 @@ test.describe("smoke público", () => {
   });
 
   test("home: Cadastre-se abre o cadastro completo do profissional e o da empresa", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await page.locator('a[href="/professional/register"]').click();
     await expect(page).toHaveURL(/\/professional\/register/);
     await expect(page.getByRole("heading", { name: /complete seu perfil/i })).toBeVisible();
+    await expect(page.getByText(/vídeo de apresentação/i)).toBeVisible();
+    await expect(page.getByText(/cadastro em 4 etapas/i)).toHaveCount(0);
 
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await page.locator('a[href="/company/cadastro"]').click();
     await expect(page).toHaveURL(/\/company\/cadastro/);
-    await expect(page.getByText(/cadastro empresa/i).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: /cadastro empresa/i })).toBeVisible();
+    await expect(page.locator("#empresa-cnpj")).toBeVisible();
   });
 
   test("login profissional sem tipo nao existe e o cadastro abre pelo login", async ({ page }) => {
@@ -27,11 +30,12 @@ test.describe("smoke público", () => {
     await page.getByRole("button", { name: /fazer cadastro/i }).click();
     await expect(page).toHaveURL(/\/professional\/register/);
     await expect(page.getByRole("heading", { name: /complete seu perfil/i })).toBeVisible();
+    await expect(page.getByText(/vídeo de apresentação/i)).toBeVisible();
 
     await page.goto("/login?tipo=empresa");
     await page.getByRole("button", { name: /fazer cadastro/i }).click();
     await expect(page).toHaveURL(/\/company\/cadastro/);
-    await expect(page.getByText(/cadastro empresa/i).first()).toBeVisible();
+    await expect(page.locator("#empresa-cnpj")).toBeVisible();
   });
 
   test("login profissional e empresa abrem", async ({ page }) => {
@@ -47,21 +51,18 @@ test.describe("smoke público", () => {
     await expect(page).toHaveURL(/\/professional\/register/);
     await expect(page.getByRole("heading", { name: /complete seu perfil/i })).toBeVisible();
     await expect(page.getByLabel(/nome completo/i)).toBeVisible();
-    await expect(page.getByText(/cadastro em 4 etapas/i)).toBeVisible();
+    await expect(page.getByText(/vídeo de apresentação/i)).toBeVisible();
+    await expect(page.getByText(/cadastro em 4 etapas/i)).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /^continuar$/i })).toHaveCount(0);
   });
 
-  test("cadastro empresa mostra o formulário e recusa senhas diferentes", async ({ page }) => {
+  test("cadastro empresa abre a lista completa do perfil", async ({ page }) => {
     await page.goto("/company/cadastro");
-    await expect(page.getByText(/cadastro empresa/i).first()).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByLabel(/razão social/i)).toBeVisible();
-    await expect(page.getByRole("button", { name: /criar conta/i })).toBeVisible();
-
-    await page.getByLabel(/razão social/i).fill("Indústria Teste");
-    await page.getByLabel(/^e-mail$/i).fill("e2e-smoke-empresa@example.invalid");
-    await page.getByLabel(/^criar senha$/i).fill("SenhaForte!2026");
-    await page.getByLabel(/^confirmar senha$/i).fill("OutraSenha!2026");
-    await page.getByRole("button", { name: /criar conta/i }).click();
-    await expect(page.getByText(/senhas não conferem/i)).toBeVisible();
-    await expect(page).toHaveURL(/\/company\/cadastro/);
+    await expect(page.getByRole("heading", { name: /cadastro empresa/i })).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("#empresa-cnpj")).toBeVisible();
+    await expect(page.locator("#empresa-cpf")).toBeVisible();
+    await expect(page.locator("#empresa-senha")).toBeVisible();
+    await expect(page.getByText(/termos/i).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /criar conta/i })).toHaveCount(0);
   });
 });

@@ -139,7 +139,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
     if (status === 'unauthenticated') {
       setCheckingRegistration(false);
       setContaJaCompleta(false);
-      if (!incorporado) router.replace('/company/cadastro');
+      setUsuarioLogado(false);
       return;
     }
 
@@ -679,23 +679,15 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
     }
   };
 
-  // Sem sessão: não pintar o formulário completo enquanto redireciona para /company/cadastro.
   if (
     !incorporado && (
       (status === 'loading' && !sessionWaitTimedOut) ||
-      status === 'unauthenticated' ||
       (status === 'authenticated' && checkingRegistration)
     )
   ) {
     return (
       <PageLoader
-        message={
-          checkingRegistration
-            ? 'Verificando cadastro...'
-            : status === 'unauthenticated'
-              ? 'Abrindo cadastro...'
-              : 'Carregando...'
-        }
+        message={checkingRegistration ? 'Verificando cadastro...' : 'Carregando...'}
       />
     );
   }
@@ -783,7 +775,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
   const responsavelTravado = isEditMode && !editandoResponsavel;
 
   return (
-    <div className={`${styles.container} ${incorporado ? styles.containerIncorporado : ''} ri-readable`}>
+    <div className={`${styles.container} ${styles.containerIncorporado} ri-readable`}>
       {incorporado ? null : <AuthAtmosphere intensity="strong" />}
       {loading && !isEditMode && <PageLoader message="Enviando cadastro..." mode="overlay" />}
       <div className={styles.card} style={{ maxWidth: 1100 }}>

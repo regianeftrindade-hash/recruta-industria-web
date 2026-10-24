@@ -579,7 +579,8 @@ export default function CadastroProfissional({
   ]);
   const [sobreMim, setSobreMim] = useState<SobreMimData>(SOBRE_MIM_VAZIO);
   const [wizardStep, setWizardStep] = useState(0);
-  const useWizard = !isEditMode;
+  // Cadastro público e aba Perfil: a lista inteira, com rolagem. Sem etapas.
+  const useWizard = false;
   const showWizardStep = (n: number) => !useWizard || wizardStep === n;
   const lastWizardStep = REGISTER_WIZARD_STEPS.length - 1;
 
@@ -1795,7 +1796,7 @@ export default function CadastroProfissional({
   }
 
   return (
-    <div className={`${styles.container} ${incorporado ? styles.containerIncorporado : ""} ri-readable`}>
+    <div className={`${styles.container} ${styles.containerIncorporado} ri-readable`}>
       <AuthAtmosphere intensity="strong" />
       {submitting && !isEditMode && <PageLoader message="Salvando cadastro..." mode="overlay" />}
       <div className={styles.card} role="main" aria-labelledby={incorporado ? undefined : "register-title"}>
@@ -1835,9 +1836,8 @@ export default function CadastroProfissional({
         ) : null}
         {!isEditMode && (
           <p className={styles.formHint}>
-            Cadastro em 4 etapas. Comece pelos campos com marcador{" "}
-            <strong>obrigatório</strong>. Seções recomendadas ficam recolhidas —
-            abra quando quiser completar o perfil.
+            A lista completa do perfil. Role a página para ver todos os campos.
+            Os marcados como <strong>obrigatório</strong> são necessários para concluir.
           </p>
         )}
 
@@ -3237,7 +3237,7 @@ export default function CadastroProfissional({
             </div>
           </BlocoCadastro>
 
-          {(isEditMode || wizardStep === lastWizardStep) && (
+          {(isEditMode || !useWizard || wizardStep === lastWizardStep) && (
             <ResumeToolkit
               variant={isEditMode ? 'profile' : 'register'}
               focus={isEditMode ? 'full' : 'generate'}
@@ -3400,7 +3400,9 @@ export default function CadastroProfissional({
           {!useWizard && (
           <div className={styles.submitBtnRow}>
             <button type="submit" className={styles.submitBtn} disabled={submitting}>
-              {salvoNoBotao ? 'Alterações salvas' : submitting ? 'Salvando...' : 'Salvar alterações'}
+              {isEditMode
+                ? (salvoNoBotao ? 'Alterações salvas' : submitting ? 'Salvando...' : 'Salvar alterações')
+                : 'Finalizar meu cadastro'}
             </button>
           </div>
           )}

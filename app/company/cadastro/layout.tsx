@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Criar conta empresa",
   description:
-    "Crie a conta da sua empresa no Recruta Indústria e complete o cadastro no painel.",
+    "Crie a conta da sua empresa no Recruta Indústria com a lista completa do perfil.",
 };
 
 export const dynamic = "force-dynamic";
