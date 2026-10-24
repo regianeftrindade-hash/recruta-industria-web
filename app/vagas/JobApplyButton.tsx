@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import ResumeToolkit from "@/components/curriculum/ResumeToolkit";
 import { describeApplyPanel, type ApplicantContact, type ProfessionalPlan } from "@/lib/jobs/application-access";
 import { hrefForShownContact } from "@/lib/jobs/job-text-links";
@@ -53,7 +53,7 @@ export default function JobApplyButton({
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState("");
   const [open, setOpen] = useState(false);
-  const [convidarConta, setConvidarConta] = useState(false);
+  const router = useRouter();
 
   async function loadState(verify = false) {
     const response = await fetch(`/api/vagas/${jobId}/candidatura${verify ? "?verificar=1" : ""}`, { credentials: "include" });
@@ -143,7 +143,7 @@ export default function JobApplyButton({
         const current = await loadState(autoOpen);
         if (cancelled || !autoOpen || current.applied) return;
         if (!current.authenticated) {
-          setConvidarConta(true);
+          router.replace(`/professional/register?redirect=${encodeURIComponent(`/vagas/${jobId}?candidatar=1`)}`);
           return;
         }
         const currentMode = current.applicationMode || mode;
@@ -190,13 +190,9 @@ export default function JobApplyButton({
     }
 
     if (!current.authenticated) {
-      setConvidarConta(true);
-      setOpen(false);
-      setError("");
-      setOutcome("");
+      router.push(`/professional/register?redirect=${encodeURIComponent(retornoCandidatura)}`);
       return;
     }
-    setConvidarConta(false);
 
     if (current.blockReason && current.canApply === false && !current.applied) {
       setError(current.blockReason);
@@ -224,8 +220,6 @@ export default function JobApplyButton({
   }
 
   const retornoCandidatura = `/vagas/${jobId}?candidatar=1`;
-  const cadastroHref = `/professional/cadastro?redirect=${encodeURIComponent(retornoCandidatura)}`;
-  const loginHref = `/login?tipo=profissional&redirect=${encodeURIComponent(retornoCandidatura)}`;
 
   const buttonLabel = busy
     ? (currentMode === "EMAIL" && panel.automatic ? "Enviando..." : currentMode === "INTERNAL" ? "Registrando..." : "Candidatar-se")
@@ -247,22 +241,6 @@ export default function JobApplyButton({
       >
         {buttonLabel}
       </button>
-      {convidarConta && !state?.authenticated && !applied ? (
-        <div className={styles.contactBox}>
-          <p className={styles.method}>Você ainda não tem cadastro?</p>
-          <p className={styles.note}>
-            A vaga que você acessou continua disponível. Crie sua conta gratuita para continuar sua candidatura e começar seu perfil profissional. A contratação do Premium é opcional e não é necessária para se candidatar.
-          </p>
-          <div className={styles.contactActions}>
-            <Link className="ri-btn-3d-gold" href={cadastroHref}>
-              Criar conta gratuita
-            </Link>
-            <Link className={styles.externalLink} href={loginHref}>
-              Entrar ou usar Google
-            </Link>
-          </div>
-        </div>
-      ) : null}
       {open && !applied && state?.authenticated ? (
         <div className={styles.contactBox}>
           <p className={styles.method}>{panel.methodLabel}</p>

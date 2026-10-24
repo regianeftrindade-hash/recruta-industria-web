@@ -167,8 +167,6 @@ export const CAMPOS_OBRIGATORIOS_POR_ETAPA: readonly (readonly CampoObrigatorioI
     'whatsapp',
     'estado',
     'cidade',
-    'password',
-    'confirmPassword',
   ],
   [
     'escolaridade',
@@ -177,7 +175,7 @@ export const CAMPOS_OBRIGATORIOS_POR_ETAPA: readonly (readonly CampoObrigatorioI
     'pretensaoSalarial',
   ],
   [],
-  ['autorizoDados', 'declaroVerdadeiro', 'aceitoLGPD'],
+  ['password', 'confirmPassword', 'autorizoDados', 'declaroVerdadeiro', 'aceitoLGPD'],
 ] as const;
 
 /** Valida só os obrigatórios da etapa (para o Continuar do wizard). */

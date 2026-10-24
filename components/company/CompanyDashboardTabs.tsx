@@ -92,6 +92,7 @@ export function CompanyDashboardNav({
         gap: 4,
         alignItems: "flex-end",
         justifyContent: "flex-end",
+        width: "100%",
         paddingTop: 10,
         borderBottom: "2px solid #8D6B1F",
         marginBottom: 12,

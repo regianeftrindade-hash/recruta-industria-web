@@ -22,6 +22,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { signIn, signOut, useSession, getSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { safeJobReturnPath } from '@/lib/jobs/public-job-link';
 import styles from './register.module.css';
 import PasswordStrengthMeter from '../../components/PasswordStrengthMeter';
 import { isValidEmail, sanitizeInput } from '../../../lib/security';
@@ -544,6 +545,8 @@ export default function CadastroProfissional({
   const searchParams = useSearchParams();
   const { data: session, status: sessionStatus } = useSession();
   const isEditMode = incorporado || searchParams.get('edit') === '1';
+  const destinoDepoisDoCadastro = () =>
+    safeJobReturnPath(searchParams.get('redirect')) || '/professional/boas-vindas';
   const [profileLoaded, setProfileLoaded] = useState(!isEditMode);
   /** Só bloqueia a tela quando há sessão autenticada para checar. Visitante vê o form na hora. */
   const [checkingRegistration, setCheckingRegistration] = useState(false);
@@ -567,6 +570,7 @@ export default function CadastroProfissional({
   const { fg, blocoErro, termoErro } = useCampoObrigatorioErro(camposObrigatoriosFaltando);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [emailRepetido, setEmailRepetido] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
@@ -977,7 +981,9 @@ export default function CadastroProfissional({
     if (sessionStatus === 'unauthenticated') {
       setCheckingRegistration(false);
       setContaJaCompleta(false);
-      router.replace('/professional/cadastro');
+      if (!safeJobReturnPath(searchParams.get('redirect'))) {
+        router.replace('/professional/cadastro');
+      }
       return;
     }
 
@@ -1473,6 +1479,17 @@ export default function CadastroProfissional({
     setCamposObrigatoriosFaltando([]);
     setEmailError('');
 
+    if (exibirCamposSenha) {
+      const repetido = emailRepetido.toLowerCase().trim();
+      if (!repetido || repetido !== formEmail) {
+        setEmailError('Repita o mesmo e-mail informado no cadastro.');
+        requestAnimationFrame(() => {
+          document.getElementById('emailRepetido')?.focus();
+        });
+        return;
+      }
+    }
+
     if (sessionEmail && formEmail && !sessaoAtiva) {
       alert(
         `Você está logado como ${sessionEmail}, mas o cadastro é para ${formEmail}. Saia da conta atual e tente novamente.`,
@@ -1577,7 +1594,7 @@ export default function CadastroProfissional({
             if (incorporado) onSalvo?.();
           } else {
             reportProfessionalSignupConversion();
-            router.push('/professional/boas-vindas');
+            router.push(destinoDepoisDoCadastro());
           }
           return;
         }
@@ -1672,7 +1689,7 @@ export default function CadastroProfissional({
         });
         localStorage.removeItem('dadosCadastroSimples');
         reportProfessionalSignupConversion();
-        router.push('/professional/boas-vindas');
+        router.push(destinoDepoisDoCadastro());
         return;
       }
 
@@ -1696,7 +1713,7 @@ export default function CadastroProfissional({
           });
           localStorage.removeItem('dadosCadastroSimples');
           reportProfessionalSignupConversion();
-          router.push('/professional/boas-vindas');
+          router.push(destinoDepoisDoCadastro());
           return;
         }
 
@@ -2373,51 +2390,6 @@ export default function CadastroProfissional({
                 Sua conta já está criada. Nome e e-mail permanecem preenchidos — complete o restante do perfil
                 para as empresas te encontrarem.
               </p>
-            )}
-
-            {exibirCamposSenha && (
-              <div className={styles.fieldsRow}>
-                <div className={fg('password')}>
-                  <label className={styles.label} htmlFor="password">Senha *</label>
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    minLength={8}
-                    className={styles.input}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete="new-password"
-                  />
-                  <PasswordStrengthMeter password={password} />
-                </div>
-                <div className={fg('confirmPassword')}>
-                  <label className={styles.label} htmlFor="confirmPassword">Confirmar senha *</label>
-                  <input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    required
-                    minLength={8}
-                    className={styles.input}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    autoComplete="new-password"
-                  />
-                </div>
-                <div className={styles.fieldGroup} style={{ alignSelf: 'end' }}>
-                  <label className={styles.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      checked={showPassword || showConfirmPassword}
-                      onChange={(e) => {
-                        setShowPassword(e.target.checked);
-                        setShowConfirmPassword(e.target.checked);
-                      }}
-                    />
-                    Mostrar senhas
-                  </label>
-                </div>
-              </div>
             )}
 
           </BlocoCadastro>
@@ -3276,6 +3248,69 @@ export default function CadastroProfissional({
               }}
             />
           )}
+
+          {exibirCamposSenha ? (
+            <BlocoCadastro {...propsBloco("conta", "🔐", "Sua conta")}>
+              <p className={styles.formHint}>
+                Repita seu e-mail e crie uma senha. Com isso você já tem um perfil no Recruta.
+              </p>
+              <div className={styles.contaLinha}>
+                <div className={fg('email')}>
+                  <label className={styles.label} htmlFor="emailRepetido">Repita seu e-mail *</label>
+                  <input
+                    id="emailRepetido"
+                    type="email"
+                    required
+                    className={styles.input}
+                    value={emailRepetido}
+                    onChange={(e) => setEmailRepetido(e.target.value)}
+                    autoComplete="email"
+                  />
+                </div>
+                <div className={fg('password')}>
+                  <label className={styles.label} htmlFor="password">Senha *</label>
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    minLength={8}
+                    className={styles.input}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                  />
+                  <PasswordStrengthMeter password={password} />
+                </div>
+                <div className={fg('confirmPassword')}>
+                  <label className={styles.label} htmlFor="confirmPassword">Confirmação de senha *</label>
+                  <input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    required
+                    minLength={8}
+                    className={styles.input}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    autoComplete="new-password"
+                  />
+                </div>
+              </div>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={showPassword || showConfirmPassword}
+                  onChange={(e) => {
+                    setShowPassword(e.target.checked);
+                    setShowConfirmPassword(e.target.checked);
+                  }}
+                />
+                Mostrar senhas
+              </label>
+              {emailError ? (
+                <p className={styles.anexoCurriculoErro} role="alert">{emailError}</p>
+              ) : null}
+            </BlocoCadastro>
+          ) : null}
 
           <BlocoCadastro {...propsBloco("termos", "📋", "Termos")}>
 

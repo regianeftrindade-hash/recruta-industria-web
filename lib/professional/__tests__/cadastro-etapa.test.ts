@@ -61,6 +61,7 @@ describe("validarCamposObrigatoriosEtapa", () => {
     expect(faltando.some((c) => c.id === "email")).toBe(true);
     expect(faltando.some((c) => c.id === "estado")).toBe(true);
     expect(faltando.some((c) => c.id === "cidade")).toBe(true);
+    expect(faltando.some((c) => c.id === "password")).toBe(false);
     expect(faltando.some((c) => c.id === "cpf")).toBe(false);
     expect(faltando.some((c) => c.id === "escolaridade")).toBe(false);
   });
@@ -74,7 +75,7 @@ describe("validarCamposObrigatoriosEtapa", () => {
     expect(faltando.some((c) => c.id === "areaInteresse")).toBe(false);
   });
 
-  it("etapa finalizar só cobra termos", () => {
+  it("etapa finalizar cobra senha e termos", () => {
     const faltando = validarCamposObrigatoriosEtapa(
       base({
         nome: "Ana",
@@ -82,7 +83,9 @@ describe("validarCamposObrigatoriosEtapa", () => {
       }),
       3,
     );
-    expect(faltando.every((c) => ["autorizoDados", "declaroVerdadeiro", "aceitoLGPD"].includes(c.id))).toBe(
+    expect(faltando.some((c) => c.id === "password")).toBe(true);
+    expect(faltando.some((c) => c.id === "autorizoDados")).toBe(true);
+    expect(faltando.every((c) => ["password", "confirmPassword", "autorizoDados", "declaroVerdadeiro", "aceitoLGPD"].includes(c.id))).toBe(
       true,
     );
   });

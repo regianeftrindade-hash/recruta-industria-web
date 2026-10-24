@@ -1104,3 +1104,51 @@
 .linkGoldButton:hover {
   text-decoration: underline;
 }
+
+/* Mesmas cores dos painéis empresa e profissional: creme, dourado e texto #414141 */
+.brandTitle,
+.heroTitle,
+.heroTitle span,
+.sectionTitle,
+.panelTitle,
+.chartTitle,
+.sectionTag,
+.revenueTotalLabel,
+.mailUnreadBadge,
+.dataTable th,
+.dataTable td:first-child,
+.dataRowHighlight td:first-child,
+.linkGoldButton,
+.navLink {
+  color: #414141;
+  -webkit-text-stroke: 0;
+  paint-order: normal;
+}
+
+.sectionTag {
+  background: #F3E6C8;
+  border-color: #8D6B1F;
+}
+
+.navLink {
+  background: #F3E6C8;
+  border: 2px solid #8D6B1F;
+}
+
+.navLinkActive {
+  background: #E8C56A;
+  color: #000;
+  border-color: #8D6B1F;
+}
+
+.btnGold,
+.btnGhost {
+  background: #E8C56A;
+  color: #000;
+  border: 2px solid #8D6B1F;
+}
+
+.dataTable th {
+  background: #F3E6C8;
+  color: #414141;
+}
