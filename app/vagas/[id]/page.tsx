@@ -89,7 +89,7 @@ function jobPostingJsonLd(job: {
     jobLocation: job.workplace
       ? { "@type": "Place", address: job.workplace }
       : undefined,
-    employmentType: job.contractLabel,
+    employmentType: job.contractLabel || undefined,
     url: publicJobUrl(job.id),
     directApply: true,
   };

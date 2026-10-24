@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   comparePublicationDateDesc,
   jobApplicationDeadline,
+  publicJobCopy,
+  statedJobFact,
   textWithoutJobSource,
 } from "@/lib/jobs/public-job-display";
 
@@ -17,6 +19,22 @@ describe("textWithoutJobSource", () => {
     expect(textWithoutJobSource("Levar RG e CPF no dia da entrevista.")).toBe(
       "Levar RG e CPF no dia da entrevista.",
     );
+  });
+});
+
+describe("publicJobCopy", () => {
+  it("troca o rótulo longo do salário e tira contratação não informada", () => {
+    expect(publicJobCopy(
+      "Prepara materiais.\nSalário informado no anúncio: R$ 2.398,00\nTipo de contratação não informado\nQuantidade de vagas no anúncio: 3.",
+    )).toBe(
+      "Prepara materiais.\nSalário: R$ 2.398,00\nQuantidade de vagas no anúncio: 3.",
+    );
+  });
+
+  it("não publica um fato vazio", () => {
+    expect(statedJobFact("Não informado no anúncio")).toBeNull();
+    expect(statedJobFact("CLT")).toBe("CLT");
+    expect(statedJobFact("Valinhos - SP")).toBe("Valinhos - SP");
   });
 });
 

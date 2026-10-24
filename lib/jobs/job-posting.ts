@@ -1,4 +1,5 @@
 import { normalizePhoneE164 } from "@/lib/notifications/sanitize";
+import { publicJobCopy, statedJobFact } from "@/lib/jobs/public-job-display";
 
 export const CONTRACT_TYPES = [
   { value: "CLT", label: "CLT" },
@@ -406,7 +407,8 @@ export function contractLabel(type: string | null, other: string | null): string
   if (!type) return null;
   if (type === "OUTRO") {
     const custom = other?.trim();
-    return custom || "Outro";
+    if (!custom || /n[aã]o informad|n[aã]o preenchid/i.test(custom)) return null;
+    return custom;
   }
   return CONTRACT_TYPES.find((item) => item.value === type)?.label ?? null;
 }
@@ -441,12 +443,10 @@ export function toPublicJob(job: JobRecord): PublicJob {
     salaryLabel: publicSalaryLabel(job),
     contractLabel: contractLabel(job.contractType, job.contractTypeOther),
     workModeLabel: workModeLabel(job.workMode),
-    workplace: job.workplace?.trim() ? job.workplace.trim() : null,
-    description: job.description,
-    observations: job.observations?.trim() ? job.observations : null,
-    applicationInstructions: job.applicationInstructions?.trim()
-      ? job.applicationInstructions
-      : null,
+    workplace: statedJobFact(job.workplace),
+    description: publicJobCopy(job.description) ?? "",
+    observations: publicJobCopy(job.observations),
+    applicationInstructions: publicJobCopy(job.applicationInstructions),
     applicationMode: isApplicationMode(job.applicationMode) ? job.applicationMode : "INTERNAL",
     externalApplyUrl:
       job.applicationMode === "EXTERNAL" && job.externalApplyUrl

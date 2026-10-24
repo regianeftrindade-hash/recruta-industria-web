@@ -95,6 +95,10 @@ describe("publicação de vagas", () => {
     }));
     expect(other.contractTypeOther).toBe("Intermitente");
     expect(toPublicJob(recordFrom(other)).contractLabel).toBe("Intermitente");
+    expect(toPublicJob(recordFrom(parseJobWrite(baseInput({
+      contractType: "OUTRO",
+      contractTypeOther: "Não informado no anúncio",
+    })))).contractLabel).toBeNull();
   });
 
   it("aceita home office, presencial e híbrido, uma modalidade por vez", () => {

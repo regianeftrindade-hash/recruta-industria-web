@@ -5,6 +5,20 @@ const ATRIBUICAO =
   /\s*Anúncio público do Emprega Campinas, código \d+, publicado em \d{2}\/\d{2}\/\d{4}\.?/gi;
 const PRAZO = /até\s+(\d{2}\/\d{2}\/\d{4})/i;
 
+const FATO_AUSENTE = /n[aã]o informad|n[aã]o preenchid|^outro$|^n\/a$/i;
+const LINHA_AUSENTE =
+  /^(?:tipo de contrata[cç][aã]o|contrata[cç][aã]o|modalidade|local(?: de trabalho)?|sal[aá]rio)\s*[:\-–]?\s*n[aã]o informad[oa]?(?:\s+no an[uú]ncio)?\.?$/i;
+const FRASE_AUSENTE =
+  /(?:tipo de contrata[cç][aã]o|contrata[cç][aã]o)\s*[:\-–]?\s*n[aã]o informad[oa]?(?:\s+no an[uú]ncio)?\.?/gi;
+const SALARIO_ROTULO = /sal[aá]rio informado no an[uú]ncio\s*:/gi;
+
+/** Valor que a vaga realmente trouxe. “Não informado” não entra na página. */
+export function statedJobFact(value: string | null | undefined): string | null {
+  const text = value?.replace(/\s+/g, " ").trim() || "";
+  if (!text || FATO_AUSENTE.test(text)) return null;
+  return text;
+}
+
 export function textWithoutJobSource(value: string | null | undefined): string | null {
   if (!value) return null;
   const cleaned = value
@@ -18,6 +32,20 @@ export function textWithoutJobSource(value: string | null | undefined): string |
     return null;
   }
   return cleaned;
+}
+
+/** Texto público da vaga: só o que consta, com o salário no rótulo curto. */
+export function publicJobCopy(value: string | null | undefined): string | null {
+  const base = textWithoutJobSource(value);
+  if (!base) return null;
+  const lines = base
+    .replace(SALARIO_ROTULO, "Salário:")
+    .replace(FRASE_AUSENTE, "")
+    .split("\n")
+    .map((line) => line.replace(/[ \t]{2,}/g, " ").trim())
+    .filter((line) => line && !LINHA_AUSENTE.test(line));
+  const cleaned = lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  return cleaned || null;
 }
 
 export function jobApplicationDeadline(value: {
