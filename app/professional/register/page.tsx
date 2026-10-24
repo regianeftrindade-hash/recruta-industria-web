@@ -45,6 +45,7 @@ import ResumeToolkit from '@/components/curriculum/ResumeToolkit';
 import { sanitizeResumeDraft, type ResumeDraft } from '@/lib/curriculum/resume-draft';
 import { buildResumeFormApplyPatch, matchCidadeIbge } from '@/lib/curriculum/apply-resume-to-form';
 import { parseResumePatterns } from '@/lib/curriculum/parse-resume-patterns';
+import { CurriculoAnexadoSemLeituraError, requestResumeExtract } from '@/lib/curriculum/resume-read-error';
 import PageLoader from '@/app/components/PageLoader';
 import {
   calculateProfileCompletion,
@@ -343,6 +344,7 @@ function AnexoCurriculoAutomatico({
               setNome(file.name);
               setAviso(mensagem);
             } catch (err) {
+              if (err instanceof CurriculoAnexadoSemLeituraError) setNome(file.name);
               setErro(err instanceof Error ? err.message : 'Não foi possível ler o currículo.');
             } finally {
               setBusy(false);
@@ -1330,26 +1332,23 @@ export default function CadastroProfissional({
     if (!file.size) throw new Error('O arquivo está vazio.');
     if (file.size > 8 * 1024 * 1024) throw new Error('Arquivo muito grande (máx. 8MB).');
 
+    const arquivoAnterior = pendingResumeRef.current;
     pendingResumeRef.current = file;
-    const body = new FormData();
-    body.set('file', file);
-    const res = await fetch('/api/professional/curriculum/extract', {
-      method: 'POST',
-      body,
-      credentials: 'include',
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      throw new Error(typeof data?.error === 'string' && data.error.trim()
-        ? data.error
-        : 'Não foi possível ler o currículo.');
+    let extraction;
+    try {
+      extraction = await requestResumeExtract(file);
+    } catch (err) {
+      if (!(err instanceof CurriculoAnexadoSemLeituraError)) {
+        pendingResumeRef.current = arquivoAnterior;
+      }
+      throw err;
     }
 
-    const doServidor = data?.extraction?.structured ?? null;
+    const doServidor = extraction.structured ?? null;
     let structured = doServidor;
-    if (typeof data?.extraction?.rawText === 'string') {
+    if (typeof extraction.rawText === 'string') {
       try {
-        const lidoAgora = parseResumePatterns(data.extraction.rawText);
+        const lidoAgora = parseResumePatterns(extraction.rawText);
         const camposAgora = lidoAgora.matchedFields?.length || 0;
         const camposServidor = doServidor?.matchedFields?.length || 0;
         if (!doServidor || camposAgora >= camposServidor) structured = lidoAgora;

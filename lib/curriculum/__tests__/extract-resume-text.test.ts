@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { extractResumeText } from '@/lib/curriculum/extract-resume-text';
+import { extractResumeText, mensagemFalhaExtracao } from '@/lib/curriculum/extract-resume-text';
 
 describe('extractResumeText (PDF)', () => {
   it('extrai texto de PDF com camada de texto', async () => {
@@ -37,5 +37,21 @@ describe('extractResumeText (PDF)', () => {
 
     expect(result.rawText).toMatch(/Maria Silva/i);
     expect(result.structured.contato?.email).toMatch(/maria\.silva@email\.com/i);
+    expect(result.structured.cursoFormacao).toMatch(/Engenharia Mecanica/i);
+    expect(result.structured.experiencias?.[0]?.cargo).toMatch(/Soldador/i);
+    expect(result.structured.experiencias?.[0]?.empresa).toMatch(/XYZ/i);
+  });
+
+  it('explica PDF corrompido e PDF protegido por senha', async () => {
+    const buffer = Buffer.from('%PDF-1.4\n%%EOF');
+    await expect(extractResumeText({
+      fileName: 'quebrado.pdf',
+      mimeType: 'application/pdf',
+      size: buffer.length,
+      buffer,
+    })).rejects.toThrow(/corrompido ou incompleto/);
+
+    const senha = Object.assign(new Error('No password given'), { name: 'PasswordException' });
+    expect(mensagemFalhaExtracao(senha, 'pdf')).toMatch(/protegido por senha/);
   });
 });

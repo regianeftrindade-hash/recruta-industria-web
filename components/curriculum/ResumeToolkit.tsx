@@ -14,6 +14,7 @@ import {
   type ResumeExperience,
   type ResumeModelId,
 } from "@/lib/curriculum/resume-draft";
+import { CurriculoAnexadoSemLeituraError } from "@/lib/curriculum/resume-read-error";
 import styles from "./resume-toolkit.module.css";
 
 type Status = {
@@ -220,7 +221,8 @@ export default function ResumeToolkit({
       return typeof aviso === "string" ? aviso : "";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível ler o currículo.");
-      return "";
+      if (err instanceof CurriculoAnexadoSemLeituraError) return "";
+      throw err;
     }
   }
 
@@ -258,9 +260,13 @@ export default function ResumeToolkit({
       await loadStatus();
       onSaved?.();
       setView("home");
-    } catch {
-      setError("Não foi possível enviar o currículo. Tente novamente.");
-      setMessage("");
+    } catch (err) {
+      if (!(err instanceof CurriculoAnexadoSemLeituraError)) {
+        setError(err instanceof Error && err.message
+          ? err.message
+          : "Não foi possível enviar o currículo. Tente novamente.");
+        setMessage("");
+      }
     } finally {
       setBusy(false);
     }

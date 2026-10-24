@@ -90,6 +90,8 @@ export async function POST(request: NextRequest) {
     console.error('Erro ao extrair currículo:', error);
     const message =
       error instanceof Error ? error.message : 'Erro ao processar o currículo.';
-    return NextResponse.json({ error: message }, { status: 500 });
+    const rejeitado =
+      /não corresponde|arquivo vazio|aceitamos apenas|muito grande|nome do arquivo/i.test(message);
+    return NextResponse.json({ error: message }, { status: rejeitado ? 400 : 500 });
   }
 }

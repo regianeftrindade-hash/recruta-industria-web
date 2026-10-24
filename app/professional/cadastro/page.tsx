@@ -12,6 +12,8 @@ import { validatePasswordStrength } from "@/lib/password-strength";
 import { safeJobReturnPath } from "@/lib/jobs/public-job-link";
 import ResumeToolkit from "@/components/curriculum/ResumeToolkit";
 import { sanitizeResumeDraft, type ResumeDraft } from "@/lib/curriculum/resume-draft";
+import { parseResumePatterns } from "@/lib/curriculum/parse-resume-patterns";
+import { requestResumeExtract } from "@/lib/curriculum/resume-read-error";
 
 const SIMPLE_STORAGE_KEY = "dadosCadastroSimples";
 const AVISO_CURRICULO_PENDENTE = "O currículo ainda não foi salvo no perfil. Conclua o cadastro nesta página. Se você sair agora, o arquivo será perdido.";
@@ -347,6 +349,25 @@ export default function CadastroSimplesProfissionalPage() {
             pendingDraftRef.current = draft;
             if (draft.nome) setNome(draft.nome);
             if (draft.email) setEmail(draft.email);
+          }}
+          onAttachFile={async (file) => {
+            const extraction = await requestResumeExtract(file);
+            const structured = extraction.rawText
+              ? parseResumePatterns(extraction.rawText)
+              : extraction.structured;
+            const labels: string[] = [];
+            if (structured?.nome) {
+              setNome(structured.nome);
+              labels.push("Nome");
+            }
+            if (structured?.contato?.email) {
+              setEmail(structured.contato.email);
+              labels.push("E-mail");
+            }
+            if (!labels.length) {
+              return "Arquivo selecionado. Não encontramos nome ou e-mail para preencher. Complete esses campos manualmente.";
+            }
+            return `Cadastro preenchido automaticamente: ${labels.join(", ")}. Revise os campos antes de criar a conta.`;
           }}
           onHoldFile={(file) => {
             pendingResumeRef.current = file;

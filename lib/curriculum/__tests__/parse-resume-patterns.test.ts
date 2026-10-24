@@ -153,6 +153,31 @@ CNC, Injetora, CEP, Excel Básico
     expect(r.escolaridade).toBe('Superior completo');
   });
 
+  it('lê formação e experiência escritas em uma linha rotulada', () => {
+    const r = parseResumePatterns(`
+Nome: Maria Silva Santos
+Email: maria.silva@email.com
+Telefone: (11) 98765-4321
+Cidade: Sao Paulo - SP
+Formacao: Engenharia Mecanica
+Experiencia: Soldador na Empresa XYZ 2018-2024
+`);
+    expect(r.nome).toMatch(/Maria Silva Santos/i);
+    expect(r.cursoFormacao).toMatch(/Engenharia Mecanica/i);
+    expect(r.experiencias?.[0]?.cargo).toMatch(/Soldador/i);
+    expect(r.experiencias?.[0]?.empresa).toMatch(/Empresa XYZ/i);
+    expect(r.experiencias?.[0]?.dataInicio).toBe('2018-01');
+    expect(r.experiencias?.[0]?.dataFim).toBe('2024-01');
+    expect(r.escolaridade).toBeNull();
+  });
+
+  it('não transforma escolaridade rotulada em curso', () => {
+    const r = parseResumePatterns('João da Silva\nFormação: Superior completo');
+    expect(r.escolaridade).toBe('Superior completo');
+    expect(r.cursoFormacao || '').not.toMatch(/Superior completo/i);
+    expect(r.experiencias).toBeNull();
+  });
+
   it('entende cidade com estado por extenso e data por extenso', () => {
     const r = parseResumePatterns(`
 Maria Souza

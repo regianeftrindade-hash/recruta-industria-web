@@ -172,6 +172,21 @@ async function extractFromDoc(buffer: Buffer): Promise<string> {
   return [doc.getBody(), doc.getHeaders(), doc.getFooters()].filter(Boolean).join('\n\n');
 }
 
+export function mensagemFalhaExtracao(error: unknown, format: 'pdf' | 'docx' | 'doc'): string {
+  const name =
+    error && typeof error === 'object' && 'name' in error
+      ? String((error as { name?: unknown }).name || '')
+      : '';
+  const message = error instanceof Error ? error.message : '';
+  if (format === 'pdf' && (name === 'PasswordException' || /password/i.test(message))) {
+    return 'Este PDF está protegido por senha. Salve uma cópia sem senha para a leitura automática. O cadastro pode ser preenchido manualmente.';
+  }
+  if (format === 'pdf' && (name === 'InvalidPDFException' || /invalid pdf/i.test(message))) {
+    return 'Este PDF está corrompido ou incompleto. Anexe outro arquivo ou preencha o cadastro manualmente.';
+  }
+  return 'Não foi possível ler este arquivo. Tente exportar de novo em PDF ou DOCX. O cadastro pode ser preenchido manualmente.';
+}
+
 /**
  * Extrai texto do currículo em memória e aplica padrões para estruturar campos.
  * Não grava arquivo nem dados no banco.
@@ -209,17 +224,15 @@ export async function extractResumeText(params: {
     }
   } catch (error) {
     console.error('Falha na biblioteca de extração:', error);
-    throw new Error(
-      'Não foi possível ler este arquivo. Tente exportar de novo em PDF ou DOCX.',
-    );
+    throw new Error(mensagemFalhaExtracao(error, format));
   }
 
   const rawText = normalizeExtractedText(raw);
   if (!rawText) {
     throw new Error(
       format === 'pdf'
-        ? 'Este PDF não tem texto selecionável (pode ser escaneado/imagem). Salve do Word como DOCX ou PDF com texto e tente de novo.'
-        : 'Não foi possível extrair texto deste arquivo. Tente outro currículo.',
+        ? 'Este PDF não tem texto selecionável (pode ser uma imagem ou um documento escaneado). Não foi possível fazer a leitura automática. Preencha o cadastro manualmente.'
+        : 'Não foi possível extrair texto deste arquivo. Preencha o cadastro manualmente.',
     );
   }
 

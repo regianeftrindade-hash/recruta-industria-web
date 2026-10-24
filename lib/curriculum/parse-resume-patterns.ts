@@ -513,6 +513,17 @@ function extractFormacaoDetails(section: string): {
   return { formacao, cursoFormacao, instituicao, ano, escolaridade };
 }
 
+/** "Formação: Engenharia Mecânica" — só com rótulo e valor, sem transformar escolaridade em curso. */
+function extractCursoRotulado(text: string): string | null {
+  const match = text.match(
+    /(?:forma[cç][aã]o(?:\s+acad[eê]mica)?|curso|gradua[cç][aã]o)\s*:\s*([^\n]{3,80})/i,
+  );
+  if (!match) return null;
+  const value = normalizeSpaces(match[1]).replace(/\s+\d{4}.*$/, '');
+  if (value.length < 3 || matchEscolaridade(value)) return null;
+  return value;
+}
+
 function parsePeriodo(line: string): { inicio: string; fim: string; label: string } | null {
   const m = line.match(
     /(\d{2}\/\d{4}|\d{4})\s*[-–—aà]+\s*(\d{2}\/\d{4}|\d{4}|atual|presente|hoje)/i,
@@ -531,6 +542,49 @@ type ExpItem = NonNullable<ResumeStructuredFields['experiencias']>[number] & {
   dataInicio?: string | null;
   dataFim?: string | null;
 };
+
+/** "Experiência: Soldador na Empresa XYZ 2018-2024" — só quando cargo e empresa estão explícitos. */
+function parseLinhaExperiencia(value: string): ExpItem | null {
+  const bruto = normalizeSpaces(value);
+  if (bruto.length < 3 || bruto.length > 160) return null;
+  const periodo = parsePeriodo(bruto);
+  const resto = periodo
+    ? normalizeSpaces(bruto.replace(periodo.label, ' ').replace(/[()]/g, ' '))
+    : bruto;
+  if (!resto) return null;
+
+  const na = resto.match(/^(.+)\s+na\s+(.+)$/i);
+  if (na && na[1].trim().length >= 2 && na[2].trim().length >= 2) {
+    return {
+      cargo: normalizeSpaces(na[1]),
+      empresa: normalizeSpaces(na[2]),
+      periodo: periodo?.label || null,
+      dataInicio: periodo?.inicio || null,
+      dataFim: periodo?.fim || null,
+      descricao: null,
+    };
+  }
+
+  const partes = resto.split(/\s+[-–—|]\s+/);
+  if (
+    partes.length === 2
+    && partes[0].length >= 2
+    && partes[1].length >= 2
+    && partes[0].length <= 60
+    && partes[1].length <= 80
+  ) {
+    return {
+      cargo: normalizeSpaces(partes[0]),
+      empresa: normalizeSpaces(partes[1]),
+      periodo: periodo?.label || null,
+      dataInicio: periodo?.inicio || null,
+      dataFim: periodo?.fim || null,
+      descricao: null,
+    };
+  }
+
+  return null;
+}
 
 function extractExperiencias(section: string): ExpItem[] {
   const lines = linesOf(section);
@@ -566,6 +620,7 @@ function extractExperiencias(section: string): ExpItem[] {
 
     const empLabel = line.match(/^(?:empresa|companhia)\s*[:\-–]\s*(.+)$/i);
     const cargoLabel = line.match(/^(?:cargo|fun[cç][aã]o|posto)\s*[:\-–]\s*(.+)$/i);
+    const expLabel = line.match(/^(?:experi[eê]ncia(?:\s+profissional(?:is)?)?)\s*:\s*(.+)$/i);
     const periodo = parsePeriodo(line);
 
     if (empLabel) {
@@ -577,6 +632,14 @@ function extractExperiencias(section: string): ExpItem[] {
     if (cargoLabel) {
       if (!current) current = {};
       current.cargo = normalizeSpaces(cargoLabel[1]);
+      continue;
+    }
+    if (expLabel) {
+      const parsed = parseLinhaExperiencia(expLabel[1]);
+      if (parsed) {
+        flush();
+        items.push(parsed);
+      }
       continue;
     }
     if (periodo) {
@@ -605,7 +668,7 @@ function extractExperiencias(section: string): ExpItem[] {
 function extractExperienciasRotuladas(text: string): ExpItem[] {
   const all = linesOf(text);
   const marcado = all.map((line) =>
-    /^(?:empresa|companhia|cargo|fun[cç][aã]o|posto)\s*[:\-–]/i.test(line)
+    /^(?:empresa|companhia|cargo|fun[cç][aã]o|posto|experi[eê]ncia(?:\s+profissional(?:is)?)?)\s*[:\-–]/i.test(line)
     || (/[|–—]/.test(line) && Boolean(parsePeriodo(line))),
   );
   const lines = all.filter((line, index) => {
@@ -794,6 +857,9 @@ export function parseResumePatterns(rawText: string): ResumePatternParseResult {
   );
   if (!formacaoInfo.escolaridade) {
     formacaoInfo.escolaridade = matchEscolaridade(text);
+  }
+  if (!formacaoInfo.cursoFormacao) {
+    formacaoInfo.cursoFormacao = extractCursoRotulado(text);
   }
 
   const expDaSecao = sections.experiencia.trim()
