@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { DASH, dashCard, dashSectionTitle } from "@/lib/dashboard-theme";
 import { botaoPerfil, COR_PRETO, textoAviso, textoDourado, textoPreto } from "@/lib/ui/perfil-empresa-cores";
 import type { JobProposalDTO, InterviewLocationType } from "@/lib/company/job-proposals-shared";
+import { VIDEO_INTERVIEW_PAID_ONLY } from "@/lib/company/company-premium-plans";
 import { formatInterviewComprovante } from "@/lib/company/job-proposals-shared";
 import { formatReaisDisplay } from "@/lib/format-reais";
 import {
@@ -28,6 +29,7 @@ const STATUS_LABEL: Record<string, string> = {
 type Props = {
   profileId: string;
   canSend: boolean;
+  videoEntrevistaLiberada: boolean;
   proposals: JobProposalDTO[];
   onChanged: () => void;
 };
@@ -35,6 +37,7 @@ type Props = {
 export default function PropostasEntrevistasEmpresa({
   profileId,
   canSend,
+  videoEntrevistaLiberada,
   proposals,
   onChanged,
 }: Props) {
@@ -43,6 +46,13 @@ export default function PropostasEntrevistasEmpresa({
   const [feedback, setFeedback] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
 
   // Se há entrevista aguardando, atualiza para ver confirmação do profissional
+  useEffect(() => {
+    if (videoEntrevistaLiberada) return;
+    setInterviewForm((form) =>
+      form.locationType === "PLATFORM" ? { ...form, locationType: "ONLINE" } : form,
+    );
+  }, [videoEntrevistaLiberada]);
+
   useEffect(() => {
     const pending = proposals.some((p) => p.status === "INTERVIEW_PENDING");
     if (!pending) return;
@@ -63,6 +73,10 @@ export default function PropostasEntrevistasEmpresa({
   const agendar = async (proposalId: string) => {
     if (!interviewForm.date || !interviewForm.time) {
       setFeedback({ tone: "err", text: "Preencha data e horário." });
+      return;
+    }
+    if (interviewForm.locationType === "PLATFORM" && !videoEntrevistaLiberada) {
+      setFeedback({ tone: "err", text: VIDEO_INTERVIEW_PAID_ONLY });
       return;
     }
     setSaving(true);
@@ -386,6 +400,7 @@ export default function PropostasEntrevistasEmpresa({
                     saving={saving}
                     isScheduling={schedulingId === p.id}
                     interviewForm={interviewForm}
+                    videoEntrevistaLiberada={videoEntrevistaLiberada}
                     onExcluir={() => void excluir(p.id)}
                     onStartScheduling={() => setSchedulingId(p.id)}
                     onCancelScheduling={() => setSchedulingId(null)}

@@ -137,6 +137,9 @@ export function getPlanDefinition(tier: string): CompanyPlanDefinition {
   return COMPANY_PLAN_TIERS.find((p) => p.id === tier) ?? COMPANY_PLAN_TIERS[0];
 }
 
+export const VIDEO_INTERVIEW_PAID_ONLY =
+  "Entrevista por vídeo disponível nos planos pagos.";
+
 export function getPaidPlanTiers(): CompanyPlanTier[] {
   return COMPANY_PLAN_TIERS.filter((p) => p.precoCentavos > 0).map((p) => p.id);
 }

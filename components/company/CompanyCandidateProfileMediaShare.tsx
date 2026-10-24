@@ -9,12 +9,14 @@ import {
   dashInput,
 } from "@/lib/dashboard-theme";
 import PlatformVideoCall from "@/components/shared/PlatformVideoCall";
+import { VIDEO_INTERVIEW_PAID_ONLY } from "@/lib/company/company-premium-plans";
 
 type ShareMember = { id: string; name: string; email: string; department: string };
 
 type Props = {
   profileId: string;
   bloqueado: boolean;
+  videoEntrevistaLiberada: boolean;
   nome: string;
   videoApresentacaoUrl: string | null;
   videoRef: React.RefObject<HTMLDivElement | null>;
@@ -34,6 +36,7 @@ type Props = {
 export default function CompanyCandidateProfileMediaShare({
   profileId,
   bloqueado,
+  videoEntrevistaLiberada,
   nome,
   videoApresentacaoUrl,
   videoRef,
@@ -136,7 +139,7 @@ export default function CompanyCandidateProfileMediaShare({
           </div>
         ) : null}
 
-        {!bloqueado && (
+        {!bloqueado && videoEntrevistaLiberada ? (
           <PlatformVideoCall
             role="company"
             profileId={profileId}
@@ -145,7 +148,31 @@ export default function CompanyCandidateProfileMediaShare({
             peerLabel={nome.split(" ")[0] || "candidato"}
             autoChamar={autoChamar}
           />
-        )}
+        ) : !videoEntrevistaLiberada ? (
+          <div
+            style={{
+              ...dashInnerBox,
+              maxWidth: 280,
+              padding: 12,
+              border: "2px solid #000",
+              display: "grid",
+              gap: 8,
+            }}
+          >
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, ...textoDourado }}>
+              Chamada de vídeo
+            </p>
+            <p style={{ margin: 0, fontSize: 13, color: "#000", lineHeight: 1.45 }}>
+              {VIDEO_INTERVIEW_PAID_ONLY}
+            </p>
+            <a
+              href="/company/dashboard-empresa/meu-plano"
+              style={{ ...botaoPerfil, padding: "8px 12px", fontSize: 12, textDecoration: "none", width: "fit-content" }}
+            >
+              Ver planos
+            </a>
+          </div>
+        ) : null}
       </div>
 
       {!bloqueado && (

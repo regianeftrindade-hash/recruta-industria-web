@@ -6,6 +6,7 @@ import { DASH, dashInnerBox } from "@/lib/dashboard-theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
 import { formatInterviewComprovante } from "@/lib/company/job-proposals-shared";
+import { VIDEO_INTERVIEW_PAID_ONLY } from "@/lib/company/company-premium-plans";
 
 const rowStyle: React.CSSProperties = {
   display: "flex",
@@ -110,6 +111,7 @@ type Props = {
   onCancelarComJustificativa: () => void;
   onReagendar: () => void;
   onPerfil: () => void;
+  videoEntrevistaLiberada: boolean;
 };
 
 export default function CompanyEntrevistaCard({
@@ -129,6 +131,7 @@ export default function CompanyEntrevistaCard({
   onCancelarComJustificativa,
   onReagendar,
   onPerfil,
+  videoEntrevistaLiberada,
 }: Props) {
   const router = useRouter();
   if (!p.interview) return null;
@@ -255,10 +258,19 @@ export default function CompanyEntrevistaCard({
         (p.status === "INTERVIEW_CONFIRMED" || p.status === "INTERVIEW_PENDING") ? (
           <button
             type="button"
-            onClick={() =>
-              router.push(`/company/professional/${encodeURIComponent(p.profileId)}?chamar=1`)
-            }
-            style={{ ...btnGold, padding: "5px 8px", fontSize: 10 }}
+            disabled={!videoEntrevistaLiberada}
+            title={videoEntrevistaLiberada ? "Ligar agora" : VIDEO_INTERVIEW_PAID_ONLY}
+            onClick={() => {
+              if (!videoEntrevistaLiberada) return;
+              router.push(`/company/professional/${encodeURIComponent(p.profileId)}?chamar=1`);
+            }}
+            style={{
+              ...btnGold,
+              padding: "5px 8px",
+              fontSize: 10,
+              opacity: videoEntrevistaLiberada ? 1 : 0.55,
+              cursor: videoEntrevistaLiberada ? "pointer" : "not-allowed",
+            }}
           >
             Ligar agora
           </button>
@@ -418,7 +430,9 @@ export default function CompanyEntrevistaCard({
                 color: DASH.text,
               }}
             >
-              <option value="PLATFORM">Pela plataforma</option>
+              <option value="PLATFORM" disabled={!videoEntrevistaLiberada}>
+                Pela plataforma (vídeo Recruta)
+              </option>
               <option value="ONLINE">Online (Meet/Teams)</option>
               <option value="PRESENTIAL">Presencial</option>
             </select>
@@ -460,6 +474,11 @@ export default function CompanyEntrevistaCard({
           {rescheduleForm.locationType === "PLATFORM" ? (
             <p style={{ margin: 0, fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
               A entrevista será pela vídeo chamada da plataforma. Não é necessário link externo.
+            </p>
+          ) : null}
+          {!videoEntrevistaLiberada ? (
+            <p style={{ margin: 0, fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
+              {VIDEO_INTERVIEW_PAID_ONLY}
             </p>
           ) : null}
           <textarea

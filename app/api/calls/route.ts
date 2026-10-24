@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { resolveAuthEmail } from "@/lib/api-auth";
 import { resolveCompanyActor } from "@/lib/company/company-team";
 import { createVideoCallInvite, getIncomingCallForProfile } from "@/lib/video-calls";
+import { getCompanyPlanContext } from "@/lib/company-plan";
+import { VIDEO_INTERVIEW_PAID_ONLY } from "@/lib/company/company-premium-plans";
 
 async function getAuthUser(request: NextRequest) {
   const auth = await resolveAuthEmail(request);
@@ -53,6 +55,11 @@ export async function POST(request: NextRequest) {
     const profile = await prisma.profile.findUnique({ where: { id: profileId } });
     if (!profile) {
       return NextResponse.json({ error: "Profissional não encontrado" }, { status: 404 });
+    }
+
+    const plan = await getCompanyPlanContext(user.id);
+    if (!plan.features.canUseVideoInterview) {
+      return NextResponse.json({ error: VIDEO_INTERVIEW_PAID_ONLY }, { status: 403 });
     }
 
     const companyName = user.company?.name || user.name || "Empresa";

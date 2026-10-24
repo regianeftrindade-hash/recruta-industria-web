@@ -17,6 +17,8 @@ import {
   isPropostaAtiva,
 } from "@/components/professional/ProfessionalOpportunityBoard";
 import CompanyEntrevistaCard from "@/components/company/CompanyEntrevistaCard";
+import { useCompanyDashboardDataOptional } from "@/components/company/CompanyDashboardDataContext";
+import { VIDEO_INTERVIEW_PAID_ONLY } from "@/lib/company/company-premium-plans";
 
 const rowStyle: React.CSSProperties = {
   display: "flex",
@@ -58,6 +60,8 @@ function trackingOf(p: JobProposalDTO) {
  */
 export default function CompanyEntrevistasBoard() {
   const router = useRouter();
+  const dash = useCompanyDashboardDataOptional();
+  const videoEntrevistaLiberada = Boolean(dash?.planReady && dash.planFeatures.canUseVideoInterview);
   const [proposals, setProposals] = useState<JobProposalDTO[]>([]);
   const [history, setHistory] = useState<RecruitmentHistoryCounts>({
     propostas: 0,
@@ -107,6 +111,13 @@ export default function CompanyEntrevistasBoard() {
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  useEffect(() => {
+    if (!dash?.planReady || videoEntrevistaLiberada) return;
+    setRescheduleForm((form) =>
+      form.locationType === "PLATFORM" ? { ...form, locationType: "ONLINE" } : form,
+    );
+  }, [dash?.planReady, videoEntrevistaLiberada]);
 
   const listas = useMemo(() => {
     const propostas = proposals.filter(isPropostaAtiva);
@@ -231,6 +242,10 @@ export default function CompanyEntrevistasBoard() {
   const reagendar = async (proposalId: string) => {
     if (!rescheduleForm.date || !rescheduleForm.time) {
       setFeedback({ tone: "err", text: "Preencha data e horário." });
+      return;
+    }
+    if (rescheduleForm.locationType === "PLATFORM" && !videoEntrevistaLiberada) {
+      setFeedback({ tone: "err", text: VIDEO_INTERVIEW_PAID_ONLY });
       return;
     }
     setBusyId(proposalId);
@@ -503,6 +518,7 @@ export default function CompanyEntrevistasBoard() {
                     onCancelarComJustificativa={() => void cancelarComJustificativa(p.id)}
                     onReagendar={() => void reagendar(p.id)}
                     onPerfil={() => router.push(`/company/professional/${encodeURIComponent(p.profileId)}`)}
+                    videoEntrevistaLiberada={videoEntrevistaLiberada}
                   />
                 ))}
               </div>

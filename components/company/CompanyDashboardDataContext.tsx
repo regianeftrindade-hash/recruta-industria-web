@@ -22,6 +22,7 @@ export type CompanyPlanFeatures = {
   canExportProfiles?: boolean;
   canViewDashboardStats?: boolean;
   canContactRecruta?: boolean;
+  canUseVideoInterview?: boolean;
 };
 
 export type AlertWithMatches = CompanyAlert & {

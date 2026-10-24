@@ -10,6 +10,8 @@ import {
   notifyProfessionalAsync,
   notifyInterviewInvite,
 } from "@/lib/professional-notifications";
+import { getCompanyPlanContext } from "@/lib/company-plan";
+import { VIDEO_INTERVIEW_PAID_ONLY } from "@/lib/company/company-premium-plans";
 
 async function getCompanyUser(request: NextRequest) {
   const auth = await resolveAuthEmail(request);
@@ -52,6 +54,12 @@ export async function POST(
       locationType !== "PLATFORM"
     ) {
       return NextResponse.json({ error: "Tipo de local inválido." }, { status: 400 });
+    }
+    if (locationType === "PLATFORM") {
+      const plan = await getCompanyPlanContext(companyUser.id);
+      if (!plan.features.canUseVideoInterview) {
+        return NextResponse.json({ error: VIDEO_INTERVIEW_PAID_ONLY }, { status: 403 });
+      }
     }
 
     const scheduledAt = new Date(scheduledAtRaw);

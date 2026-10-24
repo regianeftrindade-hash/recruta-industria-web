@@ -31,6 +31,7 @@ export default function CompanyCandidateProfilePanel({
     canSendTips,
     canFavorite,
     canSendProposals,
+    canUseVideoInterview,
     canUseTalentBank,
     talentLists,
     setTalentLists,
@@ -194,6 +195,7 @@ export default function CompanyCandidateProfilePanel({
           <CompanyCandidateProfileMediaShare
             profileId={profileId}
             bloqueado={resumo.bloqueado}
+            videoEntrevistaLiberada={canUseVideoInterview}
             nome={resumo.nome}
             videoApresentacaoUrl={videoApresentacaoUrl}
             videoRef={videoRef}
@@ -214,6 +216,7 @@ export default function CompanyCandidateProfilePanel({
             profileId={profileId}
             bloqueado={resumo.bloqueado}
             canSendProposals={canSendProposals}
+            canUseVideoInterview={canUseVideoInterview}
             proposals={proposals}
             onProposalsChanged={() => void recarregarPropostas()}
             canUseTalentBank={canUseTalentBank}

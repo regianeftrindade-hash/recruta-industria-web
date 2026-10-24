@@ -44,6 +44,7 @@ export function useCompanyCandidateProfile(
   const [canSendTips, setCanSendTips] = useState(false);
   const [canFavorite, setCanFavorite] = useState(false);
   const [canSendProposals, setCanSendProposals] = useState(false);
+  const [canUseVideoInterview, setCanUseVideoInterview] = useState(false);
   const [canUseTalentBank, setCanUseTalentBank] = useState(false);
   const [talentLists, setTalentLists] = useState<Array<{ id: string; name: string }>>([]);
   const [talentListIdsSelecionados, setTalentListIdsSelecionados] = useState<string[]>([]);
@@ -92,6 +93,7 @@ export function useCompanyCandidateProfile(
       setCanSendTips(Boolean(data.features?.canSendTips));
       setCanFavorite(Boolean(data.features?.canFavorite));
       setCanSendProposals(Boolean(data.features?.canSendProposals));
+      setCanUseVideoInterview(Boolean(data.features?.canUseVideoInterview));
       setCanUseTalentBank(Boolean(data.features?.canUseTalentBank));
 
       if (data.features?.canUseTalentBank) {
@@ -347,6 +349,7 @@ export function useCompanyCandidateProfile(
     canSendTips,
     canFavorite,
     canSendProposals,
+    canUseVideoInterview,
     canUseTalentBank,
     talentLists,
     setTalentLists,

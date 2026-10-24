@@ -20,6 +20,8 @@ export type CompanyPlanFeatures = {
   canExportProfiles: boolean;
   canViewDashboardStats: boolean;
   canContactRecruta: boolean;
+  /** Chamada de vídeo e entrevista pela plataforma — Basic, Premium e Empresarial. */
+  canUseVideoInterview: boolean;
   /** IA básica (busca/filtros) — todos os planos empresa, quando a feature estiver ligada */
   canUseAiBasic: boolean;
   /** IA completa de recrutamento — só PREMIUM e EMPRESARIAL (Company.planTier) */
@@ -63,6 +65,7 @@ export function getPlanFeatures(tier: CompanyPlanTier): CompanyPlanFeatures {
     canExportProfiles: isPremium,
     canViewDashboardStats: isPaid,
     canContactRecruta: isPaid,
+    canUseVideoInterview: isPaid,
     // IA usa o mesmo Company.planTier — sem tabelas/enums de plano novos
     // FREE/BASIC: sem recursos avançados de IA (Premium only)
     canUseAiBasic: false,

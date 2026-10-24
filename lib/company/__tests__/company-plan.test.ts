@@ -8,10 +8,14 @@ describe("planos empresa (proposta e contato)", () => {
     expect(f.canSendProposals).toBe(false);
     expect(f.canViewContacts).toBe(false);
     expect(f.canFavorite).toBe(false);
+    expect(f.canUseVideoInterview).toBe(false);
   });
 
   it("BASIC envia proposta; PREMIUM usa banco de talentos", () => {
     expect(getPlanFeatures("BASIC").canSendProposals).toBe(true);
+    expect(getPlanFeatures("BASIC").canUseVideoInterview).toBe(true);
+    expect(getPlanFeatures("PREMIUM").canUseVideoInterview).toBe(true);
+    expect(getPlanFeatures("EMPRESARIAL").canUseVideoInterview).toBe(true);
     expect(getPlanFeatures("BASIC").canUseTalentBank).toBe(false);
     expect(getPlanFeatures("PREMIUM").canUseTalentBank).toBe(true);
     expect(getPlanFeatures("EMPRESARIAL").maxUsers).toBe(4);

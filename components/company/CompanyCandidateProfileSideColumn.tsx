@@ -19,6 +19,7 @@ type Props = {
   profileId: string;
   bloqueado: boolean;
   canSendProposals: boolean;
+  canUseVideoInterview: boolean;
   proposals: JobProposalDTO[];
   onProposalsChanged: () => void;
   canUseTalentBank: boolean;
@@ -39,6 +40,7 @@ export default function CompanyCandidateProfileSideColumn({
   profileId,
   bloqueado,
   canSendProposals,
+  canUseVideoInterview,
   proposals,
   onProposalsChanged,
   canUseTalentBank,
@@ -71,6 +73,7 @@ export default function CompanyCandidateProfileSideColumn({
         <PropostasEntrevistasEmpresa
           profileId={profileId}
           canSend={canSendProposals}
+          videoEntrevistaLiberada={canUseVideoInterview}
           proposals={proposals}
           onChanged={onProposalsChanged}
         />

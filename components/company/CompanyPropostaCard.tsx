@@ -4,6 +4,7 @@ import React from "react";
 import { DASH, dashInput } from "@/lib/dashboard-theme";
 import { botaoPerfil, COR_PRETO, textoAviso, textoDourado } from "@/lib/ui/perfil-empresa-cores";
 import type { JobProposalDTO, InterviewLocationType } from "@/lib/company/job-proposals-shared";
+import { VIDEO_INTERVIEW_PAID_ONLY } from "@/lib/company/company-premium-plans";
 import { formatInterviewComprovante } from "@/lib/company/job-proposals-shared";
 import { formatReaisDisplay, turnoPropostaLabel } from "@/lib/format-reais";
 
@@ -53,6 +54,7 @@ type Props = {
   saving: boolean;
   isScheduling: boolean;
   interviewForm: InterviewScheduleFormState;
+  videoEntrevistaLiberada: boolean;
   onExcluir: () => void;
   onStartScheduling: () => void;
   onCancelScheduling: () => void;
@@ -66,6 +68,7 @@ export default function CompanyPropostaCard({
   saving,
   isScheduling,
   interviewForm,
+  videoEntrevistaLiberada,
   onExcluir,
   onStartScheduling,
   onCancelScheduling,
@@ -234,8 +237,15 @@ export default function CompanyPropostaCard({
                 >
                   <option value="ONLINE">Online (Meet / Teams)</option>
                   <option value="PRESENTIAL">Presencial</option>
-                  <option value="PLATFORM">Pela plataforma (vídeo Recruta)</option>
+                  <option value="PLATFORM" disabled={!videoEntrevistaLiberada}>
+                    Pela plataforma (vídeo Recruta)
+                  </option>
                 </select>
+                {!videoEntrevistaLiberada ? (
+                  <p style={{ margin: "6px 0 0", fontSize: 12, color: COR_PRETO, lineHeight: 1.4 }}>
+                    {VIDEO_INTERVIEW_PAID_ONLY}
+                  </p>
+                ) : null}
               </div>
               {interviewForm.locationType === "ONLINE" ? (
                 <div>
