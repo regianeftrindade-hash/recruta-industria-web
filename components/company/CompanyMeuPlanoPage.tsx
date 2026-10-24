@@ -55,7 +55,7 @@ const MANUAL: ManualSection[] = [
       "Assista ao vídeo de apresentação e use a chamada de vídeo pela plataforma para entrevistar.",
       "Colegas do mesmo plano, com o mesmo perfil aberto, recebem convite com Aceitar/Recusar e podem entrar na chamada.",
       "Use Compartilhar (abaixo da videochamada) para enviar o perfil a outros usuários da sua assinatura.",
-      "Na coluna da direita: propostas/entrevistas, feedback da equipe, mensagens, banco de talentos, dicas e acompanhamento.",
+      "Na coluna da direita: mensagens, dicas e, no Premium ou Empresarial, convites de entrevista e banco de talentos.",
     ],
     dicas: [
       "Feedback da equipe fica visível para todos da mesma assinatura — use para alinhar a decisão de contratação.",
@@ -72,7 +72,7 @@ const MANUAL: ManualSection[] = [
       "O profissional recebe o toque e pode Aceitar ou Recusar.",
       "Após aceitar, a câmera liga dos dois lados. Use Sobrepor para manter o vídeo fixo ao rolar a página.",
       "Quem estiver com o mesmo perfil aberto na equipe vê o convite e pode participar (até 4 da empresa).",
-      "Propostas e agendamentos ficam no card Propostas e entrevistas do perfil e na aba Entrevistas.",
+      "No Premium e no Empresarial, os convites de entrevista ficam no perfil e na aba Entrevistas.",
     ],
   },
   {
@@ -94,9 +94,9 @@ const MANUAL: ManualSection[] = [
     id: "entrevistas-aba",
     emoji: "📅",
     titulo: "Aba Entrevistas",
-    planos: "Basic+",
+    planos: "Premium e Empresarial",
     passos: [
-      "Quando você agenda uma entrevista a partir de uma proposta, ela aparece nesta aba.",
+      "Quando você agenda uma entrevista a partir de um convite, ela aparece nesta aba.",
       "Veja data, horário, cargo e status de cada compromisso.",
       "Clique no candidato para voltar ao perfil e continuar o acompanhamento.",
     ],

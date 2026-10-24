@@ -10,18 +10,19 @@ describe("planos empresa (proposta e contato)", () => {
     expect(f.canFavorite).toBe(false);
   });
 
-  it("BASIC envia proposta; PREMIUM usa banco de talentos", () => {
-    expect(getPlanFeatures("BASIC").canSendProposals).toBe(true);
+  it("convite de entrevista começa no Premium; BASIC não envia proposta", () => {
+    expect(getPlanFeatures("BASIC").canSendProposals).toBe(false);
+    expect(getPlanFeatures("PREMIUM").canSendProposals).toBe(true);
     expect(getPlanFeatures("BASIC").canUseTalentBank).toBe(false);
     expect(getPlanFeatures("PREMIUM").canUseTalentBank).toBe(true);
     expect(getPlanFeatures("EMPRESARIAL").maxUsers).toBe(4);
   });
 
-  it("empresa não verificada perde proposta e contato mesmo no BASIC", () => {
+  it("empresa não verificada perde contato mesmo no BASIC", () => {
     const locked = applyVerificationToFeatures(getPlanFeatures("BASIC"), false);
-    expect(locked.canSendProposals).toBe(false);
     expect(locked.canViewContacts).toBe(false);
-    expect(applyVerificationToFeatures(getPlanFeatures("BASIC"), true).canSendProposals).toBe(true);
+    expect(applyVerificationToFeatures(getPlanFeatures("PREMIUM"), false).canSendProposals).toBe(false);
+    expect(applyVerificationToFeatures(getPlanFeatures("PREMIUM"), true).canSendProposals).toBe(true);
   });
 
   it("assentos inclusos batem com o plano", () => {
