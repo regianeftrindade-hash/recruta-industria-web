@@ -231,6 +231,63 @@ Curitiba - Paraná
     expect(r.dataNascimentoDisplay).toBe('15/03/1990');
     expect(r.idade).toBeTruthy();
   });
+
+  it('lê o layout do PDF gerado pelo site sem trocar cargo, empresa e escolaridade', () => {
+    const r = parseResumePatterns(`
+Ana Paula Ferreira
+Curitiba, PR · (41) 98888-7766 · ana.ferreira@email.com
+OBJETIVO
+Soldadora
+EXPERIÊNCIA PROFISSIONAL
+Soldadora - Metalúrgica ABC Ltda
+Metalurgia · 01/2018
+Solda MIG em estruturas metálicas.
+Auxiliar de produção - Funcional Mikron
+Metalurgia · 03/2014 a 12/2017
+Apoio na linha de montagem.
+FORMAÇÃO
+Médio completo
+Técnico em Soldagem - SENAI
+Conclusão: 2016
+CURSOS E QUALIFICAÇÕES
+NR-35
+Ponte Rolante
+Excel
+CNH
+Categoria B
+`);
+    expect(r.nome).toBe('Ana Paula Ferreira');
+    expect(r.contato?.email).toBe('ana.ferreira@email.com');
+    expect(r.contato?.telefone).toContain('41');
+    expect(r.contato?.whatsapp).toBeNull();
+    expect(r.cidade).toMatch(/Curitiba/i);
+    expect(r.estado).toBe('PR');
+    expect(r.escolaridade).toBe('Médio completo');
+    expect(r.cursoFormacao).toMatch(/Técnico em Soldagem/i);
+    expect(r.instituicaoFormacao).toBe('SENAI');
+    expect(r.anoConclusaoFormacao).toBe('2016');
+    expect(r.experiencias).toHaveLength(2);
+    expect(r.experiencias?.[0]?.cargo).toBe('Soldadora');
+    expect(r.experiencias?.[0]?.empresa).toMatch(/Metalúrgica ABC/i);
+    expect(r.experiencias?.[0]?.dataInicio).toBe('2018-01');
+    expect(r.experiencias?.[0]?.descricao).toMatch(/Solda MIG/i);
+    expect(r.experiencias?.[1]?.cargo).toMatch(/Auxiliar de produção/i);
+    expect(r.experiencias?.[1]?.empresa).toMatch(/Funcional Mikron/i);
+    expect(r.experiencias?.[1]?.dataInicio).toBe('2014-03');
+    expect(r.experiencias?.[1]?.dataFim).toBe('2017-12');
+    expect(r.experiencias?.[1]?.descricao).toMatch(/linha de montagem/i);
+    const patch = buildResumeFormApplyPatch(r, { formData: {}, telefone: '', telefone2: '' }, { overwrite: true });
+    expect(patch.empresas?.[0]?.segmento).toBe('Metalúrgica');
+    expect(patch.empresas?.[1]?.segmento).toBe('Metalúrgica');
+    expect(r.cursos || []).toEqual(expect.arrayContaining([
+      expect.stringMatching(/^NR-35$/),
+      expect.stringMatching(/Ponte Rolante/),
+      'Excel',
+    ]));
+    expect(r.cursos || []).not.toEqual(expect.arrayContaining([
+      expect.stringMatching(/Trabalho em Altura/),
+    ]));
+  });
 });
 
 describe('buildResumeFormApplyPatch', () => {
@@ -251,6 +308,30 @@ describe('buildResumeFormApplyPatch', () => {
     expect(patch.telefone).toBeTruthy();
     expect(patch.cidadePendente).toMatch(/Curitiba/i);
     expect(patch.empresas?.length).toBeGreaterThan(0);
+  });
+
+  it('não substitui o que a pessoa já digitou', () => {
+    const structured = parseResumePatterns(SAMPLE);
+    const patch = buildResumeFormApplyPatch(
+      structured,
+      {
+        formData: { nome: 'Nome digitado', email: '', cidade: 'Londrina', trabalhouIndustria: 'Não' },
+        telefone: '(41) 90000-0000',
+        telefone2: '',
+        empresas: [{ nome: 'Empresa já informada', cargo: 'Torneiro' }],
+        cursos: [{ nome: 'Curso já informado' }],
+      },
+      { overwrite: false },
+    );
+    expect(patch.formDataPatch.nome).toBeUndefined();
+    expect(patch.formDataPatch.email).toBe('joao.silva@email.com');
+    expect(patch.telefone).toBeUndefined();
+    expect(patch.cidadePendente).toBeNull();
+    expect(patch.empresas).toBeUndefined();
+    expect(patch.cursos).toBeUndefined();
+    expect(patch.preservados).toEqual(expect.arrayContaining(['Nome', 'Telefone', 'Cidade', 'Experiências', 'Cursos']));
+    expect(patch.filledLabels).toContain('E-mail');
+    expect(patch.filledLabels).not.toContain('Nome');
   });
 });
 

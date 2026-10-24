@@ -464,11 +464,12 @@ function matchEscolaridade(text: string): string | null {
     { re: /\bmestrado\b|\bdoutorado\b|\bspecializ/, value: 'Pós-graduação' },
     { re: /\bsuperior\s+completo\b|\bbacharel(?:ado)?\b|\blicenciatura\b|\bgraduacao\s+completa\b/, value: 'Superior completo' },
     { re: /\bsuperior\s+incompleto\b|\bcursando\s+(?:o\s+)?superior\b|\bgraduacao\s+incompleta\b/, value: 'Superior incompleto' },
-    { re: /\btecnico\b|\bcurso\s+tecnico\b/, value: 'Técnico' },
     { re: /\bmedio\s+completo\b|\bensino\s+medio\s+completo\b|\b2[oº°]\s*grau\s+completo\b/, value: 'Médio completo' },
     { re: /\bmedio\s+incompleto\b|\bensino\s+medio\s+incompleto\b|\b2[oº°]\s*grau\s+incompleto\b/, value: 'Médio incompleto' },
     { re: /\bfundamental\s+completo\b|\b1[oº°]\s*grau\s+completo\b/, value: 'Fundamental completo' },
     { re: /\bfundamental\s+incompleto\b|\b1[oº°]\s*grau\s+incompleto\b/, value: 'Fundamental incompleto' },
+    // "Técnico em Soldagem" é o nome do curso, não o nível de escolaridade.
+    { re: /\b(?:curso|ensino|nivel)\s+tecnico\b|\btecnico\b(?!\s+em\b)/, value: 'Técnico' },
     { re: /\bensino\s+superior\b|\bsuperior\b/, value: 'Superior completo' },
     { re: /\bensino\s+medio\b|\b2[oº°]\s*grau\b/, value: 'Médio completo' },
     { re: /\bensino\s+fundamental\b|\b1[oº°]\s*grau\b/, value: 'Fundamental completo' },
@@ -495,18 +496,36 @@ function extractFormacaoDetails(section: string): {
   let ano: string | null = null;
 
   const cursoMatch = section.match(
-    /(?:curso|gradua[cç][aã]o|tecn[oó]logo(?:\s+em)?|bacharel(?:ado)?(?:\s+em)?|licenciatura(?:\s+em)?)\s*[:\-–]?\s*([^\n,]{3,80})/i,
+    /(?:curso|gradua[cç][aã]o|tecn[oó]logo(?:\s+em)?|bacharel(?:ado)?(?:\s+em)?|licenciatura(?:\s+em)?)[ \t]*[:\-–]?[ \t]*([^\n,]{3,80})/i,
   );
   if (cursoMatch) cursoFormacao = normalizeSpaces(cursoMatch[1]).replace(/\s+\d{4}.*$/, '');
 
+  // Só rótulo na mesma linha. \s atravessa a quebra e transformava "SENAI" + a linha seguinte em instituição.
   const instMatch = section.match(
-    /(?:institui[cç][aã]o|faculdade|universidade|escola|senai|senac|sesi)\s*[:\-–]?\s*([^\n,]{2,80})/i,
+    /(?:^|\n)[ \t]*(?:institui[cç][aã]o|faculdade|universidade|escola)[ \t]*[:\-–][ \t]*([^\n,]{2,80})/i,
   );
   if (instMatch) {
     instituicao = normalizeSpaces(instMatch[1]);
-  } else {
-    const known = section.match(/\b(SENAI|SENAC|SESI|UF[A-Z]{2}|UTFPR|USP|UNICAMP|UFRJ|UFMG)[^\n,]{0,40}/i);
-    if (known) instituicao = normalizeSpaces(known[0]);
+  }
+
+  if (!cursoFormacao || !instituicao) {
+    for (const line of lines) {
+      const split = line.match(
+        /^(.{3,70}?)\s+[-–—]\s+((?:SENAI|SENAC|SESI|SESC|faculdade|universidade|instituto|escola)\b.*)$/i,
+      );
+      if (!split) continue;
+      const esquerda = normalizeSpaces(split[1]);
+      if (matchEscolaridade(esquerda) || /^(?:conclus[aã]o|ano)\b/i.test(esquerda)) continue;
+      if (!cursoFormacao) cursoFormacao = esquerda;
+      if (!instituicao) {
+        instituicao = normalizeSpaces(split[2]).replace(/\(\s*cursando\s*\)/gi, '').trim();
+      }
+    }
+  }
+
+  if (!instituicao) {
+    const known = section.match(/\b(SENAI|SENAC|SESI|SESC|UTFPR|UNICAMP|UFRJ|UFMG|USP)\b/);
+    if (known) instituicao = known[1];
   }
 
   const anoMatch =
@@ -547,7 +566,7 @@ function mesNumero(token: string): string | null {
 function dataDoPeriodo(valor: string): string {
   const texto = normalizeSpaces(valor);
   if (/atual|presente|hoje/i.test(texto)) return '';
-  if (/^\d{4}$/.test(texto)) return `${texto}-01`;
+  if (/^(?:19|20)\d{2}$/.test(texto)) return `${texto}-01`;
   const numerica = texto.match(/^(\d{2})\/(\d{4})$/);
   if (numerica) return `${numerica[2]}-${numerica[1]}`;
   const porExtenso = texto.match(new RegExp(`^(${MES_NOME})(?:\\s+de)?\\s+(\\d{4})$`, 'i'))
@@ -558,7 +577,7 @@ function dataDoPeriodo(valor: string): string {
 }
 
 function parsePeriodo(line: string): { inicio: string; fim: string; label: string } | null {
-  const data = `(?:\\d{2}\\/\\d{4}|\\d{4}|(?:${MES_NOME})(?:\\s+de)?\\s+\\d{4}|(?:${MES_NOME})\\/\\d{4})`;
+  const data = `(?:\\d{2}\\/(?:19|20)\\d{2}|(?:19|20)\\d{2}|(?:${MES_NOME})(?:\\s+de)?\\s+(?:19|20)\\d{2}|(?:${MES_NOME})\\/(?:19|20)\\d{2})`;
   const m = line.match(new RegExp(`(${data})\\s*[-–—aà]+\\s*(${data}|atual|presente|hoje)`, 'i'));
   if (!m) return null;
   return {
@@ -571,12 +590,43 @@ function parsePeriodo(line: string): { inicio: string; fim: string; label: strin
 type ExpItem = NonNullable<ResumeStructuredFields['experiencias']>[number] & {
   dataInicio?: string | null;
   dataFim?: string | null;
+  segmento?: string | null;
 };
+
+/** Linha de período, com ou sem um segmento curto antes ("Metalurgia · 01/2018"). */
+function linhaDeData(line: string): { inicio: string; fim: string; label: string; resto: string } | null {
+  const periodo = parsePeriodo(line);
+  if (periodo) {
+    const resto = normalizeSpaces(line.replace(periodo.label, ' '))
+      .replace(/^[^A-Za-zÀ-ÿ0-9]+|[^A-Za-zÀ-ÿ0-9]+$/g, '');
+    if (resto.length > 40) return null;
+    return { inicio: periodo.inicio, fim: periodo.fim, label: periodo.label, resto };
+  }
+  const single = line.match(new RegExp(
+    `(?:^|[\\s·•|])((?:\\d{2}\\/(?:19|20)\\d{2}|(?:${MES_NOME})(?:\\s+de)?\\s+(?:19|20)\\d{2}))\\s*$`,
+    'i',
+  ));
+  if (!single || single.index == null) return null;
+  const inicio = dataDoPeriodo(single[1]);
+  if (!inicio) return null;
+  const resto = normalizeSpaces(line.slice(0, single.index)).replace(/[^A-Za-zÀ-ÿ0-9]+$/g, '');
+  if (resto.length > 40) return null;
+  return { inicio, fim: '', label: single[1], resto };
+}
+
+function aplicarData(current: ExpItem, data: { inicio: string; fim: string; label: string; resto: string }) {
+  current.periodo = current.periodo || data.label;
+  if (!current.dataInicio && data.inicio) current.dataInicio = data.inicio;
+  if (data.fim) current.dataFim = data.fim;
+  else if (!current.dataFim) current.dataFim = '';
+  if (data.resto && !current.segmento) current.segmento = data.resto;
+}
 
 /** "Experiência: Soldador na Empresa XYZ 2018-2024" — só quando cargo e empresa estão explícitos. */
 function parseLinhaExperiencia(value: string): ExpItem | null {
   const bruto = normalizeSpaces(value);
   if (bruto.length < 3 || bruto.length > 160) return null;
+  if (/[.!?]$/.test(bruto)) return null;
   const periodo = parsePeriodo(bruto);
   const resto = periodo
     ? normalizeSpaces(bruto.replace(periodo.label, ' ').replace(/[()]/g, ' '))
@@ -602,6 +652,10 @@ function parseLinhaExperiencia(value: string): ExpItem | null {
     && partes[1].length >= 2
     && partes[0].length <= 60
     && partes[1].length <= 80
+    && partes[0].split(/\s+/).length <= 8
+    && partes[1].split(/\s+/).length <= 8
+    && !/[.!?]$/.test(partes[0])
+    && !/[.!?]$/.test(partes[1])
   ) {
     return {
       cargo: normalizeSpaces(partes[0]),
@@ -655,7 +709,6 @@ function extractExperiencias(section: string): ExpItem[] {
     const empLabel = line.match(/^(?:empresa|companhia)\s*[:\-–]\s*(.+)$/i);
     const cargoLabel = line.match(/^(?:cargo|fun[cç][aã]o|posto)\s*[:\-–]\s*(.+)$/i);
     const expLabel = line.match(/^(?:experi[eê]ncia(?:\s+profissional(?:is)?)?)\s*:\s*(.+)$/i);
-    const periodo = parsePeriodo(line);
 
     if (empLabel) {
       if (current?.empresa && current?.cargo) flush();
@@ -676,11 +729,16 @@ function extractExperiencias(section: string): ExpItem[] {
       }
       continue;
     }
-    if (periodo) {
+    const dataLinha = linhaDeData(line);
+    if (dataLinha) {
       if (!current) current = {};
-      current.periodo = periodo.label;
-      current.dataInicio = periodo.inicio;
-      current.dataFim = periodo.fim;
+      aplicarData(current, dataLinha);
+      continue;
+    }
+    const cargoEmpresa = parseLinhaExperiencia(line);
+    if (cargoEmpresa?.cargo && cargoEmpresa.empresa) {
+      if (current && (current.cargo || current.empresa || current.descricao)) flush();
+      current = { ...cargoEmpresa };
       continue;
     }
 
@@ -731,34 +789,62 @@ function extractExperienciasRotuladas(text: string): ExpItem[] {
   return extractExperiencias(lines.join('\n'));
 }
 
+function chaveCurso(value: string): string {
+  return stripAccents(value.toLowerCase()).replace(/[^a-z0-9]+/g, '');
+}
+
+function incluirCurso(found: string[], nome: string, source: string) {
+  const nova = chaveCurso(nome);
+  if (nova.length < 2) return;
+  const fonte = source.toLowerCase();
+  for (let index = 0; index < found.length; index += 1) {
+    const antiga = chaveCurso(found[index]);
+    if (antiga !== nova && !antiga.includes(nova) && !nova.includes(antiga)) continue;
+    const escritoNovo = fonte.includes(nome.toLowerCase());
+    const escritoAntigo = fonte.includes(found[index].toLowerCase());
+    if (escritoNovo && (!escritoAntigo || nome.length > found[index].length)) found[index] = nome;
+    return;
+  }
+  found.push(nome);
+}
+
 function extractCursos(section: string, fullText: string): string[] {
   const source = section || fullText;
-  const found = new Set<string>();
+  const found: string[] = [];
+  const fonte = stripAccents(source.toLowerCase());
 
   for (const curso of CURSOS_INDUSTRIAIS_SUGERIDOS) {
     const needle = stripAccents(curso.toLowerCase());
-    if (stripAccents(source.toLowerCase()).includes(needle.slice(0, Math.min(needle.length, 24)))) {
-      found.add(curso);
-    }
+    if (fonte.includes(needle)) incluirCurso(found, curso, source);
   }
 
   const nrs = source.match(/\bNR[-\s]?(\d{1,2})\b/gi) || [];
   for (const nr of nrs) {
     const num = nr.replace(/\D/g, '');
     const mapped = CURSOS_INDUSTRIAIS_SUGERIDOS.find((c) => c.includes(`NR-${num}`));
-    if (mapped) found.add(mapped);
-    else found.add(`NR-${num}`);
+    if (!mapped) {
+      incluirCurso(found, `NR-${num}`, source);
+      continue;
+    }
+    const extra = stripAccents(mapped.toLowerCase())
+      .replace(new RegExp(`nr\\s*-?\\s*${num}`), '')
+      .replace(/[^a-z0-9]+/g, '');
+    if (extra.length >= 4 && fonte.includes(extra.slice(0, Math.min(extra.length, 12)))) {
+      incluirCurso(found, mapped, source);
+    } else {
+      incluirCurso(found, `NR-${num}`, source);
+    }
   }
 
   for (const line of linesOf(section)) {
     const clean = line.replace(/^[-•*➢▸►]\s*/, '').trim();
     if (clean.length < 3 || clean.length > 80 || detectSection(clean)) continue;
     if (clean.split(/\s+/).length > 10) continue;
-    found.add(clean.slice(0, 90));
-    if (found.size >= 12) break;
+    incluirCurso(found, clean.slice(0, 90), source);
+    if (found.length >= 12) break;
   }
 
-  return Array.from(found).slice(0, 12);
+  return found.slice(0, 12);
 }
 
 function matchOptionList(text: string, options: readonly string[]): string[] {
@@ -967,7 +1053,7 @@ export function parseResumePatterns(rawText: string): ResumePatternParseResult {
       email: emails[0] || null,
       telefone: phones[0] || null,
       telefone2: phones[1] || null,
-      whatsapp: phones[0] ? 'Sim' : null,
+      whatsapp: phones[0] && /\bwhatsapp\b/i.test(text) ? 'Sim' : null,
     },
     cidade: locFallback.cidade,
     estado: locFallback.estado,
@@ -980,6 +1066,7 @@ export function parseResumePatterns(rawText: string): ResumePatternParseResult {
           descricao: e.descricao || null,
           dataInicio: e.dataInicio || null,
           dataFim: e.dataFim || null,
+          segmento: e.segmento || null,
         }))
       : null,
     cursos: limpo.cursos.length ? limpo.cursos : null,

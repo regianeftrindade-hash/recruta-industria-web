@@ -1241,18 +1241,32 @@ export default function CadastroProfissional({
       .then((data: Array<{ nome: string }>) => {
         if (cancelled) return;
         const lista = (data || []).map((c) => c.nome).sort();
-        setCidades(lista);
         const pending = pendingCidadeImportRef.current;
-        if (!pending) return;
-        const matched = matchCidadeIbge(pending, lista);
-        if (matched) {
+        let listaFinal = lista;
+        let cidadeFinal: string | null = null;
+        if (pending) {
+          const matched = matchCidadeIbge(pending, lista);
           pendingCidadeImportRef.current = null;
+          cidadeFinal = matched || pending;
+          if (!matched && !lista.includes(pending)) listaFinal = [pending, ...lista];
+        }
+        setCidades(listaFinal);
+        if (cidadeFinal) {
           setFormData((prev) =>
-            prev.estado === formData.estado ? { ...prev, cidade: matched } : prev,
+            prev.estado === formData.estado ? { ...prev, cidade: cidadeFinal as string } : prev,
           );
         }
       })
-      .catch((err) => console.error('Erro ao buscar cidades do IBGE:', err));
+      .catch(() => {
+        if (cancelled) return;
+        const pending = pendingCidadeImportRef.current;
+        if (!pending) return;
+        pendingCidadeImportRef.current = null;
+        setCidades((prev) => (prev.includes(pending) ? prev : [pending, ...prev]));
+        setFormData((prev) => (
+          prev.estado === formData.estado && !prev.cidade ? { ...prev, cidade: pending } : prev
+        ));
+      });
     return () => {
       cancelled = true;
     };
@@ -1360,23 +1374,27 @@ export default function CadastroProfissional({
     }
     const patch = buildResumeFormApplyPatch(
       structured,
-      { formData, telefone, telefone2 },
-      { overwrite: true },
+      { formData, telefone, telefone2, empresas, cursos },
+      { overwrite: false },
     );
     const formDataPatch: Record<string, unknown> = { ...patch.formDataPatch };
     if (patch.cidadePendente) {
-      pendingCidadeImportRef.current = patch.cidadePendente;
+      const bruta = patch.cidadePendente;
+      pendingCidadeImportRef.current = bruta;
       const estadoNovo = typeof formDataPatch.estado === 'string' ? formDataPatch.estado : formData.estado;
-      if (estadoNovo === formData.estado && cidades.length) {
-        const matched = matchCidadeIbge(patch.cidadePendente, cidades);
-        if (matched) {
-          pendingCidadeImportRef.current = null;
-          formDataPatch.cidade = matched;
-        }
+      const matched = estadoNovo === formData.estado && cidades.length
+        ? matchCidadeIbge(bruta, cidades)
+        : null;
+      if (matched) {
+        pendingCidadeImportRef.current = null;
+        formDataPatch.cidade = matched;
+      } else {
+        formDataPatch.cidade = bruta;
+        setCidades((prev) => (prev.includes(bruta) ? prev : [bruta, ...prev]));
       }
     }
 
-    if (patch.filledLabels.length) curriculoImportadoRef.current = true;
+    if (patch.filledLabels.length || patch.preservados.length) curriculoImportadoRef.current = true;
 
     setFormData((prev) => ({
       ...prev,
@@ -1391,7 +1409,14 @@ export default function CadastroProfissional({
       setEmailError('');
     }
 
+    const avisoMantidos = patch.preservados.length
+      ? ` Estes campos já estavam preenchidos e foram mantidos: ${patch.preservados.join(', ')}.`
+      : '';
+
     if (!patch.filledLabels.length) {
+      if (patch.preservados.length) {
+        return `O currículo foi lido.${avisoMantidos} Revise os campos antes de concluir.`;
+      }
       return 'Arquivo anexado. Não encontramos dados para preencher. Complete o cadastro e, no fim da página, geramos o PDF gratuito.';
     }
 
@@ -1408,7 +1433,7 @@ export default function CadastroProfissional({
         document.getElementById('nome')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
     }
-    return `Cadastro preenchido automaticamente: ${patch.filledLabels.join(', ')}. Revise os campos e salve.`;
+    return `Cadastro preenchido automaticamente: ${patch.filledLabels.join(', ')}.${avisoMantidos} Revise os campos e salve.`;
   }
 
   const montarRascunhoCurriculo = () => sanitizeResumeDraft({

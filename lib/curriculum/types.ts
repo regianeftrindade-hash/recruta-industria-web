@@ -21,6 +21,7 @@ export type ResumeStructuredFields = {
     descricao?: string | null;
     dataInicio?: string | null;
     dataFim?: string | null;
+    segmento?: string | null;
   }> | null;
   cursos?: string[] | null;
   competencias?: string[] | null;
