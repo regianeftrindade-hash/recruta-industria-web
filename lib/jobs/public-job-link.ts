@@ -20,17 +20,48 @@ export type JobShareSource = {
   description?: string | null;
 };
 
+const PLACEHOLDER_FACT = /n[aã]o informad|n[aã]o preenchid|^outro$|^-+$|^n\/a$/i;
+
+function cleanFact(value: string | null | undefined): string {
+  const text = value?.replace(/\s+/g, " ").trim() || "";
+  if (!text || PLACEHOLDER_FACT.test(text)) return "";
+  return text;
+}
+
+function clipText(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max - 1);
+  const space = cut.lastIndexOf(" ");
+  const base = (space > 24 ? cut.slice(0, space) : cut).trimEnd();
+  return `${base}…`;
+}
+
+/** Local, salário, modalidade e contrato. Sem “não informado” e sem e-mail ou telefone. */
+export function usefulShareFacts(
+  job: Pick<JobShareSource, "salaryLabel" | "contractLabel" | "workModeLabel" | "workplace">,
+  order: "message" | "card" = "message",
+): string[] {
+  const workplace = cleanFact(job.workplace);
+  const salary = cleanFact(job.salaryLabel);
+  const mode = cleanFact(job.workModeLabel);
+  const contract = cleanFact(job.contractLabel);
+  const items = order === "card"
+    ? [workplace, salary, mode, contract]
+    : [workplace, mode, contract, salary];
+  return items.filter(Boolean);
+}
+
 function publicExcerpt(text: string): string {
   const plain = text
     .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "")
     .replace(/\+?\d[\d\s().-]{8,}\d/g, "")
     .replace(/\s+/g, " ")
     .trim();
-  if (plain.length <= 180) return plain;
-  return `${plain.slice(0, 177).trimEnd()}...`;
+  if (plain.length <= 90) return plain;
+  return `${plain.slice(0, 87).trimEnd()}...`;
 }
 
-function limitShareText(text: string, max = 280): string {
+function limitShareText(text: string, max = 220): string {
   if (text.length <= max) return text;
   return `${text.slice(0, max - 3).trimEnd()}...`;
 }
@@ -39,13 +70,27 @@ function limitShareText(text: string, max = 280): string {
 export function jobShareSummary(
   job: Pick<JobShareSource, "companyLabel" | "salaryLabel" | "contractLabel" | "workModeLabel" | "workplace" | "description">,
 ): string {
-  const facts = [job.companyLabel, job.workplace, job.workModeLabel, job.contractLabel, job.salaryLabel]
-    .map((item) => item?.trim())
-    .filter((item): item is string => Boolean(item))
-    .join(" · ");
+  const facts = [cleanFact(job.companyLabel), ...usefulShareFacts(job)].filter(Boolean).join(" · ");
   const excerpt = publicExcerpt(job.description || "");
   if (facts && excerpt) return limitShareText(`${facts}. ${excerpt}`);
   return limitShareText(facts || excerpt);
+}
+
+/**
+ * Texto do cartão do WhatsApp. O celular mostra poucas letras,
+ * então local e salário vêm antes do nome longo da empresa.
+ */
+export function jobPreviewDescription(
+  job: Pick<JobShareSource, "companyLabel" | "salaryLabel" | "contractLabel" | "workModeLabel" | "workplace">,
+): string {
+  const parts = [...usefulShareFacts(job, "card"), cleanFact(job.companyLabel)].filter(Boolean);
+  let line = "";
+  for (const part of parts) {
+    const next = line ? `${line} · ${part}` : part;
+    if (next.length > 110) break;
+    line = next;
+  }
+  return line || "Confira esta oportunidade no Recruta Indústria.";
 }
 
 export function jobShareMessage(job: JobShareSource): string {
@@ -100,8 +145,7 @@ export function jobSocialMetadata(job: Pick<PublicJob, "title" | "companyLabel" 
   title: string;
   description: string;
 } {
-  const title = job.anonymous ? job.title : `${job.title} · ${job.companyLabel}`;
-  const summary = jobShareSummary(job);
-  const description = summary || `${job.companyLabel}. Confira esta oportunidade no Recruta Indústria.`;
+  const title = clipText(job.title.trim() || "Vaga", 70);
+  const description = jobPreviewDescription(job);
   return { title, description };
 }

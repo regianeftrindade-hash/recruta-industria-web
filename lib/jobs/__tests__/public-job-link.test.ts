@@ -68,12 +68,33 @@ describe("link público da vaga", () => {
       companyLabel: "Empresa confidencial",
       description: "Atuação no chão de fábrica. Contato rh@secreta.com ou 11988887777.",
       anonymous: true,
+      workplace: "Campinas/SP",
+      salaryLabel: "A combinar",
     });
     expect(social.title).toBe("Auxiliar Administrativo");
-    expect(social.description.startsWith("Empresa confidencial.")).toBe(true);
+    expect(social.description.startsWith("Campinas/SP")).toBe(true);
+    expect(social.description).toContain("Empresa confidencial");
     expect(social.title + social.description).not.toContain("MetalurgicaSigilosaXYZ");
     expect(social.description).not.toContain("rh@secreta.com");
     expect(social.description).not.toContain("11988887777");
+  });
+
+  it("cabe no cartão do WhatsApp: cargo inteiro, local e salário antes da empresa", () => {
+    const social = jobSocialMetadata({
+      title: "Auxiliar de Produção",
+      companyLabel: "Funcional Mikron",
+      description: "Prepara, separa, pesa e envasa materiais para as linhas de produção.",
+      anonymous: false,
+      workplace: "Valinhos - SP",
+      workModeLabel: "Presencial",
+      contractLabel: "Não informado no anúncio",
+      salaryLabel: "R$ 2.398,00",
+    });
+    expect(social.title).toBe("Auxiliar de Produção");
+    expect(social.description.startsWith("Valinhos - SP · R$ 2.398,00")).toBe(true);
+    expect(social.description).toContain("Funcional Mikron");
+    expect(social.description).not.toContain("Não informado");
+    expect(social.description.length).toBeLessThanOrEqual(110);
   });
 
   it("pode citar o nome público quando a vaga é identificada", () => {
@@ -85,9 +106,9 @@ describe("link público da vaga", () => {
       workplace: "Campinas/SP",
       salaryLabel: "A combinar",
     });
-    expect(social.title).toBe("Soldador · Paizao na Cozinha");
+    expect(social.title).toBe("Soldador");
     expect(social.description).toContain("Paizao na Cozinha");
-    expect(social.description).toContain("Campinas/SP");
+    expect(social.description.startsWith("Campinas/SP")).toBe(true);
     expect(social.description).toContain("A combinar");
   });
 });

@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getPublicJobView } from "@/lib/jobs/job-posting-db";
+import { usefulShareFacts } from "@/lib/jobs/public-job-link";
 
 export const alt = "Oportunidade no Recruta Indústria";
 export const size = { width: 1200, height: 630 };
@@ -18,11 +17,7 @@ export default async function OpenGraphImage({ params }: { params: Promise<{ id:
     if (view?.availability === "open") {
       title = view.job.title;
       detail = view.job.companyLabel;
-      facts = [view.job.workplace, view.job.workModeLabel, view.job.contractLabel, view.job.salaryLabel]
-        .map((item) => item?.trim())
-        .filter((item): item is string => Boolean(item))
-        .join(" · ")
-        .slice(0, 110);
+      facts = usefulShareFacts(view.job, "card").slice(0, 2).join(" · ").slice(0, 70);
     } else if (view?.availability === "unavailable") {
       title = view.title;
       detail = "Candidatura indisponível";
@@ -31,15 +26,9 @@ export default async function OpenGraphImage({ params }: { params: Promise<{ id:
     title = "Oportunidade";
   }
 
-  let logoSrc: string | null = null;
-  try {
-    const bytes = await readFile(join(process.cwd(), "public", "simbolo-recruta.png"));
-    logoSrc = `data:image/png;base64,${bytes.toString("base64")}`;
-  } catch {
-    logoSrc = null;
-  }
-
-  const safeTitle = title.trim().slice(0, 90) || "Oportunidade";
+  const safeTitle = title.trim().slice(0, 72) || "Oportunidade";
+  const safeDetail = detail.trim().slice(0, 42);
+  const titleSize = safeTitle.length > 32 ? 40 : safeTitle.length > 22 ? 46 : 54;
 
   return new ImageResponse(
     (
@@ -48,31 +37,62 @@ export default async function OpenGraphImage({ params }: { params: Promise<{ id:
           width: "100%",
           height: "100%",
           display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          background: "#1c1c1c",
-          color: "#f5f5f5",
-          padding: "64px",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#F3E6C8",
+          color: "#2A241C",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          {logoSrc ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoSrc} width={84} height={84} alt="" />
-          ) : null}
-          <div style={{ display: "flex", fontSize: 28, color: "#c89b3c", fontWeight: 700 }}>
+        <div
+          style={{
+            width: 640,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            textAlign: "center",
+            gap: 18,
+          }}
+        >
+          <div style={{ display: "flex", fontSize: 22, color: "#8D6B1F", fontWeight: 700 }}>
             RECRUTA INDÚSTRIA
           </div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div style={{ display: "flex", fontSize: 64, fontWeight: 700, lineHeight: 1.1 }}>
+          <div
+            style={{
+              display: "flex",
+              width: 640,
+              justifyContent: "center",
+              textAlign: "center",
+              fontSize: titleSize,
+              fontWeight: 700,
+              lineHeight: 1.12,
+            }}
+          >
             {safeTitle}
           </div>
-          <div style={{ display: "flex", fontSize: 32, color: "#c89b3c" }}>
-            {detail}
+          <div
+            style={{
+              display: "flex",
+              width: 640,
+              justifyContent: "center",
+              textAlign: "center",
+              fontSize: 32,
+              color: "#8D6B1F",
+              fontWeight: 700,
+            }}
+          >
+            {safeDetail}
           </div>
           {facts ? (
-            <div style={{ display: "flex", fontSize: 26, color: "#f5f5f5" }}>
+            <div
+              style={{
+                display: "flex",
+                width: 640,
+                justifyContent: "center",
+                textAlign: "center",
+                fontSize: 26,
+              }}
+            >
               {facts}
             </div>
           ) : null}
