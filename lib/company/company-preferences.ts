@@ -30,6 +30,21 @@ export async function getCompanyAnonymousMode(companyUserId: string): Promise<bo
   return rows[0]?.anonymousMode === true;
 }
 
+/** Verdadeiro se o usuário logado ou o dono da empresa ligou o modo anônimo. */
+export async function isAnyCompanyAnonymous(
+  userIds: Array<string | null | undefined>,
+): Promise<boolean> {
+  const ids = [...new Set(userIds.filter((id): id is string => Boolean(id?.trim())))];
+  for (const id of ids) {
+    try {
+      if (await getCompanyAnonymousMode(id)) return true;
+    } catch (error) {
+      console.warn("[anon] não foi possível ler o modo anônimo", error);
+    }
+  }
+  return false;
+}
+
 export async function setCompanyAnonymousMode(companyUserId: string, value: boolean): Promise<void> {
   await ensureCompanyPreferenceTable();
   await prisma.$executeRaw`

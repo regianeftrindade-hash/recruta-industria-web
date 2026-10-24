@@ -21,8 +21,8 @@ import { parseTesteComportamentalJSON } from '@/lib/teste-comportamental';
 import { lerCampoJsonDoPerfil } from '@/lib/profile-json-fields';
 import { getVideoApresentacaoPathByProfileId } from '@/lib/professional/professional-video-db';
 import { notifyProfessionalAsync, notifyProfileViewed } from '@/lib/professional-notifications';
-import { recordCompanyProfileView } from '@/lib/professional/record-profile-view';
-import { getCompanyAnonymousMode } from '@/lib/company/company-preferences';
+import { companyProfileViewType, recordCompanyProfileView } from '@/lib/professional/record-profile-view';
+import { isAnyCompanyAnonymous } from '@/lib/company/company-preferences';
 import {
   resolveProfileIdFromParam,
 } from '@/lib/profile/resolve-profile-ref';
@@ -164,21 +164,21 @@ export async function GET(
     const favorito = favoritos.includes(profileId);
 
     // Modo anônimo: a visualização é registrada sem identificar a empresa
-    // (sufixo _ANON) e o profissional não recebe notificação.
-    const anonymousMode = await getCompanyAnonymousMode(dataUserId).catch(() => false);
+    // (sufixo _ANON) e o profissional não recebe o e-mail com o nome.
+    const anonymousMode = await isAnyCompanyAnonymous([companyUser.id, dataUserId]);
 
     await recordCompanyProfileView({
       profileId,
       profileOwnerUserId: profile.userId,
       companyUserId: dataUserId,
-      viewType: `${bloqueado ? 'SUMMARY' : 'FULL'}${anonymousMode ? '_ANON' : ''}`,
+      viewType: companyProfileViewType(!bloqueado, anonymousMode),
     }).catch((err) => {
       console.warn('Falha ao registrar visualização:', err);
     });
 
     if (!bloqueado && !anonymousMode) {
       notifyProfessionalAsync(() =>
-        notifyProfileViewed(profileId, dataUserId)
+        notifyProfileViewed(profileId, dataUserId, companyUser.id)
       );
     }
 

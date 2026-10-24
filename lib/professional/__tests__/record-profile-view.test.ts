@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { PROFILE_VIEW_REPEAT_MS, shouldRecordCompanyProfileView, visibleCompanyName } from "@/lib/professional/record-profile-view";
+import { PROFILE_VIEW_REPEAT_MS, companyProfileViewType, shouldRecordCompanyProfileView, visibleCompanyName } from "@/lib/professional/record-profile-view";
+import { conteudoEmailPerfilVisualizado } from "@/lib/professional/professional-notifications";
 
 describe("registro de visita ao perfil", () => {
   const now = new Date("2026-10-23T15:00:00.000Z");
@@ -17,6 +18,25 @@ describe("registro de visita ao perfil", () => {
       lastViewAt: new Date(now.getTime() - PROFILE_VIEW_REPEAT_MS + 1000),
       now,
     })).toBe(false);
+  });
+
+  it("marca a visita como anônima e não monta e-mail com o nome da empresa", () => {
+    expect(companyProfileViewType(true, true)).toBe("FULL_ANON");
+    expect(companyProfileViewType(false, true)).toBe("SUMMARY_ANON");
+    expect(companyProfileViewType(true, false)).toBe("FULL");
+    const identificado = conteudoEmailPerfilVisualizado({
+      professionalName: "Ana",
+      companyName: "Metalúrgica Silva",
+      anonymous: false,
+      homeUrl: "https://recrutaindustria.com/",
+    });
+    expect(identificado?.text).toContain("Metalúrgica Silva");
+    expect(conteudoEmailPerfilVisualizado({
+      professionalName: "Ana",
+      companyName: "Metalúrgica Silva",
+      anonymous: true,
+      homeUrl: "https://recrutaindustria.com/",
+    })).toBeNull();
   });
 
   it("não revela o nome da empresa para o plano gratuito nem para visita anônima", () => {

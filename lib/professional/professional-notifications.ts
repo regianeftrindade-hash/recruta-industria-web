@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
+import { isAnyCompanyAnonymous } from "@/lib/company/company-preferences";
 import { emailHomeUrl } from "@/lib/notifications/email-home-link";
 
 function homeLink(): string {
@@ -74,13 +75,34 @@ export function notifyProfessionalAsync(
   });
 }
 
+/** Texto do e-mail de perfil visualizado. Modo anônimo não gera mensagem identificada. */
+export function conteudoEmailPerfilVisualizado(input: {
+  professionalName: string;
+  companyName: string;
+  anonymous: boolean;
+  homeUrl: string;
+}): { subject: string; htmlInner: string; text: string } | null {
+  if (input.anonymous) return null;
+  const companyName = input.companyName.trim() || "Uma empresa";
+  return {
+    subject: "Sua empresa interessada visualizou seu perfil — Recruta Indústria",
+    htmlInner: `<p>Olá, <strong>${escapeHtml(input.professionalName)}</strong>!</p>
+       <p>A empresa <strong>${escapeHtml(companyName)}</strong> visualizou seu perfil completo na plataforma.</p>
+       <p>Acesse seu painel para ver mensagens, dicas e outras interações.</p>`,
+    text: `Olá, ${input.professionalName}! A empresa ${companyName} visualizou seu perfil completo. Acesse: ${input.homeUrl}`,
+  };
+}
+
 /** Perfil visualizado com acesso completo (desbloqueado). Máx. 1 e-mail por empresa a cada 24h. */
 export async function notifyProfileViewed(
   profileId: string,
   companyUserId: string,
+  actorUserId?: string,
 ): Promise<void> {
   const recipient = await getProfessionalRecipient(profileId);
   if (!recipient) return;
+
+  if (await isAnyCompanyAnonymous([companyUserId, actorUserId])) return;
 
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const recentViews = await prisma.profileView.count({
@@ -95,17 +117,19 @@ export async function notifyProfileViewed(
   if (recentViews > 1) return;
 
   const companyName = await getCompanyDisplayName(companyUserId);
+  const conteudo = conteudoEmailPerfilVisualizado({
+    professionalName: recipient.name,
+    companyName,
+    anonymous: false,
+    homeUrl: homeLink(),
+  });
+  if (!conteudo) return;
 
   await sendEmail({
     to: recipient.email,
-    subject: "Sua empresa interessada visualizou seu perfil — Recruta Indústria",
-    html: emailLayout(
-      "Seu perfil foi visualizado",
-      `<p>Olá, <strong>${escapeHtml(recipient.name)}</strong>!</p>
-       <p>A empresa <strong>${escapeHtml(companyName)}</strong> visualizou seu perfil completo na plataforma.</p>
-       <p>Acesse seu painel para ver mensagens, dicas e outras interações.</p>`,
-    ),
-    text: `Olá, ${recipient.name}! A empresa ${companyName} visualizou seu perfil completo. Acesse: ${homeLink()}`,
+    subject: conteudo.subject,
+    html: emailLayout("Seu perfil foi visualizado", conteudo.htmlInner),
+    text: conteudo.text,
   });
 }
 

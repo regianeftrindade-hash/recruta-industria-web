@@ -4,6 +4,11 @@ import { prisma } from "@/lib/db";
 export const PROFILE_VIEW_REPEAT_MS = 6 * 60 * 60 * 1000;
 
 /** Nome público da empresa. Plano gratuito e visita anônima não recebem identificação. */
+/** FULL ou SUMMARY, com sufixo _ANON quando a empresa não pode ser identificada. */
+export function companyProfileViewType(fullAccess: boolean, anonymous: boolean): string {
+  return `${fullAccess ? "FULL" : "SUMMARY"}${anonymous ? "_ANON" : ""}`;
+}
+
 export function visibleCompanyName(
   canSeeNames: boolean,
   viewType: string,

@@ -25,7 +25,8 @@ import { filterHabilidadesExtras } from '@/lib/company-profile-display'
 import { readSnapshotDisplay } from '@/lib/professional-profile-map'
 import { listarPerfisVisualizados } from '@/lib/profile-messages'
 import { notifyProfessionalAsync, notifyProfileViewed } from '@/lib/professional-notifications'
-import { recordCompanyProfileView } from '@/lib/professional/record-profile-view'
+import { companyProfileViewType, recordCompanyProfileView } from '@/lib/professional/record-profile-view'
+import { isAnyCompanyAnonymous } from '@/lib/company/company-preferences'
 import { listActivePremiumProfileIds } from '@/lib/professional-storage'
 import { profilePublicSlugOrBuild } from '@/lib/profile/resolve-profile-ref'
 import { COMPANY_VIEW_ONLY_NOTICE } from '@/lib/company/company-verification'
@@ -558,16 +559,20 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    const anonymousMode = await isAnyCompanyAnonymous([companyUser.id, dataUserId])
+
     await recordCompanyProfileView({
       profileId,
       profileOwnerUserId: profile.userId,
       companyUserId: dataUserId,
-      viewType: 'FULL',
+      viewType: companyProfileViewType(true, anonymousMode),
     })
 
-    notifyProfessionalAsync(() =>
-      notifyProfileViewed(profileId, dataUserId)
-    )
+    if (!anonymousMode) {
+      notifyProfessionalAsync(() =>
+        notifyProfileViewed(profileId, dataUserId, companyUser.id)
+      )
+    }
 
     return NextResponse.json({
       success: true,
