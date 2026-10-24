@@ -608,6 +608,7 @@ export default function DashboardProfissional() {
 
         {/* Direita — conteúdo da aba ativa */}
         <aside
+          data-pagina-inteira={paginaInteira ? "true" : "false"}
           style={{
             padding: "12px 12px 12px 10px",
             overflow: paginaInteira ? "visible" : "auto",
