@@ -111,9 +111,8 @@
 
 .titleRow {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
+  flex-wrap: nowrap;
+  align-items: center;
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -126,6 +125,9 @@
 }
 
 .titleRow .title {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 42%;
   margin: 0;
 }
 
@@ -136,14 +138,18 @@
 
 .shareRow {
   display: flex;
+  flex: 1 1 auto;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
-  max-width: 100%;
+  min-width: 0;
+  margin-left: auto;
 }
 
 .shareRow .shareButton {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   text-decoration: none;
@@ -151,15 +157,30 @@
 }
 
 .shareButton,
-.copyButton {
+.copyButton,
+.externalLink,
+.clearLink,
+.pager a {
   padding: 8px 16px;
-  color: #000;
+  color: #414141;
   font-size: 14px;
   font-weight: 700;
-  background: #F3E6C8;
+  background: #E8C56A;
   border: 2px solid #8D6B1F;
-  border-radius: 16px;
+  border-radius: 8px;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
   cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.shareButton:active,
+.copyButton:active,
+.externalLink:active,
+.clearLink:active,
+.pager a:active,
+.backButton:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: var(--ri-btn-3d-gold-active);
 }
 
 .live {
@@ -364,13 +385,14 @@
   min-height: 42px;
   padding: 8px 16px;
   border: 2px solid #8D6B1F;
-  border-radius: 12px;
+  border-radius: 8px;
   background: #E8C56A;
   color: #414141;
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
+  box-shadow: var(--ri-btn-3d-gold-shadow);
 }
 
 .pager a[aria-current="page"] {
@@ -421,15 +443,17 @@
   .apply button,
   .externalLink,
   .copyWrap,
-  .shareRow,
-  .shareButton,
-  .copyButton,
-  .contactActions a,
   .contactActions button {
     width: 100%;
   }
 
-  .titleRow {
-    align-items: stretch;
+  .shareRow {
+    width: auto;
+  }
+
+  .shareButton,
+  .copyButton {
+    width: auto;
+    flex: 0 0 auto;
   }
 }

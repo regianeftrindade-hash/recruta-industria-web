@@ -166,18 +166,12 @@ export default async function VagaPage({ params, searchParams }: Props) {
             </section>
           ) : null}
 
-          {textWithoutJobSource(view.job.applicationInstructions) ? (
-            <section className={styles.section}>
-              <h2>Como se candidatar</h2>
-              <JobText text={textWithoutJobSource(view.job.applicationInstructions) ?? ""} />
-            </section>
-          ) : null}
-
           <JobApplyButton
             jobId={view.job.id}
             mode={view.job.applicationMode}
             externalApplyUrl={view.job.applicationMode === "EXTERNAL" ? view.job.externalApplyUrl : null}
             autoOpen={query.candidatar === "1"}
+            howToApply={view.job.applicationInstructions}
           />
         </article>
       )}

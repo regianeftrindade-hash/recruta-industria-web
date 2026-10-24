@@ -159,9 +159,14 @@ input[type="button"],
 button:active:not(:disabled),
 input[type="submit"]:active:not(:disabled),
 input[type="button"]:active:not(:disabled),
-.ri-btn-3d-gold:active {
-  transform: translateY(3px);
-  box-shadow: var(--ri-btn-3d-gold-active);
+.ri-btn-3d-gold:active,
+a[style*="6b5218"]:active {
+  transform: translateY(3px) !important;
+  box-shadow: var(--ri-btn-3d-gold-active) !important;
+}
+
+a[style*="6b5218"] {
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .ri-readable button {

@@ -7,6 +7,7 @@ import { describeApplyPanel, type ApplicantContact, type ProfessionalPlan } from
 import { hrefForShownContact } from "@/lib/jobs/job-text-links";
 import type { ApplicationMode } from "@/lib/jobs/job-posting";
 import CopyTextButton from "./CopyTextButton";
+import JobText from "./JobText";
 import styles from "./vagas.module.css";
 
 function ContactLink({ contact }: { contact: ApplicantContact }) {
@@ -41,11 +42,13 @@ export default function JobApplyButton({
   mode,
   externalApplyUrl,
   autoOpen,
+  howToApply,
 }: {
   jobId: string;
   mode: ApplicationMode;
   externalApplyUrl: string | null;
   autoOpen: boolean;
+  howToApply: string | null;
 }) {
   const [state, setState] = useState<ApplyState | null>(null);
   const [message, setMessage] = useState("");
@@ -53,6 +56,7 @@ export default function JobApplyButton({
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState("");
   const [open, setOpen] = useState(false);
+  const [showHow, setShowHow] = useState(autoOpen && Boolean(howToApply));
   const router = useRouter();
 
   async function loadState(verify = false) {
@@ -178,6 +182,7 @@ export default function JobApplyButton({
   const blocked = state?.canApply === false && !applied && !panel.contact && !panel.automatic;
 
   async function onApply() {
+    setShowHow(Boolean(howToApply));
     setError("");
     let current = state;
     try {
@@ -241,6 +246,12 @@ export default function JobApplyButton({
       >
         {buttonLabel}
       </button>
+      {showHow && howToApply ? (
+        <section className={styles.section}>
+          <h2>Como se candidatar</h2>
+          <JobText text={howToApply} />
+        </section>
+      ) : null}
       {open && !applied && state?.authenticated ? (
         <div className={styles.contactBox}>
           <p className={styles.method}>{panel.methodLabel}</p>
@@ -273,7 +284,7 @@ export default function JobApplyButton({
                   <CopyTextButton value={panel.contact.value} label={panel.copyLabel} />
                 ) : null}
                 {panel.externalLink ? (
-                  <a className={styles.externalLink} href={panel.externalLink} target="_blank" rel="noopener noreferrer">
+                  <a className={`${styles.externalLink} ri-btn-3d-gold`} href={panel.externalLink} target="_blank" rel="noopener noreferrer">
                     Acessar site
                   </a>
                 ) : null}

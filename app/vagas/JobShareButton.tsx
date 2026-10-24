@@ -43,17 +43,19 @@ export default function JobShareButton({ jobId, shareText }: { jobId: string; sh
     setNotice(ok ? message : "Não foi possível copiar o resumo da vaga.");
   }
 
+  const shareClass = `${styles.shareButton} ri-btn-3d-gold`;
+
   return (
     <div className={styles.shareRow}>
-      <a className={styles.shareButton} href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer">
+      <a className={shareClass} href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer">
         WhatsApp
       </a>
-      <a className={styles.shareButton} href={facebookShareUrl(jobId)} target="_blank" rel="noopener noreferrer">
+      <a className={shareClass} href={facebookShareUrl(jobId)} target="_blank" rel="noopener noreferrer">
         Facebook
       </a>
       <button
         type="button"
-        className={styles.shareButton}
+        className={shareClass}
         onClick={() => {
           void copyLink("Resumo da vaga copiado. Cole no Instagram.");
           window.open(INSTAGRAM_SHARE_URL, "_blank", "noopener,noreferrer");
@@ -61,10 +63,10 @@ export default function JobShareButton({ jobId, shareText }: { jobId: string; sh
       >
         Instagram
       </button>
-      <button type="button" className={styles.shareButton} onClick={() => void copyLink("Resumo e link da vaga copiados.")}>
+      <button type="button" className={shareClass} onClick={() => void copyLink("Resumo e link da vaga copiados.")}>
         Copiar link
       </button>
-      <Link className={styles.shareButton} href="/vagas">
+      <Link className={shareClass} href="/vagas">
         Visualizar vagas
       </Link>
       <span className={styles.live} aria-live="polite">{notice}</span>
