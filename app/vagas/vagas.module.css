@@ -377,13 +377,6 @@
   background: #D4AF37;
 }
 
-.resultCount {
-  margin: 0 0 12px;
-  color: #414141;
-  font-size: 14px;
-  font-weight: 700;
-}
-
 .pager {
   display: flex;
   flex-wrap: wrap;

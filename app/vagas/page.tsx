@@ -47,8 +47,6 @@ export default async function VagasPage({
 
   const lista = paginarLista(jobs, paginaPedida, VAGAS_POR_PAGINA_PUBLICA);
   const comFiltro = temFiltroDeVaga(params);
-  const inicio = jobs.length === 0 ? 0 : (lista.pagina - 1) * VAGAS_POR_PAGINA_PUBLICA + 1;
-  const fim = jobs.length === 0 ? 0 : inicio + lista.itens.length - 1;
 
   return (
     <main className={styles.page}>
@@ -124,11 +122,6 @@ export default async function VagasPage({
       </form>
 
       {error ? <p className={styles.error}>{error}</p> : null}
-      {!error && jobs.length > 0 ? (
-        <p className={styles.resultCount}>
-          {inicio}–{fim} de {jobs.length} {jobs.length === 1 ? "vaga" : "vagas"}
-        </p>
-      ) : null}
       {!error && jobs.length === 0 ? (
         <p className={styles.empty}>
           {comFiltro ? "Nenhuma vaga encontrada com esses filtros." : "Nenhuma vaga aberta no momento."}
