@@ -140,7 +140,7 @@ export default async function VagaPage({ params, searchParams }: Props) {
           <p className={styles.company}>{view.job.companyLabel}</p>
           <div className={styles.titleRow}>
             <h1 className={styles.title}>{view.job.title}</h1>
-            <JobShareButton jobId={view.job.id} />
+            <JobShareButton jobId={view.job.id} title={view.job.title} />
           </div>
           <div className={styles.facts}>
             <Fact label="Data da publicação" value={view.job.publicationDate} />

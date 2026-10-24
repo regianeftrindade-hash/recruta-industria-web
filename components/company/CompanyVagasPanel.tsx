@@ -13,7 +13,7 @@ import {
   type ApplicationStage,
 } from "@/lib/jobs/job-posting";
 import ApplicationModeFields from "@/components/jobs/ApplicationModeFields";
-import { facebookShareUrl, publicJobUrl, whatsAppShareUrl } from "@/lib/jobs/public-job-link";
+import { INSTAGRAM_SHARE_URL, facebookShareUrl, publicJobUrl, whatsAppShareUrl } from "@/lib/jobs/public-job-link";
 import fields from "@/app/admin/vagas/vagas-admin.module.css";
 import styles from "./company-vagas.module.css";
 import { useCompanyDashboardDataOptional } from "@/components/company/CompanyDashboardDataContext";
@@ -849,6 +849,29 @@ export default function CompanyVagasPanel({
                       <details className={styles.more}>
                         <summary>Compartilhar vaga</summary>
                         <div className={`${styles.moreMenu} ${styles.shareMenu}`}>
+                          <a className={styles.ghost} href={whatsAppShareUrl(job.title, job.id)} target="_blank" rel="noopener noreferrer">
+                            WhatsApp
+                          </a>
+                          <a className={styles.ghost} href={facebookShareUrl(job.id)} target="_blank" rel="noopener noreferrer">
+                            Facebook
+                          </a>
+                          <button
+                            type="button"
+                            className={styles.ghost}
+                            onClick={() => {
+                              const url = publicJobUrl(job.id);
+                              void navigator.clipboard?.writeText(url).then(
+                                () => {
+                                  setError("");
+                                  setMessage("Link copiado. Cole no Instagram.");
+                                },
+                                () => setError("Não foi possível copiar o link da vaga."),
+                              );
+                              window.open(INSTAGRAM_SHARE_URL, "_blank", "noopener,noreferrer");
+                            }}
+                          >
+                            Instagram
+                          </button>
                           <button
                             type="button"
                             className={styles.ghost}
@@ -867,16 +890,10 @@ export default function CompanyVagasPanel({
                               );
                             }}
                           >
-                            Copiar link da vaga
+                            Copiar link
                           </button>
-                          <a className={styles.ghost} href={facebookShareUrl(job.id)} target="_blank" rel="noopener noreferrer">
-                            Compartilhar no Facebook
-                          </a>
-                          <a className={styles.ghost} href={whatsAppShareUrl(job.title, job.id)} target="_blank" rel="noopener noreferrer">
-                            Compartilhar no WhatsApp
-                          </a>
-                          <a className={styles.ghost} href={publicJobUrl(job.id)} target="_blank" rel="noopener noreferrer">
-                            Visualizar página pública
+                          <a className={styles.ghost} href="/vagas" target="_blank" rel="noopener noreferrer">
+                            Visualizar vagas
                           </a>
                         </div>
                       </details>

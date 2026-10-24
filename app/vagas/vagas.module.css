@@ -134,6 +134,22 @@
   max-width: 100%;
 }
 
+.shareRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.shareRow .shareButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
 .shareButton,
 .copyButton {
   padding: 8px 16px;
@@ -323,6 +339,7 @@
   .apply button,
   .externalLink,
   .copyWrap,
+  .shareRow,
   .shareButton,
   .copyButton,
   .contactActions a,

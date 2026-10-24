@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  INSTAGRAM_SHARE_URL,
   facebookShareUrl,
   jobSocialMetadata,
   publicJobUrl,
@@ -31,6 +32,7 @@ describe("link público da vaga", () => {
     expect(text).not.toContain("MetalurgicaSigilosaXYZ");
     expect(text).not.toMatch(/@/);
     expect(whatsAppShareUrl("Auxiliar Administrativo", JOB_ID)).toContain("https://wa.me/?text=");
+    expect(INSTAGRAM_SHARE_URL).toBe("https://www.instagram.com/");
   });
 
   it("aceita somente o retorno interno da vaga de origem", () => {

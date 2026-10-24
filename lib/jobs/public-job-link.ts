@@ -21,6 +21,9 @@ export function facebookShareUrl(jobId: string): string {
   return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(publicJobUrl(jobId))}`;
 }
 
+/** O Instagram não aceita um link de compartilhamento. O botão copia a vaga e abre o app. */
+export const INSTAGRAM_SHARE_URL = "https://www.instagram.com/";
+
 /** Aceita só o retorno interno da vaga que originou o cadastro. */
 export function safeJobReturnPath(value: string | null | undefined): string | null {
   if (!value) return null;
