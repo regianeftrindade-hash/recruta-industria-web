@@ -1,14 +1,9 @@
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
+import { emailHomeUrl } from "@/lib/notifications/email-home-link";
 
-const DASHBOARD_URL = "/professional/dashboard";
-
-function appBaseUrl(): string {
-  return (process.env.NEXTAUTH_URL || "http://localhost:3000").replace(/\/$/, "");
-}
-
-function dashboardLink(): string {
-  return `${appBaseUrl()}${DASHBOARD_URL}`;
+function homeLink(): string {
+  return emailHomeUrl();
 }
 
 function escapeHtml(text: string): string {
@@ -28,7 +23,7 @@ function emailLayout(title: string, bodyHtml: string): string {
   <h2 style="color: #b8860b; margin-top: 0;">${escapeHtml(title)}</h2>
   ${bodyHtml}
   <p style="margin-top: 24px;">
-    <a href="${dashboardLink()}" style="display: inline-block; background: #b8860b; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 4px;">
+    <a href="${homeLink()}" style="display: inline-block; background: #b8860b; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 4px;">
       Acessar meu painel
     </a>
   </p>
@@ -110,7 +105,7 @@ export async function notifyProfileViewed(
        <p>A empresa <strong>${escapeHtml(companyName)}</strong> visualizou seu perfil completo na plataforma.</p>
        <p>Acesse seu painel para ver mensagens, dicas e outras interações.</p>`,
     ),
-    text: `Olá, ${recipient.name}! A empresa ${companyName} visualizou seu perfil completo. Acesse: ${dashboardLink()}`,
+    text: `Olá, ${recipient.name}! A empresa ${companyName} visualizou seu perfil completo. Acesse: ${homeLink()}`,
   });
 }
 
@@ -136,7 +131,7 @@ export async function notifyTipReceived(
        </blockquote>
        <p>Veja todas as dicas no seu painel profissional.</p>`,
     ),
-    text: `Olá, ${recipient.name}! Você recebeu uma dica: "${preview}${suffix}". Acesse: ${dashboardLink()}`,
+    text: `Olá, ${recipient.name}! Você recebeu uma dica: "${preview}${suffix}". Acesse: ${homeLink()}`,
   });
 }
 
@@ -163,7 +158,7 @@ export async function notifyMessageReceived(
        </blockquote>
        <p>Você pode responder pela caixa de mensagens do seu painel.</p>`,
     ),
-    text: `Olá, ${recipient.name}! ${companyName} enviou: "${preview}${suffix}". Responda no painel: ${dashboardLink()}`,
+    text: `Olá, ${recipient.name}! ${companyName} enviou: "${preview}${suffix}". Responda no painel: ${homeLink()}`,
   });
 }
 
@@ -181,7 +176,7 @@ export async function notifyCompanyMessageReply(params: {
 
   const preview = params.messageBody.trim().slice(0, 300);
   const suffix = params.messageBody.length > 300 ? "…" : "";
-  const companyDash = `${appBaseUrl()}/company/dashboard-empresa`;
+  const companyDash = homeLink();
 
   await sendEmail({
     to: user.email,
@@ -222,7 +217,7 @@ export async function notifyProfileFavorited(
        <p>A empresa <strong>${escapeHtml(companyName)}</strong> adicionou seu perfil aos favoritos.</p>
        <p>Isso indica interesse da empresa em você. Acompanhe no seu painel.</p>`,
     ),
-    text: `Olá, ${recipient.name}! A empresa ${companyName} favoritou seu perfil. Acesse: ${dashboardLink()}`,
+    text: `Olá, ${recipient.name}! A empresa ${companyName} favoritou seu perfil. Acesse: ${homeLink()}`,
   });
 }
 
@@ -252,7 +247,7 @@ export async function notifyProposalReceived(params: {
        </ul>
        <p>Acesse o painel para responder: Tenho interesse, Quero mais informações ou Não tenho interesse.</p>`,
     ),
-    text: `Nova proposta de ${params.companyName}: ${params.cargo}, ${params.salario}, ${params.turno}, ${params.cidade}. Acesse: ${dashboardLink()}`,
+    text: `Nova proposta de ${params.companyName}: ${params.cargo}, ${params.salario}, ${params.turno}, ${params.cidade}. Acesse: ${homeLink()}`,
   });
 }
 
@@ -268,7 +263,7 @@ export async function notifyCompanyProposalResponse(params: {
   });
   if (!user?.email) return;
 
-  const companyDash = `${appBaseUrl()}/company/dashboard-empresa`;
+  const companyDash = homeLink();
   const titles = {
     INTERESTED: "O profissional demonstrou interesse na oportunidade",
     MORE_INFO: "O profissional pediu mais informações",
@@ -314,7 +309,7 @@ export async function notifyInterviewInvite(params: {
        ${params.comprovanteHtml}
        <p>Acesse o painel para <strong>confirmar</strong> ou <strong>recusar</strong> o convite.</p>`,
     ),
-    text: `Convite de entrevista de ${params.companyName}.\n\n${params.comprovanteText}\n\nConfirme no painel: ${dashboardLink()}`,
+    text: `Convite de entrevista de ${params.companyName}.\n\n${params.comprovanteText}\n\nConfirme no painel: ${homeLink()}`,
   });
 }
 
@@ -338,7 +333,7 @@ export async function notifyInterviewConfirmedToProfessional(params: {
        ${params.comprovanteHtml}
        <p>Compareça no horário combinado. Em caso de imprevisto, fale com a empresa pelo painel.</p>`,
     ),
-    text: `Entrevista confirmada com ${params.companyName}.\n\n${params.comprovanteText}\n\nPainel: ${dashboardLink()}`,
+    text: `Entrevista confirmada com ${params.companyName}.\n\n${params.comprovanteText}\n\nPainel: ${homeLink()}`,
   });
 }
 
@@ -366,7 +361,7 @@ export async function notifyInterviewCancelled(params: {
        <p><strong>Justificativa:</strong> ${escapeHtml(params.justification)}</p>
        <p>Acompanhe o painel para novos convites ou reagendamentos.</p>`,
     ),
-    text: `Entrevista cancelada (${params.companyName}). Justificativa: ${params.justification}. Painel: ${dashboardLink()}`,
+    text: `Entrevista cancelada (${params.companyName}). Justificativa: ${params.justification}. Painel: ${homeLink()}`,
   });
 }
 
@@ -390,7 +385,7 @@ export async function notifyCompanyInterviewResponse(params: {
     ? `${params.professionalName} confirmou a entrevista. Veja em Entrevistas.`
     : `${params.professionalName} recusou a entrevista.`;
   const href = "/company/dashboard-empresa?tab=entrevistas";
-  const companyDash = `${appBaseUrl()}${href}`;
+  const companyDash = homeLink();
 
   for (const userId of recipientIds) {
     try {
@@ -450,7 +445,7 @@ export async function notifyCompanyInterviewCancelledByProfessional(params: {
   });
   if (!user?.email) return;
 
-  const companyDash = `${appBaseUrl()}/company/dashboard-empresa`;
+  const companyDash = homeLink();
   await sendEmail({
     to: user.email,
     subject: `Profissional cancelou a entrevista — Recruta Indústria`,

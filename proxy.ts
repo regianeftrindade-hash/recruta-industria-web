@@ -8,6 +8,7 @@ import {
   isAdmin2faRequired,
   verifyAdmin2faToken,
 } from '@/lib/security/admin-2fa-edge';
+import { destinoEmailSemSessao } from '@/lib/notifications/email-home-link';
 
 export async function proxy(request: NextRequest) {
   const ip = getClientIp(request);
@@ -179,6 +180,12 @@ export async function proxy(request: NextRequest) {
 
     if (!token?.email) {
       const url = request.nextUrl.clone();
+      const home = destinoEmailSemSessao(pathname);
+      if (home) {
+        url.pathname = home;
+        url.search = '';
+        return NextResponse.redirect(url);
+      }
       url.pathname = '/login';
       url.searchParams.set('redirect', pathname);
       return NextResponse.redirect(url);
