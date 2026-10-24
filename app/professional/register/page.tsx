@@ -43,6 +43,7 @@ import RegisterCollapsibleSection from '@/components/ui/RegisterCollapsibleSecti
 import ResumeToolkit from '@/components/curriculum/ResumeToolkit';
 import { sanitizeResumeDraft, type ResumeDraft } from '@/lib/curriculum/resume-draft';
 import { buildResumeFormApplyPatch, matchCidadeIbge } from '@/lib/curriculum/apply-resume-to-form';
+import { parseResumePatterns } from '@/lib/curriculum/parse-resume-patterns';
 import PageLoader from '@/app/components/PageLoader';
 import {
   calculateProfileCompletion,
@@ -490,6 +491,44 @@ function CampoArquivoAnexo({
   );
 }
 
+function BlocoCadastro({
+  emoji,
+  title,
+  editavel,
+  aberto,
+  onEditar,
+  children,
+}: {
+  emoji: string;
+  title: string;
+  editavel: boolean;
+  aberto: boolean;
+  onEditar: () => void;
+  children: React.ReactNode;
+}) {
+  const travado = editavel && !aberto;
+  return (
+    <section className={styles.sectionCard}>
+      <div className={styles.sectionHead}>
+        <RegisterSectionHeader emoji={emoji} title={title} />
+        {editavel ? (
+          <button
+            type="button"
+            className={styles.blocoEditarBtn}
+            onClick={onEditar}
+            disabled={aberto}
+          >
+            {aberto ? "Editando" : "Editar"}
+          </button>
+        ) : null}
+      </div>
+      <div inert={travado ? true : undefined} className={travado ? styles.cadastroTravado : undefined}>
+        {children}
+      </div>
+    </section>
+  );
+}
+
 export default function CadastroProfissional({
   incorporado = false,
   travado = false,
@@ -513,6 +552,17 @@ export default function CadastroProfissional({
   const [sessionWaitTimedOut, setSessionWaitTimedOut] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [salvoNoBotao, setSalvoNoBotao] = useState(false);
+  const [blocosAbertos, setBlocosAbertos] = useState<Record<string, boolean>>({});
+  const abrirBloco = (id: string) => {
+    setBlocosAbertos((prev) => (prev[id] ? prev : { ...prev, [id]: true }));
+  };
+  const propsBloco = (id: string, emoji: string, title: string) => ({
+    emoji,
+    title,
+    editavel: isEditMode,
+    aberto: Boolean(blocosAbertos[id]),
+    onEditar: () => abrirBloco(id),
+  });
   const [camposObrigatoriosFaltando, setCamposObrigatoriosFaltando] = useState<CampoObrigatorioFalta[]>([]);
   const { fg, blocoErro, termoErro } = useCampoObrigatorioErro(camposObrigatoriosFaltando);
   const [password, setPassword] = useState('');
@@ -1284,8 +1334,12 @@ export default function CadastroProfissional({
         : 'Não foi possível ler o currículo.');
     }
 
+    const structured =
+      (typeof data?.extraction?.rawText === 'string'
+        ? parseResumePatterns(data.extraction.rawText)
+        : null) || data?.extraction?.structured;
     const patch = buildResumeFormApplyPatch(
-      data?.extraction?.structured,
+      structured,
       { formData, telefone, telefone2 },
       { overwrite: true },
     );
@@ -1478,6 +1532,7 @@ export default function CadastroProfissional({
           localStorage.removeItem('dadosCadastroSimples');
           if (isEditMode) {
             setSalvoNoBotao(true);
+            setBlocosAbertos({});
             if (incorporado) onSalvo?.();
           } else {
             reportProfessionalSignupConversion();
@@ -1797,17 +1852,16 @@ export default function CadastroProfissional({
               }
             }}
           />
-          {!isEditMode ? <AnexoCurriculoAutomatico onFile={importarCurriculoArquivo} /> : null}
+          <AnexoCurriculoAutomatico onFile={importarCurriculoArquivo} />
           </>
         )}
 
-        <div inert={travado ? true : undefined} className={travado ? styles.cadastroTravado : undefined}>
+        <div inert={travado && !isEditMode ? true : undefined} className={travado && !isEditMode ? styles.cadastroTravado : undefined}>
         <form onSubmit={handleSubmit} className={styles.form} noValidate>
 
           {showWizardStep(0) && (
           <>
-          <section className={styles.sectionCard}>
-            <RegisterSectionHeader emoji="🏭" title="Dados pessoais" />
+          <BlocoCadastro {...propsBloco("dados-pessoais", "🏭", "Dados pessoais")}>
             
             <div className={styles.fieldsRow}>
               <div className={fg('nome')}>
@@ -2165,10 +2219,9 @@ export default function CadastroProfissional({
                 )}
               </div>
             </RegisterCollapsibleSection>
-          </section>
+          </BlocoCadastro>
 
-          <section className={styles.sectionCard}>
-            <RegisterSectionHeader emoji="📞" title="Contato" />
+          <BlocoCadastro {...propsBloco("contato", "📞", "Contato")}>
 
             <div className={styles.fieldsRow}>
               <div className={fg('email')}>
@@ -2326,10 +2379,9 @@ export default function CadastroProfissional({
               </div>
             )}
 
-          </section>
+          </BlocoCadastro>
 
-          <section className={styles.sectionCard}>
-            <RegisterSectionHeader emoji="📍" title="Localização" />
+          <BlocoCadastro {...propsBloco("localizacao", "📍", "Localização")}>
 
             <div className={styles.fieldsRow}>
               <div className={fg('estado')}>
@@ -2399,14 +2451,13 @@ export default function CadastroProfissional({
                 </div>
               </div>
             </div>
-          </section>
+          </BlocoCadastro>
           </>
           )}
 
           {showWizardStep(1) && (
           <>
-          <section className={styles.sectionCard}>
-            <RegisterSectionHeader emoji="🎓" title="Formação" />
+          <BlocoCadastro {...propsBloco("formacao", "🎓", "Formação")}>
 
             <div className={styles.formSubCards}>
               <div className={styles.formSubCard}>
@@ -2752,10 +2803,9 @@ export default function CadastroProfissional({
                 </div>
               </div>
             </div>
-          </section>
+          </BlocoCadastro>
 
-          <section className={styles.sectionCard}>
-            <RegisterSectionHeader emoji="💼" title="Perfil profissional" />
+          <BlocoCadastro {...propsBloco("perfil-profissional", "💼", "Perfil profissional")}>
 
             <div className={styles.fieldsRow}>
               <div className={fg('situacaoProfissional')}>
@@ -2943,10 +2993,9 @@ export default function CadastroProfissional({
                 />
               </div>
             </div>
-          </section>
+          </BlocoCadastro>
 
-          <section className={styles.sectionCard}>
-            <RegisterSectionHeader emoji="💼" title="Experiência na indústria" />
+          <BlocoCadastro {...propsBloco("experiencia", "💼", "Experiência na indústria")}>
 
             <div className={styles.fieldsRow}>
               <div className={fg('trabalhouIndustria')}>
@@ -3127,7 +3176,7 @@ export default function CadastroProfissional({
                   </div>
                 </div>
             </>
-          </section>
+          </BlocoCadastro>
           </>
           )}
 
@@ -3136,10 +3185,10 @@ export default function CadastroProfissional({
           <RegisterExtendedSections
             formData={formData}
             setFormData={setFormData as React.Dispatch<React.SetStateAction<import('./RegisterExtendedSections').ExtendedFormFields & Record<string, unknown>>>}
+            edicao={isEditMode ? { aberto: (id) => Boolean(blocosAbertos[id]), onEditar: abrirBloco } : null}
           />
 
-          <section className={styles.sectionCard}>
-            <RegisterSectionHeader emoji="✍️" title="Apresentação profissional" />
+          <BlocoCadastro {...propsBloco("apresentacao", "✍️", "Apresentação profissional")}>
             
             <div className={`${styles.fieldGroup} ${styles.fieldWide}`}>
               <LabelMarcador htmlFor="mensagemEmpresas" marcador="recomendado">
@@ -3160,21 +3209,19 @@ export default function CadastroProfissional({
               <p className={styles.sobreMimSubtitulo}>Sobre mim</p>
               <RegisterSobreMimFields value={sobreMim} onChange={atualizarSobreMim} />
             </div>
-          </section>
+          </BlocoCadastro>
           </>
           )}
 
           {showWizardStep(3) && (
           <>
-          <section className={styles.sectionCard}>
-            <RegisterSectionHeader emoji="🎬" title="Vídeo de apresentação" />
+          <BlocoCadastro {...propsBloco("video", "🎬", "Vídeo de apresentação")}>
             <div className={styles.formSubCard}>
               <VideoApresentacaoCadastro />
             </div>
-          </section>
+          </BlocoCadastro>
 
-          <section className={styles.sectionCard}>
-            <RegisterSectionHeader emoji="📋" title="Termos" />
+          <BlocoCadastro {...propsBloco("termos", "📋", "Termos")}>
 
             <div className={styles.formSubCard}>
               <RegisterTermoItem
@@ -3204,7 +3251,7 @@ export default function CadastroProfissional({
                 className={termoErro('aceitoLGPD')}
               />
             </div>
-          </section>
+          </BlocoCadastro>
           </>
           )}
 

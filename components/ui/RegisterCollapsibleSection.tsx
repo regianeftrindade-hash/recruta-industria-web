@@ -14,6 +14,11 @@ type Props = {
   /** Controle externo (ex.: abrir seção com erro de validação). */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** No perfil, libera só este bloco. Fora do perfil, omitir. */
+  editar?: {
+    aberto: boolean;
+    onEditar: () => void;
+  };
   children: React.ReactNode;
 };
 
@@ -25,6 +30,7 @@ export default function RegisterCollapsibleSection({
   defaultOpen = false,
   open: openProp,
   onOpenChange,
+  editar,
   children,
 }: Props) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
@@ -37,21 +43,43 @@ export default function RegisterCollapsibleSection({
     onOpenChange?.(next);
   };
 
+  const blocoTravado = Boolean(editar && !editar.aberto);
+
   return (
     <section className={`${styles.sectionCard} ${styles.sectionCollapsible}`}>
-      <button
-        type="button"
-        className={styles.sectionToggle}
-        aria-expanded={open}
-        aria-controls={panelId}
-        onClick={() => setOpen(!open)}
+      <div className={styles.sectionHead}>
+        <button
+          type="button"
+          className={styles.sectionToggle}
+          aria-expanded={open}
+          aria-controls={panelId}
+          onClick={() => setOpen(!open)}
+        >
+          <RegisterSectionHeader emoji={emoji} title={title} marcador={marcador} />
+          <span className={styles.sectionChevron} aria-hidden>
+            {open ? "▾" : "▸"}
+          </span>
+        </button>
+        {editar ? (
+          <button
+            type="button"
+            className={styles.blocoEditarBtn}
+            onClick={() => {
+              setOpen(true);
+              editar.onEditar();
+            }}
+            disabled={editar.aberto}
+          >
+            {editar.aberto ? "Editando" : "Editar"}
+          </button>
+        ) : null}
+      </div>
+      <div
+        id={panelId}
+        hidden={!open}
+        className={styles.sectionCollapsibleBody}
+        inert={blocoTravado ? true : undefined}
       >
-        <RegisterSectionHeader emoji={emoji} title={title} marcador={marcador} />
-        <span className={styles.sectionChevron} aria-hidden>
-          {open ? "▾" : "▸"}
-        </span>
-      </button>
-      <div id={panelId} hidden={!open} className={styles.sectionCollapsibleBody}>
         {children}
       </div>
     </section>

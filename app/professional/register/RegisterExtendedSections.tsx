@@ -19,11 +19,16 @@ export type ExtendedFormFields = {
 type Props = {
   formData: ExtendedFormFields;
   setFormData: React.Dispatch<React.SetStateAction<ExtendedFormFields & Record<string, unknown>>>;
+  edicao?: {
+    aberto: (id: string) => boolean;
+    onEditar: (id: string) => void;
+  } | null;
 };
 
 export default function RegisterExtendedSections({
   formData,
   setFormData,
+  edicao = null,
 }: Props) {
   const patch = (partial: Partial<ExtendedFormFields>) =>
     setFormData((prev) => ({ ...prev, ...partial }));
@@ -39,6 +44,7 @@ export default function RegisterExtendedSections({
         title="Máquinas e equipamentos"
         marcador="recomendado"
         defaultOpen={maquinasOpen}
+        editar={edicao ? { aberto: edicao.aberto("maquinas"), onEditar: () => edicao.onEditar("maquinas") } : undefined}
       >
         <CheckboxGroup
           legend="Equipamentos que você opera"
@@ -53,6 +59,7 @@ export default function RegisterExtendedSections({
         title="Qualidade e processos"
         marcador="recomendado"
         defaultOpen={qualidadeOpen}
+        editar={edicao ? { aberto: edicao.aberto("qualidade"), onEditar: () => edicao.onEditar("qualidade") } : undefined}
       >
         <CheckboxGroup
           legend="Conhecimentos em qualidade"
@@ -67,6 +74,7 @@ export default function RegisterExtendedSections({
         title="Informática"
         marcador="recomendado"
         defaultOpen={infoOpen}
+        editar={edicao ? { aberto: edicao.aberto("informatica"), onEditar: () => edicao.onEditar("informatica") } : undefined}
       >
         <CheckboxGroup
           legend="Conhecimentos em informática"

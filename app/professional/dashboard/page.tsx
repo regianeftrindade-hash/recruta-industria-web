@@ -137,7 +137,6 @@ export default function DashboardProfissional() {
   const [respostaTexto, setRespostaTexto] = useState<Record<string, string>>({});
   const [enviandoRespostaId, setEnviandoRespostaId] = useState<string | null>(null);
   const [abaDireita, setAbaDireita] = useState<"vagas" | "oportunidades" | "dicas" | "perfil" | "mensagens">("vagas");
-  const [perfilEditando, setPerfilEditando] = useState(false);
   const [weekViewsCount, setWeekViewsCount] = useState(0);
   const [lastViewAt, setLastViewAt] = useState<string | null>(null);
   const [lastViewCompany, setLastViewCompany] = useState<string | null>(null);
@@ -590,21 +589,7 @@ export default function DashboardProfissional() {
           {abaDireita === "perfil" && (
             <CadastroProfissional
               incorporado
-              travado={!perfilEditando}
-              onSalvo={() => setPerfilEditando(false)}
-              acoes={
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setPerfilEditando(true)}
-                    disabled={perfilEditando}
-                    style={{ ...btnGold, padding: "6px 10px", fontSize: 10, flexShrink: 0, opacity: perfilEditando ? 0.7 : 1 }}
-                  >
-                    {perfilEditando ? "Campos liberados" : "Editar perfil"}
-                  </button>
-                  <DeleteAccountControl variant="compact" />
-                </>
-              }
+              acoes={<DeleteAccountControl variant="compact" />}
             />
           )}
         </main>
