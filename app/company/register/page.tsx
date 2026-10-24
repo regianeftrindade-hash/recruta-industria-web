@@ -11,14 +11,23 @@ import styles from '@/app/professional/register/register.module.css';
 import { matchesCompanyTestBypass } from '@/lib/company/company-test-bypass-shared';
 import { AuthAtmosphere } from '@/components/shared/AuthAtmosphere';
 import LogoRecruta from '@/app/components/LogoRecruta';
-import RegisterCollapsibleSection from '@/components/ui/RegisterCollapsibleSection';
+import RegisterSectionHeader from '@/components/ui/RegisterSectionHeader';
+import DeleteAccountControl from '@/components/shared/DeleteAccountControl';
+import { useCompanyDashboardTabOptional } from '@/components/company/CompanyDashboardTabContext';
 
 const twoCols = { '--fields-per-row': '2' } as React.CSSProperties;
 
-function CadastroEmpresaContent() {
+function rotuloVerificacao(status: string): 'Em análise' | 'Aprovado' | 'Reprovado' {
+  if (status === 'VERIFIED') return 'Aprovado';
+  if (status === 'REJECTED') return 'Reprovado';
+  return 'Em análise';
+}
+
+function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isEditMode = searchParams.get('edit') === '1';
+  const abaPainel = useCompanyDashboardTabOptional();
+  const isEditMode = incorporado || searchParams.get('edit') === '1';
   const { data: session, status } = useSession();
 
   const [formData, setFormData] = useState({
@@ -42,10 +51,9 @@ function CadastroEmpresaContent() {
   const [contaJaCompleta, setContaJaCompleta] = useState(false);
   const [sessionWaitTimedOut, setSessionWaitTimedOut] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [openDadosEmpresa, setOpenDadosEmpresa] = useState(true);
-  const [openContato, setOpenContato] = useState(true);
-  const [openDocumentos, setOpenDocumentos] = useState(false);
-  const [openSenha, setOpenSenha] = useState(true);
+  const [editando, setEditando] = useState(false);
+  const [statusVerificacao, setStatusVerificacao] = useState('PENDING');
+  const [motivoReprovacao, setMotivoReprovacao] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [usuarioLogado, setUsuarioLogado] = useState(false);
   const [contaProfissional, setContaProfissional] = useState(false);
@@ -53,7 +61,6 @@ function CadastroEmpresaContent() {
   const [emailLogin, setEmailLogin] = useState('');
   const [emailCorporativo, setEmailCorporativo] = useState('');
   const [emailVerificado, setEmailVerificado] = useState(false);
-  const [cadastroAprovado, setCadastroAprovado] = useState(false);
   const [emailEnviado, setEmailEnviado] = useState(false);
   const [enviandoEmail, setEnviandoEmail] = useState(false);
   const [emailMensagem, setEmailMensagem] = useState('');
@@ -179,7 +186,13 @@ function CadastroEmpresaContent() {
 
         setUsuarioLogado(true);
         const userData = data?.user;
-        setCadastroAprovado(data?.verification?.verificationStatus === 'VERIFIED');
+        const statusApi = String(data?.verification?.verificationStatus || 'PENDING');
+        setStatusVerificacao(statusApi);
+        setMotivoReprovacao(
+          statusApi === 'REJECTED' && typeof data?.verification?.rejectionReason === 'string'
+            ? data.verification.rejectionReason
+            : '',
+        );
         setEmailLogin(user.email || '');
         setFormData((prev) => ({
           ...prev,
@@ -484,8 +497,17 @@ function CadastroEmpresaContent() {
     }
   };
 
+  const voltarAoPainel = () => {
+    if (abaPainel) {
+      abaPainel.setActiveTab('vagas');
+      return;
+    }
+    router.push('/company/dashboard-empresa');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isEditMode && !editando) return;
     setErrorMessage('');
     setSuccessMessage('');
 
@@ -526,6 +548,7 @@ function CadastroEmpresaContent() {
         }).catch(() => undefined);
         if (isEditMode) {
           setSalvoNoBotao(true);
+          setEditando(false);
           setLoading(false);
           return;
         }
@@ -563,6 +586,7 @@ function CadastroEmpresaContent() {
         if (isEditMode) {
           setSuccessMessage('Alterações salvas');
           setSalvoNoBotao(true);
+          setEditando(false);
           setLoading(false);
           return;
         }
@@ -706,17 +730,60 @@ function CadastroEmpresaContent() {
     );
   }
 
+  const rotuloStatus = rotuloVerificacao(statusVerificacao);
+  const corStatus = rotuloStatus === 'Aprovado'
+    ? { background: '#1a3d1a', color: '#9ae6b4' }
+    : rotuloStatus === 'Reprovado'
+      ? { background: '#3d1a1a', color: '#f87171' }
+      : { background: '#E8C56A', color: '#24180a' };
+  const cadastroTravado = isEditMode && !editando;
+
   return (
-    <div className={`${styles.container} ri-readable`}>
-      <AuthAtmosphere intensity="strong" />
+    <div className={`${styles.container} ${incorporado ? styles.containerIncorporado : ''} ri-readable`}>
+      {incorporado ? null : <AuthAtmosphere intensity="strong" />}
       {loading && !isEditMode && <PageLoader message="Enviando cadastro..." mode="overlay" />}
       <div className={styles.card} style={{ maxWidth: 1100 }}>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
-          <LogoRecruta size="sm" as="div" depth />
-        </div>
-        <h1 className={styles.title}>
-          {isEditMode ? 'ATUALIZAR CADASTRO' : 'CADASTRO EMPRESA'}
-        </h1>
+        {isEditMode ? (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <button type="button" className={styles.anexoBtn} onClick={voltarAoPainel}>
+                Voltar
+              </button>
+              <DeleteAccountControl variant="compact" />
+            </div>
+            <div style={{ textAlign: 'center', marginBottom: 16 }}>
+              <span
+                style={{
+                  display: 'inline-block',
+                  padding: '6px 14px',
+                  borderRadius: 999,
+                  border: '2px solid #8D6B1F',
+                  background: corStatus.background,
+                  color: corStatus.color,
+                  fontSize: 13,
+                  fontWeight: 800,
+                  letterSpacing: '0.04em',
+                }}
+              >
+                {rotuloStatus}
+              </span>
+              {rotuloStatus === 'Reprovado' && motivoReprovacao.trim() ? (
+                <p style={{ margin: '8px 0 0', fontSize: 13, color: '#3d1a1a', lineHeight: 1.45 }}>
+                  <strong>Justificativa: </strong>
+                  {motivoReprovacao.trim()}
+                </p>
+              ) : null}
+            </div>
+          </>
+        ) : null}
+        {incorporado ? null : (
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+            <LogoRecruta size="sm" as="div" depth />
+          </div>
+        )}
+        {isEditMode ? null : (
+          <h1 className={styles.title}>CADASTRO EMPRESA</h1>
+        )}
 
         {isTestBypass && (
           <div style={{
@@ -738,12 +805,6 @@ function CadastroEmpresaContent() {
               Ir ao painel sem preencher
             </button>
           </div>
-        )}
-
-        {isEditMode && (
-          <p style={{ color: 'var(--dash-text, #414141)', fontSize: 13, textAlign: 'center', marginBottom: 16, lineHeight: 1.5 }}>
-            Atualize os dados da sua empresa. As alterações aparecerão no painel após salvar.
-          </p>
         )}
 
         {usuarioLogado && !isEditMode && (
@@ -810,6 +871,24 @@ function CadastroEmpresaContent() {
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          {isEditMode ? (
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+                <button
+                  type="button"
+                  className={styles.anexoBtn}
+                  disabled={loading}
+                  onClick={(event) => {
+                    if (!editando) {
+                      setEditando(true);
+                      return;
+                    }
+                    event.currentTarget.form?.requestSubmit();
+                  }}
+                >
+                  {editando ? (loading ? 'Salvando...' : 'Salvar') : 'Editar'}
+                </button>
+              </div>
+          ) : null}
           {errorMessage && (
             <div style={{ background: '#fee2e2', color: '#b91c1c', padding: '10px', borderRadius: '8px', fontWeight: 'bold' }}>
               {errorMessage}
@@ -821,232 +900,194 @@ function CadastroEmpresaContent() {
             </div>
           )}
 
-          <RegisterCollapsibleSection
-            emoji="🏭"
-            title="Dados da empresa"
-            defaultOpen
-            open={openDadosEmpresa}
-            onOpenChange={setOpenDadosEmpresa}
-          >
-          <div className={styles.fieldsRow} style={twoCols}>
-            <div>
-              <label className={styles.label}>CNPJ</label>
-              <input id="empresa-cnpj" type="text" className={styles.input} placeholder="00.000.000/0000-00" value={cnpjValue} onChange={handleCnpjChange} />
+          <section className={styles.sectionCard}>
+            <div className={styles.sectionHead}>
+              <RegisterSectionHeader emoji="🏭" title="Dados da empresa" />
             </div>
-
-            <div>
-              <label className={styles.label}>RAZÃO SOCIAL</label>
-              <input id="empresa-razao" type="text" className={styles.input} value={formData.nome} onChange={(e) => setFormData({ ...formData, nome: e.target.value })} />
-            </div>
-
-            <div>
-              <label className={styles.label}>NOME DO RESPONSÁVEL</label>
-              <input
-                id="empresa-responsavel"
-                type="text"
-                className={styles.input}
-                placeholder="Pessoa que utiliza a plataforma"
-                value={formData.responsavelNome}
-                onChange={(e) => setFormData({ ...formData, responsavelNome: e.target.value })}
-              />
-            </div>
-
-            <div>
-              <label className={styles.label}>CPF DO RESPONSÁVEL</label>
-              <input
-                id="empresa-cpf"
-                type="text"
-                className={styles.input}
-                placeholder="000.000.000-00"
-                value={cpfValue}
-                onChange={handleCpfChange}
-                style={{ borderColor: cpfError ? '#dc3545' : cpfValidado ? '#C89B3C' : undefined }}
-              />
-              {cpfError && <small style={{ color: '#dc3545' }}>{cpfError}</small>}
-              {cpfValidado && !cpfError && <small style={{ color: '#C89B3C' }}>✓ CPF válido</small>}
-            </div>
-          </div>
-          </RegisterCollapsibleSection>
-
-          <RegisterCollapsibleSection
-            emoji="📞"
-            title="Contato e acesso"
-            defaultOpen
-            open={openContato}
-            onOpenChange={setOpenContato}
-          >
-          <div className={styles.fieldsRow} style={twoCols}>
-            {usuarioLogado ? (
-              <div>
-                <label className={styles.label}>E-MAIL DE LOGIN</label>
-                <input type="email" className={styles.input} value={emailLogin || formData.email} style={{ opacity: 0.75 }} readOnly disabled />
-                <small style={{ color: 'var(--dash-text, #414141)' }}>E-mail usado para entrar na plataforma.</small>
-              </div>
-            ) : null}
-
-            <div>
-              <label className={styles.label}>
-                {emailVerificado ? (
-                  <span aria-label="E-mail verificado" style={{ color: "#1b7a32", marginRight: 6 }}>✓</span>
-                ) : null}
-                E-MAIL CORPORATIVO
-              </label>
-              <div className={styles.anexoCampoInline}>
-                <div className={styles.anexoCampoInput}>
-                  <input
-                    id="empresa-email"
-                    type="email"
-                    placeholder="contato@suaempresa.com.br"
-                    value={usuarioLogado ? emailCorporativo : formData.email}
-                    onChange={(e) => atualizarEmailCorporativo(e.target.value)}
-                    style={{
-                      width: '100%',
-                      border: 'none',
-                      outline: 'none',
-                      background: 'transparent',
-                      color: '#414141',
-                      fontSize: 14,
-                      lineHeight: 1.4,
-                      padding: 0,
-                      minWidth: 0,
-                    }}
+            <div inert={cadastroTravado ? true : undefined} className={cadastroTravado ? styles.cadastroTravado : undefined}>
+              <div className={styles.fieldsRow} style={twoCols}>
+                <div>
+                  <label className={styles.label}>CNPJ</label>
+                  <input id="empresa-cnpj" type="text" className={styles.input} placeholder="00.000.000/0000-00" value={cnpjValue} onChange={handleCnpjChange} />
+                </div>
+                <div>
+                  <label className={styles.label}>RAZÃO SOCIAL</label>
+                  <input id="empresa-razao" type="text" className={styles.input} value={formData.nome} onChange={(e) => setFormData({ ...formData, nome: e.target.value })} />
+                </div>
+                <div>
+                  <label className={styles.label}>ENDEREÇO</label>
+                  <textarea
+                    id="empresa-endereco"
+                    className={styles.input}
+                    placeholder="Rua, número, bairro, cidade — UF"
+                    value={formData.endereco}
+                    onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
+                    style={{ minHeight: 88, resize: 'vertical' }}
+                    required={false}
                   />
                 </div>
-                <button
-                  type="button"
-                  className={styles.anexoCampoBtn}
-                  onClick={() => void handleEnviarConfirmacaoEmail()}
-                  disabled={enviandoEmail || emailVerificado}
-                  style={{
-                    background: emailVerificado ? '#1a3d1a' : undefined,
-                    color: emailVerificado ? '#9ae6b4' : undefined,
-                    borderLeft: emailVerificado ? '1px solid #2f855a' : undefined,
-                    cursor: enviandoEmail || emailVerificado ? 'not-allowed' : 'pointer',
-                    opacity: enviandoEmail ? 0.7 : 1,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {enviandoEmail
-                    ? 'Enviando...'
-                    : emailVerificado
-                      ? 'Confirmado'
-                      : emailEnviado
-                        ? 'Reenviar'
-                        : 'Confirmar'}
-                </button>
-              </div>
-              <small style={{ color: 'var(--dash-text, #414141)', display: 'block', marginTop: 6 }}>
-                {usuarioLogado
-                  ? 'Enviamos um e-mail de confirmação quando você pedir.'
-                  : 'E-mail de acesso da conta. Tem que ser corporativo (não Gmail/Hotmail). Se já usa esse e-mail no site, teste com alias: nome+teste@suaempresa.com.br'}
-              </small>
-              {emailMensagem && (
-                <div style={{ marginTop: 10, background: '#F3E6C8', color: '#414141', padding: 10, borderRadius: 8, border: '2px solid #8D6B1F', fontSize: 13, lineHeight: 1.5 }}>
-                  {emailMensagem}
+                <div>
+                  <label className={styles.label}>TELEFONE (DDD)</label>
+                  <input
+                    id="empresa-telefone"
+                    type="tel"
+                    className={styles.input}
+                    placeholder="(00) 00000-0000"
+                    value={telefoneValue}
+                    onChange={(e) => setTelefoneValue(formatarTelefone(e.target.value))}
+                    required={false}
+                  />
                 </div>
-              )}
-              {emailErro && <small style={{ color: '#dc3545', display: 'block', marginTop: 8 }}>{emailErro}</small>}
-            </div>
-
-            {!usuarioLogado ? (
-              <div>
-                <label className={styles.label}>TELEFONE (DDD)</label>
-                <input
-                  id="empresa-telefone"
-                  type="tel"
-                  className={styles.input}
-                  placeholder="(00) 00000-0000"
-                  value={telefoneValue}
-                  onChange={(e) => setTelefoneValue(formatarTelefone(e.target.value))}
-                  required={false}
-                />
-              </div>
-            ) : null}
-
-            {usuarioLogado ? (
-              <div>
-                <label className={styles.label}>TELEFONE (DDD)</label>
-                <input
-                  id="empresa-telefone"
-                  type="tel"
-                  className={styles.input}
-                  placeholder="(00) 00000-0000"
-                  value={telefoneValue}
-                  onChange={(e) => setTelefoneValue(formatarTelefone(e.target.value))}
-                  required={false}
-                />
-              </div>
-            ) : null}
-
-            <div>
-              <label className={styles.label}>ENDEREÇO</label>
-              <textarea
-                id="empresa-endereco"
-                className={styles.input}
-                placeholder="Rua, número, bairro, cidade — UF"
-                value={formData.endereco}
-                onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
-                style={{ minHeight: 88, resize: 'vertical' }}
-                required={false}
-              />
-            </div>
-          </div>
-          </RegisterCollapsibleSection>
-
-          <RegisterCollapsibleSection
-            emoji="📄"
-            title="Documentos"
-            marcador="recomendado"
-            defaultOpen={false}
-            open={openDocumentos}
-            onOpenChange={setOpenDocumentos}
-          >
-            <div>
-              <label className={styles.label}>CARTÃO CNPJ (opcional)</label>
-              <div className={styles.anexoCampoInline}>
-                <div className={styles.anexoCampoInput}>
-                  {cartaoCnpjNome ? (
-                    <span className={styles.anexoCampoNome}>{cartaoCnpjNome}</span>
-                  ) : (
-                    <span className={styles.anexoCampoPlaceholder}>Nenhum arquivo selecionado</span>
+                <div>
+                  <label className={styles.label}>
+                    {emailVerificado ? (
+                      <span aria-label="E-mail verificado" style={{ color: "#1b7a32", marginRight: 6 }}>✓</span>
+                    ) : null}
+                    E-MAIL CORPORATIVO
+                  </label>
+                  <div className={styles.anexoCampoInline}>
+                    <div className={styles.anexoCampoInput}>
+                      <input
+                        id="empresa-email"
+                        type="email"
+                        placeholder="contato@suaempresa.com.br"
+                        value={usuarioLogado ? emailCorporativo : (emailCorporativo || formData.email)}
+                        onChange={(e) => atualizarEmailCorporativo(e.target.value)}
+                        style={{
+                          width: '100%',
+                          border: 'none',
+                          outline: 'none',
+                          background: 'transparent',
+                          color: '#414141',
+                          fontSize: 14,
+                          lineHeight: 1.4,
+                          padding: 0,
+                          minWidth: 0,
+                        }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className={styles.anexoCampoBtn}
+                      onClick={() => void handleEnviarConfirmacaoEmail()}
+                      disabled={enviandoEmail || emailVerificado}
+                      style={{
+                        background: emailVerificado ? '#1a3d1a' : undefined,
+                        color: emailVerificado ? '#9ae6b4' : undefined,
+                        borderLeft: emailVerificado ? '1px solid #2f855a' : undefined,
+                        cursor: enviandoEmail || emailVerificado ? 'not-allowed' : 'pointer',
+                        opacity: enviandoEmail ? 0.7 : 1,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {enviandoEmail
+                        ? 'Enviando...'
+                        : emailVerificado
+                          ? 'Confirmado'
+                          : emailEnviado
+                            ? 'Reenviar'
+                            : 'Confirmar'}
+                    </button>
+                  </div>
+                  {emailMensagem && (
+                    <div style={{ marginTop: 10, background: '#F3E6C8', color: '#414141', padding: 10, borderRadius: 8, border: '2px solid #8D6B1F', fontSize: 13, lineHeight: 1.5 }}>
+                      {emailMensagem}
+                    </div>
+                  )}
+                  {emailErro && <small style={{ color: '#dc3545', display: 'block', marginTop: 8 }}>{emailErro}</small>}
+                </div>
+                <div>
+                  <label className={styles.label}>CARTÃO CNPJ (opcional)</label>
+                  <div className={styles.anexoCampoInline}>
+                    <div className={styles.anexoCampoInput}>
+                      {cartaoCnpjNome ? (
+                        <span className={styles.anexoCampoNome}>{cartaoCnpjNome}</span>
+                      ) : (
+                        <span className={styles.anexoCampoPlaceholder}>Nenhum arquivo selecionado</span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      className={styles.anexoCampoBtn}
+                      onClick={() => cartaoInputRef.current?.click()}
+                      disabled={enviandoCartao}
+                    >
+                      {enviandoCartao ? 'Enviando...' : cartaoCnpjUrl ? 'Trocar' : 'Selecionar'}
+                    </button>
+                  </div>
+                  <input
+                    ref={cartaoInputRef}
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.webp"
+                    style={{ display: 'none' }}
+                    onChange={(e) => void handleCartaoCnpjUpload(e)}
+                  />
+                  {cartaoCnpjUrl && !enviandoCartao && (
+                    <small style={{ color: '#C89B3C', display: 'block', marginTop: 6 }}>
+                      ✓ Arquivo enviado{' '}
+                      <a href={cartaoCnpjUrl} target="_blank" rel="noreferrer" style={{ color: '#414141' }}>ver arquivo</a>
+                    </small>
                   )}
                 </div>
-                <button
-                  type="button"
-                  className={styles.anexoCampoBtn}
-                  onClick={() => cartaoInputRef.current?.click()}
-                  disabled={enviandoCartao}
-                >
-                  {enviandoCartao ? 'Enviando...' : cartaoCnpjUrl ? 'Trocar' : 'Selecionar'}
-                </button>
               </div>
-              <input
-                ref={cartaoInputRef}
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png,.webp"
-                style={{ display: 'none' }}
-                onChange={(e) => void handleCartaoCnpjUpload(e)}
-              />
-              <small style={{ color: 'var(--dash-text, #414141)', display: 'block', marginTop: 6 }}>
-                A publicação de vagas só é permitida depois da aprovação do cadastro. Essa aprovação depende do cartão CNPJ e da confirmação do e-mail corporativo.
-              </small>
-              {cartaoCnpjUrl && !enviandoCartao && (
-                <small style={{ color: '#C89B3C', display: 'block', marginTop: 6 }}>
-                  ✓ Arquivo enviado{' '}
-                  <a href={cartaoCnpjUrl} target="_blank" rel="noreferrer" style={{ color: '#414141' }}>ver arquivo</a>
-                </small>
-              )}
             </div>
-          </RegisterCollapsibleSection>
+          </section>
 
-          {!usuarioLogado && (
-            <RegisterCollapsibleSection
-              emoji="🔐"
-              title="Senha de acesso"
-              defaultOpen
-              open={openSenha}
-              onOpenChange={setOpenSenha}
-            >
+          <section className={styles.sectionCard}>
+            <div className={styles.sectionHead}>
+              <RegisterSectionHeader emoji="👤" title="Dados do responsável" />
+            </div>
+            <div inert={cadastroTravado ? true : undefined} className={cadastroTravado ? styles.cadastroTravado : undefined}>
+              <div className={styles.fieldsRow} style={twoCols}>
+                <div>
+                  <label className={styles.label}>NOME DO RESPONSÁVEL</label>
+                  <input
+                    id="empresa-responsavel"
+                    type="text"
+                    className={styles.input}
+                    placeholder="Pessoa que utiliza a plataforma"
+                    value={formData.responsavelNome}
+                    onChange={(e) => setFormData({ ...formData, responsavelNome: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className={styles.label}>CPF DO RESPONSÁVEL</label>
+                  <input
+                    id="empresa-cpf"
+                    type="text"
+                    className={styles.input}
+                    placeholder="000.000.000-00"
+                    value={cpfValue}
+                    onChange={handleCpfChange}
+                    style={{ borderColor: cpfError ? '#dc3545' : cpfValidado ? '#C89B3C' : undefined }}
+                  />
+                  {cpfError && <small style={{ color: '#dc3545' }}>{cpfError}</small>}
+                  {cpfValidado && !cpfError && <small style={{ color: '#C89B3C' }}>✓ CPF válido</small>}
+                </div>
+                <div>
+                  <label className={styles.label}>E-MAIL DE LOGIN</label>
+                  {usuarioLogado ? (
+                    <input id="empresa-email-login" type="email" className={styles.input} value={emailLogin || formData.email} style={{ opacity: 0.75 }} readOnly disabled />
+                  ) : (
+                    <input
+                      id="empresa-email-login"
+                      type="email"
+                      className={styles.input}
+                      placeholder="acesso@suaempresa.com.br"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {!usuarioLogado && !isEditMode ? (
+            <section className={styles.sectionCard}>
+              <div className={styles.sectionHead}>
+                <RegisterSectionHeader emoji="🔐" title="Senha de acesso" />
+              </div>
               <div className={styles.fieldsRow} style={twoCols}>
                 <div>
                   <label className={styles.label}>SENHA</label>
@@ -1060,77 +1101,37 @@ function CadastroEmpresaContent() {
                   <input id="empresa-senha-confirma" type="password" className={styles.input} value={formData.confirmPassword} onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} />
                 </div>
               </div>
-            </RegisterCollapsibleSection>
+            </section>
+          ) : null}
+
+          {isEditMode ? null : (
+            <>
+              <div className={styles.submitBtnRow}>
+                <button
+                  type="submit"
+                  className={styles.submitBtn}
+                  disabled={loading}
+                  style={{ cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
+                >
+                  {loading ? 'Salvando...' : 'FINALIZAR CADASTRO'}
+                </button>
+              </div>
+              <div className={styles.anexoBtnRow}>
+                <Link href="/login?tipo=empresa" style={{ fontSize: '13px', color: '#414141', textDecoration: 'underline' }}>
+                  Já tem conta? Entrar
+                </Link>
+              </div>
+            </>
           )}
-
-          <div className={styles.submitBtnRow}>
-            <button
-              type="submit"
-              className={styles.submitBtn}
-              disabled={loading}
-              style={{ cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
-            >
-              {salvoNoBotao ? 'Alterações salvas' : loading ? 'Salvando...' : isEditMode ? 'ATUALIZAR CADASTRO' : 'FINALIZAR CADASTRO'}
-            </button>
-          </div>
-
-          <div className={styles.anexoBtnRow}>
-            {isEditMode ? (
-              <button
-                type="button"
-                onClick={() => router.push('/company/dashboard-empresa')}
-                style={{ fontSize: '13px', color: '#414141', background: 'transparent', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}
-              >
-                Voltar ao painel
-              </button>
-            ) : (
-              <Link href="/login?tipo=empresa" style={{ fontSize: '13px', color: '#414141', textDecoration: 'underline' }}>
-                Já tem conta? Entrar
-              </Link>
-            )}
-          </div>
-          <p style={{ margin: "16px 0 10px", fontSize: 13, lineHeight: 1.5, color: "#414141" }}>
-            Só é permitido publicar vagas com a aprovação do cadastro. A aprovação depende do cartão CNPJ e da confirmação do e-mail corporativo.
-          </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
-            <span
-              style={{
-                display: "inline-block",
-                padding: "6px 12px",
-                borderRadius: 999,
-                border: "2px solid #8D6B1F",
-                background: cadastroAprovado ? "#F3E6C8" : "#E8C56A",
-                color: "#000",
-                fontSize: 12,
-                fontWeight: 700,
-              }}
-            >
-              Em aprovação
-            </span>
-            <span
-              style={{
-                display: "inline-block",
-                padding: "6px 12px",
-                borderRadius: 999,
-                border: "2px solid #8D6B1F",
-                background: cadastroAprovado ? "#E8C56A" : "#F3E6C8",
-                color: "#000",
-                fontSize: 12,
-                fontWeight: 700,
-              }}
-            >
-              {cadastroAprovado ? "✓ Aprovado" : "Aprovado"}
-            </span>
-          </div>
         </form>
       </div>
     </div>
   );
 }
-export default function CadastroEmpresa() {
+export default function CadastroEmpresa({ incorporado = false }: { incorporado?: boolean } = {}) {
   return (
     <Suspense fallback={<PageLoader message="Carregando..." />}>
-      <CadastroEmpresaContent />
+      <CadastroEmpresaContent incorporado={incorporado} />
     </Suspense>
   );
 }

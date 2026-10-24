@@ -9,6 +9,7 @@ import CompanyTeamPage from "@/components/company/CompanyTeamPage";
 import CompanyMeuPlanoPage from "@/components/company/CompanyMeuPlanoPage";
 import CompanyProfileAside from "@/components/company/CompanyProfileAside";
 import CompanyVagasPanel from "@/components/company/CompanyVagasPanel";
+import CadastroEmpresa from "@/app/company/register/page";
 
 const SECTION_TABS: CompanyDashboardTabId[] = ["entrevistas", "banco", "alertas", "contato"];
 
@@ -44,7 +45,7 @@ export default function CompanyDashboardTabContent() {
       }}
     >
       {activeTab === "vagas" ? <CompanyProfileAside compact /> : null}
-      {activeTab === "perfil" ? <CompanyProfileAside /> : null}
+      {activeTab === "perfil" ? <CadastroEmpresa incorporado /> : null}
 
       <div data-company-main style={{ overflow: "visible", minWidth: 0, display: activeTab === "perfil" ? "none" : "flex", flexDirection: "column", gap: 12 }}>
         {visited.has("vagas") ? (

@@ -89,3 +89,7 @@ export function useCompanyDashboardTab() {
   }
   return ctx;
 }
+
+export function useCompanyDashboardTabOptional() {
+  return useContext(CompanyDashboardTabContext);
+}
