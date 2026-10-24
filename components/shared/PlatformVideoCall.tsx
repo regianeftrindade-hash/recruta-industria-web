@@ -106,6 +106,22 @@ export default function PlatformVideoCall({
       };
 
   const statusLabel = getCallStatusLabel(call.status, role, call.isInitiator, call.incomingCompany);
+  const chamadaOciosa = role === "professional" && call.status === "idle" && !overlay && !error;
+
+  if (chamadaOciosa) {
+    return (
+      <div ref={wrapRef} id="chamada-video-profissional">
+        <section className="dash-card" style={{ ...dashCard, padding: 14 }}>
+          <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 6px", fontSize: 14, fontWeight: 400 }}>
+            Chamada de vídeo
+          </h3>
+          <p style={{ margin: 0, fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>
+            Quando uma empresa ligar, Aceitar e Recusar aparecem neste card. A câmera só liga depois que você aceitar.
+          </p>
+        </section>
+      </div>
+    );
+  }
 
   const panel = (
     <section
@@ -286,5 +302,9 @@ export default function PlatformVideoCall({
       </section>
   );
 
-  return <div ref={wrapRef}>{panel}</div>;
+  return (
+    <div ref={wrapRef} id={role === "professional" ? "chamada-video-profissional" : undefined}>
+      {panel}
+    </div>
+  );
 }

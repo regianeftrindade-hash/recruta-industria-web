@@ -33,6 +33,18 @@ const nestedCard: React.CSSProperties = {
 
 export { isArquivada, isEntrevista, isPropostaAtiva };
 
+function linkHttp(url: string | null | undefined): string | null {
+  const raw = String(url || "").trim();
+  if (!raw) return null;
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol === "https:" || parsed.protocol === "http:") return parsed.toString();
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 function trackingOf(p: JobProposalDTO) {
   return (
     p.tracking || {
@@ -307,6 +319,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
     if (!p.interview) return null;
     const busy = busyId === p.id;
     const t = trackingOf(p);
+    const salaUrl = linkHttp(p.interview.meetingUrl);
     const comprovante = formatInterviewComprovante({
       companyName: p.companyName,
       scheduledAt: p.interview.scheduledAt,
@@ -331,7 +344,8 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
             {p.companyName} · {p.cargo}
           </p>
           <p className={css.sub} style={{ marginTop: 2, fontSize: 10, color: DASH.muted }}>
-            {comprovante.dataLabel} · {comprovante.horaLabel} · {comprovante.localLabel}
+            {comprovante.dataLabel} · {comprovante.horaLabel} ·{" "}
+            {p.interview.locationType === "ONLINE" && salaUrl ? "Online" : comprovante.localLabel}
           </p>
           {p.interview.observacoes?.trim() ? (
             <p className={css.sub} style={{ marginTop: 6, fontSize: 11, color: DASH.text, whiteSpace: "pre-wrap" }}>
@@ -345,6 +359,31 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
             alignItems: "center",
           }}
         >
+          {p.interview.locationType === "PLATFORM" &&
+          (p.status === "INTERVIEW_PENDING" || p.status === "INTERVIEW_CONFIRMED") ? (
+            <button
+              type="button"
+              onClick={() => {
+                document.getElementById("chamada-video-profissional")?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }}
+              style={{ ...btnGold, padding: "5px 8px", fontSize: 10, whiteSpace: "nowrap" }}
+            >
+              Ir para a chamada
+            </button>
+          ) : null}
+          {p.interview.locationType === "ONLINE" && salaUrl ? (
+            <a
+              href={salaUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ ...btnGold, padding: "5px 8px", fontSize: 10, whiteSpace: "nowrap", textDecoration: "none" }}
+            >
+              Abrir a sala
+            </a>
+          ) : null}
           {p.status === "INTERVIEW_PENDING" && (
             <>
               <button
