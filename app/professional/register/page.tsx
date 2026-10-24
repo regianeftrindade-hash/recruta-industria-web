@@ -3221,6 +3221,20 @@ export default function CadastroProfissional({
             </div>
           </BlocoCadastro>
 
+          {(isEditMode || wizardStep === lastWizardStep) && (
+            <ResumeToolkit
+              variant={isEditMode ? 'profile' : 'register'}
+              focus={isEditMode ? 'full' : 'generate'}
+              notice="Não tem um currículo para anexar? Não tem problema. Geramos seu currículo em PDF gratuito com os dados preenchidos neste cadastro."
+              authenticated={Boolean(session?.user?.email)}
+              getLocalDraft={montarRascunhoCurriculo}
+              onDraftApplied={aplicarRascunhoCurriculo}
+              onHoldFile={(file) => {
+                pendingResumeRef.current = file;
+              }}
+            />
+          )}
+
           <BlocoCadastro {...propsBloco("termos", "📋", "Termos")}>
 
             <div className={styles.formSubCard}>
@@ -3312,20 +3326,6 @@ export default function CadastroProfissional({
           )}
         </form>
         </div>
-
-        {(isEditMode || wizardStep === lastWizardStep) && (
-          <ResumeToolkit
-            variant={isEditMode ? 'profile' : 'register'}
-            focus={isEditMode ? 'full' : 'generate'}
-            notice="Não tem um currículo para anexar? Não tem problema. Geramos seu currículo em PDF gratuito com os dados preenchidos neste cadastro."
-            authenticated={Boolean(session?.user?.email)}
-            getLocalDraft={montarRascunhoCurriculo}
-            onDraftApplied={aplicarRascunhoCurriculo}
-            onHoldFile={(file) => {
-              pendingResumeRef.current = file;
-            }}
-          />
-        )}
       </div>
     </div>
   );

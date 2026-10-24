@@ -43,15 +43,15 @@ export function companyDocumentsSubmitted(info: {
   return Boolean(info.cartaoCnpjUrl?.trim() && info.emailCorporativo?.trim());
 }
 
-export type CompanyVerificationTag = 'Em análise' | 'Aprovada' | 'Reprovada';
+export type CompanyVerificationTag = 'Em análise' | 'Aprovado' | 'Reprovado';
 
-/** Tag do status da conta. Aparece sempre: em análise, aprovada ou reprovada. */
+/** Tag do status da conta. Aparece sempre: em análise, aprovado ou reprovado. */
 export function companyVerificationTag(info: {
   verificationStatus: CompanyVerificationStatus;
   cartaoCnpjUrl?: string | null;
   emailCorporativo?: string | null;
 }): CompanyVerificationTag {
-  if (info.verificationStatus === 'VERIFIED') return 'Aprovada';
-  if (info.verificationStatus === 'REJECTED') return 'Reprovada';
+  if (info.verificationStatus === 'VERIFIED') return 'Aprovado';
+  if (info.verificationStatus === 'REJECTED') return 'Reprovado';
   return 'Em análise';
 }

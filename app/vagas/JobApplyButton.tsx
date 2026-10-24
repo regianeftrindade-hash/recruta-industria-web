@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import ResumeToolkit from "@/components/curriculum/ResumeToolkit";
 import { describeApplyPanel, type ApplicantContact, type ProfessionalPlan } from "@/lib/jobs/application-access";
 import type { ApplicationMode } from "@/lib/jobs/job-posting";
@@ -36,6 +37,7 @@ export default function JobApplyButton({
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState("");
   const [open, setOpen] = useState(false);
+  const [convidarConta, setConvidarConta] = useState(false);
 
   async function loadState(verify = false) {
     const response = await fetch(`/api/vagas/${jobId}/candidatura${verify ? "?verificar=1" : ""}`, { credentials: "include" });
@@ -124,6 +126,10 @@ export default function JobApplyButton({
       try {
         const current = await loadState(autoOpen);
         if (cancelled || !autoOpen || current.applied) return;
+        if (!current.authenticated) {
+          setConvidarConta(true);
+          return;
+        }
         const currentMode = current.applicationMode || mode;
         if (currentMode === "INTERNAL" && current.authenticated && current.canApply) {
           await sendAutomatic();
@@ -168,15 +174,13 @@ export default function JobApplyButton({
     }
 
     if (!current.authenticated) {
-      if ((current.applicationMode || mode) === "EXTERNAL" && externalApplyUrl) {
-        setOpen(true);
-        return;
-      }
-      const text = "Entre com uma conta de profissional para se candidatar.";
-      setError(text);
-      setOutcome(text);
+      setConvidarConta(true);
+      setOpen(false);
+      setError("");
+      setOutcome("");
       return;
     }
+    setConvidarConta(false);
 
     if (current.blockReason && current.canApply === false && !current.applied) {
       setError(current.blockReason);
@@ -203,6 +207,10 @@ export default function JobApplyButton({
     setOutcome("");
   }
 
+  const retornoCandidatura = `/vagas/${jobId}?candidatar=1`;
+  const cadastroHref = `/professional/cadastro?redirect=${encodeURIComponent(retornoCandidatura)}`;
+  const loginHref = `/login?tipo=profissional&redirect=${encodeURIComponent(retornoCandidatura)}`;
+
   const buttonLabel = busy
     ? (currentMode === "EMAIL" && panel.automatic ? "Enviando..." : currentMode === "INTERNAL" ? "Registrando..." : "Candidatar-se")
     : outcome
@@ -223,7 +231,23 @@ export default function JobApplyButton({
       >
         {buttonLabel}
       </button>
-      {open && !applied ? (
+      {convidarConta && !state?.authenticated && !applied ? (
+        <div className={styles.contactBox}>
+          <p className={styles.method}>Você ainda não tem cadastro?</p>
+          <p className={styles.note}>
+            A vaga que você acessou continua disponível. Crie sua conta gratuita para continuar sua candidatura e começar seu perfil profissional. A contratação do Premium é opcional e não é necessária para se candidatar.
+          </p>
+          <div className={styles.contactActions}>
+            <Link className="ri-btn-3d-gold" href={cadastroHref}>
+              Criar conta gratuita
+            </Link>
+            <Link className={styles.externalLink} href={loginHref}>
+              Entrar ou usar Google
+            </Link>
+          </div>
+        </div>
+      ) : null}
+      {open && !applied && state?.authenticated ? (
         <div className={styles.contactBox}>
           <p className={styles.method}>{panel.methodLabel}</p>
           {panel.automatic && panel.needsResume ? (

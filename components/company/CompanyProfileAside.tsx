@@ -7,7 +7,7 @@ import DeleteAccountControl from "@/components/shared/DeleteAccountControl";
 import { useCompanyDashboardData } from "@/components/company/CompanyDashboardDataContext";
 import type { CompanyChromeProfile } from "@/components/company/CompanyDashboardDataContext";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
-import { companyVerificationTag } from "@/lib/company/company-verification";
+import { companyVerificationTag, type CompanyVerificationTag } from "@/lib/company/company-verification";
 import {
   DASH,
   dashAside,
@@ -27,6 +27,24 @@ const CAMPOS_OBRIGATORIOS = [
   "emailCorporativo",
   "cartaoCnpjUrl",
 ] as const;
+
+function estiloTagVerificacao(tag: CompanyVerificationTag): React.CSSProperties {
+  const aprovado = tag === "Aprovado";
+  const reprovado = tag === "Reprovado";
+  return {
+    display: "inline-block",
+    marginLeft: 6,
+    padding: "2px 8px",
+    borderRadius: 14,
+    border: "2px solid #8D6B1F",
+    background: aprovado ? "#1a3d1a" : reprovado ? "#3d1a1a" : "#E8C56A",
+    color: aprovado ? "#9ae6b4" : reprovado ? "#f87171" : "#24180a",
+    fontSize: 10,
+    fontWeight: 800,
+    letterSpacing: "0.04em",
+    verticalAlign: "middle",
+  };
+}
 
 function completudeEmpresa(profile: CompanyChromeProfile): number {
   const valores = [
@@ -51,13 +69,11 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
   const companyProfile = dash.companyProfile;
   const slotsLabel = dash.slotsRestantes === null ? "∞" : String(dash.slotsRestantes ?? "…");
   const completude = companyProfile ? completudeEmpresa(companyProfile) : 0;
-  const verificationTag = dash.verificationStatus
-    ? companyVerificationTag({
-        verificationStatus: dash.verificationStatus,
-        cartaoCnpjUrl: companyProfile?.cartaoCnpjUrl,
-        emailCorporativo: companyProfile?.emailCorporativo,
-      })
-    : null;
+  const verificationTag = companyVerificationTag({
+    verificationStatus: dash.verificationStatus ?? "PENDING",
+    cartaoCnpjUrl: companyProfile?.cartaoCnpjUrl,
+    emailCorporativo: companyProfile?.emailCorporativo,
+  });
 
   if (compact) {
     const pct = companyProfile ? completude : 0;
@@ -106,23 +122,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
           >
             CADASTRO {pct}%
           </span>
-          {verificationTag ? (
-            <span
-              style={{
-                display: "inline-block",
-                marginLeft: 6,
-                padding: "2px 8px",
-                borderRadius: 14,
-                border: "2px solid #8D6B1F",
-                background: verificationTag === "Aprovada" ? "#1a3d1a" : verificationTag === "Reprovada" ? "#3d1a1a" : "#F3E6C8",
-                color: verificationTag === "Aprovada" ? "#9ae6b4" : verificationTag === "Reprovada" ? "#f87171" : "#24180a",
-                fontSize: 10,
-                fontWeight: 800,
-              }}
-            >
-              {verificationTag}
-            </span>
-          ) : null}
+          <span style={estiloTagVerificacao(verificationTag)}>{verificationTag}</span>
         </div>
       </section>
     );
@@ -132,11 +132,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
     <aside style={{ ...dashAside, borderRight: "none", width: "100%", maxWidth: "none" }}>
       <h3 style={{ ...dashSectionTitle, margin: "0 0 12px", fontSize: 14 }}>
         🏢 Perfil da Empresa
-        {verificationTag ? (
-          <span style={{ marginLeft: 8, fontSize: 10, color: "#8D6B1F", fontWeight: "bold" }}>
-            {verificationTag}
-          </span>
-        ) : null}
+        <span style={estiloTagVerificacao(verificationTag)}>{verificationTag}</span>
       </h3>
 
       {!dash.planReady && !companyProfile ? (
@@ -247,6 +243,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
           <div style={{ margin: "0 0 12px" }}>
             <p style={{ margin: "0 0 4px", fontSize: 10, fontWeight: 800, letterSpacing: "0.04em", color: "#414141" }}>
               CADASTRO {completude}%
+              <span style={estiloTagVerificacao(verificationTag)}>{verificationTag}</span>
             </p>
             <div style={{ height: 10, borderRadius: 8, border: `2px solid #8D6B1F`, background: "#E8D5A3", overflow: "hidden" }}>
               <div

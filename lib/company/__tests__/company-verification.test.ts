@@ -10,7 +10,7 @@ describe("companyVerificationTag", () => {
       verificationStatus: "VERIFIED",
       cartaoCnpjUrl: "https://arquivo/cartao.pdf",
       emailCorporativo: "rh@empresa.com.br",
-    })).toBe("Aprovada");
+    })).toBe("Aprovado");
   });
 
   it("marca em análise com ou sem cartão e e-mail preenchidos", () => {
@@ -40,6 +40,6 @@ describe("companyVerificationTag", () => {
       verificationStatus: "REJECTED",
       cartaoCnpjUrl: null,
       emailCorporativo: null,
-    })).toBe("Reprovada");
+    })).toBe("Reprovado");
   });
 });
