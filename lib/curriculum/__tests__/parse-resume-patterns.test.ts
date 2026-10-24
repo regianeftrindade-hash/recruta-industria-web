@@ -110,6 +110,42 @@ Experiência Profissional
     expect(r.experiencias?.[0]?.dataInicio).toBe('2015-01');
   });
 
+  it('não trata rótulo, ementa e nome como curso do PDF', () => {
+    const r = parseResumePatterns(`
+Regiane Fernandes Trindade Macedo
+UF: BRA
+Hortolândia - SP
+
+Formação Acadêmica
+Superior completo
+Curso Auxiliar Administrativo — Faculdade Metropolitana (cursando)
+2021
+
+Cursos
+➢ Curso Auxiliar Administrativo — Faculdade Metropolitana
+Rotinas administrativas, fiscais e de Departamento Pessoal
+Emissão e controle de documentos fiscais eletrônicos (NF-e, NFC-e, NFS-e)
+Noções de processos administrativos, fluxogramas e melhoria de processos
+Noções de legislação trabalhista, admissão, demissão e afastamentos
+Controle de relatórios gerenciais e absenteísmo.
+
+Competências
+CNC, Injetora, CEP, Excel Básico
+`);
+    expect(r.cursoFormacao).toMatch(/Auxiliar Administrativo/i);
+    expect(r.cursoFormacao).toMatch(/cursando/i);
+    expect(r.instituicaoFormacao).toBe('Faculdade Metropolitana');
+    expect(r.escolaridade).toBe('Superior completo');
+    expect(r.cursos || []).not.toEqual(expect.arrayContaining([expect.stringMatching(/UF:\s*BRA/i)]));
+    expect(r.cursos || []).not.toEqual(expect.arrayContaining([expect.stringMatching(/^Rotinas/i)]));
+    expect(r.conteudoFormacao).toMatch(/Rotinas administrativas/i);
+    expect(r.informatica).toContain('Excel Básico');
+    expect(r.maquinasEquipamentos).not.toContain('Excel Básico');
+    expect(r.qualidadeProcessos).toContain('CEP');
+    expect(r.maquinasEquipamentos).not.toContain('CEP');
+    expect(r.maquinasEquipamentos).toEqual(expect.arrayContaining(['CNC', 'Injetora']));
+  });
+
   it('separa a UF colada no próximo título do PDF', () => {
     const r = parseResumePatterns('Joao da Silva Santos joao.silva@email.com Curitiba - PRSuperior completo');
     expect(r.nome).toMatch(/Joao/i);

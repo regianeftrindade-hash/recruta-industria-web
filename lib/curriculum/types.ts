@@ -35,6 +35,8 @@ export type ResumeStructuredFields = {
   cursoFormacao?: string | null;
   instituicaoFormacao?: string | null;
   anoConclusaoFormacao?: string | null;
+  /** Ementa que veio colada no bloco de cursos do PDF. */
+  conteudoFormacao?: string | null;
   maquinasEquipamentos?: string[] | null;
   qualidadeProcessos?: string[] | null;
   informatica?: string[] | null;

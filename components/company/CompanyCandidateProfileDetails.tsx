@@ -139,6 +139,7 @@ export default function CompanyCandidateProfileDetails({
               { label: "Curso", value: fd.cursoFormacao },
               { label: "Instituição", value: fd.instituicaoFormacao },
               { label: "Ano de conclusão", value: fd.anoConclusaoFormacao },
+              { label: "Conteúdo da formação", value: fd.conteudoFormacao },
               {
                 label: "Cursos",
                 value: cursosDetalhados.length > 0

@@ -8,7 +8,9 @@ import {
   buildCargoDesejado,
   collectSegmentosIndustria,
   type CursoDetalhado,
+  type CertificacaoDetalhada,
 } from '@/lib/professional-form-config';
+import { sanitizeResumeProfileFields } from '@/lib/curriculum/sanitize-resume-fields';
 
 export function parseJsonSafe<T>(value: string | null | undefined, fallback: T): T {
   if (!value) return fallback;
@@ -509,6 +511,55 @@ function buildFormEditFromProfileColumns(profile: Profile, user: User): FormEdit
   };
 }
 
+function limparPerfilImportado(edit: FormEditPayload): FormEditPayload {
+  const nome = String(edit.formData.nome || "");
+  const limpo = sanitizeResumeProfileFields({
+    nome,
+    cursoFormacao: edit.formData.cursoFormacao,
+    instituicaoFormacao: edit.formData.instituicaoFormacao,
+    cursos: edit.cursosDetalhados?.length ? edit.cursosDetalhados : edit.cursos,
+    certificacoes: edit.formData.certificacoesDetalhadas ?? edit.formData.certificacoes,
+    maquinasEquipamentos: edit.formData.maquinasEquipamentos,
+    qualidadeProcessos: edit.formData.qualidadeProcessos,
+    informatica: edit.formData.informatica,
+  });
+
+  const cursosDetalhados = limpo.cursos.map((nomeCurso) => {
+    const atual = edit.cursosDetalhados?.find((curso) => {
+      const titulo = String(curso.nome || "").replace(/^[\s➢•*\-–—]+/, "").trim();
+      return titulo === nomeCurso || curso.nome === nomeCurso;
+    });
+    return atual ? { ...atual, nome: nomeCurso } : { nome: nomeCurso, possuiCertificado: false };
+  });
+
+  const certificacoesAtuais = Array.isArray(edit.formData.certificacoesDetalhadas)
+    ? (edit.formData.certificacoesDetalhadas as CertificacaoDetalhada[])
+    : [];
+  const certificacoesDetalhadas = limpo.certificacoes.map((nomeCert) => {
+    const atual = certificacoesAtuais.find((item) => String(item?.nome || "").trim() === nomeCert);
+    return atual ? { ...atual, nome: nomeCert } : { nome: nomeCert, possuiCertificado: false };
+  });
+
+  return {
+    ...edit,
+    cursos: limpo.cursos.length ? limpo.cursos : [""],
+    cursosDetalhados,
+    formData: {
+      ...edit.formData,
+      cursoFormacao: limpo.cursoFormacao,
+      instituicaoFormacao: limpo.instituicaoFormacao,
+      cursos: cursosDetalhados.map((curso) => curso.nome),
+      cursosDetalhados,
+      conteudoFormacao: limpo.conteudoFormacao,
+      certificacoes: limpo.certificacoes,
+      certificacoesDetalhadas,
+      maquinasEquipamentos: limpo.maquinasEquipamentos,
+      qualidadeProcessos: limpo.qualidadeProcessos,
+      informatica: limpo.informatica,
+    },
+  };
+}
+
 export function mapProfileToFormEdit(
   profile: Profile,
   user: User,
@@ -526,7 +577,7 @@ export function mapProfileToFormEdit(
       const profileCpf = String(profile.cpf || '').replace(/\D/g, '');
       const savedCpf = String(saved.cpf || '').replace(/\D/g, '');
 
-      return mergeStoredOverApi(fromColumns, {
+      return limparPerfilImportado(mergeStoredOverApi(fromColumns, {
         ...saved,
         nome:
           user.name?.trim() ||
@@ -535,11 +586,11 @@ export function mapProfileToFormEdit(
           '',
         email: user.email || saved.email || profile.email || '',
         cpf: profileCpf || savedCpf,
-      });
+      }));
     }
   }
 
-  return fromColumns;
+  return limparPerfilImportado(fromColumns);
 }
 
 function getStringValue(value: unknown): string | null {

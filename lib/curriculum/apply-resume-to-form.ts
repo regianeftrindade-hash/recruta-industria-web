@@ -159,6 +159,10 @@ export function buildResumeFormApplyPatch(
     patch.anoConclusaoFormacao = structured.anoConclusaoFormacao;
     filledLabels.push('Ano de conclusão');
   }
+  if (structured.conteudoFormacao && canSet('conteudoFormacao')) {
+    patch.conteudoFormacao = structured.conteudoFormacao;
+    filledLabels.push('Conteúdo da formação');
+  }
 
   if (structured.cnh) {
     if (canSet('possuiCNH')) patch.possuiCNH = 'Sim';

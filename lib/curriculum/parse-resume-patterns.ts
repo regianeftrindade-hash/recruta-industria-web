@@ -10,6 +10,7 @@ import {
   MAQUINAS_EQUIPAMENTOS,
   QUALIDADE_PROCESSOS,
 } from '@/lib/professional-form-config';
+import { sanitizeResumeProfileFields } from '@/lib/curriculum/sanitize-resume-fields';
 import type { ResumeStructuredFields } from '@/lib/curriculum/types';
 
 const UF_SET = new Set([
@@ -831,6 +832,16 @@ export function parseResumePatterns(rawText: string): ResumePatternParseResult {
   }
   if (cnh) matchedFields.push('cnh');
 
+  const limpo = sanitizeResumeProfileFields({
+    nome,
+    cursoFormacao: formacaoInfo.cursoFormacao,
+    instituicaoFormacao: formacaoInfo.instituicao,
+    cursos,
+    maquinasEquipamentos,
+    qualidadeProcessos,
+    informatica,
+  });
+
   return {
     nome,
     dataNascimentoDisplay: nascFinal.display,
@@ -855,16 +866,17 @@ export function parseResumePatterns(rawText: string): ResumePatternParseResult {
           dataFim: e.dataFim || null,
         }))
       : null,
-    cursos: cursos.length ? cursos : null,
+    cursos: limpo.cursos.length ? limpo.cursos : null,
     competencias: competencias.length ? competencias : null,
     cnh,
     escolaridade: formacaoInfo.escolaridade,
-    cursoFormacao: formacaoInfo.cursoFormacao,
-    instituicaoFormacao: formacaoInfo.instituicao,
+    cursoFormacao: limpo.cursoFormacao || null,
+    instituicaoFormacao: limpo.instituicaoFormacao || null,
     anoConclusaoFormacao: formacaoInfo.ano,
-    maquinasEquipamentos,
-    qualidadeProcessos,
-    informatica,
+    maquinasEquipamentos: limpo.maquinasEquipamentos,
+    qualidadeProcessos: limpo.qualidadeProcessos,
+    informatica: limpo.informatica,
+    conteudoFormacao: limpo.conteudoFormacao || null,
     matchedFields,
   };
 }
