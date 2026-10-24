@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jsonError, requireAdminUser } from "@/lib/jobs/job-api";
-import { updateAdminApplicationStage } from "@/lib/jobs/job-posting-db";
+import { deleteAdminApplication, updateAdminApplicationStage } from "@/lib/jobs/job-posting-db";
 
 type Context = { params: Promise<{ id: string; applicationId: string }> };
 
@@ -16,5 +16,18 @@ export async function PATCH(request: NextRequest, { params }: Context) {
     return NextResponse.json({ application });
   } catch (error) {
     return jsonError(error, "Não foi possível atualizar a etapa do candidato.");
+  }
+}
+
+export async function DELETE(request: NextRequest, { params }: Context) {
+  const access = await requireAdminUser(request);
+  if (access.denied) return access.denied;
+
+  try {
+    const { id, applicationId } = await params;
+    await deleteAdminApplication(id, applicationId);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return jsonError(error, "Não foi possível excluir a candidatura.");
   }
 }

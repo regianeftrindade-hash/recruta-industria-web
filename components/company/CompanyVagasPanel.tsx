@@ -559,6 +559,37 @@ export default function CompanyVagasPanel({
     }
   }
 
+  async function removeApplication(application: ApplicationRow) {
+    if (!selectedId || busy) return;
+    const nome = application.name || "este candidato";
+    if (!window.confirm(`Excluir a candidatura de ${nome}? Essa pessoa deixa de aparecer nesta vaga.`)) return;
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const response = await fetch(`${apiBase}/${selectedId}/candidaturas/${application.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setError(data.error || "Não foi possível excluir a candidatura.");
+        return;
+      }
+      setApplications((current) => current.filter((item) => item.id !== application.id));
+      setJobs((current) => current.map((job) => (
+        job.id === selectedId
+          ? { ...job, applicationCount: Math.max(0, job.applicationCount - 1) }
+          : job
+      )));
+      setMessage("Candidatura excluída.");
+    } catch {
+      setError("Não foi possível excluir a candidatura.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function changeStage(application: ApplicationRow, stage: string) {
     if (!selectedId || busy) return;
     setBusy(true);
@@ -947,20 +978,30 @@ export default function CompanyVagasPanel({
                   )}
                   <span className={styles.stage}>{applicationStageLabel(stage)}</span>
                 </div>
-                <label className={styles.candidateActions}>
-                  <span className={styles.stage}>Etapa</span>
-                  <select
-                    className={styles.stageSelect}
-                    value={stage}
+                <div className={styles.candidateActions}>
+                  <label>
+                    <span className={styles.stage}>Etapa</span>
+                    <select
+                      className={styles.stageSelect}
+                      value={stage}
+                      disabled={busy}
+                      aria-label={`Etapa de ${application.name || "candidato"}`}
+                      onChange={(event) => void changeStage(application, event.target.value)}
+                    >
+                      {APPLICATION_STAGES.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    type="button"
+                    className={styles.danger}
                     disabled={busy}
-                    aria-label={`Etapa de ${application.name || "candidato"}`}
-                    onChange={(event) => void changeStage(application, event.target.value)}
+                    onClick={() => void removeApplication(application)}
                   >
-                    {APPLICATION_STAGES.map((option) => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
-                </label>
+                    Excluir
+                  </button>
+                </div>
               </div>
             );
           })}

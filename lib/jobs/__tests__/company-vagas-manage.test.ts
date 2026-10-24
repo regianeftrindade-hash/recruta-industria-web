@@ -195,5 +195,10 @@ describe.skipIf(!canRun)("gestão de vagas da empresa", () => {
     expect(closed.status).toBe("CLOSED");
     expect(await db.getPublicJob(created.id)).toBeNull();
     expect(await prisma.jobApplication.count({ where: { jobId: created.id } })).toBe(1);
+
+    await expect(db.deleteCompanyApplication(other.id, created.id, application.id)).rejects.toThrow(/não pode excluir/i);
+    await db.deleteCompanyApplication(owner.id, created.id, application.id);
+    expect(await prisma.jobApplication.count({ where: { jobId: created.id } })).toBe(0);
+    await expect(db.deleteCompanyApplication(owner.id, created.id, application.id)).rejects.toThrow(/não encontrada/i);
   }, 90000);
 });

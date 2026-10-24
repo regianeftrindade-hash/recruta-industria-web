@@ -332,6 +332,67 @@ export async function updateCompanyApplicationStage(
   return { id: saved.id, stage: saved.stage };
 }
 
+export async function deleteCompanyApplication(
+  companyOwnerUserId: string,
+  jobId: string,
+  applicationId: string,
+): Promise<void> {
+  await ensureJobApplicationWhatsappColumn();
+  const id = assertJobId(jobId);
+  if (!/^[a-z0-9]{8,40}$/i.test(applicationId)) {
+    throw new JobPostingError("Candidatura não encontrada.", 404);
+  }
+
+  const job = await prisma.jobPosting.findUnique({
+    where: { id },
+    select: { companyUserId: true },
+  });
+  if (!job || !companyCanReadJobApplications(job, companyOwnerUserId)) {
+    throw new JobPostingError("Você não pode excluir as candidaturas desta vaga.", 403);
+  }
+
+  const deleted = await prisma.jobApplication.deleteMany({
+    where: { id: applicationId, jobId: id },
+  });
+  if (deleted.count !== 1) {
+    throw new JobPostingError("Candidatura não encontrada.", 404);
+  }
+
+  const stillThere = await prisma.jobApplication.findUnique({
+    where: { id: applicationId },
+    select: { id: true },
+  });
+  if (stillThere) {
+    throw new JobPostingError("A exclusão da candidatura não foi confirmada no banco de dados.", 500);
+  }
+}
+
+export async function deleteAdminApplication(jobId: string, applicationId: string): Promise<void> {
+  await ensureJobApplicationWhatsappColumn();
+  const id = assertJobId(jobId);
+  if (!/^[a-z0-9]{8,40}$/i.test(applicationId)) {
+    throw new JobPostingError("Candidatura não encontrada.", 404);
+  }
+
+  const job = await prisma.jobPosting.findUnique({ where: { id }, select: { id: true } });
+  if (!job) throw new JobPostingError("Vaga não encontrada.", 404);
+
+  const deleted = await prisma.jobApplication.deleteMany({
+    where: { id: applicationId, jobId: id },
+  });
+  if (deleted.count !== 1) {
+    throw new JobPostingError("Candidatura não encontrada.", 404);
+  }
+
+  const stillThere = await prisma.jobApplication.findUnique({
+    where: { id: applicationId },
+    select: { id: true },
+  });
+  if (stillThere) {
+    throw new JobPostingError("A exclusão da candidatura não foi confirmada no banco de dados.", 500);
+  }
+}
+
 export async function updateAdminApplicationStage(
   jobId: string,
   applicationId: string,

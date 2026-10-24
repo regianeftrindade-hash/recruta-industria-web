@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jsonError } from "@/lib/jobs/job-api";
-import { updateCompanyApplicationStage } from "@/lib/jobs/job-posting-db";
+import { deleteCompanyApplication, updateCompanyApplicationStage } from "@/lib/jobs/job-posting-db";
 import { resolveCompanyPublisher } from "@/lib/jobs/company-publisher";
 
 type Context = { params: Promise<{ id: string; applicationId: string }> };
@@ -22,5 +22,18 @@ export async function PATCH(request: NextRequest, { params }: Context) {
     return NextResponse.json({ application });
   } catch (error) {
     return jsonError(error, "Não foi possível atualizar a etapa do candidato.");
+  }
+}
+
+export async function DELETE(request: NextRequest, { params }: Context) {
+  const access = await resolveCompanyPublisher(request);
+  if ("error" in access) return access.error;
+
+  try {
+    const { id, applicationId } = await params;
+    await deleteCompanyApplication(access.ownerUserId, id, applicationId);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return jsonError(error, "Não foi possível excluir a candidatura.");
   }
 }
