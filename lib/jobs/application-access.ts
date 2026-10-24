@@ -136,7 +136,7 @@ export function describeApplyPanel(input: {
   if (input.mode === "EMAIL") {
     return {
       methodLabel: applicationModeLabel("EMAIL"),
-      detail: "Copie o e-mail, escreva a mensagem, anexe seu currículo e envie por conta própria. No plano Free o Recruta Indústria não envia a candidatura.",
+      detail: "Clique no e-mail para abrir a mensagem, anexe seu currículo e envie por conta própria. No plano Free o Recruta Indústria não envia a candidatura.",
       contact: contact?.kind === "email" ? contact : null,
       automatic: false,
       needsResume: false,
@@ -148,7 +148,7 @@ export function describeApplyPanel(input: {
   if (input.mode === "WHATSAPP") {
     return {
       methodLabel: applicationModeLabel("WHATSAPP"),
-      detail: "Não há integração para concluir o WhatsApp aqui. Copie o número, abra o WhatsApp, anexe seu currículo e envie por conta própria.",
+      detail: "Não há integração para concluir o WhatsApp aqui. Clique no número para abrir a conversa, anexe seu currículo e envie por conta própria.",
       contact: contact?.kind === "whatsapp" ? contact : null,
       automatic: false,
       needsResume: false,

@@ -183,6 +183,19 @@
   word-break: break-word;
 }
 
+.inlineLink,
+.contactValueLink {
+  color: #12315c;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.inlineLink:hover,
+.contactValueLink:hover {
+  color: #000;
+}
+
 .contactActions {
   display: flex;
   flex-wrap: wrap;

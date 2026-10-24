@@ -9,6 +9,7 @@ import { jobApplicationDeadline, textWithoutJobSource } from "@/lib/jobs/public-
 import JobApplyButton from "../JobApplyButton";
 import JobBackButton from "../JobBackButton";
 import JobShareButton from "../JobShareButton";
+import JobText from "../JobText";
 import styles from "../vagas.module.css";
 
 export const dynamic = "force-dynamic";
@@ -155,20 +156,20 @@ export default async function VagaPage({ params, searchParams }: Props) {
 
           <section className={styles.section}>
             <h2>Descrição da vaga</h2>
-            <p className={styles.text}>{view.job.description}</p>
+            <JobText text={view.job.description} />
           </section>
 
           {textWithoutJobSource(view.job.observations) ? (
             <section className={styles.section}>
               <h2>Observações</h2>
-              <p className={styles.text}>{textWithoutJobSource(view.job.observations)}</p>
+              <JobText text={textWithoutJobSource(view.job.observations) ?? ""} />
             </section>
           ) : null}
 
           {textWithoutJobSource(view.job.applicationInstructions) ? (
             <section className={styles.section}>
               <h2>Como se candidatar</h2>
-              <p className={styles.text}>{textWithoutJobSource(view.job.applicationInstructions)}</p>
+              <JobText text={textWithoutJobSource(view.job.applicationInstructions) ?? ""} />
             </section>
           ) : null}
 

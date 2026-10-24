@@ -4,9 +4,25 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import ResumeToolkit from "@/components/curriculum/ResumeToolkit";
 import { describeApplyPanel, type ApplicantContact, type ProfessionalPlan } from "@/lib/jobs/application-access";
+import { hrefForShownContact } from "@/lib/jobs/job-text-links";
 import type { ApplicationMode } from "@/lib/jobs/job-posting";
 import CopyTextButton from "./CopyTextButton";
 import styles from "./vagas.module.css";
+
+function ContactLink({ contact }: { contact: ApplicantContact }) {
+  const href = hrefForShownContact(contact.kind, contact.value);
+  if (!href) return contact.value;
+  const external = href.startsWith("http");
+  return (
+    <a
+      className={styles.contactValueLink}
+      href={href}
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+    >
+      {contact.value}
+    </a>
+  );
+}
 
 type ApplyState = {
   authenticated: boolean;
@@ -268,7 +284,9 @@ export default function JobApplyButton({
           ) : (
             <>
               {panel.contact ? (
-                <p className={styles.contactValue}>{panel.contact.value}</p>
+                <p className={styles.contactValue}>
+                  <ContactLink contact={panel.contact} />
+                </p>
               ) : panel.automatic ? null : (
                 <p className={styles.error}>A empresa ainda não informou o dado deste método de candidatura.</p>
               )}
