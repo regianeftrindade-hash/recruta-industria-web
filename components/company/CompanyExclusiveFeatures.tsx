@@ -185,7 +185,7 @@ export default function CompanyExclusiveFeatures({
           title="Liberação de contatos"
           description="Desbloqueie o perfil completo para ver telefone, e-mail, WhatsApp, currículo e demais informações cadastradas."
           items={[
-            "Basic: até 50 liberações por mês",
+            "Basic: até 150 liberações por mês",
             "Premium e Empresarial: liberações ilimitadas",
             "Exige e-mail corporativo confirmado e cartão CNPJ aprovado",
           ]}
@@ -218,11 +218,10 @@ export default function CompanyExclusiveFeatures({
         <FeatureSection
           emoji="📌"
           title="Favoritos e histórico de buscas"
-          description="Salve profissionais para consultar depois e acompanhe as pesquisas já feitas na plataforma."
+          description="Salve profissionais para consultar depois. O painel mostra quantas pesquisas foram feitas."
           items={[
-            "Basic: até 100 favoritos",
-            "Premium e Empresarial: favoritos ilimitados",
-            "Histórico de pesquisas a partir do Basic",
+            "Favoritos ilimitados a partir do Basic",
+            "Contagem de pesquisas no painel, a partir do Basic",
           ]}
           plano="Basic+"
         />
@@ -304,7 +303,7 @@ export default function CompanyExclusiveFeatures({
             "Listas padrão criadas automaticamente",
             "Possibilidade de criar novas listas",
           ]}
-          plano="Empresarial"
+          plano="Premium e Empresarial"
         />
       </div>
     </div>

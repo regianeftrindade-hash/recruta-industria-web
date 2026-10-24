@@ -68,4 +68,39 @@ describe("planos empresa (proposta e contato)", () => {
     expect(getPlanFeatures("PREMIUM").unlimitedUnlocks).toBe(true);
     expect(getPlanFeatures("BASIC").maxUsers).toBe(1);
   });
+
+  it("não anuncia recurso que o site não entrega", () => {
+    const texto = COMPANY_PLAN_TIERS.flatMap((plano) => [
+      plano.descricao,
+      ...plano.inclui,
+      ...(plano.naoInclui ?? []),
+      ...(plano.limites ?? []),
+    ]).join("\n");
+    for (const ausente of [
+      "Histórico de pesquisas",
+      "Histórico avançado",
+      "Relatórios básicos",
+      "Relatórios avançados",
+      "Banco de talentos avançado",
+      "Atendimento prioritário",
+      "Selo Empresa Verificada",
+      "Prioridade em novos recursos",
+      "Painel completo de indicadores",
+      "Histórico de ações",
+      "Estatísticas de utilização",
+      "em PDF",
+      "explorar o banco de talentos",
+    ]) {
+      expect(texto).not.toContain(ausente);
+    }
+
+    const porId = Object.fromEntries(COMPANY_PLAN_TIERS.map((plano) => [plano.id, plano]));
+    expect(porId.BASIC.inclui).toContain("Convites para entrevista");
+    expect(porId.BASIC.inclui).toContain("Disponibilidade para contratação e data de atualização do perfil");
+    expect(porId.PREMIUM.inclui).toContain("Banco de talentos privado");
+    expect(porId.PREMIUM.inclui).toContain("Alertas de profissionais compatíveis no painel");
+    expect(porId.PREMIUM.inclui).toContain("Exportação do perfil para impressão");
+    expect(porId.EMPRESARIAL.inclui).toContain("Inclusão, remoção e substituição de recrutadores");
+    expect(porId.FREE.naoInclui).toContain("Banco de talentos");
+  });
 });
