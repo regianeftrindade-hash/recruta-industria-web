@@ -146,6 +146,7 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
           flexDirection: "column",
           alignItems: "stretch",
           gap: 0,
+          borderBottom: "none",
         }}
       >
         <div

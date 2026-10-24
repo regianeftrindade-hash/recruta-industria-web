@@ -97,7 +97,7 @@ export function CompanyDashboardNav({
         width: "100%",
         paddingTop: 10,
         borderBottom: "2px solid #8D6B1F",
-        marginBottom: 12,
+        marginBottom: 0,
       }}
     >
       {COMPANY_DASH_TABS.map((tab) => {
@@ -129,6 +129,8 @@ export function CompanyDashboardNav({
               borderBottom: ativo ? "2px solid var(--dash-bg)" : "2px solid #8D6B1F",
               borderRadius: "14px 14px 0 0",
               marginBottom: -2,
+              position: "relative",
+              zIndex: 1,
               boxShadow: "none",
               cursor: "pointer",
               lineHeight: 1.2,
