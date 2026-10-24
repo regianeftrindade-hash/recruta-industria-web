@@ -14,6 +14,12 @@ import PlatformVideoCallVideoGrid from "./video-call/PlatformVideoCallVideoGrid"
 import PlatformVideoCallInvitePanel from "./video-call/PlatformVideoCallInvitePanel";
 import PlatformVideoCallActionBar from "./video-call/PlatformVideoCallActionBar";
 
+type PropostaComEntrevista = {
+  companyName?: string;
+  status?: string;
+  interview?: { locationType?: string; scheduledAt?: string } | null;
+};
+
 /**
  * Chamada pela plataforma:
  * - Empresa clica em Chamar → profissional vê "Chamando" + Aceitar
@@ -89,20 +95,18 @@ export default function PlatformVideoCall({
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (cancelled || !data) return;
-        const list = Array.isArray(data.proposals) ? data.proposals : [];
-        const next = list.find((item) => {
-          const interview = item?.interview;
-          const itemStatus = item?.status;
-          return (
-            interview?.locationType === "PLATFORM" &&
-            (itemStatus === "INTERVIEW_CONFIRMED" || itemStatus === "INTERVIEW_PENDING")
-          );
-        });
+        const list: PropostaComEntrevista[] = Array.isArray(data.proposals) ? data.proposals : [];
+        const next = list.find((item): item is PropostaComEntrevista & {
+          interview: { locationType: string; scheduledAt?: string };
+        } =>
+          item?.interview?.locationType === "PLATFORM" &&
+          (item.status === "INTERVIEW_CONFIRMED" || item.status === "INTERVIEW_PENDING"),
+        );
         if (!next) {
           setProxima(null);
           return;
         }
-        const when = new Date(next.interview.scheduledAt);
+        const when = new Date(next.interview.scheduledAt || "");
         const quando = Number.isNaN(when.getTime())
           ? ""
           : when.toLocaleString("pt-BR", {
