@@ -29,6 +29,8 @@ import { recordCompanyProfileView } from '@/lib/professional/record-profile-view
 import { listActivePremiumProfileIds } from '@/lib/professional-storage'
 import { profilePublicSlugOrBuild } from '@/lib/profile/resolve-profile-ref'
 import { COMPANY_VIEW_ONLY_NOTICE } from '@/lib/company/company-verification'
+import { companyCanSearchProfessionals } from '@/lib/company/company-search-access'
+import { isCompanyTestBypassUserId } from '@/lib/company/company-test-bypass'
 
 function salarySearchTerms(input: string): string[] {
   const trimmed = input.trim()
@@ -214,30 +216,32 @@ export async function GET(request: NextRequest) {
     const dataUserId = planContext.ownerUserId || companyUser.id
 
     // Cadastro completo + verificação obrigatórios para visualizar perfis.
+    // A conta de teste já entra no painel sem telefone e endereço.
     const companyRow = await loadCompanyRowByUserId(dataUserId)
     const extra = await getCompanyExtraData(dataUserId)
-    const registrationComplete = Boolean(
-      companyRow?.name?.trim() &&
-        extra.cnpj?.replace(/\D/g, '').length === 14 &&
-        extra.responsavelNome?.trim() &&
-        extra.responsavelCpf?.replace(/\D/g, '').length === 11 &&
-        extra.telefone?.trim() &&
-        extra.endereco?.trim() &&
-        extra.endereco.trim().length >= 5,
-    )
+    const bypass = await isCompanyTestBypassUserId(dataUserId)
+      || (dataUserId !== companyUser.id && await isCompanyTestBypassUserId(companyUser.id))
+    const registrationComplete = companyCanSearchProfessionals({
+      name: companyRow?.name,
+      cnpj: extra.cnpj,
+      responsavelNome: extra.responsavelNome,
+      responsavelCpf: extra.responsavelCpf,
+      telefone: extra.telefone,
+      endereco: extra.endereco,
+    }, bypass)
 
     if (!registrationComplete || !verification.canAccessSensitiveProfiles) {
       return NextResponse.json({
-        professionals: [],
-        total: 0,
-        page: 1,
-        totalPages: 1,
+        profissionais: [],
+        desbloqueados: [],
+        totalEncontrados: 0,
+        pagination: { page: 1, perPage: 12, total: 0, totalPages: 1 },
         requiresRegistration: !registrationComplete,
         requiresVerification: !verification.canAccessSensitiveProfiles,
         error: !registrationComplete
           ? 'Complete o cadastro da empresa para visualizar profissionais.'
           : COMPANY_VIEW_ONLY_NOTICE,
-      })
+      }, { status: 403 })
     }
 
     const { searchParams } = new URL(request.url)
