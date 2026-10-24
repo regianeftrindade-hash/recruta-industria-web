@@ -23,7 +23,6 @@ import { matchesCompanyTestBypass } from "@/lib/company/company-test-bypass-shar
 import {
   COMPANY_FIELDS_NOTICE,
   COMPANY_VIEW_ONLY_NOTICE,
-  companyVerificationTag,
 } from "@/lib/company/company-verification";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import {
@@ -135,11 +134,6 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
   if (status === "unauthenticated" && !bypass) return null;
 
   const navBadges = dash.getBadges();
-  const verificationTag = companyVerificationTag({
-    verificationStatus: dash.verificationStatus ?? "PENDING",
-    cartaoCnpjUrl: dash.companyProfile?.cartaoCnpjUrl,
-    emailCorporativo: dash.companyProfile?.emailCorporativo,
-  });
   const camposVerificacaoVazios = !dash.companyProfile?.cartaoCnpjUrl?.trim()
     || !dash.companyProfile?.emailCorporativo?.trim();
 
@@ -167,30 +161,6 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
           <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
             <LogoRecruta size="xs" as="h1" depth />
             <span className="ri-dash-access-tag">Acesso Empresa</span>
-            <span
-              style={{
-                display: "inline-flex",
-                alignSelf: "flex-start",
-                marginTop: 2,
-                padding: "2px 8px",
-                borderRadius: 999,
-                border: "1px solid #8D6B1F",
-                background: verificationTag === "Aprovado"
-                  ? "#1a3d1a"
-                  : verificationTag === "Reprovado"
-                    ? "#3d1a1a"
-                    : "#E8C56A",
-                color: verificationTag === "Aprovado"
-                  ? "#9ae6b4"
-                  : verificationTag === "Reprovado"
-                    ? "#f87171"
-                    : "#24180a",
-                fontSize: 10,
-                fontWeight: 800,
-              }}
-            >
-              {verificationTag}
-            </span>
           </div>
           <div
             className="ri-company-header-actions"

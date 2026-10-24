@@ -35,11 +35,11 @@ describe("companyVerificationTag", () => {
     })).toBe("Em análise");
   });
 
-  it("mostra reprovada quando a verificação foi rejeitada", () => {
+  it("mostra negado quando a verificação foi recusada", () => {
     expect(companyVerificationTag({
       verificationStatus: "REJECTED",
       cartaoCnpjUrl: null,
       emailCorporativo: null,
-    })).toBe("Reprovado");
+    })).toBe("Negado");
   });
 });

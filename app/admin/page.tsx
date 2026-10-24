@@ -403,6 +403,7 @@ IMAP_PASS=sua-senha
                 <li key={company.userId} className={styles.companyListRow}>
                   <div className={styles.companyListMain}>
                     <span className={styles.companyListName}>{company.razaoSocial}</span>
+                    <span className={styles.companyListMeta}>Em análise</span>
                     <span className={styles.companyListMeta}>
                       CNPJ {company.cnpj || '—'}
                       {company.responsavelNome ? ` · ${company.responsavelNome}` : ''}

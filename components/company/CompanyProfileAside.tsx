@@ -7,7 +7,7 @@ import DeleteAccountControl from "@/components/shared/DeleteAccountControl";
 import { useCompanyDashboardData } from "@/components/company/CompanyDashboardDataContext";
 import type { CompanyChromeProfile } from "@/components/company/CompanyDashboardDataContext";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
-import { companyVerificationTag, type CompanyVerificationTag } from "@/lib/company/company-verification";
+import CompanyVerificationBadge from "@/components/company/CompanyVerificationBadge";
 import {
   DASH,
   dashAside,
@@ -27,24 +27,6 @@ const CAMPOS_OBRIGATORIOS = [
   "emailCorporativo",
   "cartaoCnpjUrl",
 ] as const;
-
-function estiloTagVerificacao(tag: CompanyVerificationTag): React.CSSProperties {
-  const aprovado = tag === "Aprovado";
-  const reprovado = tag === "Reprovado";
-  return {
-    display: "inline-block",
-    marginLeft: 6,
-    padding: "2px 8px",
-    borderRadius: 14,
-    border: "2px solid #8D6B1F",
-    background: aprovado ? "#1a3d1a" : reprovado ? "#3d1a1a" : "#E8C56A",
-    color: aprovado ? "#9ae6b4" : reprovado ? "#f87171" : "#24180a",
-    fontSize: 10,
-    fontWeight: 800,
-    letterSpacing: "0.04em",
-    verticalAlign: "middle",
-  };
-}
 
 function completudeEmpresa(profile: CompanyChromeProfile): number {
   const valores = [
@@ -69,11 +51,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
   const companyProfile = dash.companyProfile;
   const slotsLabel = dash.slotsRestantes === null ? "∞" : String(dash.slotsRestantes ?? "…");
   const completude = companyProfile ? completudeEmpresa(companyProfile) : 0;
-  const verificationTag = companyVerificationTag({
-    verificationStatus: dash.verificationStatus ?? "PENDING",
-    cartaoCnpjUrl: companyProfile?.cartaoCnpjUrl,
-    emailCorporativo: companyProfile?.emailCorporativo,
-  });
+  const verificationStatus = dash.verificationStatus ?? "PENDING";
 
   if (compact) {
     const pct = companyProfile ? completude : 0;
@@ -122,17 +100,15 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
           >
             CADASTRO {pct}%
           </span>
-          <span style={estiloTagVerificacao(verificationTag)}>{verificationTag}</span>
         </div>
       </section>
     );
   }
 
   return (
-    <aside style={{ ...dashAside, borderRight: "none", width: "100%", maxWidth: "none" }}>
+    <aside style={{ ...dashAside, borderRight: "none", width: "100%", maxWidth: "none", overflow: "visible" }}>
       <h3 style={{ ...dashSectionTitle, margin: "0 0 12px", fontSize: 14 }}>
         🏢 Perfil da Empresa
-        <span style={estiloTagVerificacao(verificationTag)}>{verificationTag}</span>
       </h3>
 
       {!dash.planReady && !companyProfile ? (
@@ -243,7 +219,6 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
           <div style={{ margin: "0 0 12px" }}>
             <p style={{ margin: "0 0 4px", fontSize: 10, fontWeight: 800, letterSpacing: "0.04em", color: "#414141" }}>
               CADASTRO {completude}%
-              <span style={estiloTagVerificacao(verificationTag)}>{verificationTag}</span>
             </p>
             <div style={{ height: 10, borderRadius: 8, border: `2px solid #8D6B1F`, background: "#E8D5A3", overflow: "hidden" }}>
               <div
@@ -330,6 +305,8 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
             );
           })}
           </div>
+
+          <CompanyVerificationBadge status={verificationStatus} reason={dash.rejectionReason} />
 
           <div style={{ marginTop: 12, ...dashPlanBox }}>
             <p style={{ ...dashPlanAccent, margin: "0 0 4px", fontSize: 10, fontWeight: "bold" }}>Plano atual</p>

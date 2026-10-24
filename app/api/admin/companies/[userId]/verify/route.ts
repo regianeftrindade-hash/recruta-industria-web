@@ -21,7 +21,10 @@ export async function POST(
     }
 
     if (action === 'reject') {
-      const reason = String(body.reason || 'Documentação não aprovada.').trim();
+      const reason = String(body.reason || '').trim();
+      if (!reason) {
+        return NextResponse.json({ error: 'Informe a justificativa da negativa.' }, { status: 400 });
+      }
       await saveCompanyExtraData(userId, {
         verificationStatus: 'REJECTED',
         verifiedAt: null,

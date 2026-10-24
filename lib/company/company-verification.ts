@@ -43,15 +43,24 @@ export function companyDocumentsSubmitted(info: {
   return Boolean(info.cartaoCnpjUrl?.trim() && info.emailCorporativo?.trim());
 }
 
-export type CompanyVerificationTag = 'Em análise' | 'Aprovado' | 'Reprovado';
+export type CompanyVerificationTag = 'Em análise' | 'Aprovado' | 'Negado';
 
-/** Tag do status da conta. Aparece sempre: em análise, aprovado ou reprovado. */
+/** Tag do status da conta. Aparece sempre: em análise, aprovado ou negado. */
 export function companyVerificationTag(info: {
   verificationStatus: CompanyVerificationStatus;
   cartaoCnpjUrl?: string | null;
   emailCorporativo?: string | null;
 }): CompanyVerificationTag {
   if (info.verificationStatus === 'VERIFIED') return 'Aprovado';
-  if (info.verificationStatus === 'REJECTED') return 'Reprovado';
+  if (info.verificationStatus === 'REJECTED') return 'Negado';
   return 'Em análise';
+}
+
+export function companyVerificationTagStyle(tag: CompanyVerificationTag): {
+  background: string;
+  color: string;
+} {
+  if (tag === 'Aprovado') return { background: '#1a3d1a', color: '#9ae6b4' };
+  if (tag === 'Negado') return { background: '#3d1a1a', color: '#f87171' };
+  return { background: '#E8C56A', color: '#24180a' };
 }

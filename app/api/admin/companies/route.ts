@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { requireAdmin } from '@/lib/auth/admin-auth';
 import { formatCNPJ } from '@/lib/security';
+import { isCompanyVerificationStatus } from '@/lib/company/company-verification';
 import {
   getAdminExcludedTestAccounts,
   isAdminExcludedTestAccount,
@@ -15,6 +16,9 @@ export async function GET(request: NextRequest) {
 
   try {
     const status = request.nextUrl.searchParams.get('status') || 'PENDING';
+    if (!isCompanyVerificationStatus(status)) {
+      return NextResponse.json({ error: 'Status inválido' }, { status: 400 });
+    }
     const { userIds: excludedIds } = await getAdminExcludedTestAccounts();
     const excludeCompanyUserSql = sqlAndUserIdNotIn(Prisma.sql`c."userId"`, excludedIds);
 

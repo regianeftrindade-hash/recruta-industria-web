@@ -68,6 +68,7 @@ type DashData = {
   isOwner: boolean;
   companyVerified: boolean;
   verificationStatus: CompanyVerificationStatus | null;
+  rejectionReason: string | null;
   canPublishAndSearch: boolean;
   companyProfile: CompanyChromeProfile | null;
   alerts: AlertWithMatches[];
@@ -94,6 +95,7 @@ const EMPTY: DashData = {
   isOwner: true,
   companyVerified: false,
   verificationStatus: null,
+  rejectionReason: null,
   canPublishAndSearch: false,
   companyProfile: null,
   alerts: [],
@@ -118,18 +120,22 @@ function readVerification(verification: {
   verificationStatus?: string;
   status?: string;
   canAccessSensitiveProfiles?: boolean;
-} | null | undefined): Pick<DashData, "companyVerified" | "verificationStatus" | "canPublishAndSearch"> {
+  rejectionReason?: string | null;
+} | null | undefined): Pick<DashData, "companyVerified" | "verificationStatus" | "rejectionReason" | "canPublishAndSearch"> {
   const raw = verification?.verificationStatus || verification?.status;
+  const reason = typeof verification?.rejectionReason === "string" ? verification.rejectionReason : null;
   if (!isCompanyVerificationStatus(raw)) {
     return {
       companyVerified: false,
       verificationStatus: null,
+      rejectionReason: null,
       canPublishAndSearch: false,
     };
   }
   return {
     companyVerified: raw === "VERIFIED",
     verificationStatus: raw,
+    rejectionReason: raw === "REJECTED" ? reason : null,
     canPublishAndSearch: verification?.canAccessSensitiveProfiles === true,
   };
 }
@@ -162,6 +168,7 @@ function parseProfilePayload(data: Record<string, unknown>): Partial<DashData> |
       verificationStatus?: string;
       status?: string;
       canAccessSensitiveProfiles?: boolean;
+      rejectionReason?: string | null;
     } | null;
 
   const rawTier = String(plan?.tier || data.planTier || "FREE").trim().toUpperCase() || "FREE";
@@ -210,6 +217,7 @@ async function fetchSlice(slice: CacheSlice): Promise<{ ok: boolean; patch: Part
               verificationStatus?: string;
               status?: string;
               canAccessSensitiveProfiles?: boolean;
+              rejectionReason?: string | null;
             };
             user?: {
               razaoSocial?: string | null;

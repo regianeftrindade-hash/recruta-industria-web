@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import CompanyVerificationBadge from '@/components/company/CompanyVerificationBadge';
+import { isCompanyVerificationStatus, type CompanyVerificationStatus } from '@/lib/company/company-verification';
 
 type PendingCompany = {
   userId: string;
@@ -14,15 +16,22 @@ type PendingCompany = {
   rejectionReason: string | null;
 };
 
+const FILTROS: Array<{ id: CompanyVerificationStatus; label: string }> = [
+  { id: 'PENDING', label: 'Em análise' },
+  { id: 'VERIFIED', label: 'Aprovado' },
+  { id: 'REJECTED', label: 'Negado' },
+];
+
 export default function AdminCompaniesPage() {
   const [companies, setCompanies] = useState<PendingCompany[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState('');
+  const [filtro, setFiltro] = useState<CompanyVerificationStatus>('PENDING');
 
-  const load = () => {
+  const load = useCallback((status: CompanyVerificationStatus) => {
     setLoading(true);
-    void fetch('/api/admin/companies?status=PENDING', { credentials: 'include' })
+    void fetch(`/api/admin/companies?status=${status}`, { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {
@@ -33,18 +42,25 @@ export default function AdminCompaniesPage() {
         setError('');
         setCompanies(data.companies || []);
       })
-      .catch(() => setError('Erro ao carregar empresas pendentes.'))
+      .catch(() => setError('Erro ao carregar empresas.'))
       .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    load();
   }, []);
 
+  useEffect(() => {
+    load(filtro);
+  }, [filtro, load]);
+
   const review = async (userId: string, action: 'verify' | 'reject') => {
-    const reason = action === 'reject'
-      ? window.prompt('Motivo da recusa (opcional):') || 'Documentação não aprovada.'
-      : undefined;
+    let reason: string | undefined;
+    if (action === 'reject') {
+      const typed = window.prompt('Justificativa da negativa:');
+      if (typed == null) return;
+      reason = typed.trim();
+      if (!reason) {
+        alert('Informe a justificativa da negativa.');
+        return;
+      }
+    }
 
     setBusyId(userId);
     try {
@@ -59,7 +75,7 @@ export default function AdminCompaniesPage() {
         alert(data.error || 'Erro ao atualizar verificação.');
         return;
       }
-      load();
+      load(filtro);
     } finally {
       setBusyId('');
     }
@@ -68,13 +84,33 @@ export default function AdminCompaniesPage() {
   return (
     <div style={{ padding: 24, color: '#414141', maxWidth: 1100, margin: '0 auto' }}>
       <h1 style={{ color: '#C89B3C' }}>Verificação de empresas</h1>
-      <p style={{ color: 'var(--dash-text, #414141)' }}>Analise o cartão CNPJ e aprove ou recuse o cadastro.</p>
+      <p style={{ color: 'var(--dash-text, #414141)' }}>Analise o cartão CNPJ. O status fica abaixo dos dados: em análise, aprovado ou negado. A negativa exige justificativa.</p>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+        {FILTROS.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setFiltro(item.id)}
+            style={{
+              padding: '8px 14px',
+              borderRadius: 999,
+              border: '2px solid #8D6B1F',
+              background: filtro === item.id ? '#E8C56A' : '#F3E6C8',
+              color: '#24180a',
+              fontWeight: 800,
+              cursor: 'pointer',
+            }}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
 
       {loading && <p>Carregando...</p>}
-      {error && <p style={{ color: '#f87171' }}>{error}</p>}
+      {error && <p style={{ color: '#7f1d1d' }}>{error}</p>}
 
       {!loading && companies.length === 0 && !error && (
-        <p>Nenhuma empresa aguardando verificação.</p>
+        <p>Nenhuma empresa neste status.</p>
       )}
 
       <div style={{ display: 'grid', gap: 16, marginTop: 20 }}>
@@ -92,6 +128,12 @@ export default function AdminCompaniesPage() {
                 </a>
               </p>
             )}
+            {isCompanyVerificationStatus(company.verificationStatus) ? (
+              <CompanyVerificationBadge
+                status={company.verificationStatus}
+                reason={company.rejectionReason}
+              />
+            ) : null}
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end', marginTop: 16 }}>
               <button
                 type="button"
@@ -107,7 +149,7 @@ export default function AdminCompaniesPage() {
                 onClick={() => void review(company.userId, 'reject')}
                 style={{ padding: '8px 14px', background: '#7f1d1d', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}
               >
-                Recusar
+                Negar
               </button>
             </div>
           </div>

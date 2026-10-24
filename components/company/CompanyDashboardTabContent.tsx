@@ -46,7 +46,7 @@ export default function CompanyDashboardTabContent() {
       {activeTab === "vagas" ? <CompanyProfileAside compact /> : null}
       {activeTab === "perfil" ? <CompanyProfileAside /> : null}
 
-      <div data-company-main style={{ overflowY: "auto", minWidth: 0, display: activeTab === "perfil" ? "none" : "flex", flexDirection: "column", gap: 12 }}>
+      <div data-company-main style={{ overflow: "visible", minWidth: 0, display: activeTab === "perfil" ? "none" : "flex", flexDirection: "column", gap: 12 }}>
         {visited.has("vagas") ? (
           <div style={panelStyle("vagas")}>
             <CompanyVagasPanel />
