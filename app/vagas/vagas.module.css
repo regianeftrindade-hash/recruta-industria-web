@@ -465,26 +465,48 @@
     width: 100%;
   }
 
-  .titleRow {
+  .top,
+  .topActions {
     flex-wrap: wrap;
+    min-width: 0;
   }
 
-  .titleRow .title {
+  .titleRow {
+    flex-wrap: wrap;
+    min-width: 0;
     max-width: 100%;
   }
 
-  .titleTools,
-  .titleTools .shareRow {
-    flex-wrap: wrap;
+  .titleRow .title {
+    flex: 1 1 100%;
+    max-width: 100%;
   }
 
+  .titleTools {
+    flex: 1 1 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .titleTools .shareRow,
   .shareRow {
-    width: auto;
+    align-self: stretch;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-left: 0;
+    justify-content: flex-start;
   }
 
   .shareButton,
   .copyButton {
     width: auto;
-    flex: 0 0 auto;
+    max-width: 100%;
+    flex: 0 1 auto;
   }
 }
