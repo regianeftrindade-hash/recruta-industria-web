@@ -9,39 +9,16 @@ import {
   sqlAndUserIdNotIn,
   sumPaidExcludingTestEmails,
 } from '@/lib/admin/admin-exclude-test-accounts';
-
-function dayKey(date: Date): string {
-  return date.toISOString().slice(0, 10);
-}
-
-function lastNDays(n: number): string[] {
-  const days: string[] = [];
-  const now = new Date();
-  for (let i = n - 1; i >= 0; i -= 1) {
-    const d = new Date(now);
-    d.setHours(0, 0, 0, 0);
-    d.setDate(d.getDate() - i);
-    days.push(dayKey(d));
-  }
-  return days;
-}
+import { limitesDoPainel, somarDiasCivis, ultimosDias } from '@/lib/admin/admin-day';
 
 function isActiveSubscription(expiresAt: Date | null | undefined): boolean {
   if (!expiresAt) return true;
   return new Date(expiresAt).getTime() > Date.now();
 }
 
-function periodStarts() {
-  const now = new Date();
-  const startToday = new Date(now);
-  startToday.setHours(0, 0, 0, 0);
-
-  const startWeek = new Date(startToday);
-  startWeek.setDate(startWeek.getDate() - 6);
-
-  const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  return { startToday, startWeek, startMonth };
+function chaveDaLinha(day: Date | string): string {
+  if (typeof day === 'string' && /^\d{4}-\d{2}-\d{2}/.test(day)) return day.slice(0, 10);
+  return new Date(day).toISOString().slice(0, 10);
 }
 
 async function countRaw(
@@ -60,10 +37,10 @@ export async function GET(request: NextRequest) {
   if (denied) return denied;
 
   try {
-    const days = lastNDays(14);
-    const seriesWindowStart = new Date();
-    seriesWindowStart.setHours(0, 0, 0, 0);
-    seriesWindowStart.setDate(seriesWindowStart.getDate() - 13);
+    const agora = new Date();
+    const { inicioHoje, fimHoje, inicioSemana, inicioMes } = limitesDoPainel(agora);
+    const days = ultimosDias(14, agora);
+    const seriesWindowStart = somarDiasCivis(inicioHoje, -13);
 
     const baselineAt = getAdminStatsBaselineAt();
     const seriesSince =
@@ -71,10 +48,9 @@ export async function GET(request: NextRequest) {
         ? seriesWindowStart
         : baselineAt;
 
-    const { startToday, startWeek, startMonth } = periodStarts();
-    const dayFrom = startToday.getTime() > baselineAt.getTime() ? startToday : baselineAt;
-    const weekFrom = startWeek.getTime() > baselineAt.getTime() ? startWeek : baselineAt;
-    const monthFrom = startMonth.getTime() > baselineAt.getTime() ? startMonth : baselineAt;
+    const dayFrom = inicioHoje.getTime() > baselineAt.getTime() ? inicioHoje : baselineAt;
+    const weekFrom = inicioSemana.getTime() > baselineAt.getTime() ? inicioSemana : baselineAt;
+    const monthFrom = inicioMes.getTime() > baselineAt.getTime() ? inicioMes : baselineAt;
 
     const { userIds: excludedIds, emails: excludedEmails } =
       await getAdminExcludedTestAccounts();
@@ -108,40 +84,47 @@ export async function GET(request: NextRequest) {
       excludeIds,
     );
 
-    const countUsers = (role: 'PROFESSIONAL' | 'COMPANY', from: Date) =>
+    const criadoNoPeriodo = (from: Date, fecharNoDia: boolean) =>
+      fecharNoDia ? { gte: from, lt: fimHoje } : { gte: from };
+
+    const countUsers = (role: 'PROFESSIONAL' | 'COMPANY', from: Date, fecharNoDia = false) =>
       prisma.user.count({
         where: {
           role,
-          createdAt: { gte: from },
+          createdAt: criadoNoPeriodo(from, fecharNoDia),
           ...notExcludedUser,
         },
       });
 
-    const countGoogleUsers = (from: Date) =>
+    const countGoogleUsers = (from: Date, fecharNoDia = false) =>
       prisma.user.count({
         where: {
           passwordHash: null,
-          createdAt: { gte: from },
+          createdAt: criadoNoPeriodo(from, fecharNoDia),
           ...notExcludedUser,
         },
       });
 
-    const countVisits = (from: Date) =>
+    const ateFimDoDia = Prisma.sql`AND "createdAt" < ${fimHoje}`;
+
+    const countVisits = (from: Date, fecharNoDia = false) =>
       countRaw(
         prisma.$queryRaw<Array<{ count: bigint }>>`
           SELECT COUNT(*)::bigint AS count
           FROM "SiteVisit"
           WHERE "createdAt" >= ${from}
+          ${fecharNoDia ? ateFimDoDia : Prisma.empty}
         `,
       );
 
-    const countSessions = (from: Date) =>
+    const countSessions = (from: Date, fecharNoDia = false) =>
       countRaw(
         prisma.$queryRaw<Array<{ count: bigint }>>`
           SELECT COUNT(DISTINCT "sessionId")::bigint AS count
           FROM "SiteVisit"
           WHERE "sessionId" IS NOT NULL
             AND "createdAt" >= ${from}
+            ${fecharNoDia ? ateFimDoDia : Prisma.empty}
         `,
       );
 
@@ -179,25 +162,25 @@ export async function GET(request: NextRequest) {
       paidPayments,
     ] = await Promise.all([
       countVisits(baselineAt),
-      countVisits(dayFrom),
-      countVisits(weekFrom),
-      countVisits(monthFrom),
+      countVisits(dayFrom, true),
+      countVisits(weekFrom, true),
+      countVisits(monthFrom, true),
       countSessions(baselineAt),
-      countSessions(dayFrom),
-      countSessions(weekFrom),
-      countSessions(monthFrom),
+      countSessions(dayFrom, true),
+      countSessions(weekFrom, true),
+      countSessions(monthFrom, true),
       countGoogleUsers(baselineAt),
-      countGoogleUsers(dayFrom),
-      countGoogleUsers(weekFrom),
-      countGoogleUsers(monthFrom),
+      countGoogleUsers(dayFrom, true),
+      countGoogleUsers(weekFrom, true),
+      countGoogleUsers(monthFrom, true),
       countUsers('PROFESSIONAL', baselineAt),
-      countUsers('PROFESSIONAL', dayFrom),
-      countUsers('PROFESSIONAL', weekFrom),
-      countUsers('PROFESSIONAL', monthFrom),
+      countUsers('PROFESSIONAL', dayFrom, true),
+      countUsers('PROFESSIONAL', weekFrom, true),
+      countUsers('PROFESSIONAL', monthFrom, true),
       countUsers('COMPANY', baselineAt),
-      countUsers('COMPANY', dayFrom),
-      countUsers('COMPANY', weekFrom),
-      countUsers('COMPANY', monthFrom),
+      countUsers('COMPANY', dayFrom, true),
+      countUsers('COMPANY', weekFrom, true),
+      countUsers('COMPANY', monthFrom, true),
       countRaw(
         prisma.$queryRaw<Array<{ count: bigint }>>`
           SELECT COUNT(*)::bigint AS count
@@ -252,25 +235,31 @@ export async function GET(request: NextRequest) {
             ${excludeCompanyUserSql}
         `,
       ),
-      prisma.$queryRaw<Array<{ day: Date; count: bigint }>>`
-        SELECT date_trunc('day', "createdAt") AS day, COUNT(*)::bigint AS count
+      prisma.$queryRaw<Array<{ day: string; count: bigint }>>`
+        SELECT to_char(("createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD') AS day,
+               COUNT(*)::bigint AS count
         FROM "SiteVisit"
         WHERE "createdAt" >= ${seriesSince}
+          AND "createdAt" < ${fimHoje}
         GROUP BY 1
         ORDER BY 1
-      `.catch(() => [] as Array<{ day: Date; count: bigint }>),
-      prisma.$queryRaw<Array<{ day: Date; count: bigint }>>`
-        SELECT date_trunc('day', "createdAt") AS day, COUNT(*)::bigint AS count
+      `.catch(() => [] as Array<{ day: string; count: bigint }>),
+      prisma.$queryRaw<Array<{ day: string; count: bigint }>>`
+        SELECT to_char(("createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD') AS day,
+               COUNT(*)::bigint AS count
         FROM "User"
         WHERE role = 'PROFESSIONAL' AND "createdAt" >= ${seriesSince}
+          AND "createdAt" < ${fimHoje}
           ${excludeUserSql}
         GROUP BY 1
         ORDER BY 1
       `,
-      prisma.$queryRaw<Array<{ day: Date; count: bigint }>>`
-        SELECT date_trunc('day', "createdAt") AS day, COUNT(*)::bigint AS count
+      prisma.$queryRaw<Array<{ day: string; count: bigint }>>`
+        SELECT to_char(("createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD') AS day,
+               COUNT(*)::bigint AS count
         FROM "User"
         WHERE role = 'COMPANY' AND "createdAt" >= ${seriesSince}
+          AND "createdAt" < ${fimHoje}
           ${excludeUserSql}
         GROUP BY 1
         ORDER BY 1
@@ -327,10 +316,10 @@ export async function GET(request: NextRequest) {
         ),
     ]);
 
-    const toMap = (rows: Array<{ day: Date; count: bigint }>) => {
+    const toMap = (rows: Array<{ day: Date | string; count: bigint }>) => {
       const map = new Map<string, number>();
       for (const row of rows) {
-        map.set(dayKey(new Date(row.day)), Number(row.count));
+        map.set(chaveDaLinha(row.day), Number(row.count));
       }
       return map;
     };

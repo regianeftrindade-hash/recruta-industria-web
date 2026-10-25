@@ -463,7 +463,7 @@ IMAP_PASS=sua-senha
               </table>
             </div>
             <p className={styles.brandSub} style={{ marginTop: 10 }}>
-              Google = contas criadas sem senha (login OAuth). Diário = hoje · Semanal = 7 dias · Mensal = mês atual.
+              Google = contas criadas sem senha (login OAuth). Diário = hoje, das 00:00 às 23:59 no horário de Brasília. Semanal = 7 dias. Mensal = mês atual.
               Contas admin ficam fora das métricas de profissional/empresa.
             </p>
           </section>

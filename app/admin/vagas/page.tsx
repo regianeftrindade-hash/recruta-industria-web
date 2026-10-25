@@ -11,6 +11,7 @@ export default function AdminVagasPage() {
         profilePath={null}
         returnKey="ri-admin-vagas-return"
         showOrigin
+        voltarPublico="/admin/vagas"
       />
     </main>
   );

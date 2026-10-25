@@ -15,6 +15,7 @@ import {
 import ApplicationModeFields from "@/components/jobs/ApplicationModeFields";
 import { INSTAGRAM_SHARE_URL, facebookShareUrl, jobShareMessage, whatsAppShareUrl } from "@/lib/jobs/public-job-link";
 import fields from "@/app/admin/vagas/vagas-admin.module.css";
+import { caminhoDeVolta, hrefComVolta } from "@/lib/jobs/job-return-path";
 import styles from "./company-vagas.module.css";
 import { useCompanyDashboardDataOptional } from "@/components/company/CompanyDashboardDataContext";
 import FotoPerfilAvatar from "@/components/shared/FotoPerfilAvatar";
@@ -297,13 +298,16 @@ export default function CompanyVagasPanel({
   profilePath = (profileId: string) => `/company/professional/${encodeURIComponent(profileId)}`,
   returnKey = COMPANY_RETURN_KEY,
   showOrigin = false,
+  voltarPublico,
 }: {
   apiBase?: string;
   profilePath?: ((profileId: string) => string) | null;
   returnKey?: string;
   showOrigin?: boolean;
+  voltarPublico?: string;
 } = {}) {
   const router = useRouter();
+  const voltaPainel = caminhoDeVolta(voltarPublico);
   const dash = useCompanyDashboardDataOptional();
   const publicacaoBloqueada = Boolean(dash?.planReady && !dash.canPublishAndSearch);
   const restored = useRef(false);
@@ -884,7 +888,7 @@ export default function CompanyVagasPanel({
                   <div className={styles.rowActions}>
                     <button type="button" className={styles.ghost} onClick={() => void openApplications(job)}>Candidaturas</button>
                     {job.status === "PUBLISHED" ? (
-                      <a className={styles.ghost} href={`/vagas/${job.id}`} target="_blank" rel="noopener noreferrer">Ver vaga</a>
+                      <a className={styles.ghost} href={hrefComVolta(`/vagas/${job.id}`, voltaPainel)} target="_blank" rel="noopener noreferrer">Ver vaga</a>
                     ) : (
                       <button type="button" className={styles.ghost} disabled title="A vaga não está na divulgação pública.">Ver vaga</button>
                     )}
@@ -975,7 +979,7 @@ export default function CompanyVagasPanel({
                           >
                             Copiar link
                           </button>
-                          <a className={styles.ghost} href="/vagas" target="_blank" rel="noopener noreferrer">
+                          <a className={styles.ghost} href={hrefComVolta("/vagas", voltaPainel)} target="_blank" rel="noopener noreferrer">
                             Visualizar vagas
                           </a>
                         </div>

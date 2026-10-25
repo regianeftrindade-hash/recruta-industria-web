@@ -15,6 +15,7 @@ import {
   hrefListaVagas,
   temFiltroDeVaga,
 } from "@/lib/jobs/public-vagas-filtros";
+import { caminhoDeVolta, hrefComVolta } from "@/lib/jobs/job-return-path";
 import styles from "./vagas.module.css";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +48,7 @@ export default async function VagasPage({
 
   const lista = paginarLista(jobs, paginaPedida, VAGAS_POR_PAGINA_PUBLICA);
   const comFiltro = temFiltroDeVaga(params);
+  const volta = caminhoDeVolta(params.voltar);
 
   return (
     <main className={styles.page}>
@@ -115,9 +117,10 @@ export default async function VagasPage({
             ))}
           </select>
         </label>
+        {volta ? <input type="hidden" name="voltar" value={volta} /> : null}
         <div className={styles.actions}>
           <button type="submit">Buscar</button>
-          {comFiltro ? <Link href="/vagas" className={styles.clearLink}>Limpar</Link> : null}
+          {comFiltro ? <Link href={hrefComVolta("/vagas", volta)} className={styles.clearLink}>Limpar</Link> : null}
         </div>
       </form>
 
@@ -129,7 +132,7 @@ export default async function VagasPage({
       ) : null}
       <div className={styles.list}>
         {lista.itens.map((job) => (
-          <Link key={job.id} href={`/vagas/${job.id}`} className={styles.card}>
+          <Link key={job.id} href={hrefComVolta(`/vagas/${job.id}`, volta)} className={styles.card}>
             <h2 className={styles.cardTitle}>{job.title}</h2>
             <ul className={styles.meta}>
               <li>{job.companyLabel}</li>
@@ -146,19 +149,19 @@ export default async function VagasPage({
       {!error && lista.totalPaginas > 1 ? (
         <nav className={styles.pager} aria-label="Páginas das vagas">
           {lista.pagina > 1 ? (
-            <Link href={hrefListaVagas(params, lista.pagina - 1)}>Anterior</Link>
+            <Link href={hrefComVolta(hrefListaVagas(params, lista.pagina - 1), volta)}>Anterior</Link>
           ) : null}
           {paginasDaBarra(lista.pagina, lista.totalPaginas).map((numero) => (
             <Link
               key={numero}
-              href={hrefListaVagas(params, numero)}
+              href={hrefComVolta(hrefListaVagas(params, numero), volta)}
               aria-current={numero === lista.pagina ? "page" : undefined}
             >
               {numero}
             </Link>
           ))}
           {lista.pagina < lista.totalPaginas ? (
-            <Link href={hrefListaVagas(params, lista.pagina + 1)}>Próxima</Link>
+            <Link href={hrefComVolta(hrefListaVagas(params, lista.pagina + 1), volta)}>Próxima</Link>
           ) : null}
         </nav>
       ) : null}
