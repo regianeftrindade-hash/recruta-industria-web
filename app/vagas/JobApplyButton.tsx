@@ -147,7 +147,7 @@ export default function JobApplyButton({
         const current = await loadState(autoOpen);
         if (cancelled || !autoOpen || current.applied) return;
         if (!current.authenticated) {
-          router.replace(`/professional/register?redirect=${encodeURIComponent(`/vagas/${jobId}?candidatar=1`)}`);
+          router.replace(`/professional/cadastro?redirect=${encodeURIComponent(`/vagas/${jobId}?candidatar=1`)}`);
           return;
         }
         const currentMode = current.applicationMode || mode;
@@ -195,7 +195,7 @@ export default function JobApplyButton({
     }
 
     if (!current.authenticated) {
-      router.push(`/professional/register?redirect=${encodeURIComponent(retornoCandidatura)}`);
+      router.push(`/professional/cadastro?redirect=${encodeURIComponent(retornoCandidatura)}`);
       return;
     }
 

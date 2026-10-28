@@ -12,6 +12,7 @@ import {
 } from "@/lib/security";
 import { hashPassword } from "@/lib/security.server";
 import { validatePasswordStrength } from "@/lib/password-strength";
+import { formatCPF, isValidCPF, isValidPhoneBR } from "@/lib/security";
 import { logAudit as logSecurityAudit } from "@/lib/security-audit";
 import {
   corporateEmailError,
@@ -64,6 +65,8 @@ export async function POST(request: NextRequest) {
     const email = String(body.email || "").toLowerCase().trim();
     const password = String(body.password || "");
     const confirmPassword = String(body.confirmPassword || "");
+    const cpfLimpo = String(body.cpf || "").replace(/\D/g, "");
+    const telefone = String(body.telefone || body.phone || "").trim();
 
     if (!nome || nome.length < 2) {
       incrementRegisterAttempts(ip);
@@ -80,6 +83,32 @@ export async function POST(request: NextRequest) {
     if (!email || !isValidEmail(email)) {
       incrementRegisterAttempts(ip);
       return NextResponse.json({ error: "E-mail inválido." }, { status: 400 });
+    }
+
+    if (!isCompany) {
+      if (!isValidCPF(cpfLimpo)) {
+        incrementRegisterAttempts(ip);
+        return NextResponse.json({ error: "CPF inválido." }, { status: 400 });
+      }
+      if (!isValidPhoneBR(telefone)) {
+        incrementRegisterAttempts(ip);
+        return NextResponse.json(
+          { error: "Telefone inválido. Informe DDD + número." },
+          { status: 400 },
+        );
+      }
+      const cpfFormatado = formatCPF(cpfLimpo);
+      const cpfEmUso = await prisma.profile.findFirst({
+        where: { OR: [{ cpf: cpfFormatado }, { cpf: cpfLimpo }] },
+        select: { id: true },
+      });
+      if (cpfEmUso) {
+        incrementRegisterAttempts(ip);
+        return NextResponse.json(
+          { error: "Este CPF já está cadastrado. Entre com a conta ou recupere a senha." },
+          { status: 409 },
+        );
+      }
     }
 
     const emailsEmpresa = isCompany
@@ -142,15 +171,50 @@ export async function POST(request: NextRequest) {
 
     const passwordHash = await hashPassword(password);
     const role = isCompany ? "COMPANY" : "PROFESSIONAL";
+    const cpfFormatado = formatCPF(cpfLimpo);
 
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name: nome,
-        role,
-        passwordHash,
-      },
-    });
+    const user = isCompany
+      ? await prisma.user.create({
+          data: {
+            email,
+            name: nome,
+            role,
+            passwordHash,
+          },
+        })
+      : await prisma.$transaction(async (tx) => {
+          const created = await tx.user.create({
+            data: {
+              email,
+              name: nome,
+              role,
+              passwordHash,
+            },
+          });
+          await tx.profile.create({
+            data: {
+              userId: created.id,
+              title: "Profissional",
+              location: "Não informado",
+              email,
+              phone: telefone,
+              cpf: cpfFormatado,
+              isVisible: false,
+              profileCompletion: 0,
+              formDataJSON: JSON.stringify({
+                cadastroRapido: true,
+                nome,
+                email,
+                cpf: cpfFormatado,
+                telefone,
+              }),
+            },
+          });
+          await tx.professional.create({
+            data: { userId: created.id, title: "Profissional" },
+          });
+          return created;
+        });
 
     if (isCompany) {
       await prisma.company.create({

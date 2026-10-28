@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -10,56 +10,62 @@ import ProfessionalVitrinePitch from "@/components/auth/ProfessionalVitrinePitch
 import loginStyles from "@/app/login/login.module.css";
 import { validatePasswordStrength } from "@/lib/password-strength";
 import { safeJobReturnPath } from "@/lib/jobs/public-job-link";
-import ResumeToolkit from "@/components/curriculum/ResumeToolkit";
-import { sanitizeResumeDraft, type ResumeDraft } from "@/lib/curriculum/resume-draft";
-import { parseResumePatterns } from "@/lib/curriculum/parse-resume-patterns";
-import { requestResumeExtract } from "@/lib/curriculum/resume-read-error";
+import { isValidCPF, isValidPhoneBR } from "@/lib/security";
 
 const SIMPLE_STORAGE_KEY = "dadosCadastroSimples";
-const AVISO_CURRICULO_PENDENTE = "O currículo ainda não foi salvo no perfil. Conclua o cadastro nesta página. Se você sair agora, o arquivo será perdido.";
 
 function chavePorEmail(base: string, email: string): string {
   const slug = email.toLowerCase().trim().replace(/[^a-z0-9]/g, "_");
   return `${base}__${slug}`;
 }
 
-export default function CadastroSimplesProfissionalPage() {
+function mascaraCpf(value: string): string {
+  const digitos = value.replace(/\D/g, "").slice(0, 11);
+  if (digitos.length <= 3) return digitos;
+  if (digitos.length <= 6) return `${digitos.slice(0, 3)}.${digitos.slice(3)}`;
+  if (digitos.length <= 9) return `${digitos.slice(0, 3)}.${digitos.slice(3, 6)}.${digitos.slice(6)}`;
+  return `${digitos.slice(0, 3)}.${digitos.slice(3, 6)}.${digitos.slice(6, 9)}-${digitos.slice(9)}`;
+}
+
+function mascaraTelefone(value: string): string {
+  const digitos = value.replace(/\D/g, "").slice(0, 11);
+  if (digitos.length === 0) return "";
+  if (digitos.length <= 2) return `(${digitos}`;
+  if (digitos.length <= 7) return `(${digitos.slice(0, 2)}) ${digitos.slice(2)}`;
+  return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 7)}-${digitos.slice(7)}`;
+}
+
+function IconeOlho({ aberto }: { aberto: boolean }) {
+  if (aberto) {
+    return (
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+        <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+        <line x1="1" y1="1" x2="23" y2="23" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+export default function CadastroRapidoProfissionalPage() {
   const router = useRouter();
   const [nome, setNome] = useState("");
+  const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
+  const [telefone, setTelefone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [contaCriada, setContaCriada] = useState(false);
-  const pendingResumeRef = useRef<File | null>(null);
-  const pendingDraftRef = useRef<ResumeDraft | null>(null);
-  const [curriculoNaMemoria, setCurriculoNaMemoria] = useState(false);
-
-  useEffect(() => {
-    if (!curriculoNaMemoria || loading || contaCriada) return;
-    const avisarSaida = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = "";
-    };
-    const avisarLink = (event: MouseEvent) => {
-      const anchor = (event.target as Element | null)?.closest?.("a");
-      if (!anchor || anchor.hasAttribute("download")) return;
-      const href = anchor.getAttribute("href") || "";
-      if (!href || href.startsWith("#") || href.startsWith("blob:") || href.startsWith("data:")) return;
-      if (window.confirm(AVISO_CURRICULO_PENDENTE)) return;
-      event.preventDefault();
-      event.stopPropagation();
-    };
-    window.addEventListener("beforeunload", avisarSaida);
-    document.addEventListener("click", avisarLink, true);
-    return () => {
-      window.removeEventListener("beforeunload", avisarSaida);
-      document.removeEventListener("click", avisarLink, true);
-    };
-  }, [curriculoNaMemoria, loading, contaCriada]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,13 +73,22 @@ export default function CadastroSimplesProfissionalPage() {
 
     const nomeTrim = nome.trim();
     const emailTrim = email.toLowerCase().trim();
+    const cpfLimpo = cpf.replace(/\D/g, "");
 
     if (nomeTrim.length < 2) {
       setErrorMessage("Informe seu nome completo.");
       return;
     }
+    if (!isValidCPF(cpfLimpo)) {
+      setErrorMessage("CPF inválido.");
+      return;
+    }
     if (!emailTrim.includes("@")) {
       setErrorMessage("Informe um e-mail válido.");
+      return;
+    }
+    if (!isValidPhoneBR(telefone)) {
+      setErrorMessage("Telefone inválido. Informe DDD + número.");
       return;
     }
     if (password !== confirmPassword) {
@@ -95,7 +110,9 @@ export default function CadastroSimplesProfissionalPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: nomeTrim,
+          cpf: cpfLimpo,
           email: emailTrim,
+          telefone,
           password,
           confirmPassword,
         }),
@@ -113,7 +130,9 @@ export default function CadastroSimplesProfissionalPage() {
           chavePorEmail(SIMPLE_STORAGE_KEY, emailTrim),
           JSON.stringify({
             nome: nomeTrim,
+            cpf,
             email: emailTrim,
+            telefone,
             password,
             _ownerEmail: emailTrim,
           }),
@@ -140,14 +159,6 @@ export default function CadastroSimplesProfissionalPage() {
         return;
       }
 
-      const falhaCurriculo = await associarCurriculoPendente();
-      if (falhaCurriculo) {
-        setContaCriada(true);
-        setErrorMessage(falhaCurriculo);
-        setLoading(false);
-        return;
-      }
-
       const back = safeJobReturnPath(new URLSearchParams(window.location.search).get("redirect"));
       router.replace(back ?? "/professional/dashboard");
     } catch {
@@ -155,45 +166,6 @@ export default function CadastroSimplesProfissionalPage() {
       setLoading(false);
     }
   };
-
-  async function associarCurriculoPendente(): Promise<string | null> {
-    const draft = pendingDraftRef.current;
-    if (draft?.nome) {
-      const savedFields = await fetch("/api/professional/curriculo/gerar", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ draft, saveAsMain: false }),
-      });
-      if (!savedFields.ok) {
-        const data = await savedFields.json().catch(() => ({}));
-        return data.error || "A conta foi criada, mas os dados do currículo não foram salvos no perfil.";
-      }
-    }
-
-    const file = pendingResumeRef.current;
-    if (!file) return null;
-    const body = new FormData();
-    body.set("file", file);
-    body.set("type", "curriculos");
-    const uploaded = await fetch("/api/upload", { method: "POST", body, credentials: "include" });
-    const uploadData = await uploaded.json().catch(() => ({}));
-    if (!uploaded.ok || !uploadData?.file?.path) {
-      return uploadData?.error || "A conta foi criada, mas o arquivo do currículo não foi salvo.";
-    }
-    const saved = await fetch("/api/professional/curriculo", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: uploadData.file.path }),
-    });
-    if (!saved.ok) {
-      const data = await saved.json().catch(() => ({}));
-      return data.error || "A conta foi criada, mas o currículo não foi associado ao perfil.";
-    }
-    pendingResumeRef.current = null;
-    return null;
-  }
 
   return (
     <div className={loginStyles.page}>
@@ -205,181 +177,150 @@ export default function CadastroSimplesProfissionalPage() {
         <ProfessionalVitrinePitch />
 
         <div className={loginStyles.card}>
-        <div className={loginStyles.loginHeader}>
-          <div className={loginStyles.logoWrap}>
-            <LogoRecruta size="sm" as="h1" depth />
-          </div>
-          <p className={loginStyles.subtitle}>
-            <span className={loginStyles.accessTag}>Cadastro Profissional</span>
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className={loginStyles.form}>
-          {errorMessage ? (
-            <p className={loginStyles.error} role="alert">
-              {errorMessage}
+          <div className={loginStyles.loginHeader}>
+            <div className={loginStyles.logoWrap}>
+              <LogoRecruta size="sm" as="h1" depth />
+            </div>
+            <p className={loginStyles.subtitle}>
+              <span className={loginStyles.accessTag}>Cadastro rápido</span>
             </p>
-          ) : null}
-
-          <div className={loginStyles.fieldGroup}>
-            <label className={loginStyles.fieldLabel} htmlFor="cadastro-nome">
-              Nome completo
-            </label>
-            <input
-              id="cadastro-nome"
-              className={loginStyles.input}
-              type="text"
-              autoComplete="name"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              required
-              minLength={2}
-            />
           </div>
 
-          <div className={loginStyles.fieldGroup}>
-            <label className={loginStyles.fieldLabel} htmlFor="cadastro-email">
-              E-mail
-            </label>
-            <input
-              id="cadastro-email"
-              className={loginStyles.input}
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+          <form onSubmit={handleSubmit} className={loginStyles.form}>
+            {errorMessage ? (
+              <p className={loginStyles.error} role="alert">
+                {errorMessage}
+              </p>
+            ) : null}
 
-          <div className={loginStyles.fieldGroup}>
-            <label className={loginStyles.fieldLabel} htmlFor="cadastro-senha">
-              Criar senha
-            </label>
-            <div className={loginStyles.passwordField}>
+            <div className={loginStyles.fieldGroup}>
+              <label className={loginStyles.fieldLabel} htmlFor="cadastro-nome">
+                Nome completo
+              </label>
               <input
-                id="cadastro-senha"
+                id="cadastro-nome"
                 className={loginStyles.input}
-                type={showPassword ? "text" : "password"}
-                autoComplete="new-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                type="text"
+                autoComplete="name"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
                 required
-                minLength={8}
+                minLength={2}
               />
-              <button
-                type="button"
-                className={loginStyles.passwordEyeBtn}
-                onClick={() => setShowPassword((v) => !v)}
-                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                title={showPassword ? "Ocultar senha" : "Mostrar senha"}
-              >
-                {showPassword ? (
-                  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                    <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
-                    <line x1="1" y1="1" x2="23" y2="23" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                )}
-              </button>
             </div>
-          </div>
 
-          <div className={loginStyles.fieldGroup}>
-            <label className={loginStyles.fieldLabel} htmlFor="cadastro-confirma">
-              Confirmar senha
-            </label>
-            <div className={loginStyles.passwordField}>
+            <div className={loginStyles.fieldGroup}>
+              <label className={loginStyles.fieldLabel} htmlFor="cadastro-cpf">
+                CPF
+              </label>
               <input
-                id="cadastro-confirma"
+                id="cadastro-cpf"
                 className={loginStyles.input}
-                type={showConfirmPassword ? "text" : "password"}
-                autoComplete="new-password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder="000.000.000-00"
+                value={cpf}
+                onChange={(e) => setCpf(mascaraCpf(e.target.value))}
                 required
-                minLength={8}
               />
-              <button
-                type="button"
-                className={loginStyles.passwordEyeBtn}
-                onClick={() => setShowConfirmPassword((v) => !v)}
-                aria-label={showConfirmPassword ? "Ocultar confirmação" : "Mostrar confirmação"}
-                title={showConfirmPassword ? "Ocultar confirmação" : "Mostrar confirmação"}
-              >
-                {showConfirmPassword ? (
-                  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                    <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
-                    <line x1="1" y1="1" x2="23" y2="23" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                )}
-              </button>
             </div>
-          </div>
 
-          {contaCriada ? (
-            <Link href="/professional/dashboard" className={loginStyles.btnPrimary}>
-              Ir ao painel
-            </Link>
-          ) : (
+            <div className={loginStyles.fieldGroup}>
+              <label className={loginStyles.fieldLabel} htmlFor="cadastro-email">
+                E-mail
+              </label>
+              <input
+                id="cadastro-email"
+                className={loginStyles.input}
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className={loginStyles.fieldGroup}>
+              <label className={loginStyles.fieldLabel} htmlFor="cadastro-telefone">
+                Telefone
+              </label>
+              <input
+                id="cadastro-telefone"
+                className={loginStyles.input}
+                type="tel"
+                autoComplete="tel"
+                placeholder="(00) 00000-0000"
+                value={telefone}
+                onChange={(e) => setTelefone(mascaraTelefone(e.target.value))}
+                required
+              />
+            </div>
+
+            <div className={loginStyles.fieldGroup}>
+              <label className={loginStyles.fieldLabel} htmlFor="cadastro-senha">
+                Senha
+              </label>
+              <div className={loginStyles.passwordField}>
+                <input
+                  id="cadastro-senha"
+                  className={loginStyles.input}
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={8}
+                />
+                <button
+                  type="button"
+                  className={loginStyles.passwordEyeBtn}
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  title={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  <IconeOlho aberto={showPassword} />
+                </button>
+              </div>
+            </div>
+
+            <div className={loginStyles.fieldGroup}>
+              <label className={loginStyles.fieldLabel} htmlFor="cadastro-confirma">
+                Confirmar senha
+              </label>
+              <div className={loginStyles.passwordField}>
+                <input
+                  id="cadastro-confirma"
+                  className={loginStyles.input}
+                  type={showConfirmPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={8}
+                />
+                <button
+                  type="button"
+                  className={loginStyles.passwordEyeBtn}
+                  onClick={() => setShowConfirmPassword((v) => !v)}
+                  aria-label={showConfirmPassword ? "Ocultar confirmação" : "Mostrar confirmação"}
+                  title={showConfirmPassword ? "Ocultar confirmação" : "Mostrar confirmação"}
+                >
+                  <IconeOlho aberto={showConfirmPassword} />
+                </button>
+              </div>
+            </div>
+
             <button type="submit" className={loginStyles.btnPrimary} disabled={loading}>
               Criar conta
             </button>
-          )}
-        </form>
+          </form>
 
-        <ResumeToolkit
-          variant="register"
-          authenticated={false}
-          getLocalDraft={() => sanitizeResumeDraft({ nome, email })}
-          onDraftApplied={(draft) => {
-            pendingDraftRef.current = draft;
-            if (draft.nome) setNome(draft.nome);
-            if (draft.email) setEmail(draft.email);
-          }}
-          onAttachFile={async (file) => {
-            const extraction = await requestResumeExtract(file);
-            const structured = extraction.rawText
-              ? parseResumePatterns(extraction.rawText)
-              : extraction.structured;
-            const labels: string[] = [];
-            if (structured?.nome) {
-              setNome(structured.nome);
-              labels.push("Nome");
-            }
-            if (structured?.contato?.email) {
-              setEmail(structured.contato.email);
-              labels.push("E-mail");
-            }
-            if (!labels.length) {
-              return "Arquivo selecionado. Não encontramos nome ou e-mail para preencher. Complete esses campos manualmente.";
-            }
-            return `Cadastro preenchido automaticamente: ${labels.join(", ")}. Revise os campos antes de criar a conta.`;
-          }}
-          onHoldFile={(file) => {
-            pendingResumeRef.current = file;
-            setCurriculoNaMemoria(Boolean(file));
-          }}
-        />
-
-        <div className={loginStyles.footer}>
-          <Link href="/" className={loginStyles.footerLink}>
-            ← Voltar para a página inicial
-          </Link>
-        </div>
+          <div className={loginStyles.footer}>
+            <Link href="/" className={loginStyles.footerLink}>
+              ← Voltar para a página inicial
+            </Link>
+          </div>
         </div>
       </div>
     </div>

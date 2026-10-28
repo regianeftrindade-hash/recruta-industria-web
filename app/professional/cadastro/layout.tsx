@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Criar conta",
+  title: "Cadastro rápido",
   description:
-    "Crie sua conta no Recruta Indústria com nome, e-mail e senha. Complete o perfil depois no painel.",
+    "Crie sua conta no Recruta Indústria com nome, CPF, e-mail, telefone e senha. Complete o perfil depois no painel.",
 };
 
 export const dynamic = "force-dynamic";

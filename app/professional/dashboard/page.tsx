@@ -605,6 +605,33 @@ export default function DashboardProfissional() {
 
       <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFotoChange} style={{ display: "none" }} />
 
+      {profileData.registrationComplete === false && (
+        <section
+          className="dash-card"
+          role="status"
+          style={{
+            ...dashCard,
+            margin: "0 0 10px",
+            padding: 16,
+            border: "2px solid #8D6B1F",
+          }}
+        >
+          <h2 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>
+            Sua conta está criada.
+          </h2>
+          <p style={{ margin: "0 0 12px", fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>
+            Complete o cadastro para concorrer às vagas direto do site.
+          </p>
+          <button
+            type="button"
+            onClick={() => setAbaDireita("perfil")}
+            style={{ ...btnGold, padding: "10px 16px", fontSize: 12 }}
+          >
+            Completar cadastro
+          </button>
+        </section>
+      )}
+
       <div
         className="ri-dash-two-col"
         style={{
@@ -637,6 +664,16 @@ export default function DashboardProfissional() {
             <CadastroProfissional
               incorporado
               acoes={<DeleteAccountControl variant="compact" />}
+              onSalvo={() => {
+                void fetch("/api/professional/profile", { credentials: "include" })
+                  .then((res) => (res.ok ? res.json() : null))
+                  .then((data) => {
+                    if (!data) return;
+                    setProfileData(data);
+                    setFormEdit(data.formEdit || null);
+                  })
+                  .catch(() => undefined);
+              }}
             />
           )}
         </main>
