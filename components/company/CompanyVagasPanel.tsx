@@ -874,7 +874,7 @@ export default function CompanyVagasPanel({
                     </h2>
                     <p className={styles.meta}>
                       {showOrigin
-                        ? `${job.companyName || "Sem empresa"} · ${job.confidential ? "Anônima" : "Identificada"} · ${job.originLabel}`
+                        ? `${job.companyName || "Sem empresa"} · ${job.confidential ? "Anônima" : "Identificada"}${job.origin === "COMPANY" ? ` · ${job.originLabel}` : ""}`
                         : (job.confidential ? "Vaga confidencial" : (job.companyName || "Empresa"))}
                       {job.contractLabel ? ` · ${job.contractLabel}` : ""}
                       {job.workModeLabel ? ` · ${job.workModeLabel}` : ""}
