@@ -277,6 +277,9 @@ export function parseApplicationWhatsapp(value: unknown): string | null {
   if (text.length > 40) {
     throw new JobPostingError("Informe um WhatsApp válido com DDD.");
   }
+  const digits = text.replace(/\D/g, "");
+  // Alguns anúncios trazem o DDD seguido de 10 dígitos.
+  if (digits.length === 12 && !digits.startsWith("55")) return digits;
   const phone = normalizePhoneE164(text);
   if (!phone) {
     throw new JobPostingError("Informe um WhatsApp válido com DDD, por exemplo (11) 98888-7777.");
@@ -293,6 +296,9 @@ export function formatWhatsappDisplay(stored: string): string {
   }
   if (national.length === 10) {
     return `+55 (${national.slice(0, 2)}) ${national.slice(2, 6)}-${national.slice(6)}`;
+  }
+  if (national.length === 12 && !national.startsWith("55")) {
+    return `(${national.slice(0, 2)}) ${national.slice(2, 8)}-${national.slice(8)}`;
   }
   return digits ? `+${digits}` : stored.trim();
 }
