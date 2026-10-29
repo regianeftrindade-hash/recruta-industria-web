@@ -27,7 +27,7 @@ describe("publicJobCopy", () => {
     expect(publicJobCopy(
       "Prepara materiais.\nSalário informado no anúncio: R$ 2.398,00\nTipo de contratação não informado\nQuantidade de vagas no anúncio: 3.",
     )).toBe(
-      "Prepara materiais.\nSalário: R$ 2.398,00\nQuantidade de vagas no anúncio: 3.",
+      "Prepara materiais.\nSalário: R$ 2.398,00",
     );
   });
 

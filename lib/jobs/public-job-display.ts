@@ -11,6 +11,8 @@ const LINHA_AUSENTE =
 const FRASE_AUSENTE =
   /(?:tipo de contrata[cç][aã]o|contrata[cç][aã]o)\s*[:\-–]?\s*n[aã]o informad[oa]?(?:\s+no an[uú]ncio)?\.?/gi;
 const SALARIO_ROTULO = /sal[aá]rio informado no an[uú]ncio\s*:/gi;
+const QUANTIDADE =
+  /quantidade de vagas(?:\s+no an[uú]ncio)?\s*:\s*\d+\.?/gi;
 
 /** Valor que a vaga realmente trouxe. “Não informado” não entra na página. */
 export function statedJobFact(value: string | null | undefined): string | null {
@@ -40,6 +42,7 @@ export function publicJobCopy(value: string | null | undefined): string | null {
   if (!base) return null;
   const lines = base
     .replace(SALARIO_ROTULO, "Salário:")
+    .replace(QUANTIDADE, "")
     .replace(FRASE_AUSENTE, "")
     .split("\n")
     .map((line) => line.replace(/[ \t]{2,}/g, " ").trim())
