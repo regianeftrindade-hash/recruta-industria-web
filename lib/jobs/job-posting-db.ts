@@ -38,7 +38,10 @@ import {
   loadOwnedResume,
   sendJobApplicationEmail,
 } from "@/lib/jobs/job-application-mail";
-import { manualApplicationMessage } from "@/lib/jobs/manual-application-notice";
+import {
+  MANUAL_APPLICATION_RESUME_MESSAGE,
+  manualApplicationMessage,
+} from "@/lib/jobs/manual-application-notice";
 import { savedResumeLabel } from "@/lib/jobs/resume-pdf";
 import { extractStoragePath } from "@/lib/storage/private-uploads";
 import { parseJobSearch, publicJobWhere, type JobSearchFilters } from "@/lib/jobs/job-search";
@@ -493,6 +496,7 @@ export type ApplicationView = {
   email: string;
   profileTitle: string | null;
   avatar: string | null;
+  resumeLabel: string | null;
 };
 
 export async function listJobApplicationsForAdmin(jobId: string): Promise<ApplicationView[]> {
@@ -506,7 +510,7 @@ export async function listJobApplicationsForAdmin(jobId: string): Promise<Applic
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { id: true, name: true, email: true } },
-      profile: { select: { id: true, title: true, avatar: true, formDataJSON: true } },
+      profile: { select: { id: true, title: true, avatar: true, formDataJSON: true, curricoURL: true } },
     },
   });
 
@@ -521,7 +525,32 @@ export async function listJobApplicationsForAdmin(jobId: string): Promise<Applic
     email: row.user.email,
     profileTitle: row.profile?.title ?? null,
     avatar: fotoGravada(row.profile?.avatar, row.profile?.formDataJSON),
+    resumeLabel: savedResumeLabel(storedResumePath(row.profile?.curricoURL), row.user.email),
   }));
+}
+
+function storedResumePath(raw: string | null | undefined): string {
+  const value = raw?.trim() || "";
+  if (!value) return "";
+  return value.includes("://") ? extractStoragePath(value) || "" : value;
+}
+
+/** Currículo do candidato já gravado nesta vaga. Só o administrador baixa. */
+export async function readAdminApplicationResume(jobId: string, applicationId: string) {
+  await ensureJobApplicationWhatsappColumn();
+  const id = assertJobId(jobId);
+  if (!/^[a-z0-9]{8,40}$/i.test(applicationId)) {
+    throw new JobPostingError("Candidatura não encontrada.", 404);
+  }
+  const application = await prisma.jobApplication.findFirst({
+    where: { id: applicationId, jobId: id },
+    select: {
+      user: { select: { email: true } },
+      profile: { select: { curricoURL: true } },
+    },
+  });
+  if (!application) throw new JobPostingError("Candidatura não encontrada.", 404);
+  return loadOwnedResume(application.user.email, storedResumePath(application.profile?.curricoURL));
 }
 
 export async function listJobApplicationsForCompany(
@@ -891,6 +920,16 @@ export async function registerJobApplication(jobId: string, email: string) {
     : "FREE";
 
   const manualMessage = manualApplicationMessage(id);
+  if (manualMessage) {
+    try {
+      await loadOwnedResume(user.email, user.profile?.curricoURL);
+    } catch (error) {
+      if (error instanceof JobPostingError && error.code === "RESUME_REQUIRED") {
+        throw new JobPostingError(MANUAL_APPLICATION_RESUME_MESSAGE, 400, "RESUME_REQUIRED");
+      }
+      throw error;
+    }
+  }
   if (!manualMessage && (mode === "WHATSAPP" || mode === "EXTERNAL" || (mode === "EMAIL" && plan !== "PREMIUM"))) {
     assertServerDelivery({ mode, plan, hasValidResume: false });
   }

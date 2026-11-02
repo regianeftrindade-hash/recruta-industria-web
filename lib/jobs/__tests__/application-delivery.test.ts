@@ -26,6 +26,7 @@ vi.mock("@/lib/jobs/job-application-mail", () => ({
 
 import { prisma } from "@/lib/db";
 import { loadOwnedResume, sendJobApplicationEmail } from "@/lib/jobs/job-application-mail";
+import { MANUAL_APPLICATION_JOB_ID, MANUAL_APPLICATION_MESSAGE } from "@/lib/jobs/manual-application-notice";
 import { registerJobApplication } from "@/lib/jobs/job-posting-db";
 import { getProfessionalPlanTier } from "@/lib/professional/professional-storage";
 
@@ -176,6 +177,47 @@ describe("envio da candidatura no servidor", () => {
     await expect(registerJobApplication(jobId, user.email)).rejects.toMatchObject({ code: "MANUAL_CHANNEL" });
     expect(sendJobApplicationEmail).not.toHaveBeenCalled();
     expect(db.jobApplication.create).not.toHaveBeenCalled();
+  });
+
+  it("grava a vaga manual só com currículo e não envia e-mail", async () => {
+    db.jobPosting.findFirst.mockResolvedValue(job("INTERNAL", {
+      id: MANUAL_APPLICATION_JOB_ID,
+      applicationEmail: "vagasinterior2021@yahoo.com",
+    }));
+    loadOwnedResume.mockRejectedValue(new JobPostingError("sem currículo", 400, "RESUME_REQUIRED"));
+    await expect(registerJobApplication(MANUAL_APPLICATION_JOB_ID, user.email)).rejects.toMatchObject({
+      code: "RESUME_REQUIRED",
+      status: 400,
+    });
+    expect(db.jobApplication.create).not.toHaveBeenCalled();
+    expect(sendJobApplicationEmail).not.toHaveBeenCalled();
+
+    loadOwnedResume.mockResolvedValue({
+      bytes: Buffer.from("%PDF-1.7"),
+      format: "pdf",
+      filename: "curriculo.pdf",
+      contentType: "application/pdf",
+    });
+    db.jobApplication.create.mockResolvedValue({ id: "app-manual" });
+    db.jobApplication.findUnique.mockResolvedValue({
+      id: "app-manual",
+      jobId: MANUAL_APPLICATION_JOB_ID,
+      userId: user.id,
+      profileId: user.profile.id,
+      createdAt: new Date("2026-11-02T22:00:00.000Z"),
+    });
+
+    const saved = await registerJobApplication(MANUAL_APPLICATION_JOB_ID, user.email);
+    expect(saved.message).toBe(MANUAL_APPLICATION_MESSAGE);
+    expect(saved.profileId).toBe(user.profile.id);
+    expect(sendJobApplicationEmail).not.toHaveBeenCalled();
+    expect(db.jobApplication.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        jobId: MANUAL_APPLICATION_JOB_ID,
+        userId: user.id,
+        profileId: user.profile.id,
+      }),
+    }));
   });
 
   it("mantém a candidatura interna do Free sem currículo", async () => {

@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import ResumeToolkit from "@/components/curriculum/ResumeToolkit";
 import { describeApplyPanel, type ApplicantContact, type ProfessionalPlan } from "@/lib/jobs/application-access";
 import { hrefForShownContact } from "@/lib/jobs/job-text-links";
-import { manualApplicationMessage } from "@/lib/jobs/manual-application-notice";
+import {
+  MANUAL_APPLICATION_RESUME_MESSAGE,
+  manualApplicationMessage,
+} from "@/lib/jobs/manual-application-notice";
 import type { ApplicationMode } from "@/lib/jobs/job-posting";
 import CopyTextButton from "./CopyTextButton";
 import JobText from "./JobText";
@@ -88,6 +91,13 @@ export default function JobApplyButton({
         return;
       }
 
+      if (data.code === "RESUME_REQUIRED" && manualApplicationMessage(jobId)) {
+        setError("");
+        setOpen(true);
+        setOutcome("");
+        return;
+      }
+
       if (data.code === "RESUME_REQUIRED" || data.code === "PREMIUM_REQUIRED" || data.code === "MANUAL_CHANNEL" || data.code === "EMAIL_BUSY") {
         const text = data.error || "Não foi possível concluir a candidatura.";
         setError(text);
@@ -153,6 +163,11 @@ export default function JobApplyButton({
         }
         const currentMode = current.applicationMode || mode;
         if (currentMode === "INTERNAL" && current.authenticated && current.canApply) {
+          if (manualApplicationMessage(jobId) && !current.hasResume) {
+            setOpen(true);
+            setError("");
+            return;
+          }
           await sendAutomatic();
           return;
         }
@@ -218,6 +233,11 @@ export default function JobApplyButton({
 
     const activeMode = current.applicationMode || mode;
     if (activeMode === "INTERNAL") {
+      if (manualMessage && !current.hasResume) {
+        setOpen(true);
+        setError("");
+        return;
+      }
       await sendAutomatic();
       return;
     }
@@ -254,7 +274,27 @@ export default function JobApplyButton({
           <JobText text={howToApply} />
         </section>
       ) : null}
-      {open && !applied && state?.authenticated ? (
+      {open && !applied && state?.authenticated && manualMessage && !state.hasResume ? (
+        <div className={styles.contactBox}>
+          <p className={styles.note}>{MANUAL_APPLICATION_RESUME_MESSAGE}</p>
+          <ResumeToolkit
+            variant="apply"
+            missing={false}
+            authenticated
+            onSaved={() => {
+              void (async () => {
+                const next = await loadState(true);
+                if (next.hasResume) await sendAutomatic();
+              })();
+            }}
+            onCancel={() => {
+              setOpen(false);
+              setError("");
+            }}
+          />
+        </div>
+      ) : null}
+      {open && !applied && state?.authenticated && !(manualMessage && !state.hasResume) ? (
         <div className={styles.contactBox}>
           <p className={styles.method}>{panel.methodLabel}</p>
           {panel.automatic && panel.needsResume ? (
