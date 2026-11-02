@@ -1219,5 +1219,6 @@
 }
 
 .candidateName {
+  display: block;
   font-weight: 800;
 }

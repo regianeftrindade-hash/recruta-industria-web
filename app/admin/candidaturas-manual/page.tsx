@@ -6,6 +6,9 @@ import styles from "../admin.module.css";
 type ManualApplication = {
   id: string;
   name: string | null;
+  email: string | null;
+  whatsapp: string | null;
+  whatsappHref: string | null;
   resumeLabel: string | null;
 };
 
@@ -16,6 +19,9 @@ type ManualJob = {
   workplace: string | null;
   publicationDate: string | null;
   salaryLabel: string | null;
+  applicationEmail: string | null;
+  applicationWhatsapp: string | null;
+  applicationWhatsappHref: string | null;
   applicationCount: number;
   applications: ManualApplication[];
 };
@@ -63,7 +69,7 @@ export default function CandidaturasManuaisPage() {
         <div>
           <h1 className={styles.heroTitle}>CANDIDATURAS MANUAL</h1>
           <p className={styles.heroMeta}>
-            Abra a vaga e use Candidaturas para ver o nome e o PDF de quem se inscreveu.
+            Abra a vaga para ver o e-mail ou o WhatsApp. Em Candidaturas ficam o nome, o contato e o PDF.
           </p>
         </div>
         <div className={styles.actions}>
@@ -110,6 +116,20 @@ export default function CandidaturasManuaisPage() {
             <div>
               <h2 className={styles.panelTitle}>{openJob.title}</h2>
               <p className={styles.panelSub}>{vagaResumo(openJob)}</p>
+              <p className={styles.panelSub}>
+                {openJob.applicationEmail ? (
+                  <a className={styles.linkGold} href={`mailto:${openJob.applicationEmail}`}>
+                    {openJob.applicationEmail}
+                  </a>
+                ) : null}
+                {openJob.applicationEmail && openJob.applicationWhatsapp ? " · " : null}
+                {openJob.applicationWhatsapp && openJob.applicationWhatsappHref ? (
+                  <a className={styles.linkGold} href={openJob.applicationWhatsappHref} target="_blank" rel="noopener noreferrer">
+                    {openJob.applicationWhatsapp}
+                  </a>
+                ) : null}
+                {!openJob.applicationEmail && !openJob.applicationWhatsapp ? "Esta vaga não tem e-mail nem WhatsApp." : null}
+              </p>
             </div>
             <button
               type="button"
@@ -140,7 +160,24 @@ export default function CandidaturasManuaisPage() {
                 const pdf = application.resumeLabel === "Currículo em PDF";
                 return (
                   <li key={application.id} className={styles.candidateLine}>
-                    <span className={styles.candidateName}>{application.name || "Nome não informado"}</span>
+                    <div>
+                      <span className={styles.candidateName}>{application.name || "Nome não informado"}</span>
+                      <span className={styles.jobCardMeta}>
+                        {application.email ? (
+                          <a className={styles.linkGold} href={`mailto:${application.email}`}>{application.email}</a>
+                        ) : (
+                          "Sem e-mail"
+                        )}
+                        {" · "}
+                        {application.whatsapp && application.whatsappHref ? (
+                          <a className={styles.linkGold} href={application.whatsappHref} target="_blank" rel="noopener noreferrer">
+                            {application.whatsapp}
+                          </a>
+                        ) : (
+                          "Sem WhatsApp"
+                        )}
+                      </span>
+                    </div>
                     {pdf ? (
                       <a
                         className={styles.linkGold}

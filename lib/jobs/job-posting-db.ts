@@ -16,6 +16,7 @@ import {
   companyCanReadJobApplications,
   contractLabel,
   formatPublicationDate,
+  formatWhatsappDisplay,
   isProfessionalAccount,
   jobStatusLabel,
   parseApplicationStage,
@@ -559,6 +560,9 @@ export async function readAdminApplicationResume(jobId: string, applicationId: s
 export type ManualApplicationRow = {
   id: string;
   name: string | null;
+  email: string | null;
+  whatsapp: string | null;
+  whatsappHref: string | null;
   resumeLabel: string | null;
 };
 
@@ -569,9 +573,32 @@ export type ManualJobCard = {
   workplace: string | null;
   publicationDate: string | null;
   salaryLabel: string | null;
+  applicationEmail: string | null;
+  applicationWhatsapp: string | null;
+  applicationWhatsappHref: string | null;
   applicationCount: number;
   applications: ManualApplicationRow[];
 };
+
+function digitsOnly(value: string | null | undefined): string {
+  return (value || "").replace(/\D/g, "");
+}
+
+function whatsappHref(digits: string): string | null {
+  if (digits.length < 10 || digits.length > 13) return null;
+  const full = digits.startsWith("55") ? digits : `55${digits}`;
+  return `https://wa.me/${full}`;
+}
+
+/** Número de WhatsApp do profissional. “Sim” usa o telefone do cadastro. */
+function candidateWhatsapp(whatsapp: string | null | undefined, phone: string | null | undefined): string | null {
+  const marked = (whatsapp || "").trim();
+  const phoneDigits = digitsOnly(phone);
+  const markedDigits = digitsOnly(marked);
+  if (markedDigits.length >= 10 && markedDigits.length <= 13) return markedDigits;
+  if (/^sim$/i.test(marked) && phoneDigits.length >= 10) return phoneDigits;
+  return null;
+}
 
 export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard[] }> {
   await ensureJobApplicationWhatsappColumn();
@@ -585,6 +612,8 @@ export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard
       publicationDate: true,
       salaryCents: true,
       salaryNegotiable: true,
+      applicationEmail: true,
+      applicationWhatsapp: true,
     },
   });
   if (!job) return { jobs: [] };
@@ -594,10 +623,11 @@ export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { name: true, email: true } },
-      profile: { select: { curricoURL: true } },
+      profile: { select: { curricoURL: true, phone: true, whatsapp: true, email: true } },
     },
   });
 
+  const jobWhatsapp = digitsOnly(job.applicationWhatsapp);
   return {
     jobs: [{
       id: job.id,
@@ -606,12 +636,21 @@ export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard
       workplace: job.workplace,
       publicationDate: formatPublicationDate(job.publicationDate),
       salaryLabel: publicSalaryLabel(job),
+      applicationEmail: job.applicationEmail,
+      applicationWhatsapp: jobWhatsapp ? formatWhatsappDisplay(jobWhatsapp) : null,
+      applicationWhatsappHref: whatsappHref(jobWhatsapp),
       applicationCount: rows.length,
-      applications: rows.map((row) => ({
-        id: row.id,
-        name: row.user.name,
-        resumeLabel: savedResumeLabel(storedResumePath(row.profile?.curricoURL), row.user.email),
-      })),
+      applications: rows.map((row) => {
+        const whatsapp = candidateWhatsapp(row.profile?.whatsapp, row.profile?.phone);
+        return {
+          id: row.id,
+          name: row.user.name,
+          email: row.user.email || row.profile?.email || null,
+          whatsapp: whatsapp ? formatWhatsappDisplay(whatsapp) : null,
+          whatsappHref: whatsapp ? whatsappHref(whatsapp) : null,
+          resumeLabel: savedResumeLabel(storedResumePath(row.profile?.curricoURL), row.user.email),
+        };
+      }),
     }],
   };
 }
