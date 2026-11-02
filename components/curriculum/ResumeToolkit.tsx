@@ -32,6 +32,8 @@ type Props = {
   authenticated?: boolean;
   missing?: boolean;
   resumeName?: string | null;
+  /** Nesta candidatura só entra arquivo PDF. A geração no site continua em PDF. */
+  pdfOnly?: boolean;
   /** `generate` mostra só a geração do PDF, com os dados já preenchidos. */
   focus?: "full" | "generate";
   notice?: string;
@@ -138,6 +140,7 @@ export default function ResumeToolkit({
   authenticated = variant !== "register",
   missing = false,
   resumeName,
+  pdfOnly = false,
   focus = "full",
   notice,
   getLocalDraft,
@@ -234,8 +237,8 @@ export default function ResumeToolkit({
     try {
       if (!authenticated) {
         const lower = file.name.toLowerCase();
-        if (!lower.endsWith(".pdf") && !lower.endsWith(".docx")) {
-          setError("Envie um arquivo PDF ou DOCX.");
+        if (pdfOnly ? !lower.endsWith(".pdf") : !lower.endsWith(".pdf") && !lower.endsWith(".docx")) {
+          setError(pdfOnly ? "Envie um currículo em PDF." : "Envie um arquivo PDF ou DOCX.");
           return;
         }
         if (file.size > 10 * 1024 * 1024) {
@@ -249,6 +252,11 @@ export default function ResumeToolkit({
         return;
       }
 
+      const lower = file.name.toLowerCase();
+      if (pdfOnly && !lower.endsWith(".pdf")) {
+        setError("Envie um currículo em PDF.");
+        return;
+      }
       const aviso = await preencherComArquivo(file);
       const result = await attachResumeFile(file);
       if (!result.ok) {
@@ -363,7 +371,7 @@ export default function ResumeToolkit({
       ref={inputRef}
       className={styles.hidden}
       type="file"
-      accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      accept={pdfOnly ? ".pdf,application/pdf" : ".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
       onChange={(event) => {
         const file = event.target.files?.[0];
         event.target.value = "";

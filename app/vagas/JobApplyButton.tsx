@@ -39,7 +39,12 @@ type ApplyState = {
   contact: ApplicantContact | null;
   hasResume: boolean;
   resumeName: string | null;
+  registrationReady?: boolean;
 };
+
+function temCurriculoPdf(current: ApplyState | null): boolean {
+  return current?.resumeName === "Currículo em PDF";
+}
 
 export default function JobApplyButton({
   jobId,
@@ -83,6 +88,11 @@ export default function JobApplyButton({
         credentials: "include",
       });
       const data = await response.json().catch(() => ({}));
+
+      if (data.code === "REGISTRATION_REQUIRED") {
+        router.push(`/professional/cadastro?redirect=${encodeURIComponent(`/vagas/${jobId}?candidatar=1`)}`);
+        return;
+      }
 
       if (response.status === 401 || response.status === 403) {
         const text = data.error || "A candidatura é feita com uma conta de profissional.";
@@ -163,7 +173,11 @@ export default function JobApplyButton({
         }
         const currentMode = current.applicationMode || mode;
         if (currentMode === "INTERNAL" && current.authenticated && current.canApply) {
-          if (manualApplicationMessage(jobId) && !current.hasResume) {
+          if (manualApplicationMessage(jobId) && current.registrationReady === false) {
+            router.replace(`/professional/cadastro?redirect=${encodeURIComponent(`/vagas/${jobId}?candidatar=1`)}`);
+            return;
+          }
+          if (manualApplicationMessage(jobId) && !temCurriculoPdf(current)) {
             setOpen(true);
             setError("");
             return;
@@ -233,7 +247,11 @@ export default function JobApplyButton({
 
     const activeMode = current.applicationMode || mode;
     if (activeMode === "INTERNAL") {
-      if (manualMessage && !current.hasResume) {
+      if (manualMessage && current.registrationReady === false) {
+        router.push(`/professional/cadastro?redirect=${encodeURIComponent(retornoCandidatura)}`);
+        return;
+      }
+      if (manualMessage && !temCurriculoPdf(current)) {
         setOpen(true);
         setError("");
         return;
@@ -274,17 +292,18 @@ export default function JobApplyButton({
           <JobText text={howToApply} />
         </section>
       ) : null}
-      {open && !applied && state?.authenticated && manualMessage && !state.hasResume ? (
+      {open && !applied && state?.authenticated && manualMessage && !temCurriculoPdf(state) ? (
         <div className={styles.contactBox}>
           <p className={styles.note}>{MANUAL_APPLICATION_RESUME_MESSAGE}</p>
           <ResumeToolkit
             variant="apply"
             missing={false}
+            pdfOnly
             authenticated
             onSaved={() => {
               void (async () => {
                 const next = await loadState(true);
-                if (next.hasResume) await sendAutomatic();
+                if (temCurriculoPdf(next)) await sendAutomatic();
               })();
             }}
             onCancel={() => {
@@ -294,7 +313,7 @@ export default function JobApplyButton({
           />
         </div>
       ) : null}
-      {open && !applied && state?.authenticated && !(manualMessage && !state.hasResume) ? (
+      {open && !applied && state?.authenticated && !(manualMessage && !temCurriculoPdf(state)) ? (
         <div className={styles.contactBox}>
           <p className={styles.method}>{panel.methodLabel}</p>
           {panel.automatic && panel.needsResume ? (

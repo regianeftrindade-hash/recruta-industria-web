@@ -20,7 +20,6 @@ import styles from "./company-vagas.module.css";
 import { useCompanyDashboardDataOptional } from "@/components/company/CompanyDashboardDataContext";
 import FotoPerfilAvatar from "@/components/shared/FotoPerfilAvatar";
 import { COMPANY_VIEW_ONLY_NOTICE } from "@/lib/company/company-verification";
-import { MANUAL_APPLICATION_JOB_ID } from "@/lib/jobs/manual-application-notice";
 
 type Screen = "form" | "list" | "applications";
 
@@ -1062,30 +1061,6 @@ export default function CompanyVagasPanel({
                     Excluir
                   </button>
                 </div>
-                {selected.id === MANUAL_APPLICATION_JOB_ID ? (
-                  <div style={{ gridColumn: "1 / -1", display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-                    <span className={styles.stage}>{application.email}</span>
-                    <span className={styles.stage}>
-                      {new Intl.DateTimeFormat("pt-BR", {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                        timeZone: "America/Sao_Paulo",
-                      }).format(new Date(application.createdAt))}
-                    </span>
-                    {application.resumeLabel ? (
-                      <a
-                        className={styles.ghost}
-                        href={`${apiBase}/${selected.id}/candidaturas/${application.id}/curriculo`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Baixar {application.resumeLabel.toLowerCase()}
-                      </a>
-                    ) : (
-                      <span className={styles.stage}>Sem currículo no perfil</span>
-                    )}
-                  </div>
-                ) : null}
               </div>
             );
           })}

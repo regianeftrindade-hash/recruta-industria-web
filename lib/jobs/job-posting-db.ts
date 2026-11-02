@@ -39,6 +39,8 @@ import {
   sendJobApplicationEmail,
 } from "@/lib/jobs/job-application-mail";
 import {
+  MANUAL_APPLICATION_JOB_ID,
+  MANUAL_APPLICATION_REGISTRATION_MESSAGE,
   MANUAL_APPLICATION_RESUME_MESSAGE,
   manualApplicationMessage,
 } from "@/lib/jobs/manual-application-notice";
@@ -553,6 +555,50 @@ export async function readAdminApplicationResume(jobId: string, applicationId: s
   return loadOwnedResume(application.user.email, storedResumePath(application.profile?.curricoURL));
 }
 
+export type ManualApplicationRow = {
+  id: string;
+  jobId: string;
+  name: string | null;
+  email: string;
+  phone: string | null;
+  createdAt: string;
+  resumeLabel: string | null;
+};
+
+export async function listManualJobApplications(): Promise<{
+  job: { id: string; title: string; companyName: string; workplace: string | null } | null;
+  applications: ManualApplicationRow[];
+}> {
+  await ensureJobApplicationWhatsappColumn();
+  const job = await prisma.jobPosting.findUnique({
+    where: { id: MANUAL_APPLICATION_JOB_ID },
+    select: { id: true, title: true, companyName: true, workplace: true },
+  });
+  if (!job) return { job: null, applications: [] };
+
+  const rows = await prisma.jobApplication.findMany({
+    where: { jobId: job.id },
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: { select: { name: true, email: true } },
+      profile: { select: { phone: true, curricoURL: true } },
+    },
+  });
+
+  return {
+    job,
+    applications: rows.map((row) => ({
+      id: row.id,
+      jobId: row.jobId,
+      name: row.user.name,
+      email: row.user.email,
+      phone: row.profile?.phone ?? null,
+      createdAt: row.createdAt.toISOString(),
+      resumeLabel: savedResumeLabel(storedResumePath(row.profile?.curricoURL), row.user.email),
+    })),
+  };
+}
+
 export async function listJobApplicationsForCompany(
   jobId: string,
   companyOwnerUserId: string,
@@ -643,6 +689,7 @@ export type OwnApplicationState = {
   contact: ApplicantContact | null;
   hasResume: boolean;
   resumeName: string | null;
+  registrationReady: boolean;
 };
 
 function applicationDisclosure(
@@ -703,6 +750,7 @@ export async function getOwnApplicationState(
       appliedAt: null,
       canApply: true,
       blockReason: null,
+      registrationReady: false,
       ...hidden,
     };
   }
@@ -714,7 +762,7 @@ export async function getOwnApplicationState(
       role: true,
       professional: { select: { id: true } },
       company: { select: { id: true } },
-      profile: { select: { curricoURL: true } },
+      profile: { select: { id: true, curricoURL: true } },
     },
   });
 
@@ -725,6 +773,7 @@ export async function getOwnApplicationState(
       appliedAt: null,
       canApply: true,
       blockReason: null,
+      registrationReady: false,
       ...hidden,
     };
   }
@@ -740,9 +789,12 @@ export async function getOwnApplicationState(
       appliedAt: null,
       canApply: false,
       blockReason: "A candidatura é feita com uma conta de profissional.",
+      registrationReady: false,
       ...applicationDisclosure("company", null, open, null),
     };
   }
+
+  const registrationReady = !manualApplicationMessage(id) || Boolean(user.profile?.id);
 
   const tier = await getProfessionalPlanTier(user.id);
   const plan: ProfessionalPlan = tier === "PREMIUM" ? "PREMIUM" : "FREE";
@@ -777,6 +829,7 @@ export async function getOwnApplicationState(
       appliedAt: null,
       canApply: false,
       blockReason: "O envio desta candidatura já está em andamento.",
+      registrationReady,
       ...disclosure,
     };
   }
@@ -788,6 +841,7 @@ export async function getOwnApplicationState(
       appliedAt: existing ? existing.createdAt.toISOString() : null,
       canApply: false,
       blockReason: null,
+      registrationReady,
       ...disclosure,
       contact: null,
     };
@@ -799,6 +853,7 @@ export async function getOwnApplicationState(
     appliedAt: null,
     canApply: true,
     blockReason: null,
+    registrationReady,
     ...disclosure,
   };
 }
@@ -921,8 +976,14 @@ export async function registerJobApplication(jobId: string, email: string) {
 
   const manualMessage = manualApplicationMessage(id);
   if (manualMessage) {
+    if (!user.profile?.id) {
+      throw new JobPostingError(MANUAL_APPLICATION_REGISTRATION_MESSAGE, 403, "REGISTRATION_REQUIRED");
+    }
     try {
-      await loadOwnedResume(user.email, user.profile?.curricoURL);
+      const resume = await loadOwnedResume(user.email, user.profile.curricoURL);
+      if (resume.format !== "pdf") {
+        throw new JobPostingError(MANUAL_APPLICATION_RESUME_MESSAGE, 400, "RESUME_REQUIRED");
+      }
     } catch (error) {
       if (error instanceof JobPostingError && error.code === "RESUME_REQUIRED") {
         throw new JobPostingError(MANUAL_APPLICATION_RESUME_MESSAGE, 400, "RESUME_REQUIRED");

@@ -220,6 +220,30 @@ describe("envio da candidatura no servidor", () => {
     }));
   });
 
+  it("não grava a vaga manual sem cadastro ou com currículo que não é PDF", async () => {
+    db.jobPosting.findFirst.mockResolvedValue(job("INTERNAL", { id: MANUAL_APPLICATION_JOB_ID }));
+    db.user.findUnique.mockResolvedValueOnce({ ...user, profile: null });
+    await expect(registerJobApplication(MANUAL_APPLICATION_JOB_ID, user.email)).rejects.toMatchObject({
+      code: "REGISTRATION_REQUIRED",
+      status: 403,
+    });
+    expect(loadOwnedResume).not.toHaveBeenCalled();
+
+    db.user.findUnique.mockResolvedValue(user);
+    loadOwnedResume.mockResolvedValue({
+      bytes: Buffer.from("PK"),
+      format: "docx",
+      filename: "curriculo.docx",
+      contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    });
+    await expect(registerJobApplication(MANUAL_APPLICATION_JOB_ID, user.email)).rejects.toMatchObject({
+      code: "RESUME_REQUIRED",
+      status: 400,
+    });
+    expect(db.jobApplication.create).not.toHaveBeenCalled();
+    expect(sendJobApplicationEmail).not.toHaveBeenCalled();
+  });
+
   it("mantém a candidatura interna do Free sem currículo", async () => {
     db.jobPosting.findFirst.mockResolvedValue(job("INTERNAL", { applicationEmail: null }));
     db.jobApplication.create.mockResolvedValue({ id: "app-1" });

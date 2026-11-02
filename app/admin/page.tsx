@@ -301,6 +301,20 @@ export default function AdminDashboardPage() {
         </div>
       </section>
 
+      <section className={styles.panel} style={{ marginBottom: 20 }}>
+        <div className={styles.panelHead}>
+          <div>
+            <h2 className={styles.panelTitle}>CANDIDATURAS MANUAL</h2>
+            <p className={styles.panelSub}>
+              Quem se candidatou na vaga de envio manual, já com cadastro e currículo em PDF.
+            </p>
+          </div>
+          <Link href="/admin/candidaturas-manual" className={styles.btnGold}>
+            Abrir candidaturas manuais
+          </Link>
+        </div>
+      </section>
+
       {loading && !totals && <p className={styles.empty}>Carregando painel...</p>}
       {error && <div className={styles.errorBox}>{error}</div>}
 

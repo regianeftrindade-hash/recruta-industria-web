@@ -13,9 +13,9 @@ describe("manualApplicationMessage", () => {
     expect(manualApplicationMessage(null)).toBeNull();
   });
 
-  it("pede currículo em PDF, pessoal ou criado no site", () => {
-    expect(MANUAL_APPLICATION_RESUME_MESSAGE).toMatch(/PDF/i);
-    expect(MANUAL_APPLICATION_RESUME_MESSAGE).toMatch(/pessoal/i);
-    expect(MANUAL_APPLICATION_RESUME_MESSAGE).toMatch(/site/i);
+  it("pede cadastro e currículo em PDF", () => {
+    expect(MANUAL_APPLICATION_RESUME_MESSAGE).toMatch(/cadastro/i);
+    expect(MANUAL_APPLICATION_RESUME_MESSAGE).toMatch(/PDF/);
+    expect(MANUAL_APPLICATION_RESUME_MESSAGE).not.toMatch(/DOCX/);
   });
 });

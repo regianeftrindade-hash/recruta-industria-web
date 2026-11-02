@@ -8,7 +8,10 @@ export const MANUAL_APPLICATION_MESSAGE =
   "CANDIDATURA ENVIADA, POIS ENVIAREI MANUALMENTE";
 
 export const MANUAL_APPLICATION_RESUME_MESSAGE =
-  "Para se candidatar a esta vaga, é obrigatório um currículo: anexe um PDF, anexe o seu currículo pessoal em DOCX, ou crie o currículo aqui no site.";
+  "Para se candidatar a esta vaga, conclua o cadastro e tenha um currículo em PDF. Você pode anexar o PDF ou criar o currículo em PDF aqui no site.";
+
+export const MANUAL_APPLICATION_REGISTRATION_MESSAGE =
+  "Conclua o cadastro de profissional antes de se candidatar a esta vaga.";
 
 export function manualApplicationMessage(jobId: string | null | undefined): string | null {
   if (jobId !== MANUAL_APPLICATION_JOB_ID) return null;
