@@ -38,6 +38,7 @@ import {
   loadOwnedResume,
   sendJobApplicationEmail,
 } from "@/lib/jobs/job-application-mail";
+import { manualApplicationMessage } from "@/lib/jobs/manual-application-notice";
 import { savedResumeLabel } from "@/lib/jobs/resume-pdf";
 import { extractStoragePath } from "@/lib/storage/private-uploads";
 import { parseJobSearch, publicJobWhere, type JobSearchFilters } from "@/lib/jobs/job-search";
@@ -889,11 +890,12 @@ export async function registerJobApplication(jobId: string, email: string) {
     ? "PREMIUM"
     : "FREE";
 
-  if (mode === "WHATSAPP" || mode === "EXTERNAL" || (mode === "EMAIL" && plan !== "PREMIUM")) {
+  const manualMessage = manualApplicationMessage(id);
+  if (!manualMessage && (mode === "WHATSAPP" || mode === "EXTERNAL" || (mode === "EMAIL" && plan !== "PREMIUM"))) {
     assertServerDelivery({ mode, plan, hasValidResume: false });
   }
 
-  if (mode === "EMAIL") {
+  if (mode === "EMAIL" && !manualMessage) {
     if (!job.applicationEmail) {
       throw new JobPostingError("Esta vaga não tem e-mail para receber candidaturas.", 400);
     }
@@ -968,7 +970,7 @@ export async function registerJobApplication(jobId: string, email: string) {
       userId: saved.userId,
       profileId: saved.profileId,
       createdAt: saved.createdAt.toISOString(),
-      message: "Candidatura registrada.",
+      message: manualMessage ?? "Candidatura registrada.",
     };
   } catch (error) {
     if (error instanceof JobPostingError) throw error;

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import ResumeToolkit from "@/components/curriculum/ResumeToolkit";
 import { describeApplyPanel, type ApplicantContact, type ProfessionalPlan } from "@/lib/jobs/application-access";
 import { hrefForShownContact } from "@/lib/jobs/job-text-links";
+import { manualApplicationMessage } from "@/lib/jobs/manual-application-notice";
 import type { ApplicationMode } from "@/lib/jobs/job-posting";
 import CopyTextButton from "./CopyTextButton";
 import JobText from "./JobText";
@@ -95,9 +96,9 @@ export default function JobApplyButton({
       }
 
       if (response.status === 409 || data.alreadyApplied) {
-        const text = mode === "EMAIL"
+        const text = manualApplicationMessage(jobId) || (mode === "EMAIL"
           ? "Você já enviou sua candidatura para esta vaga."
-          : "Você já registrou candidatura nesta vaga.";
+          : "Você já registrou candidatura nesta vaga.");
         setMessage(text);
         setOutcome(text);
         setOpen(false);
@@ -118,7 +119,7 @@ export default function JobApplyButton({
         return;
       }
 
-      const text = data.message || (mode === "EMAIL"
+      const text = manualApplicationMessage(jobId) || data.message || (mode === "EMAIL"
         ? "Candidatura enviada com sucesso! Seu currículo foi encaminhado para o processo seletivo desta vaga."
         : "Candidatura registrada.");
       setMessage(text);
@@ -169,6 +170,7 @@ export default function JobApplyButton({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId, autoOpen]);
 
+  const manualMessage = manualApplicationMessage(jobId);
   const currentMode = state?.applicationMode || mode;
   const panel = describeApplyPanel({
     mode: currentMode,
@@ -206,9 +208,9 @@ export default function JobApplyButton({
     }
 
     if (current.applied) {
-      const text = (current.applicationMode || mode) === "EMAIL"
+      const text = manualMessage || ((current.applicationMode || mode) === "EMAIL"
         ? "Você já enviou sua candidatura para esta vaga."
-        : "Você já registrou candidatura nesta vaga.";
+        : "Você já registrou candidatura nesta vaga.");
       setMessage(text);
       setOutcome(text);
       return;
@@ -230,8 +232,8 @@ export default function JobApplyButton({
     ? (currentMode === "EMAIL" && panel.automatic ? "Enviando..." : currentMode === "INTERNAL" ? "Registrando..." : "Candidatar-se")
     : outcome
       ? outcome
-      : applied
-        ? (currentMode === "EMAIL" ? "Candidatura enviada" : "Candidatura registrada")
+        : applied
+        ? (manualMessage ?? (currentMode === "EMAIL" ? "Candidatura enviada" : "Candidatura registrada"))
         : "Candidatar-se";
 
   return (
@@ -311,7 +313,7 @@ export default function JobApplyButton({
           )}
         </div>
       ) : null}
-      {!open && currentMode === "INTERNAL" ? (
+      {!open && currentMode === "INTERNAL" && !manualMessage ? (
         <p className={styles.note}>{panel.detail}</p>
       ) : null}
       {blocked && state?.blockReason ? <p className={styles.error}>{state.blockReason}</p> : null}
