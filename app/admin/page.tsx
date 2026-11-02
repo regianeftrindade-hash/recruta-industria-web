@@ -335,6 +335,10 @@ export default function AdminDashboardPage() {
               {unreadMail} Não Lida{unreadMail === 1 ? '' : 's'}
             </p>
             <div className={styles.panelHeadEnd}>
+              <Link href="/admin/caixa-email" className={styles.linkGold}>
+                Escrever e-mail
+              </Link>
+              {" "}
               <Link href="/admin/contato" className={styles.linkGold}>
                 Abrir Contato
               </Link>

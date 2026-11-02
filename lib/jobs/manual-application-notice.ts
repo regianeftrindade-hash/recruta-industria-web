@@ -13,6 +13,8 @@ export const MANUAL_APPLICATION_RESUME_MESSAGE =
 export const MANUAL_APPLICATION_REGISTRATION_MESSAGE =
   "Conclua o cadastro de profissional antes de se candidatar a esta vaga.";
 
+export const MANUAL_APPLICATION_EMAIL_SUBJECT = "Produção";
+
 export function manualApplicationMessage(jobId: string | null | undefined): string | null {
   if (jobId !== MANUAL_APPLICATION_JOB_ID) return null;
   return MANUAL_APPLICATION_MESSAGE;

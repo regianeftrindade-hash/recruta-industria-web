@@ -1,7 +1,26 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { MANUAL_APPLICATION_EMAIL_SUBJECT } from "@/lib/jobs/manual-application-notice";
 import styles from "../admin.module.css";
+
+function caixaEmailHref(email: string, extra?: {
+  assunto?: string;
+  nome?: string;
+  cargo?: string;
+  vaga?: string;
+  candidatura?: string;
+}): string {
+  const query = new URLSearchParams();
+  query.set("para", email);
+  if (extra?.assunto) query.set("assunto", extra.assunto);
+  if (extra?.nome) query.set("nome", extra.nome);
+  if (extra?.cargo) query.set("cargo", extra.cargo);
+  if (extra?.vaga) query.set("vaga", extra.vaga);
+  if (extra?.candidatura) query.set("candidatura", extra.candidatura);
+  return `/admin/caixa-email?${query.toString()}`;
+}
 
 type ManualApplication = {
   id: string;
@@ -118,9 +137,15 @@ export default function CandidaturasManuaisPage() {
               <p className={styles.panelSub}>{vagaResumo(openJob)}</p>
               <p className={styles.panelSub}>
                 {openJob.applicationEmail ? (
-                  <a className={styles.linkGold} href={`mailto:${openJob.applicationEmail}`}>
+                  <Link
+                    className={styles.linkGold}
+                    href={caixaEmailHref(openJob.applicationEmail, {
+                      assunto: MANUAL_APPLICATION_EMAIL_SUBJECT,
+                      cargo: openJob.title,
+                    })}
+                  >
                     {openJob.applicationEmail}
-                  </a>
+                  </Link>
                 ) : null}
                 {openJob.applicationEmail && openJob.applicationWhatsapp ? " · " : null}
                 {openJob.applicationWhatsapp && openJob.applicationWhatsappHref ? (
@@ -164,7 +189,18 @@ export default function CandidaturasManuaisPage() {
                       <span className={styles.candidateName}>{application.name || "Nome não informado"}</span>
                       <span className={styles.jobCardMeta}>
                         {application.email ? (
-                          <a className={styles.linkGold} href={`mailto:${application.email}`}>{application.email}</a>
+                          <Link
+                            className={styles.linkGold}
+                            href={caixaEmailHref(application.email, {
+                              assunto: MANUAL_APPLICATION_EMAIL_SUBJECT,
+                              nome: application.name || undefined,
+                              cargo: openJob.title,
+                              vaga: openJob.id,
+                              candidatura: application.id,
+                            })}
+                          >
+                            {application.email}
+                          </Link>
                         ) : (
                           "Sem e-mail"
                         )}
