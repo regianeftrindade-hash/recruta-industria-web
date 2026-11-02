@@ -30,7 +30,8 @@ export async function GET(request: NextRequest) {
     if (!Number.isFinite(uid) || uid < 1) {
       return NextResponse.json({ error: 'UID inválido.' }, { status: 400 });
     }
-    const result = await fetchInboxMessageByUid(uid);
+    const all = request.nextUrl.searchParams.get('todas') === '1';
+    const result = await fetchInboxMessageByUid(uid, { all });
     if (result.error && !result.message) {
       const status = result.configured === false ? 503 : result.error.includes('não encontrada') ? 404 : 502;
       return NextResponse.json(result, { status });
@@ -39,7 +40,8 @@ export async function GET(request: NextRequest) {
   }
 
   const limit = Math.min(50, Math.max(5, Number(request.nextUrl.searchParams.get('limit') || 20)));
-  const result = await fetchInboxMessages(limit);
+  const all = request.nextUrl.searchParams.get('todas') === '1';
+  const result = await fetchInboxMessages(limit, { all });
   return NextResponse.json(result);
 }
 

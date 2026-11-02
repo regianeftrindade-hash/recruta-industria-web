@@ -199,7 +199,7 @@ export default function AdminDashboardPage() {
 
   const loadInbox = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/inbox?limit=4', { credentials: 'include' });
+      const res = await fetch('/api/admin/inbox?limit=4&todas=1', { credentials: 'include' });
       const inbox = await res.json();
       setInboxConfigured(inbox.configured === true);
       setMailbox(inbox.mailbox || null);
@@ -325,7 +325,7 @@ export default function AdminDashboardPage() {
               <h2 className={styles.panelTitle}>Caixa de e-mail</h2>
               <p className={styles.panelSub}>
                 {mailbox
-                  ? `Conta: ${mailbox} · só dashboard empresa`
+                  ? `Conta: ${mailbox}. A caixa completa está na aba Caixa de e-mail.`
                   : 'Configure IMAP Hostinger no .env.local para ler a caixa'}
               </p>
             </div>
@@ -335,12 +335,8 @@ export default function AdminDashboardPage() {
               {unreadMail} Não Lida{unreadMail === 1 ? '' : 's'}
             </p>
             <div className={styles.panelHeadEnd}>
-              <Link href="/admin/caixa-email" className={styles.linkGold}>
-                Escrever e-mail
-              </Link>
-              {" "}
               <Link href="/admin/contato" className={styles.linkGold}>
-                Abrir Contato
+                Abrir caixa de e-mail
               </Link>
             </div>
           </div>
@@ -362,7 +358,7 @@ IMAP_PASS=sua-senha
           )}
 
           {!inboxError && messages.length === 0 && (
-            <p className={styles.empty}>Nenhuma mensagem do dashboard empresa.</p>
+            <p className={styles.empty}>Nenhuma mensagem recente na caixa.</p>
           )}
 
           {messages.length > 0 && (

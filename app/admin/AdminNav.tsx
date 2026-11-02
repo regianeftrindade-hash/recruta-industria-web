@@ -9,8 +9,7 @@ const LINKS = [
   { href: '/admin/vagas', label: 'Publicar vagas', exact: false },
   { href: '/admin/candidaturas-manual', label: 'Candidaturas manual', exact: false },
   { href: '/admin/companies', label: 'Empresas', exact: false },
-  { href: '/admin/caixa-email', label: 'Caixa de e-mail', exact: false },
-  { href: '/admin/contato', label: 'Contato', exact: false },
+  { href: '/admin/contato', label: 'Caixa de e-mail', exact: false },
   { href: '/admin/servicos', label: 'Serviços', exact: false },
   { href: '/admin/security', label: 'Segurança', exact: false },
 ] as const;

@@ -208,7 +208,7 @@ async function withInboxLock<T>(
   }
 }
 
-export async function fetchInboxMessages(limit = 20): Promise<{
+export async function fetchInboxMessages(limit = 20, options?: { all?: boolean }): Promise<{
   configured: boolean;
   mailbox: string | null;
   messages: InboxMessage[];
@@ -219,7 +219,7 @@ export async function fetchInboxMessages(limit = 20): Promise<{
     const total = typeof client.mailbox === 'object' && client.mailbox ? client.mailbox.exists : 0;
     if (!total) return [] as InboxMessage[];
 
-    // Varre um lote maior e filtra só mensagens do dashboard empresa.
+    // Varre um lote maior. Sem options.all, fica só o dashboard empresa.
     const scanSize = Math.min(total, Math.max(limit * 15, 100));
     const start = Math.max(1, total - scanSize + 1);
     const messages: InboxMessage[] = [];
@@ -231,7 +231,7 @@ export async function fetchInboxMessages(limit = 20): Promise<{
       uid: true,
     })) {
       const subject = msg.envelope?.subject || '(sem assunto)';
-      if (!isCompanyDashboardEmail({ subject })) continue;
+      if (!options?.all && !isCompanyDashboardEmail({ subject })) continue;
 
       const fromText = formatAddress(msg.envelope?.from) || 'Remetente desconhecido';
       const date = msg.envelope?.date ? new Date(msg.envelope.date).toISOString() : null;
@@ -257,7 +257,7 @@ export async function fetchInboxMessages(limit = 20): Promise<{
       mailbox: result.mailbox,
       messages: [],
       error: result.error,
-      filter: 'company-dashboard',
+      filter: options?.all ? 'inbox' : 'company-dashboard',
     };
   }
 
@@ -265,11 +265,11 @@ export async function fetchInboxMessages(limit = 20): Promise<{
     configured: true,
     mailbox: result.mailbox,
     messages: result.value,
-    filter: 'company-dashboard',
+    filter: options?.all ? 'inbox' : 'company-dashboard',
   };
 }
 
-export async function fetchInboxMessageByUid(uid: number): Promise<{
+export async function fetchInboxMessageByUid(uid: number, options?: { all?: boolean }): Promise<{
   configured: boolean;
   mailbox: string | null;
   message: InboxMessageDetail | null;
@@ -318,7 +318,7 @@ export async function fetchInboxMessageByUid(uid: number): Promise<{
       headerMap['X-Recruta-Source'] = parsed.headers.get('x-recruta-source') as string | string[] | undefined;
     }
 
-    if (!isCompanyDashboardEmail({ subject, text, headers: headerMap })) {
+    if (!options?.all && !isCompanyDashboardEmail({ subject, text, headers: headerMap })) {
       return { filtered: true as const };
     }
 

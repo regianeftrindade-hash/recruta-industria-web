@@ -19,7 +19,7 @@ function caixaEmailHref(email: string, extra?: {
   if (extra?.cargo) query.set("cargo", extra.cargo);
   if (extra?.vaga) query.set("vaga", extra.vaga);
   if (extra?.candidatura) query.set("candidatura", extra.candidatura);
-  return `/admin/caixa-email?${query.toString()}`;
+  return `/admin/contato?${query.toString()}`;
 }
 
 type ManualApplication = {
