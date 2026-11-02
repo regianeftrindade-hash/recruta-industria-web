@@ -15,6 +15,7 @@ import {
   assertJobId,
   companyCanReadJobApplications,
   contractLabel,
+  formatPublicationDate,
   isProfessionalAccount,
   jobStatusLabel,
   parseApplicationStage,
@@ -557,45 +558,61 @@ export async function readAdminApplicationResume(jobId: string, applicationId: s
 
 export type ManualApplicationRow = {
   id: string;
-  jobId: string;
   name: string | null;
-  email: string;
-  phone: string | null;
-  createdAt: string;
   resumeLabel: string | null;
 };
 
-export async function listManualJobApplications(): Promise<{
-  job: { id: string; title: string; companyName: string; workplace: string | null } | null;
+export type ManualJobCard = {
+  id: string;
+  title: string;
+  companyName: string;
+  workplace: string | null;
+  publicationDate: string | null;
+  salaryLabel: string | null;
+  applicationCount: number;
   applications: ManualApplicationRow[];
-}> {
+};
+
+export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard[] }> {
   await ensureJobApplicationWhatsappColumn();
   const job = await prisma.jobPosting.findUnique({
     where: { id: MANUAL_APPLICATION_JOB_ID },
-    select: { id: true, title: true, companyName: true, workplace: true },
+    select: {
+      id: true,
+      title: true,
+      companyName: true,
+      workplace: true,
+      publicationDate: true,
+      salaryCents: true,
+      salaryNegotiable: true,
+    },
   });
-  if (!job) return { job: null, applications: [] };
+  if (!job) return { jobs: [] };
 
   const rows = await prisma.jobApplication.findMany({
     where: { jobId: job.id },
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { name: true, email: true } },
-      profile: { select: { phone: true, curricoURL: true } },
+      profile: { select: { curricoURL: true } },
     },
   });
 
   return {
-    job,
-    applications: rows.map((row) => ({
-      id: row.id,
-      jobId: row.jobId,
-      name: row.user.name,
-      email: row.user.email,
-      phone: row.profile?.phone ?? null,
-      createdAt: row.createdAt.toISOString(),
-      resumeLabel: savedResumeLabel(storedResumePath(row.profile?.curricoURL), row.user.email),
-    })),
+    jobs: [{
+      id: job.id,
+      title: job.title,
+      companyName: job.companyName,
+      workplace: job.workplace,
+      publicationDate: formatPublicationDate(job.publicationDate),
+      salaryLabel: publicSalaryLabel(job),
+      applicationCount: rows.length,
+      applications: rows.map((row) => ({
+        id: row.id,
+        name: row.user.name,
+        resumeLabel: savedResumeLabel(storedResumePath(row.profile?.curricoURL), row.user.email),
+      })),
+    }],
   };
 }
 
