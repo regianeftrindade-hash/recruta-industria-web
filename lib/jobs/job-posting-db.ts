@@ -41,6 +41,7 @@ import {
   sendJobApplicationEmail,
 } from "@/lib/jobs/job-application-mail";
 import {
+  MANUAL_APPLICATION_EMAIL_SUBJECT,
   MANUAL_APPLICATION_JOB_ID,
   MANUAL_APPLICATION_REGISTRATION_MESSAGE,
   MANUAL_APPLICATION_RESUME_MESSAGE,
@@ -576,9 +577,50 @@ export type ManualJobCard = {
   applicationEmail: string | null;
   applicationWhatsapp: string | null;
   applicationWhatsappHref: string | null;
+  copyText: string;
   applicationCount: number;
   applications: ManualApplicationRow[];
 };
+
+function manualJobCopyText(job: {
+  title: string;
+  companyName: string;
+  workplace: string | null;
+  publicationDate: string | null;
+  salaryLabel: string | null;
+  contractLabel: string | null;
+  workModeLabel: string | null;
+  applicationEmail: string | null;
+  applicationWhatsapp: string | null;
+  description: string;
+  observations: string | null;
+  applicationInstructions: string | null;
+}): string {
+  const line = (label: string, value: string | null | undefined) => {
+    const text = (value || "").trim();
+    return text ? `${label}: ${text}` : null;
+  };
+  const head = [
+    line("Cargo", job.title),
+    line("Empresa", job.companyName),
+    line("Local", job.workplace),
+    line("Publicação", job.publicationDate),
+    line("Salário", job.salaryLabel),
+    line("Contrato", job.contractLabel),
+    line("Modalidade", job.workModeLabel),
+    line("E-mail", job.applicationEmail),
+    line("WhatsApp", job.applicationWhatsapp),
+    line("Assunto", MANUAL_APPLICATION_EMAIL_SUBJECT),
+  ].filter((item): item is string => Boolean(item));
+  const blocks = [head.join("\n")];
+  const description = job.description.trim();
+  const observations = (job.observations || "").trim();
+  const instructions = (job.applicationInstructions || "").trim();
+  if (description) blocks.push(`Descrição:\n${description}`);
+  if (observations) blocks.push(`Observações:\n${observations}`);
+  if (instructions) blocks.push(`Como se candidatar:\n${instructions}`);
+  return blocks.filter(Boolean).join("\n\n");
+}
 
 function digitsOnly(value: string | null | undefined): string {
   return (value || "").replace(/\D/g, "");
@@ -612,6 +654,12 @@ export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard
       publicationDate: true,
       salaryCents: true,
       salaryNegotiable: true,
+      contractType: true,
+      contractTypeOther: true,
+      workMode: true,
+      description: true,
+      observations: true,
+      applicationInstructions: true,
       applicationEmail: true,
       applicationWhatsapp: true,
     },
@@ -628,17 +676,36 @@ export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard
   });
 
   const jobWhatsapp = digitsOnly(job.applicationWhatsapp);
+  const publicationDate = formatPublicationDate(job.publicationDate);
+  const salaryLabel = publicSalaryLabel(job);
+  const contract = contractLabel(job.contractType, job.contractTypeOther);
+  const workMode = workModeLabel(job.workMode);
+  const applicationWhatsapp = jobWhatsapp ? formatWhatsappDisplay(jobWhatsapp) : null;
   return {
     jobs: [{
       id: job.id,
       title: job.title,
       companyName: job.companyName,
       workplace: job.workplace,
-      publicationDate: formatPublicationDate(job.publicationDate),
-      salaryLabel: publicSalaryLabel(job),
+      publicationDate,
+      salaryLabel,
       applicationEmail: job.applicationEmail,
-      applicationWhatsapp: jobWhatsapp ? formatWhatsappDisplay(jobWhatsapp) : null,
+      applicationWhatsapp,
       applicationWhatsappHref: whatsappHref(jobWhatsapp),
+      copyText: manualJobCopyText({
+        title: job.title,
+        companyName: job.companyName,
+        workplace: job.workplace,
+        publicationDate,
+        salaryLabel,
+        contractLabel: contract,
+        workModeLabel: workMode,
+        applicationEmail: job.applicationEmail,
+        applicationWhatsapp,
+        description: job.description,
+        observations: job.observations,
+        applicationInstructions: job.applicationInstructions,
+      }),
       applicationCount: rows.length,
       applications: rows.map((row) => {
         const whatsapp = candidateWhatsapp(row.profile?.whatsapp, row.profile?.phone);

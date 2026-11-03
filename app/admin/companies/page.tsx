@@ -50,6 +50,28 @@ export default function AdminCompaniesPage() {
     load(filtro);
   }, [filtro, load]);
 
+  const removeCompany = async (company: PendingCompany) => {
+    const confirmed = window.confirm(
+      `Excluir ${company.razaoSocial}? A conta e o cadastro saem do site. Não dá para desfazer.`,
+    );
+    if (!confirmed) return;
+    setBusyId(company.userId);
+    try {
+      const res = await fetch(`/api/admin/companies/${company.userId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data.error || 'Não foi possível excluir a empresa.');
+        return;
+      }
+      load(filtro);
+    } finally {
+      setBusyId('');
+    }
+  };
+
   const review = async (userId: string, action: 'verify' | 'reject') => {
     let reason: string | undefined;
     if (action === 'reject') {
@@ -150,6 +172,14 @@ export default function AdminCompaniesPage() {
                 style={{ padding: '8px 14px', background: '#7f1d1d', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}
               >
                 Negar
+              </button>
+              <button
+                type="button"
+                disabled={busyId === company.userId}
+                onClick={() => void removeCompany(company)}
+                style={{ padding: '8px 14px', background: '#F3E6C8', color: '#414141', border: '2px solid #8D6B1F', borderRadius: 8, cursor: 'pointer', fontWeight: 800 }}
+              >
+                Excluir
               </button>
             </div>
           </div>

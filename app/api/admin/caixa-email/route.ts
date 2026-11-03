@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/admin-auth";
 import { fetchInboxMessageByUid, markInboxMessageSeen } from "@/lib/admin/inbox";
-import { isEmailConfigured, resolveSmtpFromHeader, sendEmailDetailed } from "@/lib/infra/email";
+import { ADMIN_MAILBOX_ALIAS, adminMailboxFromHeader, isEmailConfigured, sendEmailDetailed } from "@/lib/infra/email";
 import { readAdminApplicationResume } from "@/lib/jobs/job-posting-db";
 import { JobPostingError } from "@/lib/jobs/job-posting";
 import { isDocxBuffer, isPdfBuffer } from "@/lib/jobs/resume-pdf";
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   if (denied) return denied;
   return NextResponse.json({
     configured: isEmailConfigured(),
-    from: resolveSmtpFromHeader(),
+    from: adminMailboxFromHeader(),
   });
 }
 
@@ -222,6 +222,8 @@ export async function POST(request: NextRequest) {
     text: fullText,
     html,
     attachments,
+    fromHeader: adminMailboxFromHeader(),
+    replyTo: ADMIN_MAILBOX_ALIAS,
     inReplyTo,
     references,
   });
@@ -234,7 +236,7 @@ export async function POST(request: NextRequest) {
     ok: true,
     to,
     subject,
-    from: resolveSmtpFromHeader(),
+    from: adminMailboxFromHeader(),
     attached: attachments.length > 0,
   });
 }

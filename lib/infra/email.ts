@@ -146,11 +146,20 @@ export function isEmailConfigured(): boolean {
   return Boolean(host && user && pass);
 }
 
+/** Alias da caixa do admin. A autenticação SMTP continua na caixa principal. */
+export const ADMIN_MAILBOX_ALIAS = "recrutamento@recrutaindustria.com";
+
+export function adminMailboxFromHeader(): string {
+  return `Recruta Indústria <${ADMIN_MAILBOX_ALIAS}>`;
+}
+
 export interface SendEmailOptions {
   to: string;
   subject: string;
   html: string;
   text?: string;
+  /** Cabeçalho From visível. O envelope segue o SMTP_USER. */
+  fromHeader?: string;
   replyTo?: string;
   inReplyTo?: string;
   references?: string;
@@ -261,7 +270,7 @@ export async function sendEmailDetailed(
   options: SendEmailOptions,
 ): Promise<{ ok: boolean; error?: string }> {
   const primary = resolveSmtpConfig();
-  const from = resolveSmtpFromHeader();
+  const from = options.fromHeader?.trim() || resolveSmtpFromHeader();
   const transport = createTransporterFor(primary);
 
   if (!transport) {

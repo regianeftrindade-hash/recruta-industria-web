@@ -1279,8 +1279,65 @@
   background: #F3E6C8;
   color: #414141;
   text-align: left;
+  font: inherit;
+}
+
+.jobCardOpen {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  text-align: left;
   cursor: pointer;
   font: inherit;
+  font-weight: 600;
+}
+
+.jobCardOpen:active {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.jobCopy {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.jobCopy summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+  color: #414141;
+  list-style: none;
+}
+
+.jobCopy summary::-webkit-details-marker {
+  display: none;
+}
+
+.jobCopy summary::before {
+  content: "▸ ";
+}
+
+.jobCopy[open] summary::before {
+  content: "▾ ";
+}
+
+.jobCopyText {
+  width: 100%;
+  margin: 8px 0;
+  min-height: 140px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .jobCard:hover {

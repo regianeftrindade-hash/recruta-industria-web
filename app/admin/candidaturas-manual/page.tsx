@@ -41,6 +41,7 @@ type ManualJob = {
   applicationEmail: string | null;
   applicationWhatsapp: string | null;
   applicationWhatsappHref: string | null;
+  copyText: string;
   applicationCount: number;
   applications: ManualApplication[];
 };
@@ -60,6 +61,7 @@ export default function CandidaturasManuaisPage() {
   const [showApplications, setShowApplications] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [copiedId, setCopiedId] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -107,23 +109,40 @@ export default function CandidaturasManuaisPage() {
         ) : (
           <div className={styles.jobCards}>
             {jobs.map((job) => (
-              <button
-                key={job.id}
-                type="button"
-                className={styles.jobCard}
-                onClick={() => {
-                  setOpenId(job.id);
-                  setShowApplications(false);
-                }}
-              >
-                <span className={styles.jobCardTitle}>{job.title}</span>
-                <span className={styles.jobCardMeta}>{job.companyName}</span>
-                {job.workplace ? <span className={styles.jobCardMeta}>{job.workplace}</span> : null}
-                {job.salaryLabel ? <span className={styles.jobCardMeta}>{job.salaryLabel}</span> : null}
-                <span className={styles.jobCardMeta}>
-                  {job.applicationCount} candidatura{job.applicationCount === 1 ? "" : "s"}
-                </span>
-              </button>
+              <article key={job.id} className={styles.jobCard}>
+                <button
+                  type="button"
+                  className={styles.jobCardOpen}
+                  onClick={() => {
+                    setOpenId(job.id);
+                    setShowApplications(false);
+                  }}
+                >
+                  <span className={styles.jobCardTitle}>{job.title}</span>
+                  <span className={styles.jobCardMeta}>{job.companyName}</span>
+                  {job.workplace ? <span className={styles.jobCardMeta}>{job.workplace}</span> : null}
+                  {job.salaryLabel ? <span className={styles.jobCardMeta}>{job.salaryLabel}</span> : null}
+                  <span className={styles.jobCardMeta}>
+                    {job.applicationCount} candidatura{job.applicationCount === 1 ? "" : "s"}
+                  </span>
+                </button>
+                <details className={styles.jobCopy}>
+                  <summary>Dados da vaga</summary>
+                  <textarea className={styles.jobCopyText} readOnly value={job.copyText} rows={8} />
+                  <button
+                    type="button"
+                    className={styles.btnGhost}
+                    onClick={() => {
+                      void navigator.clipboard.writeText(job.copyText).then(() => {
+                        setCopiedId(job.id);
+                        window.setTimeout(() => setCopiedId((current) => (current === job.id ? "" : current)), 2000);
+                      }).catch(() => setCopiedId(""));
+                    }}
+                  >
+                    {copiedId === job.id ? "Copiado" : "Copiar"}
+                  </button>
+                </details>
+              </article>
             ))}
           </div>
         )
