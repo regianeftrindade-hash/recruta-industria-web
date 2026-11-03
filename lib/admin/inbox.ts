@@ -1,6 +1,7 @@
 import { ImapFlow } from 'imapflow';
 import { simpleParser } from 'mailparser';
 import { isCompanyDashboardEmail } from '@/lib/admin/company-dashboard-mail';
+import { escolherPastaEnviados } from '@/lib/admin/sent-folder';
 
 export type InboxMessage = {
   id: string;
@@ -468,5 +469,113 @@ export async function deleteInboxMessage(uid: number): Promise<{
     configured: true,
     mailbox: result.mailbox,
     ok: true,
+  };
+}
+
+function mensagemFalhaEnviados(error: unknown): string {
+  const text = error instanceof Error ? error.message : String(error || '');
+  const lower = text.toLowerCase();
+  if (
+    lower.includes('auth')
+    || lower.includes('invalid credentials')
+    || lower.includes('login')
+  ) {
+    return 'O e-mail saiu, mas a caixa recusou o acesso para guardar a cópia em Enviados. Confira o webmail antes de enviar outra vez.';
+  }
+  if (
+    lower.includes('não tem a pasta enviados')
+    || lower.includes('nonexistent')
+    || lower.includes('does not exist')
+    || lower.includes('unknown mailbox')
+  ) {
+    return 'O e-mail saiu, mas a pasta Enviados não foi encontrada. Confira o webmail antes de enviar outra vez.';
+  }
+  return 'O e-mail saiu, mas não ficou na pasta Enviados. Confira o webmail antes de enviar outra vez.';
+}
+
+async function withImapSession<T>(
+  fn: (client: ImapFlow) => Promise<T>,
+): Promise<{ ok: true; value: T; mailbox: string } | { ok: false; configured: boolean; mailbox: string | null; error: string }> {
+  const config = getImapConfig();
+  if (!config) {
+    return {
+      ok: false,
+      configured: false,
+      mailbox: null,
+      error: 'Configure IMAP_HOST/IMAP_USER/IMAP_PASS (ou SMTP_*) no .env para usar a caixa de e-mail.',
+    };
+  }
+
+  const client = new ImapFlow({ ...config, socketTimeout: 60_000 });
+  try {
+    await client.connect();
+    const value = await fn(client);
+    return { ok: true, value, mailbox: config.auth.user };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Falha ao conectar no IMAP';
+    console.error('[inbox]', message);
+    return {
+      ok: false,
+      configured: true,
+      mailbox: config.auth.user,
+      error: message,
+    };
+  } finally {
+    try {
+      await client.logout();
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+/** A Hostinger não copia o SMTP para Enviados. Esta cópia é a mesma mensagem enviada. */
+export async function appendMessageToSent(raw: Buffer): Promise<{
+  configured: boolean;
+  mailbox: string | null;
+  ok: boolean;
+  folder?: string;
+  error?: string;
+}> {
+  if (!raw?.length) {
+    return { configured: true, mailbox: null, ok: false, error: 'Mensagem vazia.' };
+  }
+
+  const result = await withImapSession(async (client) => {
+    const boxes = await client.list();
+    const folder = escolherPastaEnviados(boxes.map((box) => ({
+      path: box.path,
+      name: box.name,
+      specialUse: typeof box.specialUse === 'string' ? box.specialUse : null,
+    })));
+    const alvo = folder || 'INBOX.Sent';
+    const gravar = async (path: string) => {
+      const saved = await client.append(path, raw, ['\\Seen'], new Date());
+      if (!saved) throw new Error('Não foi possível gravar na pasta Enviados.');
+    };
+    try {
+      await gravar(alvo);
+      return alvo;
+    } catch (firstError) {
+      if (folder) throw firstError;
+      await gravar('Sent');
+      return 'Sent';
+    }
+  });
+
+  if (!result.ok) {
+    return {
+      configured: result.configured,
+      mailbox: result.mailbox,
+      ok: false,
+      error: result.configured ? mensagemFalhaEnviados(new Error(result.error)) : result.error,
+    };
+  }
+
+  return {
+    configured: true,
+    mailbox: result.mailbox,
+    ok: true,
+    folder: result.value,
   };
 }

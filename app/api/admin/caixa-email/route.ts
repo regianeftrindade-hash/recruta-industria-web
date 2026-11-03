@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/admin-auth";
-import { fetchInboxMessageByUid, markInboxMessageSeen } from "@/lib/admin/inbox";
-import { ADMIN_MAILBOX_ALIAS, adminMailboxFromHeader, isEmailConfigured, sendEmailDetailed } from "@/lib/infra/email";
+import { appendMessageToSent, fetchInboxMessageByUid, isInboxConfigured, markInboxMessageSeen } from "@/lib/admin/inbox";
+import { ADMIN_MAILBOX_ALIAS, adminMailboxFromHeader, isEmailConfigured, sendEmailKeepingRaw } from "@/lib/infra/email";
 import { readAdminApplicationResume } from "@/lib/jobs/job-posting-db";
 import { JobPostingError } from "@/lib/jobs/job-posting";
 import { isDocxBuffer, isPdfBuffer } from "@/lib/jobs/resume-pdf";
@@ -187,6 +187,11 @@ export async function POST(request: NextRequest) {
   if (!isEmailConfigured()) {
     return NextResponse.json({ error: "SMTP não configurado no servidor." }, { status: 503 });
   }
+  if (!isInboxConfigured()) {
+    return NextResponse.json({
+      error: "Não dá para concluir o envio sem a pasta Enviados. Confira o acesso IMAP da caixa.",
+    }, { status: 503 });
+  }
 
   const uploaded = await readUploadedFiles(payload.files);
   if (!uploaded.ok) {
@@ -216,7 +221,7 @@ export async function POST(request: NextRequest) {
   const html = quoted
     ? `<div style="font-family:system-ui,sans-serif;line-height:1.5;color:#222;white-space:pre-wrap">${escapeHtml(text)}</div><hr style="margin:16px 0;border:none;border-top:1px solid #ddd" /><div style="font-size:12px;color:#666;white-space:pre-wrap">${escapeHtml(quoted)}</div>`
     : `<div style="font-family:system-ui,sans-serif;line-height:1.5;color:#222;white-space:pre-wrap">${escapeHtml(text)}</div>`;
-  const sent = await sendEmailDetailed({
+  const sent = await sendEmailKeepingRaw({
     to,
     subject,
     text: fullText,
@@ -227,8 +232,17 @@ export async function POST(request: NextRequest) {
     inReplyTo,
     references,
   });
-  if (!sent.ok) {
+  if (!sent.ok || !sent.raw) {
     return NextResponse.json({ error: sent.error || "Falha ao enviar o e-mail." }, { status: 502 });
+  }
+
+  const archived = await appendMessageToSent(sent.raw);
+  if (!archived.ok) {
+    return NextResponse.json({
+      error: archived.error || "O e-mail saiu, mas não ficou na pasta Enviados. Confira o webmail antes de enviar outra vez.",
+      sent: true,
+      savedInSent: false,
+    }, { status: 502 });
   }
   if (payload.uid) await markInboxMessageSeen(payload.uid);
 
@@ -238,5 +252,6 @@ export async function POST(request: NextRequest) {
     subject,
     from: adminMailboxFromHeader(),
     attached: attachments.length > 0,
+    savedInSent: true,
   });
 }

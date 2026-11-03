@@ -2,6 +2,7 @@ import dns from "dns";
 import nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
 import type SMTPTransport from "nodemailer/lib/smtp-transport";
+import MailComposer from "nodemailer/lib/mail-composer";
 
 // Vercel/Node às vezes tenta IPv6 primeiro; Hostinger responde melhor em IPv4.
 try {
@@ -261,40 +262,74 @@ async function sendWithTransport(
   });
 }
 
-export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
-  const result = await sendEmailDetailed(options);
-  return result.ok;
+/** A mesma mensagem que o SMTP envia, para guardar uma cópia na pasta Enviados. */
+export async function compileRawEmail(options: SendEmailOptions, from: string): Promise<Buffer> {
+  const composer = new MailComposer({
+    from,
+    to: options.to,
+    subject: options.subject,
+    html: options.html,
+    text: options.text,
+    ...(options.replyTo ? { replyTo: options.replyTo } : {}),
+    ...(options.inReplyTo ? { inReplyTo: options.inReplyTo } : {}),
+    ...(options.references ? { references: options.references } : {}),
+    ...(options.headers ? { headers: options.headers } : {}),
+    ...(options.attachments?.length
+      ? {
+        attachments: options.attachments.map((item) => ({
+          filename: item.filename,
+          content: item.content,
+          contentType: item.contentType,
+        })),
+      }
+      : {}),
+  });
+  const built = await composer.compile().build();
+  return Buffer.isBuffer(built) ? built : Buffer.from(built);
 }
 
-export async function sendEmailDetailed(
-  options: SendEmailOptions,
-): Promise<{ ok: boolean; error?: string }> {
-  const primary = resolveSmtpConfig();
-  const from = options.fromHeader?.trim() || resolveSmtpFromHeader();
-  const transport = createTransporterFor(primary);
+async function sendRawWithTransport(
+  transport: Transporter,
+  raw: Buffer,
+  to: string,
+  user: string,
+): Promise<void> {
+  await transport.sendMail({
+    envelope: user ? { from: user, to } : undefined,
+    raw,
+  });
+}
 
-  if (!transport) {
-    const cfg = resolveSmtpConfig();
-    if (cfg.host && !isPlausibleSmtpHost(cfg.host)) {
-      return {
-        ok: false,
-        error:
-          "SMTP_HOST inválido. O valor deve ser smtp.hostinger.com (não deixe o nome da variável como valor).",
-      };
-    }
-    if (process.env.NODE_ENV === "development") {
-      console.info("[email] SMTP não configurado — e-mail não enviado:", {
-        to: options.to,
-        subject: options.subject,
-        replyTo: options.replyTo,
-        text: options.text?.slice(0, 200),
-      });
-    }
-    return { ok: false, error: "SMTP não configurado." };
+function smtpNotReady(options: SendEmailOptions): { ok: false; error: string } | null {
+  const cfg = resolveSmtpConfig();
+  if (createTransporterFor(cfg)) return null;
+  if (cfg.host && !isPlausibleSmtpHost(cfg.host)) {
+    return {
+      ok: false,
+      error:
+        "SMTP_HOST inválido. O valor deve ser smtp.hostinger.com (não deixe o nome da variável como valor).",
+    };
   }
+  if (process.env.NODE_ENV === "development") {
+    console.info("[email] SMTP não configurado — e-mail não enviado:", {
+      to: options.to,
+      subject: options.subject,
+      replyTo: options.replyTo,
+      text: options.text?.slice(0, 200),
+    });
+  }
+  return { ok: false, error: "SMTP não configurado." };
+}
+
+async function deliverWithRetries(
+  deliver: (transport: Transporter, user: string) => Promise<void>,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const primary = resolveSmtpConfig();
+  const transport = createTransporterFor(primary);
+  if (!transport) return { ok: false, error: "SMTP não configurado." };
 
   try {
-    await sendWithTransport(transport, options, from, primary.user);
+    await deliver(transport, primary.user);
     return { ok: true };
   } catch (firstError) {
     const attempts: Array<{ cfg: SmtpResolvedConfig; method?: "LOGIN" | "PLAIN"; label: string }> = [];
@@ -309,11 +344,11 @@ export async function sendEmailDetailed(
 
     let lastError: unknown = firstError;
     for (const attempt of attempts) {
-      const t = createTransporterFor(attempt.cfg, attempt.method);
-      if (!t) continue;
+      const next = createTransporterFor(attempt.cfg, attempt.method);
+      if (!next) continue;
       try {
         console.warn(`[email] Retry: ${attempt.label}…`);
-        await sendWithTransport(t, options, from, attempt.cfg.user);
+        await deliver(next, attempt.cfg.user);
         return { ok: true };
       } catch (err) {
         lastError = err;
@@ -323,6 +358,33 @@ export async function sendEmailDetailed(
     console.error("[email] Falha ao enviar:", lastError);
     return { ok: false, error: smtpFailureHint(lastError) };
   }
+}
+
+export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
+  const result = await sendEmailDetailed(options);
+  return result.ok;
+}
+
+export async function sendEmailDetailed(
+  options: SendEmailOptions,
+): Promise<{ ok: boolean; error?: string }> {
+  const missing = smtpNotReady(options);
+  if (missing) return missing;
+  const from = options.fromHeader?.trim() || resolveSmtpFromHeader();
+  return deliverWithRetries((transport, user) => sendWithTransport(transport, options, from, user));
+}
+
+/** Envia e devolve os bytes exatos, para copiar a mensagem na pasta Enviados. */
+export async function sendEmailKeepingRaw(
+  options: SendEmailOptions,
+): Promise<{ ok: boolean; error?: string; raw?: Buffer }> {
+  const missing = smtpNotReady(options);
+  if (missing) return missing;
+  const from = options.fromHeader?.trim() || resolveSmtpFromHeader();
+  const raw = await compileRawEmail(options, from);
+  const sent = await deliverWithRetries((transport, user) => sendRawWithTransport(transport, raw, options.to, user));
+  if (!sent.ok) return sent;
+  return { ok: true, raw };
 }
 
 /** Caixa de contato Recruta Indústria (mensagens de empresas pagas). */

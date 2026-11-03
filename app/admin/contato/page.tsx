@@ -196,7 +196,7 @@ function CaixaEmailPage() {
     setStatus('');
     try {
       const data = await sendMail({ to, subject, text, files, attachResume });
-      setStatus(`E-mail enviado para ${data.to || to}${data.attached ? ', com anexo' : ''}.`);
+      setStatus(`E-mail enviado para ${data.to || to}${data.attached ? ', com anexo' : ''} e salvo na pasta Enviados.`);
       setText('');
       setFiles([]);
       setAttachResume(false);
@@ -250,7 +250,7 @@ function CaixaEmailPage() {
         files: replyFiles,
         uid: selectedUid,
       });
-      setStatus(`Resposta enviada para ${data.to || replyTo}${data.attached ? ', com anexo' : ''}.`);
+      setStatus(`Resposta enviada para ${data.to || replyTo}${data.attached ? ', com anexo' : ''} e salva na pasta Enviados.`);
       setReplyText('');
       setReplyFiles([]);
     } catch (sendError) {
