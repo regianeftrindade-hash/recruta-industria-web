@@ -42,6 +42,7 @@ function CaixaEmailPage() {
   const assunto = params.get('assunto') || '';
   const nome = params.get('nome') || '';
   const cargo = params.get('cargo') || '';
+  const cuidados = params.get('cuidados') || '';
   const vaga = params.get('vaga') || '';
   const candidatura = params.get('candidatura') || '';
 
@@ -104,11 +105,13 @@ function CaixaEmailPage() {
     setTo(para);
     setSubject(assunto);
     setAttachResume(Boolean(vaga && candidatura));
-    setText(nome || cargo
-      ? `Olá,\n\nSegue o currículo${nome ? ` de ${nome}` : ''}${cargo ? ` para a vaga de ${cargo}` : ''}.\n\nAtenciosamente,\nRecruta Indústria`
+    const saudacao = cuidados ? `Olá, ${cuidados},` : 'Olá,';
+    const destino = cuidados ? `, aos cuidados de ${cuidados}` : '';
+    setText(nome || cargo || cuidados
+      ? `${saudacao}\n\nSegue o currículo${nome ? ` de ${nome}` : ''}${cargo ? ` para a vaga de ${cargo}` : ''}${destino}.\n\nAtenciosamente,\nRecruta Indústria`
       : '');
     setStatus('');
-  }, [para, assunto, nome, cargo, vaga, candidatura]);
+  }, [para, assunto, nome, cargo, cuidados, vaga, candidatura]);
 
   const openMessage = async (uid: number) => {
     setComposing(false);

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { MANUAL_APPLICATION_EMAIL_SUBJECT } from "@/lib/jobs/manual-application-notice";
 import styles from "../admin.module.css";
 
 function caixaEmailHref(email: string, extra?: {
@@ -11,6 +10,7 @@ function caixaEmailHref(email: string, extra?: {
   cargo?: string;
   vaga?: string;
   candidatura?: string;
+  cuidados?: string;
 }): string {
   const query = new URLSearchParams();
   query.set("para", email);
@@ -19,6 +19,7 @@ function caixaEmailHref(email: string, extra?: {
   if (extra?.cargo) query.set("cargo", extra.cargo);
   if (extra?.vaga) query.set("vaga", extra.vaga);
   if (extra?.candidatura) query.set("candidatura", extra.candidatura);
+  if (extra?.cuidados) query.set("cuidados", extra.cuidados);
   return `/admin/contato?${query.toString()}`;
 }
 
@@ -41,7 +42,13 @@ type ManualJob = {
   applicationEmail: string | null;
   applicationWhatsapp: string | null;
   applicationWhatsappHref: string | null;
-  copyText: string;
+  careOf: string | null;
+  subject: string;
+  deadline: string | null;
+  description: string;
+  deliveryText: string;
+  shareUrl: string;
+  shareText: string;
   applicationCount: number;
   applications: ManualApplication[];
 };
@@ -58,7 +65,6 @@ function vagaResumo(job: ManualJob): string {
 export default function CandidaturasManuaisPage() {
   const [jobs, setJobs] = useState<ManualJob[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
-  const [showApplications, setShowApplications] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState("");
@@ -84,13 +90,23 @@ export default function CandidaturasManuaisPage() {
 
   const openJob = jobs.find((job) => job.id === openId) ?? null;
 
+  async function copyValue(value: string, key: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedId(key);
+      window.setTimeout(() => setCopiedId((current) => (current === key ? "" : current)), 2000);
+    } catch {
+      setCopiedId("");
+    }
+  }
+
   return (
     <main className={styles.main}>
       <div className={styles.hero}>
         <div>
           <h1 className={styles.heroTitle}>CANDIDATURAS MANUAL</h1>
           <p className={styles.heroMeta}>
-            Abra a vaga para ver o e-mail ou o WhatsApp. Em Candidaturas ficam o nome, o contato e o PDF.
+            Abra a vaga para ver a descrição, o envio aos cuidados de quem recebe, o link para compartilhar e os currículos em PDF.
           </p>
         </div>
         <div className={styles.actions}>
@@ -113,10 +129,7 @@ export default function CandidaturasManuaisPage() {
                 <button
                   type="button"
                   className={styles.jobCardOpen}
-                  onClick={() => {
-                    setOpenId(job.id);
-                    setShowApplications(false);
-                  }}
+                  onClick={() => setOpenId(job.id)}
                 >
                   <span className={styles.jobCardTitle}>{job.title}</span>
                   <span className={styles.jobCardMeta}>{job.companyName}</span>
@@ -127,20 +140,20 @@ export default function CandidaturasManuaisPage() {
                   </span>
                 </button>
                 <details className={styles.jobCopy}>
-                  <summary>Dados da vaga</summary>
-                  <textarea className={styles.jobCopyText} readOnly value={job.copyText} rows={8} />
-                  <button
-                    type="button"
-                    className={styles.btnGhost}
-                    onClick={() => {
-                      void navigator.clipboard.writeText(job.copyText).then(() => {
-                        setCopiedId(job.id);
-                        window.setTimeout(() => setCopiedId((current) => (current === job.id ? "" : current)), 2000);
-                      }).catch(() => setCopiedId(""));
-                    }}
-                  >
-                    {copiedId === job.id ? "Copiado" : "Copiar"}
-                  </button>
+                  <summary>Dados, envio e link</summary>
+                  <p className={styles.jobDelivery}>{job.deliveryText}</p>
+                  <p className={styles.jobCardMeta}>{job.shareUrl}</p>
+                  <div className={styles.actions}>
+                    <button type="button" className={styles.btnGhost} onClick={() => void copyValue(job.deliveryText, `${job.id}-envio`)}>
+                      {copiedId === `${job.id}-envio` ? "Copiado" : "Copiar envio"}
+                    </button>
+                    <button type="button" className={styles.btnGhost} onClick={() => void copyValue(job.shareUrl, `${job.id}-link`)}>
+                      {copiedId === `${job.id}-link` ? "Copiado" : "Copiar link"}
+                    </button>
+                    <button type="button" className={styles.btnGhost} onClick={() => void copyValue(job.shareText, `${job.id}-texto`)}>
+                      {copiedId === `${job.id}-texto` ? "Copiado" : "Copiar texto"}
+                    </button>
+                  </div>
                 </details>
               </article>
             ))}
@@ -154,51 +167,82 @@ export default function CandidaturasManuaisPage() {
             <div>
               <h2 className={styles.panelTitle}>{openJob.title}</h2>
               <p className={styles.panelSub}>{vagaResumo(openJob)}</p>
-              <p className={styles.panelSub}>
-                {openJob.applicationEmail ? (
-                  <Link
-                    className={styles.linkGold}
-                    href={caixaEmailHref(openJob.applicationEmail, {
-                      assunto: MANUAL_APPLICATION_EMAIL_SUBJECT,
-                      cargo: openJob.title,
-                    })}
-                  >
-                    {openJob.applicationEmail}
-                  </Link>
-                ) : null}
-                {openJob.applicationEmail && openJob.applicationWhatsapp ? " · " : null}
-                {openJob.applicationWhatsapp && openJob.applicationWhatsappHref ? (
-                  <a className={styles.linkGold} href={openJob.applicationWhatsappHref} target="_blank" rel="noopener noreferrer">
-                    {openJob.applicationWhatsapp}
-                  </a>
-                ) : null}
-                {!openJob.applicationEmail && !openJob.applicationWhatsapp ? "Esta vaga não tem e-mail nem WhatsApp." : null}
-              </p>
             </div>
             <button
               type="button"
               className={styles.btnGhost}
-              onClick={() => {
-                setOpenId(null);
-                setShowApplications(false);
-              }}
+              onClick={() => setOpenId(null)}
             >
               Voltar às vagas
             </button>
           </div>
-          <div className={styles.actions}>
-            <button
-              type="button"
-              className={styles.btnGold}
-              onClick={() => setShowApplications(true)}
-            >
-              Candidaturas
+          <section className={styles.jobSection}>
+            <h3 className={styles.replyTitle}>Descrição</h3>
+            <textarea className={styles.jobCopyText} readOnly value={openJob.description} rows={10} />
+            <button type="button" className={styles.btnGhost} onClick={() => void copyValue(openJob.description, "descricao")}>
+              {copiedId === "descricao" ? "Copiado" : "Copiar descrição"}
             </button>
-          </div>
-          {showApplications && openJob.applications.length === 0 ? (
-            <p className={styles.empty}>Ainda não há candidaturas nesta vaga.</p>
-          ) : null}
-          {showApplications && openJob.applications.length > 0 ? (
+          </section>
+
+          <section className={styles.jobSection}>
+            <h3 className={styles.replyTitle}>Forma de candidatura</h3>
+            <p className={styles.panelSub}>
+              {openJob.careOf ? `Aos cuidados de ${openJob.careOf}. ` : null}
+              Assunto: {openJob.subject}.
+              {openJob.deadline ? ` Prazo: até ${openJob.deadline}.` : null}
+            </p>
+            <p className={styles.panelSub}>
+              {openJob.applicationEmail ? (
+                <Link
+                  className={styles.linkGold}
+                  href={caixaEmailHref(openJob.applicationEmail, {
+                    assunto: openJob.subject,
+                    cargo: openJob.title,
+                    cuidados: openJob.careOf || undefined,
+                  })}
+                >
+                  {openJob.applicationEmail}
+                </Link>
+              ) : (
+                "Esta vaga não tem e-mail."
+              )}
+              {openJob.applicationWhatsapp && openJob.applicationWhatsappHref ? (
+                <>
+                  {" · "}
+                  <a className={styles.linkGold} href={openJob.applicationWhatsappHref} target="_blank" rel="noopener noreferrer">
+                    {openJob.applicationWhatsapp}
+                  </a>
+                </>
+              ) : null}
+            </p>
+            <textarea className={styles.jobCopyText} readOnly value={openJob.deliveryText} rows={5} />
+            <button type="button" className={styles.btnGhost} onClick={() => void copyValue(openJob.deliveryText, "envio")}>
+              {copiedId === "envio" ? "Copiado" : "Copiar forma de envio"}
+            </button>
+          </section>
+
+          <section className={styles.jobSection}>
+            <h3 className={styles.replyTitle}>Compartilhar</h3>
+            <p className={styles.panelSub}>
+              O link abre a vaga no site. A pessoa clica em Candidatar-se, faz o cadastro e a candidatura aparece aqui, com o PDF.
+            </p>
+            <textarea className={styles.jobCopyText} readOnly value={openJob.shareUrl} rows={2} />
+            <textarea className={styles.jobCopyText} readOnly value={openJob.shareText} rows={8} />
+            <div className={styles.actions}>
+              <button type="button" className={styles.btnGhost} onClick={() => void copyValue(openJob.shareUrl, "link")}>
+                {copiedId === "link" ? "Copiado" : "Copiar link"}
+              </button>
+              <button type="button" className={styles.btnGhost} onClick={() => void copyValue(openJob.shareText, "texto")}>
+                {copiedId === "texto" ? "Copiado" : "Copiar texto e link"}
+              </button>
+            </div>
+          </section>
+
+          <section className={styles.jobSection}>
+            <h3 className={styles.replyTitle}>Currículos em PDF</h3>
+            {openJob.applications.length === 0 ? (
+              <p className={styles.empty}>Ainda não há candidaturas nesta vaga.</p>
+            ) : (
             <ul className={styles.candidateLines}>
               {openJob.applications.map((application) => {
                 const pdf = application.resumeLabel === "Currículo em PDF";
@@ -211,11 +255,12 @@ export default function CandidaturasManuaisPage() {
                           <Link
                             className={styles.linkGold}
                             href={caixaEmailHref(application.email, {
-                              assunto: MANUAL_APPLICATION_EMAIL_SUBJECT,
+                              assunto: openJob.subject,
                               nome: application.name || undefined,
                               cargo: openJob.title,
                               vaga: openJob.id,
                               candidatura: application.id,
+                              cuidados: openJob.careOf || undefined,
                             })}
                           >
                             {application.email}
@@ -240,7 +285,7 @@ export default function CandidaturasManuaisPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        PDF
+                        Baixar PDF
                       </a>
                     ) : (
                       <span>Sem PDF</span>
@@ -249,7 +294,8 @@ export default function CandidaturasManuaisPage() {
                 );
               })}
             </ul>
-          ) : null}
+            )}
+          </section>
         </section>
       ) : null}
     </main>

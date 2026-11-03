@@ -1305,6 +1305,17 @@
   box-shadow: none !important;
 }
 
+.jobSection {
+  margin-top: 18px;
+}
+
+.jobDelivery {
+  margin: 8px 0 0;
+  white-space: pre-line;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .jobCopy {
   width: 100%;
   margin-top: 8px;

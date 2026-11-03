@@ -15,6 +15,16 @@ export const MANUAL_APPLICATION_REGISTRATION_MESSAGE =
 
 export const MANUAL_APPLICATION_EMAIL_SUBJECT = "Produção";
 
+/** Quem recebe o currículo quando o envio é feito pela administração. */
+export const MANUAL_APPLICATION_CARE_OF = "Maria";
+
+export const MANUAL_APPLICATION_DEADLINE = "05/11/2026";
+
+export function manualApplicationCareOf(jobId: string | null | undefined): string | null {
+  if (jobId !== MANUAL_APPLICATION_JOB_ID) return null;
+  return MANUAL_APPLICATION_CARE_OF;
+}
+
 export function manualApplicationMessage(jobId: string | null | undefined): string | null {
   if (jobId !== MANUAL_APPLICATION_JOB_ID) return null;
   return MANUAL_APPLICATION_MESSAGE;

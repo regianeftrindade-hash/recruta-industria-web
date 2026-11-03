@@ -41,12 +41,15 @@ import {
   sendJobApplicationEmail,
 } from "@/lib/jobs/job-application-mail";
 import {
+  MANUAL_APPLICATION_CARE_OF,
+  MANUAL_APPLICATION_DEADLINE,
   MANUAL_APPLICATION_EMAIL_SUBJECT,
   MANUAL_APPLICATION_JOB_ID,
   MANUAL_APPLICATION_REGISTRATION_MESSAGE,
   MANUAL_APPLICATION_RESUME_MESSAGE,
   manualApplicationMessage,
 } from "@/lib/jobs/manual-application-notice";
+import { publicJobUrl } from "@/lib/jobs/public-job-link";
 import { savedResumeLabel } from "@/lib/jobs/resume-pdf";
 import { extractStoragePath } from "@/lib/storage/private-uploads";
 import { parseJobSearch, publicJobWhere, type JobSearchFilters } from "@/lib/jobs/job-search";
@@ -577,49 +580,50 @@ export type ManualJobCard = {
   applicationEmail: string | null;
   applicationWhatsapp: string | null;
   applicationWhatsappHref: string | null;
-  copyText: string;
+  careOf: string | null;
+  subject: string;
+  deadline: string | null;
+  description: string;
+  deliveryText: string;
+  shareUrl: string;
+  shareText: string;
   applicationCount: number;
   applications: ManualApplicationRow[];
 };
 
-function manualJobCopyText(job: {
+function datedLine(value: string | null | undefined): string | null {
+  return value?.match(/até\s+(\d{2}\/\d{2}\/\d{4})/i)?.[1] ?? null;
+}
+
+function manualJobDeliveryText(job: {
+  applicationEmail: string | null;
+  applicationWhatsapp: string | null;
+  deadline: string | null;
+}): string {
+  return [
+    `Aos cuidados de: ${MANUAL_APPLICATION_CARE_OF}`,
+    job.applicationEmail ? `E-mail: ${job.applicationEmail}` : null,
+    `Assunto: ${MANUAL_APPLICATION_EMAIL_SUBJECT}`,
+    job.deadline ? `Prazo: até ${job.deadline}` : null,
+    job.applicationWhatsapp ? `WhatsApp: ${job.applicationWhatsapp}` : null,
+  ].filter((item): item is string => Boolean(item)).join("\n");
+}
+
+function manualJobShareText(job: {
+  id: string;
   title: string;
   companyName: string;
   workplace: string | null;
-  publicationDate: string | null;
   salaryLabel: string | null;
-  contractLabel: string | null;
-  workModeLabel: string | null;
-  applicationEmail: string | null;
-  applicationWhatsapp: string | null;
   description: string;
-  observations: string | null;
-  applicationInstructions: string | null;
 }): string {
-  const line = (label: string, value: string | null | undefined) => {
-    const text = (value || "").trim();
-    return text ? `${label}: ${text}` : null;
-  };
-  const head = [
-    line("Cargo", job.title),
-    line("Empresa", job.companyName),
-    line("Local", job.workplace),
-    line("Publicação", job.publicationDate),
-    line("Salário", job.salaryLabel),
-    line("Contrato", job.contractLabel),
-    line("Modalidade", job.workModeLabel),
-    line("E-mail", job.applicationEmail),
-    line("WhatsApp", job.applicationWhatsapp),
-    line("Assunto", MANUAL_APPLICATION_EMAIL_SUBJECT),
-  ].filter((item): item is string => Boolean(item));
-  const blocks = [head.join("\n")];
-  const description = job.description.trim();
-  const observations = (job.observations || "").trim();
-  const instructions = (job.applicationInstructions || "").trim();
-  if (description) blocks.push(`Descrição:\n${description}`);
-  if (observations) blocks.push(`Observações:\n${observations}`);
-  if (instructions) blocks.push(`Como se candidatar:\n${instructions}`);
-  return blocks.filter(Boolean).join("\n\n");
+  const facts = [job.companyName, job.workplace, job.salaryLabel].filter(Boolean).join(" · ");
+  return [
+    job.title.trim(),
+    facts,
+    job.description.trim(),
+    `Candidate-se em ${publicJobUrl(job.id)}`,
+  ].filter(Boolean).join("\n\n");
 }
 
 function digitsOnly(value: string | null | undefined): string {
@@ -654,9 +658,6 @@ export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard
       publicationDate: true,
       salaryCents: true,
       salaryNegotiable: true,
-      contractType: true,
-      contractTypeOther: true,
-      workMode: true,
       description: true,
       observations: true,
       applicationInstructions: true,
@@ -678,9 +679,18 @@ export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard
   const jobWhatsapp = digitsOnly(job.applicationWhatsapp);
   const publicationDate = formatPublicationDate(job.publicationDate);
   const salaryLabel = publicSalaryLabel(job);
-  const contract = contractLabel(job.contractType, job.contractTypeOther);
-  const workMode = workModeLabel(job.workMode);
   const applicationWhatsapp = jobWhatsapp ? formatWhatsappDisplay(jobWhatsapp) : null;
+  const deadline = datedLine(job.applicationInstructions)
+    || datedLine(job.observations)
+    || datedLine(job.description)
+    || MANUAL_APPLICATION_DEADLINE;
+  const description = job.description.trim();
+  const deliveryText = manualJobDeliveryText({
+    applicationEmail: job.applicationEmail,
+    applicationWhatsapp,
+    deadline,
+  });
+  const shareUrl = publicJobUrl(job.id);
   return {
     jobs: [{
       id: job.id,
@@ -692,19 +702,19 @@ export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard
       applicationEmail: job.applicationEmail,
       applicationWhatsapp,
       applicationWhatsappHref: whatsappHref(jobWhatsapp),
-      copyText: manualJobCopyText({
+      careOf: MANUAL_APPLICATION_CARE_OF,
+      subject: MANUAL_APPLICATION_EMAIL_SUBJECT,
+      deadline,
+      description,
+      deliveryText,
+      shareUrl,
+      shareText: manualJobShareText({
+        id: job.id,
         title: job.title,
         companyName: job.companyName,
         workplace: job.workplace,
-        publicationDate,
         salaryLabel,
-        contractLabel: contract,
-        workModeLabel: workMode,
-        applicationEmail: job.applicationEmail,
-        applicationWhatsapp,
-        description: job.description,
-        observations: job.observations,
-        applicationInstructions: job.applicationInstructions,
+        description,
       }),
       applicationCount: rows.length,
       applications: rows.map((row) => {
