@@ -46,6 +46,14 @@ function temCurriculoPdf(current: ApplyState | null): boolean {
   return current?.resumeName === "Currículo em PDF";
 }
 
+function caminhoCadastro(jobId: string): string {
+  const retorno = `/vagas/${jobId}?candidatar=1`;
+  const pagina = manualApplicationMessage(jobId)
+    ? "/professional/register"
+    : "/professional/cadastro";
+  return `${pagina}?redirect=${encodeURIComponent(retorno)}`;
+}
+
 export default function JobApplyButton({
   jobId,
   mode,
@@ -90,7 +98,7 @@ export default function JobApplyButton({
       const data = await response.json().catch(() => ({}));
 
       if (data.code === "REGISTRATION_REQUIRED") {
-        router.push(`/professional/cadastro?redirect=${encodeURIComponent(`/vagas/${jobId}?candidatar=1`)}`);
+        router.push(caminhoCadastro(jobId));
         return;
       }
 
@@ -168,13 +176,13 @@ export default function JobApplyButton({
         const current = await loadState(autoOpen);
         if (cancelled || !autoOpen || current.applied) return;
         if (!current.authenticated) {
-          router.replace(`/professional/cadastro?redirect=${encodeURIComponent(`/vagas/${jobId}?candidatar=1`)}`);
+          router.replace(caminhoCadastro(jobId));
           return;
         }
         const currentMode = current.applicationMode || mode;
         if (currentMode === "INTERNAL" && current.authenticated && current.canApply) {
           if (manualApplicationMessage(jobId) && current.registrationReady === false) {
-            router.replace(`/professional/cadastro?redirect=${encodeURIComponent(`/vagas/${jobId}?candidatar=1`)}`);
+            router.replace(caminhoCadastro(jobId));
             return;
           }
           if (manualApplicationMessage(jobId) && !temCurriculoPdf(current)) {
@@ -226,7 +234,7 @@ export default function JobApplyButton({
     }
 
     if (!current.authenticated) {
-      router.push(`/professional/cadastro?redirect=${encodeURIComponent(retornoCandidatura)}`);
+      router.push(caminhoCadastro(jobId));
       return;
     }
 
@@ -248,7 +256,7 @@ export default function JobApplyButton({
     const activeMode = current.applicationMode || mode;
     if (activeMode === "INTERNAL") {
       if (manualMessage && current.registrationReady === false) {
-        router.push(`/professional/cadastro?redirect=${encodeURIComponent(retornoCandidatura)}`);
+        router.push(caminhoCadastro(jobId));
         return;
       }
       if (manualMessage && !temCurriculoPdf(current)) {
@@ -263,8 +271,6 @@ export default function JobApplyButton({
     setOpen(true);
     setOutcome("");
   }
-
-  const retornoCandidatura = `/vagas/${jobId}?candidatar=1`;
 
   const buttonLabel = busy
     ? (currentMode === "EMAIL" && panel.automatic ? "Enviando..." : currentMode === "INTERNAL" ? "Registrando..." : "Candidatar-se")

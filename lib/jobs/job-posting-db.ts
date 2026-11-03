@@ -51,6 +51,7 @@ import {
 } from "@/lib/jobs/manual-application-notice";
 import { publicJobUrl } from "@/lib/jobs/public-job-link";
 import { savedResumeLabel } from "@/lib/jobs/resume-pdf";
+import { isProfessionalRegistrationComplete } from "@/lib/professional/professional-registration";
 import { extractStoragePath } from "@/lib/storage/private-uploads";
 import { parseJobSearch, publicJobWhere, type JobSearchFilters } from "@/lib/jobs/job-search";
 import { ensureJobApplicationWhatsappColumn } from "@/lib/infra/ensure-db-schema";
@@ -895,7 +896,9 @@ export async function getOwnApplicationState(
       role: true,
       professional: { select: { id: true } },
       company: { select: { id: true } },
-      profile: { select: { id: true, curricoURL: true } },
+      profile: {
+        select: { id: true, curricoURL: true, cpf: true, profileCompletion: true, formDataJSON: true },
+      },
     },
   });
 
@@ -927,7 +930,7 @@ export async function getOwnApplicationState(
     };
   }
 
-  const registrationReady = !manualApplicationMessage(id) || Boolean(user.profile?.id);
+  const registrationReady = !manualApplicationMessage(id) || isProfessionalRegistrationComplete(user.profile);
 
   const tier = await getProfessionalPlanTier(user.id);
   const plan: ProfessionalPlan = tier === "PREMIUM" ? "PREMIUM" : "FREE";
@@ -1073,7 +1076,9 @@ export async function registerJobApplication(jobId: string, email: string) {
       role: true,
       professional: { select: { id: true } },
       company: { select: { id: true } },
-      profile: { select: { id: true, curricoURL: true } },
+      profile: {
+        select: { id: true, curricoURL: true, cpf: true, profileCompletion: true, formDataJSON: true },
+      },
     },
   });
 
@@ -1109,7 +1114,7 @@ export async function registerJobApplication(jobId: string, email: string) {
 
   const manualMessage = manualApplicationMessage(id);
   if (manualMessage) {
-    if (!user.profile?.id) {
+    if (!user.profile || !isProfessionalRegistrationComplete(user.profile)) {
       throw new JobPostingError(MANUAL_APPLICATION_REGISTRATION_MESSAGE, 403, "REGISTRATION_REQUIRED");
     }
     try {

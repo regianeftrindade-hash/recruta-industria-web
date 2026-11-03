@@ -49,7 +49,17 @@ const user = {
   role: "PROFESSIONAL",
   professional: { id: "pro-1" },
   company: null,
-  profile: { id: "profile-1", curricoURL: "curriculos/ana@example.invalid/10_cv.pdf" },
+  profile: {
+    id: "profile-1",
+    curricoURL: "curriculos/ana@example.invalid/10_cv.pdf",
+    cpf: "52998224725",
+    profileCompletion: 80,
+    formDataJSON: JSON.stringify({
+      nome: "Ana Souza",
+      email: "ana@example.invalid",
+      cpf: "52998224725",
+    }),
+  },
 };
 
 function job(mode: string, extra: Record<string, unknown> = {}) {
@@ -242,6 +252,31 @@ describe("envio da candidatura no servidor", () => {
     });
     expect(db.jobApplication.create).not.toHaveBeenCalled();
     expect(sendJobApplicationEmail).not.toHaveBeenCalled();
+  });
+
+  it("não aceita cadastro rápido na vaga manual", async () => {
+    db.jobPosting.findFirst.mockResolvedValue(job("INTERNAL", { id: MANUAL_APPLICATION_JOB_ID }));
+    db.user.findUnique.mockResolvedValue({
+      ...user,
+      profile: {
+        ...user.profile,
+        cpf: "52998224725",
+        profileCompletion: 80,
+        formDataJSON: JSON.stringify({
+          cadastroRapido: true,
+          nome: "Ana Souza",
+          email: "ana@example.invalid",
+          cpf: "52998224725",
+        }),
+      },
+    });
+
+    await expect(registerJobApplication(MANUAL_APPLICATION_JOB_ID, user.email)).rejects.toMatchObject({
+      code: "REGISTRATION_REQUIRED",
+      status: 403,
+    });
+    expect(loadOwnedResume).not.toHaveBeenCalled();
+    expect(db.jobApplication.create).not.toHaveBeenCalled();
   });
 
   it("mantém a candidatura interna do Free sem currículo", async () => {
