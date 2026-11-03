@@ -681,6 +681,9 @@
 }
 
 .mailItem {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   border: 2px solid #8D6B1F;
   border-radius: 14px;
   padding: 8px 10px;
@@ -690,6 +693,7 @@
   cursor: pointer;
   color: inherit;
   font: inherit;
+  box-shadow: none;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
@@ -707,8 +711,8 @@
 }
 
 .mailItem:hover {
-  border-color: rgba(200, 155, 60, 0.55);
-  background: rgba(200, 155, 60, 0.06);
+  border-color: #8D6B1F;
+  background: #E8C56A;
 }
 
 .mailItemPreview:hover {
@@ -890,21 +894,116 @@
   display: grid;
   grid-template-columns: minmax(280px, 0.95fr) minmax(320px, 1.2fr);
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
+}
+
+.caixaPane {
+  display: flex;
+  flex-direction: column;
+  min-height: min(78vh, 840px);
+}
+
+.caixaRead {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.mailRow {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  cursor: default;
+}
+
+.mailOpen {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mailOpen:active,
+.mailDelete:active {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.mailDelete {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 2px solid #8D6B1F;
+  background: #F3E6C8;
+  color: #414141;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: none;
+  cursor: pointer;
 }
 
 @media (max-width: 960px) {
   .contatoGrid {
     grid-template-columns: 1fr;
   }
+
+  .caixaPane {
+    min-height: 0;
+  }
 }
 
 .mailListTall {
-  max-height: min(70vh, 640px);
+  flex: 1;
+  min-height: 240px;
+  max-height: none;
+  overflow: auto;
+}
+
+@media (max-width: 960px) {
+  .mailListTall {
+    flex: none;
+    max-height: 420px;
+  }
+}
+
+.mailDetailFill {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 180px;
+  margin-top: 0;
 }
 
 .mailDetailBodyTall {
-  max-height: min(40vh, 360px);
+  flex: 1;
+  max-height: none;
+}
+
+.replyBox.caixaCompose {
+  margin-top: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.caixaReply {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 2px solid #8D6B1F;
 }
 
 .replyBox {
@@ -964,7 +1063,7 @@
 
 .replyStatus {
   font-size: 12px;
-  color: #c8c8c8;
+  color: #414141;
 }
 
 .servicosNav {

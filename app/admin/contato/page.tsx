@@ -204,6 +204,37 @@ function CaixaEmailPage() {
     }
   };
 
+  const removeMessage = async (uid: number) => {
+    if (!window.confirm('Excluir este e-mail da caixa? Não dá para desfazer.')) return;
+    setBusy(true);
+    setStatus('');
+    try {
+      const response = await fetch('/api/admin/inbox', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ uid, action: 'delete' }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setStatus(data.error || 'Não foi possível excluir o e-mail.');
+        return;
+      }
+      setMessages((prev) => prev.filter((msg) => Number(msg.uid ?? msg.id) !== uid));
+      if (selectedUid === uid) {
+        setSelectedUid(null);
+        setSelectedMessage(null);
+        setReplyText('');
+        setReplyFiles([]);
+      }
+      setStatus('E-mail excluído.');
+    } catch {
+      setStatus('Erro de rede ao excluir o e-mail.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const sendReply = async () => {
     if (!selectedUid) return;
     setBusy(true);
@@ -286,7 +317,7 @@ IMAP_PASS=sua-senha`}
 
       {!loading && !inboxError && (
         <div className={styles.contatoGrid}>
-          <section className={styles.panel}>
+          <section className={`${styles.panel} ${styles.caixaPane}`}>
             <div className={styles.panelHead}>
               <div>
                 <h2 className={styles.panelTitle}>Entrada</h2>
@@ -295,6 +326,7 @@ IMAP_PASS=sua-senha`}
                 </p>
               </div>
             </div>
+            {status && !composing && !selectedMessage ? <p className={styles.replyStatus}>{status}</p> : null}
 
             {messages.length === 0 ? (
               <p className={styles.empty}>A caixa não tem mensagens recentes.</p>
@@ -304,27 +336,35 @@ IMAP_PASS=sua-senha`}
                   const uid = Number(msg.uid ?? msg.id);
                   const active = selectedUid === uid;
                   return (
-                    <button
+                    <div
                       key={msg.id}
-                      type="button"
-                      className={`${styles.mailItem} ${msg.seen ? '' : styles.mailItemUnread} ${active ? styles.mailItemActive : ''}`}
-                      onClick={() => void openMessage(uid)}
+                      className={`${styles.mailItem} ${styles.mailRow} ${msg.seen ? '' : styles.mailItemUnread} ${active ? styles.mailItemActive : ''}`}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
-                        <div className={styles.mailSubject}>{msg.subject}</div>
-                        <div className={styles.mailDate}>{formatDate(msg.date)}</div>
-                      </div>
-                      <div className={styles.mailFrom}>{msg.from}</div>
-                    </button>
+                      <button type="button" className={styles.mailOpen} onClick={() => void openMessage(uid)}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+                          <div className={styles.mailSubject}>{msg.subject}</div>
+                          <div className={styles.mailDate}>{formatDate(msg.date)}</div>
+                        </div>
+                        <div className={styles.mailFrom}>{msg.from}</div>
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.mailDelete}
+                        disabled={busy}
+                        onClick={() => void removeMessage(uid)}
+                      >
+                        Excluir
+                      </button>
+                    </div>
                   );
                 })}
               </div>
             )}
           </section>
 
-          <section className={styles.panel}>
+          <section className={`${styles.panel} ${styles.caixaPane}`}>
             {composing ? (
-              <div className={styles.replyBox}>
+              <div className={`${styles.replyBox} ${styles.caixaCompose}`}>
                 <h2 className={styles.replyTitle}>Enviar e-mail</h2>
                 <label className={styles.replyLabel} htmlFor="caixa-para">Para</label>
                 <input
@@ -404,7 +444,7 @@ IMAP_PASS=sua-senha`}
                 </div>
               </div>
             ) : (
-              <>
+              <div className={styles.caixaRead}>
                 <div className={styles.panelHead}>
                   <div>
                     <h2 className={styles.panelTitle}>Mensagem</h2>
@@ -412,6 +452,16 @@ IMAP_PASS=sua-senha`}
                       {selectedMessage ? 'Leitura e resposta' : 'Selecione um e-mail à esquerda ou escreva um novo'}
                     </p>
                   </div>
+                  {selectedMessage && selectedUid ? (
+                    <button
+                      type="button"
+                      className={styles.mailDelete}
+                      disabled={busy}
+                      onClick={() => void removeMessage(selectedUid)}
+                    >
+                      Excluir
+                    </button>
+                  ) : null}
                 </div>
 
                 {messageLoading && <p className={styles.mailDetailLoading}>Abrindo mensagem…</p>}
@@ -422,7 +472,7 @@ IMAP_PASS=sua-senha`}
 
                 {selectedMessage && !messageLoading && (
                   <>
-                    <div className={styles.mailDetail}>
+                    <div className={`${styles.mailDetail} ${styles.mailDetailFill}`}>
                       <div className={styles.mailDetailHead}>
                         <div>
                           <div className={styles.mailSubject}>{selectedMessage.subject}</div>
@@ -439,7 +489,7 @@ IMAP_PASS=sua-senha`}
                       </div>
                     </div>
 
-                    <div className={styles.replyBox}>
+                    <div className={styles.caixaReply}>
                       <h3 className={styles.replyTitle}>Responder</h3>
                       <label className={styles.replyLabel} htmlFor="reply-to">Para</label>
                       <input
@@ -499,7 +549,7 @@ IMAP_PASS=sua-senha`}
                     </div>
                   </>
                 )}
-              </>
+              </div>
             )}
           </section>
         </div>

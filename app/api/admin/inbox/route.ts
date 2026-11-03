@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth/admin-auth';
 import {
+  deleteInboxMessage,
   fetchInboxMessageByUid,
   fetchInboxMessages,
   markInboxMessageSeen,
@@ -64,6 +65,15 @@ export async function POST(request: NextRequest) {
   const uid = Number(body.uid);
   if (!Number.isFinite(uid) || uid < 1) {
     return NextResponse.json({ error: 'UID inválido.' }, { status: 400 });
+  }
+
+  if (body.action === 'delete') {
+    const result = await deleteInboxMessage(uid);
+    if (!result.ok) {
+      const status = result.configured === false ? 503 : 502;
+      return NextResponse.json({ error: result.error || 'Não foi possível excluir o e-mail.' }, { status });
+    }
+    return NextResponse.json({ ok: true });
   }
 
   if (body.action === 'markSeen') {

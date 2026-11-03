@@ -431,3 +431,42 @@ export async function markInboxMessageSeen(uid: number): Promise<{
     ok: true,
   };
 }
+
+export async function deleteInboxMessage(uid: number): Promise<{
+  configured: boolean;
+  mailbox: string | null;
+  ok: boolean;
+  error?: string;
+}> {
+  if (!Number.isFinite(uid) || uid < 1) {
+    return { configured: true, mailbox: null, ok: false, error: 'UID inválido.' };
+  }
+
+  const result = await withInboxLock(async (client) => {
+    const boxes = await client.list();
+    const trash = boxes.find((box) => box.specialUse === '\\Trash');
+    if (trash?.path) {
+      const moved = await client.messageMove(String(uid), trash.path, { uid: true });
+      if (!moved) throw new Error('Não foi possível excluir o e-mail.');
+      return true;
+    }
+    const deleted = await client.messageDelete(String(uid), { uid: true });
+    if (!deleted) throw new Error('Não foi possível excluir o e-mail.');
+    return true;
+  });
+
+  if (!result.ok) {
+    return {
+      configured: result.configured,
+      mailbox: result.mailbox,
+      ok: false,
+      error: result.error,
+    };
+  }
+
+  return {
+    configured: true,
+    mailbox: result.mailbox,
+    ok: true,
+  };
+}
