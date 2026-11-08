@@ -255,6 +255,10 @@ describe("publicação de vagas", () => {
     }));
     expect(whatsapp.applicationMode).toBe("WHATSAPP");
     expect(whatsapp.applicationWhatsapp).toBe("5547988887777");
+    expect(parseJobWrite(baseInput({
+      applicationMode: "WHATSAPP",
+      applicationWhatsapp: "(19) 999644-5156",
+    })).applicationWhatsapp).toBe("199996445156");
     expect(whatsapp.applicationEmail).toBeNull();
     expect(whatsapp.externalApplyUrl).toBeNull();
     expect(whatsapp.confidential).toBe(true);
