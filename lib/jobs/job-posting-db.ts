@@ -45,16 +45,18 @@ import {
   MANUAL_APPLICATION_DEADLINE,
   MANUAL_APPLICATION_EMAIL_SUBJECT,
   MANUAL_APPLICATION_JOB_ID,
+  MANUAL_APPLICATION_MESSAGE,
   MANUAL_APPLICATION_REGISTRATION_MESSAGE,
   MANUAL_APPLICATION_RESUME_MESSAGE,
-  manualApplicationMessage,
+  isManualApplicationJob,
 } from "@/lib/jobs/manual-application-notice";
+import { parseManualJobDraft } from "@/lib/jobs/manual-job-form";
 import { publicJobUrl } from "@/lib/jobs/public-job-link";
 import { savedResumeLabel } from "@/lib/jobs/resume-pdf";
 import { isProfessionalRegistrationComplete } from "@/lib/professional/professional-registration";
 import { extractStoragePath } from "@/lib/storage/private-uploads";
 import { parseJobSearch, publicJobWhere, type JobSearchFilters } from "@/lib/jobs/job-search";
-import { ensureJobApplicationWhatsappColumn } from "@/lib/infra/ensure-db-schema";
+import { ensureJobApplicationWhatsappColumn, ensureManualApplicationColumns } from "@/lib/infra/ensure-db-schema";
 import { getProfessionalPlanTier } from "@/lib/professional/professional-storage";
 
 export function asPublicJob(job: JobPosting): PublicJob {
@@ -597,14 +599,16 @@ function datedLine(value: string | null | undefined): string | null {
 }
 
 function manualJobDeliveryText(job: {
+  careOf: string;
+  subject: string;
   applicationEmail: string | null;
   applicationWhatsapp: string | null;
   deadline: string | null;
 }): string {
   return [
-    `Aos cuidados de: ${MANUAL_APPLICATION_CARE_OF}`,
+    `Aos cuidados de: ${job.careOf}`,
     job.applicationEmail ? `E-mail: ${job.applicationEmail}` : null,
-    `Assunto: ${MANUAL_APPLICATION_EMAIL_SUBJECT}`,
+    `Assunto: ${job.subject}`,
     job.deadline ? `Prazo: até ${job.deadline}` : null,
     job.applicationWhatsapp ? `WhatsApp: ${job.applicationWhatsapp}` : null,
   ].filter((item): item is string => Boolean(item)).join("\n");
@@ -649,8 +653,18 @@ function candidateWhatsapp(whatsapp: string | null | undefined, phone: string | 
 
 export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard[] }> {
   await ensureJobApplicationWhatsappColumn();
-  const job = await prisma.jobPosting.findUnique({
-    where: { id: MANUAL_APPLICATION_JOB_ID },
+  await ensureManualApplicationColumns();
+  const jobs = await prisma.jobPosting.findMany({
+    where: {
+      OR: [
+        { manualApplication: true },
+        { id: MANUAL_APPLICATION_JOB_ID },
+      ],
+    },
+    orderBy: [
+      { publicationDate: { sort: "desc", nulls: "last" } },
+      { createdAt: "desc" },
+    ],
     select: {
       id: true,
       title: true,
@@ -664,73 +678,121 @@ export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard
       applicationInstructions: true,
       applicationEmail: true,
       applicationWhatsapp: true,
+      manualCareOf: true,
+      manualSubject: true,
     },
   });
-  if (!job) return { jobs: [] };
+  if (!jobs.length) return { jobs: [] };
 
   const rows = await prisma.jobApplication.findMany({
-    where: { jobId: job.id },
+    where: { jobId: { in: jobs.map((job) => job.id) } },
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { name: true, email: true } },
       profile: { select: { curricoURL: true, phone: true, whatsapp: true, email: true } },
     },
   });
+  const byJob = new Map<string, typeof rows>();
+  for (const row of rows) {
+    const list = byJob.get(row.jobId) ?? [];
+    list.push(row);
+    byJob.set(row.jobId, list);
+  }
 
-  const jobWhatsapp = digitsOnly(job.applicationWhatsapp);
-  const publicationDate = formatPublicationDate(job.publicationDate);
-  const salaryLabel = publicSalaryLabel(job);
-  const applicationWhatsapp = jobWhatsapp ? formatWhatsappDisplay(jobWhatsapp) : null;
-  const deadline = datedLine(job.applicationInstructions)
-    || datedLine(job.observations)
-    || datedLine(job.description)
-    || MANUAL_APPLICATION_DEADLINE;
-  const description = job.description.trim();
-  const deliveryText = manualJobDeliveryText({
-    applicationEmail: job.applicationEmail,
-    applicationWhatsapp,
-    deadline,
-  });
-  const shareUrl = publicJobUrl(job.id);
   return {
-    jobs: [{
-      id: job.id,
-      title: job.title,
-      companyName: job.companyName,
-      workplace: job.workplace,
-      publicationDate,
-      salaryLabel,
-      applicationEmail: job.applicationEmail,
-      applicationWhatsapp,
-      applicationWhatsappHref: whatsappHref(jobWhatsapp),
-      careOf: MANUAL_APPLICATION_CARE_OF,
-      subject: MANUAL_APPLICATION_EMAIL_SUBJECT,
-      deadline,
-      description,
-      deliveryText,
-      shareUrl,
-      shareText: manualJobShareText({
+    jobs: jobs.map((job) => {
+      const applications = byJob.get(job.id) ?? [];
+      const jobWhatsapp = digitsOnly(job.applicationWhatsapp);
+      const publicationDate = formatPublicationDate(job.publicationDate);
+      const salaryLabel = publicSalaryLabel(job);
+      const applicationWhatsapp = jobWhatsapp ? formatWhatsappDisplay(jobWhatsapp) : null;
+      const legacy = job.id === MANUAL_APPLICATION_JOB_ID;
+      const deadline = datedLine(job.applicationInstructions)
+        || datedLine(job.observations)
+        || datedLine(job.description)
+        || (legacy ? MANUAL_APPLICATION_DEADLINE : null);
+      const careOf = job.manualCareOf?.trim() || (legacy ? MANUAL_APPLICATION_CARE_OF : null);
+      const subject = job.manualSubject?.trim() || (legacy ? MANUAL_APPLICATION_EMAIL_SUBJECT : "Candidatura");
+      const description = job.description.trim();
+      const deliveryText = manualJobDeliveryText({
+        careOf: careOf || "não informado",
+        subject,
+        applicationEmail: job.applicationEmail,
+        applicationWhatsapp,
+        deadline,
+      });
+      return {
         id: job.id,
         title: job.title,
         companyName: job.companyName,
         workplace: job.workplace,
+        publicationDate,
         salaryLabel,
+        applicationEmail: job.applicationEmail,
+        applicationWhatsapp,
+        applicationWhatsappHref: whatsappHref(jobWhatsapp),
+        careOf,
+        subject,
+        deadline,
         description,
-      }),
-      applicationCount: rows.length,
-      applications: rows.map((row) => {
-        const whatsapp = candidateWhatsapp(row.profile?.whatsapp, row.profile?.phone);
-        return {
-          id: row.id,
-          name: row.user.name,
-          email: row.user.email || row.profile?.email || null,
-          whatsapp: whatsapp ? formatWhatsappDisplay(whatsapp) : null,
-          whatsappHref: whatsapp ? whatsappHref(whatsapp) : null,
-          resumeLabel: savedResumeLabel(storedResumePath(row.profile?.curricoURL), row.user.email),
-        };
-      }),
-    }],
+        deliveryText,
+        shareUrl: publicJobUrl(job.id),
+        shareText: manualJobShareText({
+          id: job.id,
+          title: job.title,
+          companyName: job.companyName,
+          workplace: job.workplace,
+          salaryLabel,
+          description,
+        }),
+        applicationCount: applications.length,
+        applications: applications.map((row) => {
+          const whatsapp = candidateWhatsapp(row.profile?.whatsapp, row.profile?.phone);
+          return {
+            id: row.id,
+            name: row.user.name,
+            email: row.user.email || row.profile?.email || null,
+            whatsapp: whatsapp ? formatWhatsappDisplay(whatsapp) : null,
+            whatsappHref: whatsapp ? whatsappHref(whatsapp) : null,
+            resumeLabel: savedResumeLabel(storedResumePath(row.profile?.curricoURL), row.user.email),
+          };
+        }),
+      };
+    }),
   };
+}
+
+export async function createManualAdminJob(createdByUserId: string, input: unknown): Promise<{ id: string }> {
+  await ensureJobApplicationWhatsappColumn();
+  await ensureManualApplicationColumns();
+  const data = parseManualJobDraft(input);
+  const created = await prisma.jobPosting.create({
+    data: {
+      title: data.title,
+      companyName: data.companyName,
+      confidential: false,
+      publicationDate: data.publicationDate,
+      salaryCents: data.salaryCents,
+      salaryNegotiable: data.salaryNegotiable,
+      workplace: data.workplace,
+      description: data.description,
+      observations: data.deadline
+        ? `Candidaturas abertas até ${data.deadline}, conforme o anúncio.`
+        : null,
+      applicationMode: "INTERNAL",
+      applicationEmail: data.applicationEmail,
+      applicationWhatsapp: data.applicationWhatsapp,
+      manualApplication: true,
+      manualCareOf: data.careOf,
+      manualSubject: data.subject,
+      status: "PUBLISHED",
+      origin: "ADMIN",
+      publishedAt: new Date(),
+      createdByUserId,
+    },
+    select: { id: true },
+  });
+  return { id: created.id };
 }
 
 export async function listJobApplicationsForCompany(
@@ -824,6 +886,7 @@ export type OwnApplicationState = {
   hasResume: boolean;
   resumeName: string | null;
   registrationReady: boolean;
+  manual: boolean;
 };
 
 function applicationDisclosure(
@@ -862,6 +925,7 @@ export async function getOwnApplicationState(
   options?: { verifyResume?: boolean },
 ): Promise<OwnApplicationState> {
   await ensureJobApplicationWhatsappColumn();
+  await ensureManualApplicationColumns();
   const id = assertJobId(jobId);
   const open = await prisma.jobPosting.findFirst({
     where: { id, status: "PUBLISHED" },
@@ -871,10 +935,12 @@ export async function getOwnApplicationState(
       applicationEmail: true,
       applicationWhatsapp: true,
       externalApplyUrl: true,
+      manualApplication: true,
     },
   });
   if (!open) throw new JobPostingError("Vaga não encontrada.", 404);
 
+  const manual = isManualApplicationJob(open);
   const hidden = applicationDisclosure("anonymous", null, open, null);
 
   if (!email) {
@@ -885,6 +951,7 @@ export async function getOwnApplicationState(
       canApply: true,
       blockReason: null,
       registrationReady: false,
+      manual,
       ...hidden,
     };
   }
@@ -910,6 +977,7 @@ export async function getOwnApplicationState(
       canApply: true,
       blockReason: null,
       registrationReady: false,
+      manual,
       ...hidden,
     };
   }
@@ -926,11 +994,12 @@ export async function getOwnApplicationState(
       canApply: false,
       blockReason: "A candidatura é feita com uma conta de profissional.",
       registrationReady: false,
+      manual,
       ...applicationDisclosure("company", null, open, null),
     };
   }
 
-  const registrationReady = !manualApplicationMessage(id) || isProfessionalRegistrationComplete(user.profile);
+  const registrationReady = !manual || isProfessionalRegistrationComplete(user.profile);
 
   const tier = await getProfessionalPlanTier(user.id);
   const plan: ProfessionalPlan = tier === "PREMIUM" ? "PREMIUM" : "FREE";
@@ -966,6 +1035,7 @@ export async function getOwnApplicationState(
       canApply: false,
       blockReason: "O envio desta candidatura já está em andamento.",
       registrationReady,
+      manual,
       ...disclosure,
     };
   }
@@ -978,6 +1048,7 @@ export async function getOwnApplicationState(
       canApply: false,
       blockReason: null,
       registrationReady,
+      manual,
       ...disclosure,
       contact: null,
     };
@@ -990,6 +1061,7 @@ export async function getOwnApplicationState(
     canApply: true,
     blockReason: null,
     registrationReady,
+    manual,
     ...disclosure,
   };
 }
@@ -1066,6 +1138,7 @@ async function claimEmailApplication(
 
 export async function registerJobApplication(jobId: string, email: string) {
   await ensureJobApplicationWhatsappColumn();
+  await ensureManualApplicationColumns();
   const id = assertJobId(jobId);
   const user = await prisma.user.findUnique({
     where: { email },
@@ -1101,6 +1174,7 @@ export async function registerJobApplication(jobId: string, email: string) {
       title: true,
       applicationMode: true,
       applicationEmail: true,
+      manualApplication: true,
     },
   });
   if (!job) {
@@ -1112,7 +1186,7 @@ export async function registerJobApplication(jobId: string, email: string) {
     ? "PREMIUM"
     : "FREE";
 
-  const manualMessage = manualApplicationMessage(id);
+  const manualMessage = isManualApplicationJob(job) ? MANUAL_APPLICATION_MESSAGE : null;
   if (manualMessage) {
     if (!user.profile || !isProfessionalRegistrationComplete(user.profile)) {
       throw new JobPostingError(MANUAL_APPLICATION_REGISTRATION_MESSAGE, 403, "REGISTRATION_REQUIRED");

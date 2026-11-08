@@ -6,6 +6,7 @@ import ResumeToolkit from "@/components/curriculum/ResumeToolkit";
 import { describeApplyPanel, type ApplicantContact, type ProfessionalPlan } from "@/lib/jobs/application-access";
 import { hrefForShownContact } from "@/lib/jobs/job-text-links";
 import {
+  MANUAL_APPLICATION_MESSAGE,
   MANUAL_APPLICATION_RESUME_MESSAGE,
   manualApplicationMessage,
 } from "@/lib/jobs/manual-application-notice";
@@ -40,17 +41,21 @@ type ApplyState = {
   hasResume: boolean;
   resumeName: string | null;
   registrationReady?: boolean;
+  manual?: boolean;
 };
+
+function avisoManual(jobId: string, current: ApplyState | null): string | null {
+  if (current?.manual === true || manualApplicationMessage(jobId)) return MANUAL_APPLICATION_MESSAGE;
+  return null;
+}
 
 function temCurriculoPdf(current: ApplyState | null): boolean {
   return current?.resumeName === "Currículo em PDF";
 }
 
-function caminhoCadastro(jobId: string): string {
+function caminhoCadastro(jobId: string, manual: boolean): string {
   const retorno = `/vagas/${jobId}?candidatar=1`;
-  const pagina = manualApplicationMessage(jobId)
-    ? "/professional/register"
-    : "/professional/cadastro";
+  const pagina = manual ? "/professional/register" : "/professional/cadastro";
   return `${pagina}?redirect=${encodeURIComponent(retorno)}`;
 }
 
@@ -87,7 +92,7 @@ export default function JobApplyButton({
     return next;
   }
 
-  async function sendAutomatic() {
+  async function sendAutomatic(snapshot?: ApplyState | null) {
     setBusy(true);
     setError("");
     try {
@@ -97,8 +102,9 @@ export default function JobApplyButton({
       });
       const data = await response.json().catch(() => ({}));
 
+      const aviso = avisoManual(jobId, snapshot ?? state);
       if (data.code === "REGISTRATION_REQUIRED") {
-        router.push(caminhoCadastro(jobId));
+        router.push(caminhoCadastro(jobId, Boolean(aviso)));
         return;
       }
 
@@ -109,7 +115,7 @@ export default function JobApplyButton({
         return;
       }
 
-      if (data.code === "RESUME_REQUIRED" && manualApplicationMessage(jobId)) {
+      if (data.code === "RESUME_REQUIRED" && aviso) {
         setError("");
         setOpen(true);
         setOutcome("");
@@ -124,7 +130,7 @@ export default function JobApplyButton({
       }
 
       if (response.status === 409 || data.alreadyApplied) {
-        const text = manualApplicationMessage(jobId) || (mode === "EMAIL"
+        const text = aviso || (mode === "EMAIL"
           ? "Você já enviou sua candidatura para esta vaga."
           : "Você já registrou candidatura nesta vaga.");
         setMessage(text);
@@ -147,7 +153,7 @@ export default function JobApplyButton({
         return;
       }
 
-      const text = manualApplicationMessage(jobId) || data.message || (mode === "EMAIL"
+      const text = aviso || data.message || (mode === "EMAIL"
         ? "Candidatura enviada com sucesso! Seu currículo foi encaminhado para o processo seletivo desta vaga."
         : "Candidatura registrada.");
       setMessage(text);
@@ -175,22 +181,23 @@ export default function JobApplyButton({
       try {
         const current = await loadState(autoOpen);
         if (cancelled || !autoOpen || current.applied) return;
+        const aviso = avisoManual(jobId, current);
         if (!current.authenticated) {
-          router.replace(caminhoCadastro(jobId));
+          router.replace(caminhoCadastro(jobId, Boolean(aviso)));
           return;
         }
         const currentMode = current.applicationMode || mode;
         if (currentMode === "INTERNAL" && current.authenticated && current.canApply) {
-          if (manualApplicationMessage(jobId) && current.registrationReady === false) {
-            router.replace(caminhoCadastro(jobId));
+          if (aviso && current.registrationReady === false) {
+            router.replace(caminhoCadastro(jobId, true));
             return;
           }
-          if (manualApplicationMessage(jobId) && !temCurriculoPdf(current)) {
+          if (aviso && !temCurriculoPdf(current)) {
             setOpen(true);
             setError("");
             return;
           }
-          await sendAutomatic();
+          await sendAutomatic(current);
           return;
         }
         if (current.authenticated) setOpen(true);
@@ -207,7 +214,7 @@ export default function JobApplyButton({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId, autoOpen]);
 
-  const manualMessage = manualApplicationMessage(jobId);
+  const manualMessage = avisoManual(jobId, state);
   const currentMode = state?.applicationMode || mode;
   const panel = describeApplyPanel({
     mode: currentMode,
@@ -233,8 +240,9 @@ export default function JobApplyButton({
       return;
     }
 
+    const aviso = avisoManual(jobId, current);
     if (!current.authenticated) {
-      router.push(caminhoCadastro(jobId));
+      router.push(caminhoCadastro(jobId, Boolean(aviso)));
       return;
     }
 
@@ -245,7 +253,7 @@ export default function JobApplyButton({
     }
 
     if (current.applied) {
-      const text = manualMessage || ((current.applicationMode || mode) === "EMAIL"
+      const text = aviso || ((current.applicationMode || mode) === "EMAIL"
         ? "Você já enviou sua candidatura para esta vaga."
         : "Você já registrou candidatura nesta vaga.");
       setMessage(text);
@@ -255,16 +263,16 @@ export default function JobApplyButton({
 
     const activeMode = current.applicationMode || mode;
     if (activeMode === "INTERNAL") {
-      if (manualMessage && current.registrationReady === false) {
-        router.push(caminhoCadastro(jobId));
+      if (aviso && current.registrationReady === false) {
+        router.push(caminhoCadastro(jobId, true));
         return;
       }
-      if (manualMessage && !temCurriculoPdf(current)) {
+      if (aviso && !temCurriculoPdf(current)) {
         setOpen(true);
         setError("");
         return;
       }
-      await sendAutomatic();
+      await sendAutomatic(current);
       return;
     }
 
@@ -309,7 +317,7 @@ export default function JobApplyButton({
             onSaved={() => {
               void (async () => {
                 const next = await loadState(true);
-                if (temCurriculoPdf(next)) await sendAutomatic();
+                if (temCurriculoPdf(next)) await sendAutomatic(next);
               })();
             }}
             onCancel={() => {

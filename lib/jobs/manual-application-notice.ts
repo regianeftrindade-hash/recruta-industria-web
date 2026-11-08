@@ -29,3 +29,12 @@ export function manualApplicationMessage(jobId: string | null | undefined): stri
   if (jobId !== MANUAL_APPLICATION_JOB_ID) return null;
   return MANUAL_APPLICATION_MESSAGE;
 }
+
+/** A vaga antiga continua manual. As novas usam a marca salva no cadastro. */
+export function isManualApplicationJob(job: {
+  id?: string | null;
+  manualApplication?: boolean | null;
+} | null | undefined): boolean {
+  if (!job) return false;
+  return job.manualApplication === true || job.id === MANUAL_APPLICATION_JOB_ID;
+}

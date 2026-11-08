@@ -1261,6 +1261,32 @@
   color: #414141;
 }
 
+.manualForm {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 14px;
+  margin-top: 8px;
+}
+
+.manualField,
+.manualWide {
+  display: flex;
+  flex-direction: column;
+}
+
+.manualWide {
+  grid-column: 1 / -1;
+}
+
+.manualCheck {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  font-size: 13px;
+  color: #414141;
+}
+
 .jobCards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));

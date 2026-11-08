@@ -981,6 +981,10 @@ model JobPosting {
   externalApplyUrl         String?
   applicationEmail         String?
   applicationWhatsapp      String?
+  /// Candidatura fica no site e o currículo é enviado pela administração.
+  manualApplication        Boolean   @default(false)
+  manualCareOf             String?
+  manualSubject            String?
   /// DRAFT | PUBLISHED | UNPUBLISHED | CLOSED
   status                   String    @default("DRAFT")
   /// ADMIN = cadastrada pelo Recruta | COMPANY = publicada pela empresa

@@ -4,6 +4,7 @@ let coreSchemaReady = false;
 let lastSeenReady = false;
 let jobWhatsappColumnReady = false;
 let jobFavoritesReady = false;
+let manualApplicationReady = false;
 
 /** Tabela de vagas favoritas do profissional. */
 export async function ensureJobFavoritesTable(): Promise<void> {
@@ -42,6 +43,29 @@ export async function ensureJobApplicationWhatsappColumn(): Promise<void> {
     `ALTER TABLE "job_postings" ADD COLUMN IF NOT EXISTS "applicationWhatsapp" TEXT`,
   );
   jobWhatsappColumnReady = true;
+}
+
+/** Marca vagas cujo currículo a administração envia manualmente. */
+export async function ensureManualApplicationColumns(): Promise<void> {
+  if (manualApplicationReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    manualApplicationReady = true;
+    return;
+  }
+
+  await prisma.$executeRawUnsafe(
+    `ALTER TABLE "job_postings" ADD COLUMN IF NOT EXISTS "manualApplication" BOOLEAN NOT NULL DEFAULT false`,
+  );
+  await prisma.$executeRawUnsafe(
+    `ALTER TABLE "job_postings" ADD COLUMN IF NOT EXISTS "manualCareOf" TEXT`,
+  );
+  await prisma.$executeRawUnsafe(
+    `ALTER TABLE "job_postings" ADD COLUMN IF NOT EXISTS "manualSubject" TEXT`,
+  );
+  await prisma.$executeRawUnsafe(
+    `UPDATE "job_postings" SET "manualApplication" = true WHERE "id" = 'cmluxprod20261102manual1' AND "manualApplication" = false`,
+  );
+  manualApplicationReady = true;
 }
 
 /** Em produção, após `prisma migrate deploy`, use DISABLE_RUNTIME_DDL=true para cortar DDL no request path. */

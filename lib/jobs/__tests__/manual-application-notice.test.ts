@@ -4,6 +4,7 @@ import {
   MANUAL_APPLICATION_JOB_ID,
   MANUAL_APPLICATION_MESSAGE,
   MANUAL_APPLICATION_RESUME_MESSAGE,
+  isManualApplicationJob,
   manualApplicationCareOf,
   manualApplicationMessage,
 } from "@/lib/jobs/manual-application-notice";
@@ -19,6 +20,13 @@ describe("manualApplicationMessage", () => {
     expect(manualApplicationCareOf(MANUAL_APPLICATION_JOB_ID)).toBe(MANUAL_APPLICATION_CARE_OF);
     expect(MANUAL_APPLICATION_CARE_OF).toBe("Maria");
     expect(manualApplicationCareOf("cmvl51soy0004139oj4hijxmw")).toBeNull();
+  });
+
+  it("reconhece a vaga antiga e as vagas marcadas no cadastro", () => {
+    expect(isManualApplicationJob({ id: MANUAL_APPLICATION_JOB_ID })).toBe(true);
+    expect(isManualApplicationJob({ id: "outra", manualApplication: true })).toBe(true);
+    expect(isManualApplicationJob({ id: "outra", manualApplication: false })).toBe(false);
+    expect(isManualApplicationJob(null)).toBe(false);
   });
 
   it("pede cadastro completo e currículo em PDF", () => {
