@@ -1,6 +1,8 @@
 import { formatInTimeZone } from "@/lib/datetime/format-in-zone";
 import { uiIntlLocale } from "@/lib/i18n/format-ui";
+import { resolveLocale, type SupportedLocale } from "@/lib/i18n/locales";
 import { t } from "@/lib/i18n/translate";
+import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
 
 export type ProposalStatus =
   | "SENT"
@@ -172,7 +174,14 @@ export type InterviewComprovanteInput = {
   meetingUrl?: string | null;
   observacoes: string;
   timeZone?: string | null;
+  locale?: string | null;
 };
+
+function presentationLocale(locale: SupportedLocale): string {
+  if (locale === "ar") return "ar-u-nu-latn";
+  if (locale === "hi") return "hi-u-nu-latn";
+  return locale;
+}
 
 function escapePlain(text: string): string {
   return text
@@ -192,43 +201,45 @@ export function formatInterviewComprovante(input: InterviewComprovanteInput): {
 } {
   const when = typeof input.scheduledAt === "string" ? new Date(input.scheduledAt) : input.scheduledAt;
   const zone = input.timeZone || "America/Sao_Paulo";
-  const locale = uiIntlLocale();
-  const dataLabel = formatInTimeZone(when, locale, zone, {
+  const locale = input.locale === undefined ? null : resolveLocale(input.locale);
+  const label = (key: MessageKey) => (locale ? t(key, locale) : t(key));
+  const dateLocale = locale ? presentationLocale(locale) : uiIntlLocale();
+  const dataLabel = formatInTimeZone(when, dateLocale, zone, {
     weekday: "long",
     day: "2-digit",
     month: "long",
     year: "numeric",
   });
-  const horaLabel = formatInTimeZone(when, locale, zone, {
+  const horaLabel = formatInTimeZone(when, dateLocale, zone, {
     hour: "2-digit",
     minute: "2-digit",
   });
   const localLabel =
     input.locationType === "PLATFORM"
-      ? t("fix.proof.platform")
+      ? label("fix.proof.platform")
       : input.locationType === "ONLINE"
-        ? t("fix.proof.online").replace("{detail}", String(input.meetingUrl || "").trim() || t("fix.proof.linkPending"))
-        : t("fix.proof.onsite").replace("{detail}", String(input.address || "").trim() || t("fix.proof.addressPending"));
+        ? label("fix.proof.online").replace("{detail}", String(input.meetingUrl || "").trim() || label("fix.proof.linkPending"))
+        : label("fix.proof.onsite").replace("{detail}", String(input.address || "").trim() || label("fix.proof.addressPending"));
 
   const obs = String(input.observacoes || "").trim();
   const lines = [
-    t("fix.proof.title"),
-    `${t("fix.proof.company")}: ${input.companyName}`,
-    `${t("fix.proof.date")}: ${dataLabel}`,
-    `${t("fix.proof.time")}: ${horaLabel}`,
-    `${t("fix.proof.place")}: ${localLabel}`,
-    ...(obs ? [`${t("fix.proof.notes")}: ${obs}`] : []),
+    label("fix.proof.title"),
+    `${label("fix.proof.company")}: ${input.companyName}`,
+    `${label("fix.proof.date")}: ${dataLabel}`,
+    `${label("fix.proof.time")}: ${horaLabel}`,
+    `${label("fix.proof.place")}: ${localLabel}`,
+    ...(obs ? [`${label("fix.proof.notes")}: ${obs}`] : []),
   ];
 
   const text = lines.join("\n");
   const html = `
     <div style="border:1px solid #c89b3c;border-radius:8px;padding:16px;background:#fffdf6;margin:16px 0;">
-      <p style="margin:0 0 10px;font-weight:700;color:#b8860b;text-transform:uppercase;font-size:13px;">${escapePlain(t("fix.proof.title"))}</p>
-      <p style="margin:0 0 6px;"><strong>${escapePlain(t("fix.proof.company"))}:</strong> ${escapePlain(input.companyName)}</p>
-      <p style="margin:0 0 6px;"><strong>${escapePlain(t("fix.proof.date"))}:</strong> ${escapePlain(dataLabel)}</p>
-      <p style="margin:0 0 6px;"><strong>${escapePlain(t("fix.proof.time"))}:</strong> ${escapePlain(horaLabel)}</p>
-      <p style="margin:0 ${obs ? "0 6px" : "0"};"><strong>${escapePlain(t("fix.proof.place"))}:</strong> ${escapePlain(localLabel)}</p>
-      ${obs ? `<p style="margin:0;"><strong>${escapePlain(t("fix.proof.notes"))}:</strong> ${escapePlain(obs)}</p>` : ""}
+      <p style="margin:0 0 10px;font-weight:700;color:#b8860b;text-transform:uppercase;font-size:13px;">${escapePlain(label("fix.proof.title"))}</p>
+      <p style="margin:0 0 6px;"><strong>${escapePlain(label("fix.proof.company"))}:</strong> ${escapePlain(input.companyName)}</p>
+      <p style="margin:0 0 6px;"><strong>${escapePlain(label("fix.proof.date"))}:</strong> ${escapePlain(dataLabel)}</p>
+      <p style="margin:0 0 6px;"><strong>${escapePlain(label("fix.proof.time"))}:</strong> ${escapePlain(horaLabel)}</p>
+      <p style="margin:0 ${obs ? "0 6px" : "0"};"><strong>${escapePlain(label("fix.proof.place"))}:</strong> ${escapePlain(localLabel)}</p>
+      ${obs ? `<p style="margin:0;"><strong>${escapePlain(label("fix.proof.notes"))}:</strong> ${escapePlain(obs)}</p>` : ""}
     </div>`;
 
   return { text, html, dataLabel, horaLabel, localLabel };

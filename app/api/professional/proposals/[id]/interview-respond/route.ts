@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { resolveAuthEmail } from "@/lib/api-auth";
-import {
-  formatInterviewComprovante,
-  respondToInterview,
-} from "@/lib/company/job-proposals";
+import { respondToInterview } from "@/lib/company/job-proposals";
 import {
   notifyProfessionalAsync,
   notifyInterviewConfirmedToProfessional,
@@ -46,22 +43,20 @@ export async function POST(
       return NextResponse.json({ error: "Entrevista não encontrada" }, { status: 404 });
     }
 
-    const comprovante = formatInterviewComprovante({
-      companyName: proposal.companyName,
+    const interview = {
       scheduledAt: proposal.interview.scheduledAt,
       locationType: proposal.interview.locationType,
       address: proposal.interview.address,
       meetingUrl: proposal.interview.meetingUrl,
       observacoes: proposal.interview.observacoes,
-    });
+    };
 
     if (action === "CONFIRM") {
       notifyProfessionalAsync(() =>
         notifyInterviewConfirmedToProfessional({
           profileId: proposal.profileId,
           companyName: proposal.companyName,
-          comprovanteHtml: comprovante.html,
-          comprovanteText: comprovante.text,
+          interview,
         }),
       );
     }
@@ -69,9 +64,10 @@ export async function POST(
     notifyProfessionalAsync(() =>
       notifyCompanyInterviewResponse({
         companyUserId: proposal.companyUserId,
-        professionalName: user.name || "Profissional",
+        professionalName: user.name?.trim() || "",
         confirmed: action === "CONFIRM",
-        comprovanteText: comprovante.text,
+        companyName: proposal.companyName,
+        interview,
         profileId: proposal.profileId,
         proposalId: proposal.id,
       }),

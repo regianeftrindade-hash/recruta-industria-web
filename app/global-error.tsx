@@ -1,7 +1,9 @@
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { htmlLang, resolveLocale, textDirection, type SupportedLocale, DEFAULT_LOCALE } from "@/lib/i18n/locales";
+import { t } from "@/lib/i18n/translate";
 
 /**
  * Erros fatais do App Router. Com DSN na Vercel, o Sentry recebe o evento.
@@ -14,12 +16,15 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const [locale, setLocale] = useState<SupportedLocale>(DEFAULT_LOCALE);
+
   useEffect(() => {
     Sentry.captureException(error);
+    setLocale(resolveLocale(navigator.language));
   }, [error]);
 
   return (
-    <html lang="pt-BR">
+    <html lang={htmlLang(locale)} dir={textDirection(locale)}>
       <body
         style={{
           margin: 0,
@@ -35,11 +40,10 @@ export default function GlobalError({
       >
         <div style={{ maxWidth: 420, textAlign: "center" }}>
           <h1 style={{ color: "#C89B3C", fontSize: 22, margin: "0 0 12px" }}>
-            Algo deu errado
+            {t("error.global.title", locale)}
           </h1>
           <p style={{ margin: "0 0 20px", fontSize: 14, lineHeight: 1.5, color: "var(--dash-text, #414141)" }}>
-            Não conseguimos carregar esta página. Tente de novo. Se o problema
-            continuar, volte mais tarde ou fale com o suporte.
+            {t("error.global.body", locale)}
           </p>
           <button
             type="button"
@@ -55,7 +59,7 @@ export default function GlobalError({
               cursor: "pointer",
             }}
           >
-            Tentar de novo
+            {t("error.global.retry", locale)}
           </button>
         </div>
       </body>

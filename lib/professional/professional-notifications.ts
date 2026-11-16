@@ -2,46 +2,41 @@ import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { isAnyCompanyAnonymous } from "@/lib/company/company-preferences";
 import { emailHomeUrl } from "@/lib/notifications/email-home-link";
+import { resolveLocale } from "@/lib/i18n/locales";
+import { t } from "@/lib/i18n/translate";
+import {
+  renderFavoriteEmail,
+  renderInterviewCancelledByProfessionalEmail,
+  renderInterviewCancelledEmail,
+  renderInterviewConfirmedEmail,
+  renderInterviewInviteEmail,
+  renderInterviewResponseEmail,
+  renderMessageReceivedEmail,
+  renderMessageReplyEmail,
+  renderProfileViewedEmail,
+  renderTipEmail,
+  type InterviewMailFacts,
+} from "@/lib/professional/activity-email";
+import { renderProposalReceivedEmail, renderProposalResponseEmail } from "@/lib/professional/proposal-email";
 
 function homeLink(): string {
   return emailHomeUrl();
 }
 
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function emailLayout(title: string, bodyHtml: string): string {
-  return `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head><meta charset="utf-8"></head>
-<body style="font-family: Arial, sans-serif; line-height: 1.5; color: #1a1a1a; max-width: 560px; margin: 0 auto; padding: 24px;">
-  <h2 style="color: #b8860b; margin-top: 0;">${escapeHtml(title)}</h2>
-  ${bodyHtml}
-  <p style="margin-top: 24px;">
-    <a href="${homeLink()}" style="display: inline-block; background: #b8860b; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 4px;">
-      Acessar meu painel
-    </a>
-  </p>
-  <p style="font-size: 12px; color: #666; margin-top: 32px;">
-    Recruta Indústria — notificação por atividade no seu perfil profissional.
-  </p>
-</body>
-</html>`;
+function displayName(name: string | null | undefined, locale: string | null | undefined, fallback: "mail.fallback.professional" | "mail.fallback.company"): string {
+  const trimmed = name?.trim();
+  if (trimmed) return trimmed;
+  return t(fallback, resolveLocale(locale));
 }
 
 async function getProfessionalRecipient(profileId: string): Promise<{
   email: string;
   name: string;
+  locale: string | null;
 } | null> {
   const profile = await prisma.profile.findUnique({
     where: { id: profileId },
-    include: { user: { select: { name: true, email: true } } },
+    include: { user: { select: { name: true, email: true, locale: true } } },
   });
 
   if (!profile) return null;
@@ -53,17 +48,18 @@ async function getProfessionalRecipient(profileId: string): Promise<{
 
   return {
     email,
-    name: profile.user.name?.trim() || "Profissional",
+    name: displayName(profile.user.name, profile.user.locale, "mail.fallback.professional"),
+    locale: profile.user.locale,
   };
 }
 
-async function getCompanyDisplayName(companyUserId: string): Promise<string> {
+async function getCompanyDisplayName(companyUserId: string, locale?: string | null): Promise<string> {
   const user = await prisma.user.findUnique({
     where: { id: companyUserId },
     include: { company: { select: { name: true } } },
   });
 
-  return user?.company?.name || user?.name || "Uma empresa";
+  return user?.company?.name?.trim() || user?.name?.trim() || displayName(null, locale, "mail.fallback.company");
 }
 
 /** Dispara e-mail sem bloquear a resposta da API. */
@@ -81,16 +77,16 @@ export function conteudoEmailPerfilVisualizado(input: {
   companyName: string;
   anonymous: boolean;
   homeUrl: string;
+  locale?: string | null;
 }): { subject: string; htmlInner: string; text: string } | null {
   if (input.anonymous) return null;
-  const companyName = input.companyName.trim() || "Uma empresa";
-  return {
-    subject: "Sua empresa interessada visualizou seu perfil — Recruta Indústria",
-    htmlInner: `<p>Olá, <strong>${escapeHtml(input.professionalName)}</strong>!</p>
-       <p>A empresa <strong>${escapeHtml(companyName)}</strong> visualizou seu perfil completo na plataforma.</p>
-       <p>Acesse seu painel para ver mensagens, dicas e outras interações.</p>`,
-    text: `Olá, ${input.professionalName}! A empresa ${companyName} visualizou seu perfil completo. Acesse: ${input.homeUrl}`,
-  };
+  const message = renderProfileViewedEmail({
+    locale: input.locale,
+    recipientName: input.professionalName,
+    companyName: input.companyName,
+    homeUrl: input.homeUrl,
+  });
+  return { subject: message.subject, htmlInner: message.html, text: message.text };
 }
 
 /** Perfil visualizado com acesso completo (desbloqueado). Máx. 1 e-mail por empresa a cada 24h. */
@@ -116,19 +112,20 @@ export async function notifyProfileViewed(
 
   if (recentViews > 1) return;
 
-  const companyName = await getCompanyDisplayName(companyUserId);
+  const companyName = await getCompanyDisplayName(companyUserId, recipient.locale);
   const conteudo = conteudoEmailPerfilVisualizado({
     professionalName: recipient.name,
     companyName,
     anonymous: false,
     homeUrl: homeLink(),
+    locale: recipient.locale,
   });
   if (!conteudo) return;
 
   await sendEmail({
     to: recipient.email,
     subject: conteudo.subject,
-    html: emailLayout("Seu perfil foi visualizado", conteudo.htmlInner),
+    html: conteudo.htmlInner,
     text: conteudo.text,
   });
 }
@@ -142,20 +139,18 @@ export async function notifyTipReceived(
 
   const preview = tipMessage.trim().slice(0, 200);
   const suffix = tipMessage.length > 200 ? "…" : "";
+  const message = renderTipEmail({
+    locale: recipient.locale,
+    recipientName: recipient.name,
+    preview: `${preview}${suffix}`,
+    homeUrl: homeLink(),
+  });
 
   await sendEmail({
     to: recipient.email,
-    subject: "Você recebeu uma nova dica — Recruta Indústria",
-    html: emailLayout(
-      "Nova dica no seu perfil",
-      `<p>Olá, <strong>${escapeHtml(recipient.name)}</strong>!</p>
-       <p>Uma empresa deixou uma dica anônima no seu perfil:</p>
-       <blockquote style="border-left: 4px solid #b8860b; margin: 16px 0; padding: 8px 16px; background: #fafafa;">
-         ${escapeHtml(preview)}${suffix}
-       </blockquote>
-       <p>Veja todas as dicas no seu painel profissional.</p>`,
-    ),
-    text: `Olá, ${recipient.name}! Você recebeu uma dica: "${preview}${suffix}". Acesse: ${homeLink()}`,
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
   });
 }
 
@@ -169,20 +164,19 @@ export async function notifyMessageReceived(
 
   const preview = messageBody.trim().slice(0, 300);
   const suffix = messageBody.length > 300 ? "…" : "";
+  const message = renderMessageReceivedEmail({
+    locale: recipient.locale,
+    recipientName: recipient.name,
+    companyName,
+    preview: `${preview}${suffix}`,
+    homeUrl: homeLink(),
+  });
 
   await sendEmail({
     to: recipient.email,
-    subject: `Nova mensagem de ${companyName} — Recruta Indústria`,
-    html: emailLayout(
-      "Nova mensagem no seu perfil",
-      `<p>Olá, <strong>${escapeHtml(recipient.name)}</strong>!</p>
-       <p><strong>${escapeHtml(companyName)}</strong> enviou uma mensagem:</p>
-       <blockquote style="border-left: 4px solid #b8860b; margin: 16px 0; padding: 8px 16px; background: #fafafa;">
-         ${escapeHtml(preview)}${suffix}
-       </blockquote>
-       <p>Você pode responder pela caixa de mensagens do seu painel.</p>`,
-    ),
-    text: `Olá, ${recipient.name}! ${companyName} enviou: "${preview}${suffix}". Responda no painel: ${homeLink()}`,
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
   });
 }
 
@@ -194,32 +188,25 @@ export async function notifyCompanyMessageReply(params: {
 }): Promise<void> {
   const user = await prisma.user.findUnique({
     where: { id: params.companyUserId },
-    select: { email: true, name: true },
+    select: { email: true, name: true, locale: true },
   });
   if (!user?.email) return;
 
   const preview = params.messageBody.trim().slice(0, 300);
   const suffix = params.messageBody.length > 300 ? "…" : "";
-  const companyDash = homeLink();
+  const message = renderMessageReplyEmail({
+    locale: user.locale,
+    recipientName: user.name?.trim() || "",
+    professionalName: params.professionalName,
+    preview: `${preview}${suffix}`,
+    homeUrl: homeLink(),
+  });
 
   await sendEmail({
     to: user.email,
-    subject: `Resposta de ${params.professionalName} — Recruta Indústria`,
-    html: `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head><meta charset="utf-8"></head>
-<body style="font-family: Arial, sans-serif; line-height: 1.5; color: #1a1a1a; max-width: 560px; margin: 0 auto; padding: 24px;">
-  <h2 style="color: #b8860b; margin-top: 0;">Resposta do profissional</h2>
-  <p>Olá${user.name ? `, <strong>${escapeHtml(user.name)}</strong>` : ""}!</p>
-  <p><strong>${escapeHtml(params.professionalName)}</strong> respondeu sua mensagem:</p>
-  <blockquote style="border-left: 4px solid #b8860b; margin: 16px 0; padding: 8px 16px; background: #fafafa;">
-    ${escapeHtml(preview)}${suffix}
-  </blockquote>
-  <p><a href="${companyDash}" style="display:inline-block;background:#b8860b;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;">Abrir painel da empresa</a></p>
-</body>
-</html>`,
-    text: `${params.professionalName} respondeu: "${preview}${suffix}". Acesse: ${companyDash}`,
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
   });
 }
 
@@ -230,18 +217,19 @@ export async function notifyProfileFavorited(
   const recipient = await getProfessionalRecipient(profileId);
   if (!recipient) return;
 
-  const companyName = await getCompanyDisplayName(companyUserId);
+  const companyName = await getCompanyDisplayName(companyUserId, recipient.locale);
+  const message = renderFavoriteEmail({
+    locale: recipient.locale,
+    recipientName: recipient.name,
+    companyName,
+    homeUrl: homeLink(),
+  });
 
   await sendEmail({
     to: recipient.email,
-    subject: "Seu perfil foi favoritado — Recruta Indústria",
-    html: emailLayout(
-      "Seu perfil foi favoritado",
-      `<p>Olá, <strong>${escapeHtml(recipient.name)}</strong>!</p>
-       <p>A empresa <strong>${escapeHtml(companyName)}</strong> adicionou seu perfil aos favoritos.</p>
-       <p>Isso indica interesse da empresa em você. Acompanhe no seu painel.</p>`,
-    ),
-    text: `Olá, ${recipient.name}! A empresa ${companyName} favoritou seu perfil. Acesse: ${homeLink()}`,
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
   });
 }
 
@@ -256,22 +244,21 @@ export async function notifyProposalReceived(params: {
   const recipient = await getProfessionalRecipient(params.profileId);
   if (!recipient) return;
 
+  const message = renderProposalReceivedEmail({
+    locale: recipient.locale,
+    recipientName: recipient.name,
+    companyName: params.companyName,
+    cargo: params.cargo,
+    salario: params.salario,
+    turno: params.turno,
+    cidade: params.cidade,
+    homeUrl: homeLink(),
+  });
   await sendEmail({
     to: recipient.email,
-    subject: `Nova proposta: ${params.cargo} — Recruta Indústria`,
-    html: emailLayout(
-      "Nova proposta recebida",
-      `<p>Olá, <strong>${escapeHtml(recipient.name)}</strong>!</p>
-       <p>A empresa <strong>${escapeHtml(params.companyName)}</strong> enviou uma proposta:</p>
-       <ul>
-         <li><strong>Cargo:</strong> ${escapeHtml(params.cargo)}</li>
-         <li><strong>Salário:</strong> ${escapeHtml(params.salario.startsWith("R$") ? params.salario : `R$ ${params.salario}`)}</li>
-         <li><strong>Turno:</strong> ${escapeHtml(params.turno)}</li>
-         <li><strong>Cidade:</strong> ${escapeHtml(params.cidade)}</li>
-       </ul>
-       <p>Acesse o painel para responder: Tenho interesse, Quero mais informações ou Não tenho interesse.</p>`,
-    ),
-    text: `Nova proposta de ${params.companyName}: ${params.cargo}, ${params.salario}, ${params.turno}, ${params.cidade}. Acesse: ${homeLink()}`,
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
   });
 }
 
@@ -283,81 +270,70 @@ export async function notifyCompanyProposalResponse(params: {
 }): Promise<void> {
   const user = await prisma.user.findUnique({
     where: { id: params.companyUserId },
-    select: { email: true, name: true },
+    select: { email: true, name: true, locale: true },
   });
   if (!user?.email) return;
 
-  const companyDash = homeLink();
-  const titles = {
-    INTERESTED: "O profissional demonstrou interesse na oportunidade",
-    MORE_INFO: "O profissional pediu mais informações",
-    DECLINED: "O profissional não tem interesse na oportunidade",
-  } as const;
-
+  const message = renderProposalResponseEmail({
+    locale: user.locale,
+    recipientName: user.name?.trim() || "",
+    professionalName: params.professionalName,
+    action: params.action,
+    cargo: params.cargo,
+    homeUrl: homeLink(),
+  });
   await sendEmail({
     to: user.email,
-    subject: `${titles[params.action]} — Recruta Indústria`,
-    html: `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head><meta charset="utf-8"></head>
-<body style="font-family: Arial, sans-serif; line-height: 1.5; color: #1a1a1a; max-width: 560px; margin: 0 auto; padding: 24px;">
-  <h2 style="color: #b8860b; margin-top: 0;">${escapeHtml(titles[params.action])}</h2>
-  <p>Olá${user.name ? `, <strong>${escapeHtml(user.name)}</strong>` : ""}!</p>
-  <p><strong>${escapeHtml(params.professionalName)}</strong> respondeu à proposta de <strong>${escapeHtml(params.cargo)}</strong>.</p>
-  ${params.action === "INTERESTED" ? "<p>Você já pode agendar a entrevista no perfil do candidato.</p>" : ""}
-  ${params.action === "MORE_INFO" ? "<p>Continue a conversa pela caixa de mensagens do perfil.</p>" : ""}
-  <p><a href="${companyDash}" style="display:inline-block;background:#b8860b;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;">Abrir painel da empresa</a></p>
-</body>
-</html>`,
-    text: `${titles[params.action]}. ${params.professionalName} — ${params.cargo}. Acesse: ${companyDash}`,
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
   });
 }
 
 export async function notifyInterviewInvite(params: {
   profileId: string;
   companyName: string;
-  comprovanteHtml: string;
-  comprovanteText: string;
+  interview: InterviewMailFacts;
 }): Promise<void> {
   const recipient = await getProfessionalRecipient(params.profileId);
   if (!recipient) return;
 
+  const message = renderInterviewInviteEmail({
+    locale: recipient.locale,
+    recipientName: recipient.name,
+    companyName: params.companyName,
+    interview: params.interview,
+    homeUrl: homeLink(),
+  });
   await sendEmail({
     to: recipient.email,
-    subject: `Convite de entrevista — ${params.companyName}`,
-    html: emailLayout(
-      "Convite de entrevista",
-      `<p>Olá, <strong>${escapeHtml(recipient.name)}</strong>!</p>
-       <p>A empresa <strong>${escapeHtml(params.companyName)}</strong> agendou uma entrevista. Confira o comprovante:</p>
-       ${params.comprovanteHtml}
-       <p>Acesse o painel para <strong>confirmar</strong> ou <strong>recusar</strong> o convite.</p>`,
-    ),
-    text: `Convite de entrevista de ${params.companyName}.\n\n${params.comprovanteText}\n\nConfirme no painel: ${homeLink()}`,
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
   });
 }
 
-/** Confirmação de retorno ao profissional com o mesmo comprovante. */
+/** Confirmação de retorno ao profissional com o comprovante no idioma da conta. */
 export async function notifyInterviewConfirmedToProfessional(params: {
   profileId: string;
   companyName: string;
-  comprovanteHtml: string;
-  comprovanteText: string;
+  interview: InterviewMailFacts;
 }): Promise<void> {
   const recipient = await getProfessionalRecipient(params.profileId);
   if (!recipient) return;
 
+  const message = renderInterviewConfirmedEmail({
+    locale: recipient.locale,
+    recipientName: recipient.name,
+    companyName: params.companyName,
+    interview: params.interview,
+    homeUrl: homeLink(),
+  });
   await sendEmail({
     to: recipient.email,
-    subject: `Entrevista confirmada — comprovante — ${params.companyName}`,
-    html: emailLayout(
-      "Entrevista confirmada",
-      `<p>Olá, <strong>${escapeHtml(recipient.name)}</strong>!</p>
-       <p>Sua confirmação foi registrada. Guarde este comprovante de agendamento:</p>
-       ${params.comprovanteHtml}
-       <p>Compareça no horário combinado. Em caso de imprevisto, fale com a empresa pelo painel.</p>`,
-    ),
-    text: `Entrevista confirmada com ${params.companyName}.\n\n${params.comprovanteText}\n\nPainel: ${homeLink()}`,
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
   });
 }
 
@@ -370,22 +346,19 @@ export async function notifyInterviewCancelled(params: {
   const recipient = await getProfessionalRecipient(params.profileId);
   if (!recipient) return;
 
-  const who =
-    params.by === "company"
-      ? `A empresa <strong>${escapeHtml(params.companyName)}</strong> cancelou a entrevista.`
-      : `O cancelamento da entrevista com <strong>${escapeHtml(params.companyName)}</strong> foi registrado.`;
-
+  const message = renderInterviewCancelledEmail({
+    locale: recipient.locale,
+    recipientName: recipient.name,
+    companyName: params.companyName,
+    justification: params.justification,
+    by: params.by,
+    homeUrl: homeLink(),
+  });
   await sendEmail({
     to: recipient.email,
-    subject: `Entrevista cancelada — ${params.companyName}`,
-    html: emailLayout(
-      "Entrevista cancelada",
-      `<p>Olá, <strong>${escapeHtml(recipient.name)}</strong>!</p>
-       <p>${who}</p>
-       <p><strong>Justificativa:</strong> ${escapeHtml(params.justification)}</p>
-       <p>Acompanhe o painel para novos convites ou reagendamentos.</p>`,
-    ),
-    text: `Entrevista cancelada (${params.companyName}). Justificativa: ${params.justification}. Painel: ${homeLink()}`,
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
   });
 }
 
@@ -393,7 +366,8 @@ export async function notifyCompanyInterviewResponse(params: {
   companyUserId: string;
   professionalName: string;
   confirmed: boolean;
-  comprovanteText: string;
+  companyName: string;
+  interview: InterviewMailFacts;
   profileId?: string;
   proposalId?: string;
 }): Promise<void> {
@@ -401,17 +375,23 @@ export async function notifyCompanyInterviewResponse(params: {
   const ownerId =
     (await resolveCompanyOwnerUserId(params.companyUserId)) || params.companyUserId;
   const recipientIds = [...new Set([params.companyUserId, ownerId].filter(Boolean))];
-
-  const title = params.confirmed
-    ? "Profissional confirmou a entrevista"
-    : "Profissional recusou a entrevista";
-  const body = params.confirmed
-    ? `${params.professionalName} confirmou a entrevista. Veja em Entrevistas.`
-    : `${params.professionalName} recusou a entrevista.`;
   const href = "/company/dashboard-empresa?tab=entrevistas";
   const companyDash = homeLink();
 
   for (const userId of recipientIds) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, name: true, locale: true },
+    });
+    const message = renderInterviewResponseEmail({
+      locale: user?.locale,
+      professionalName: params.professionalName,
+      confirmed: params.confirmed,
+      interview: params.interview,
+      companyName: params.companyName,
+      homeUrl: companyDash,
+    });
+
     try {
       await prisma.notification.create({
         data: {
@@ -419,8 +399,8 @@ export async function notifyCompanyInterviewResponse(params: {
           type: params.confirmed
             ? "interview_confirmed_by_professional"
             : "interview_declined_by_professional",
-          title,
-          body,
+          title: message.title,
+          body: message.inAppBody,
           href,
           metadata: JSON.stringify({
             profileId: params.profileId || null,
@@ -433,27 +413,13 @@ export async function notifyCompanyInterviewResponse(params: {
       console.warn("[notifyCompanyInterviewResponse] in-app", err);
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { email: true, name: true },
-    });
     if (!user?.email) continue;
 
     await sendEmail({
       to: user.email,
-      subject: `${title} — Recruta Indústria`,
-      html: `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head><meta charset="utf-8"></head>
-<body style="font-family: Arial, sans-serif; line-height: 1.5; color: #1a1a1a; max-width: 560px; margin: 0 auto; padding: 24px;">
-  <h2 style="color: #b8860b; margin-top: 0;">${escapeHtml(title)}</h2>
-  <p><strong>${escapeHtml(params.professionalName)}</strong> ${params.confirmed ? "confirmou" : "recusou"} a entrevista.</p>
-  <pre style="white-space:pre-wrap;background:#fafafa;padding:12px;border-radius:6px;">${escapeHtml(params.comprovanteText)}</pre>
-  <p><a href="${companyDash}" style="display:inline-block;background:#b8860b;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;">Abrir entrevistas no painel</a></p>
-</body>
-</html>`,
-      text: `${title}. ${params.professionalName}.\n\n${params.comprovanteText}\n\n${companyDash}`,
+      subject: message.subject,
+      html: message.html,
+      text: message.text,
     });
   }
 }
@@ -465,25 +431,20 @@ export async function notifyCompanyInterviewCancelledByProfessional(params: {
 }): Promise<void> {
   const user = await prisma.user.findUnique({
     where: { id: params.companyUserId },
-    select: { email: true, name: true },
+    select: { email: true, name: true, locale: true },
   });
   if (!user?.email) return;
 
-  const companyDash = homeLink();
+  const message = renderInterviewCancelledByProfessionalEmail({
+    locale: user.locale,
+    professionalName: params.professionalName,
+    justification: params.justification,
+    homeUrl: homeLink(),
+  });
   await sendEmail({
     to: user.email,
-    subject: `Profissional cancelou a entrevista — Recruta Indústria`,
-    html: `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head><meta charset="utf-8"></head>
-<body style="font-family: Arial, sans-serif; line-height: 1.5; color: #1a1a1a; max-width: 560px; margin: 0 auto; padding: 24px;">
-  <h2 style="color: #b8860b; margin-top: 0;">Entrevista cancelada pelo profissional</h2>
-  <p><strong>${escapeHtml(params.professionalName)}</strong> cancelou a entrevista.</p>
-  <p><strong>Justificativa:</strong> ${escapeHtml(params.justification)}</p>
-  <p><a href="${companyDash}" style="display:inline-block;background:#b8860b;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;">Abrir painel da empresa</a></p>
-</body>
-</html>`,
-    text: `Entrevista cancelada por ${params.professionalName}. Justificativa: ${params.justification}. ${companyDash}`,
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
   });
 }

@@ -313,7 +313,7 @@ export default function CompanyDashboardTabPanel({
     conteudo =
       entrevistas.length === 0 ? (
         <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
-          Quando você agendar entrevistas a partir de propostas, elas aparecerão aqui.
+          {t("surface.dash.company.interviewsEmpty")}
         </p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 12 }}>

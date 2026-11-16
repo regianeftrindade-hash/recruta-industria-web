@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { resolveAuthEmail } from "@/lib/api-auth";
 import {
-  formatInterviewComprovante,
   scheduleInterview,
   type InterviewLocationType,
 } from "@/lib/company/job-proposals";
@@ -77,21 +76,17 @@ export async function POST(
       observacoes,
     });
 
-    const comprovante = formatInterviewComprovante({
-      companyName: proposal.companyName,
-      scheduledAt,
-      locationType,
-      address: proposal.interview?.address,
-      meetingUrl: proposal.interview?.meetingUrl,
-      observacoes,
-    });
-
     notifyProfessionalAsync(() =>
       notifyInterviewInvite({
         profileId: proposal.profileId,
         companyName: proposal.companyName,
-        comprovanteHtml: comprovante.html,
-        comprovanteText: comprovante.text,
+        interview: {
+          scheduledAt,
+          locationType,
+          address: proposal.interview?.address,
+          meetingUrl: proposal.interview?.meetingUrl,
+          observacoes,
+        },
       }),
     );
 
