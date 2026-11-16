@@ -1968,5 +1968,18 @@
   "fix.u.611": "للاشتراك",
   "fix.u.612": "فتح الدفع",
   "fix.u.613": "الرجوع واختيار طريقة أخرى",
-  "fix.u.614": "❌ لم تتم الموافقة على الدفع."
+  "fix.u.614": "❌ لم تتم الموافقة على الدفع.",
+  "surface.jobs.confidentialCompany": "شركة سرية",
+  "surface.jobs.companyFallback": "شركة",
+  "surface.jobs.statusDraft": "مسودة",
+  "surface.jobs.statusPublished": "منشورة",
+  "surface.jobs.statusUnpublished": "أُلغي نشرها",
+  "surface.jobs.statusClosed": "مغلقة",
+  "surface.jobs.originCompany": "نشرتها الشركة",
+  "surface.jobs.originAdmin": "سجّلها المسؤول",
+  "surface.jobs.stageNew": "مرشح جديد",
+  "surface.jobs.stageReview": "قيد المراجعة",
+  "surface.jobs.stageInterview": "مقابلة",
+  "surface.jobs.stageApproved": "مقبول",
+  "surface.jobs.stageRejected": "مرفوض"
 }

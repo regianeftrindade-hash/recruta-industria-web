@@ -1968,5 +1968,18 @@
   "fix.u.611": "सदस्यता का",
   "fix.u.612": "चेकआउट खोलें",
   "fix.u.613": "वापस जाएँ और दूसरी विधि चुनें",
-  "fix.u.614": "❌ भुगतान स्वीकृत नहीं हुआ।"
+  "fix.u.614": "❌ भुगतान स्वीकृत नहीं हुआ।",
+  "surface.jobs.confidentialCompany": "गोपनीय कंपनी",
+  "surface.jobs.companyFallback": "कंपनी",
+  "surface.jobs.statusDraft": "मसौदा",
+  "surface.jobs.statusPublished": "प्रकाशित",
+  "surface.jobs.statusUnpublished": "अप्रकाशित",
+  "surface.jobs.statusClosed": "बंद",
+  "surface.jobs.originCompany": "कंपनी द्वारा प्रकाशित",
+  "surface.jobs.originAdmin": "प्रशासक द्वारा दर्ज",
+  "surface.jobs.stageNew": "नया उम्मीदवार",
+  "surface.jobs.stageReview": "समीक्षा में",
+  "surface.jobs.stageInterview": "साक्षात्कार",
+  "surface.jobs.stageApproved": "स्वीकृत",
+  "surface.jobs.stageRejected": "अस्वीकृत"
 }

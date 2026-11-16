@@ -1968,5 +1968,18 @@
   "fix.u.611": "(구독)",
   "fix.u.612": "결제 페이지 열기",
   "fix.u.613": "돌아가서 다른 수단 선택",
-  "fix.u.614": "❌ 결제가 승인되지 않았습니다."
+  "fix.u.614": "❌ 결제가 승인되지 않았습니다.",
+  "surface.jobs.confidentialCompany": "비공개 회사",
+  "surface.jobs.companyFallback": "회사",
+  "surface.jobs.statusDraft": "초안",
+  "surface.jobs.statusPublished": "게시됨",
+  "surface.jobs.statusUnpublished": "게시 취소",
+  "surface.jobs.statusClosed": "마감",
+  "surface.jobs.originCompany": "기업이 게시",
+  "surface.jobs.originAdmin": "관리자가 등록",
+  "surface.jobs.stageNew": "새 지원자",
+  "surface.jobs.stageReview": "검토 중",
+  "surface.jobs.stageInterview": "면접",
+  "surface.jobs.stageApproved": "승인",
+  "surface.jobs.stageRejected": "불합격"
 }

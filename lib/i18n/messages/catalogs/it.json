@@ -1968,5 +1968,18 @@
   "fix.u.611": "dell'abbonamento",
   "fix.u.612": "Apri checkout",
   "fix.u.613": "Torna indietro e scegli un altro metodo",
-  "fix.u.614": "❌ Pagamento non approvato."
+  "fix.u.614": "❌ Pagamento non approvato.",
+  "surface.jobs.confidentialCompany": "Azienda riservata",
+  "surface.jobs.companyFallback": "Azienda",
+  "surface.jobs.statusDraft": "Bozza",
+  "surface.jobs.statusPublished": "Pubblicata",
+  "surface.jobs.statusUnpublished": "Ritirata",
+  "surface.jobs.statusClosed": "Chiusa",
+  "surface.jobs.originCompany": "Pubblicata dall'azienda",
+  "surface.jobs.originAdmin": "Pubblicata dall'amministratore",
+  "surface.jobs.stageNew": "Nuovo candidato",
+  "surface.jobs.stageReview": "In analisi",
+  "surface.jobs.stageInterview": "Colloquio",
+  "surface.jobs.stageApproved": "Approvato",
+  "surface.jobs.stageRejected": "Respinto"
 }

@@ -1,9 +1,15 @@
 import { describe, expect, it } from "vitest";
+import "@/lib/i18n/active-locale.server";
+import { runWithLocale } from "@/lib/i18n/active-locale";
 import {
   JobPostingError,
   companyCanReadJobApplications,
+  contractLabel,
   formatPublicationDate,
   isProfessionalAccount,
+  jobStatusLabel,
+  publicCompanyLabel,
+  workModeLabel,
   parseApplicationEmail,
   parseApplicationWhatsapp,
   parseExternalApplyUrl,
@@ -338,5 +344,18 @@ describe("publicação de vagas", () => {
   it("não troca a moeda gravada quando a edição não envia o campo", () => {
     expect(currencyPatch({ salary: "3.500,00" }, "USD")).toEqual({});
     expect(currencyPatch({ currency: "eur" }, "EUR")).toEqual({ currency: "EUR" });
+  });
+
+  it("traduz rótulos da vaga e a data conforme o idioma da interface", () => {
+    runWithLocale("en", () => {
+      expect(contractLabel("CLT", null)).toBe("CLT");
+      expect(workModeLabel("PRESENCIAL")).toBe("On-site");
+      expect(workModeLabel("HIBRIDO")).toBe("Hybrid");
+      expect(publicCompanyLabel({ confidential: true, companyName: "Metalúrgica Aurora" })).toBe("Confidential company");
+      expect(jobStatusLabel("PUBLISHED")).toBe("Published");
+      expect(formatPublicationDate(new Date("2026-10-21T00:00:00.000Z"))).toBe("10/21/2026");
+    });
+    expect(contractLabel("ESTAGIO", null)).toBe("Estágio");
+    expect(formatPublicationDate(new Date("2026-10-21T00:00:00.000Z"))).toBe("21/10/2026");
   });
 });

@@ -1968,5 +1968,18 @@
   "fix.u.611": "für das Abonnement",
   "fix.u.612": "Checkout öffnen",
   "fix.u.613": "Zurück und andere Zahlungsart wählen",
-  "fix.u.614": "❌ Zahlung nicht genehmigt."
+  "fix.u.614": "❌ Zahlung nicht genehmigt.",
+  "surface.jobs.confidentialCompany": "Vertrauliches Unternehmen",
+  "surface.jobs.companyFallback": "Unternehmen",
+  "surface.jobs.statusDraft": "Entwurf",
+  "surface.jobs.statusPublished": "Veröffentlicht",
+  "surface.jobs.statusUnpublished": "Zurückgezogen",
+  "surface.jobs.statusClosed": "Geschlossen",
+  "surface.jobs.originCompany": "Vom Unternehmen veröffentlicht",
+  "surface.jobs.originAdmin": "Vom Administrator veröffentlicht",
+  "surface.jobs.stageNew": "Neuer Bewerber",
+  "surface.jobs.stageReview": "In Prüfung",
+  "surface.jobs.stageInterview": "Interview",
+  "surface.jobs.stageApproved": "Genehmigt",
+  "surface.jobs.stageRejected": "Abgelehnt"
 }

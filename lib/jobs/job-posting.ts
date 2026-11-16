@@ -188,21 +188,21 @@ export type JobWriteData = {
   status: JobStatus;
 };
 
-const STATUS_LABELS: Record<JobStatus, string> = {
-  DRAFT: "Rascunho",
-  PUBLISHED: "Publicada",
-  UNPUBLISHED: "Despublicada",
-  CLOSED: "Encerrada",
+const STATUS_KEYS: Record<JobStatus, "surface.jobs.statusDraft" | "surface.jobs.statusPublished" | "surface.jobs.statusUnpublished" | "surface.jobs.statusClosed"> = {
+  DRAFT: "surface.jobs.statusDraft",
+  PUBLISHED: "surface.jobs.statusPublished",
+  UNPUBLISHED: "surface.jobs.statusUnpublished",
+  CLOSED: "surface.jobs.statusClosed",
 };
 
 export function jobStatusLabel(status: string): string {
-  if (isJobStatus(status)) return STATUS_LABELS[status];
+  if (isJobStatus(status)) return t(STATUS_KEYS[status]);
   return status;
 }
 
 export function jobOriginLabel(origin: string): string {
-  if (origin === "COMPANY") return "Publicada pela empresa";
-  return "Cadastrada pelo administrador";
+  if (origin === "COMPANY") return t("surface.jobs.originCompany");
+  return t("surface.jobs.originAdmin");
 }
 
 export function isJobStatus(value: string): value is JobStatus {
@@ -225,8 +225,17 @@ export function parseApplicationStage(value: unknown): ApplicationStage {
   return stage;
 }
 
+const STAGE_KEYS = {
+  NEW: "surface.jobs.stageNew",
+  REVIEW: "surface.jobs.stageReview",
+  INTERVIEW: "surface.jobs.stageInterview",
+  APPROVED: "surface.jobs.stageApproved",
+  REJECTED: "surface.jobs.stageRejected",
+} as const;
+
 export function applicationStageLabel(stage: string): string {
-  return APPLICATION_STAGES.find((item) => item.value === stage)?.label ?? "Novo candidato";
+  if (stage in STAGE_KEYS) return t(STAGE_KEYS[stage as keyof typeof STAGE_KEYS]);
+  return t("surface.jobs.stageNew");
 }
 
 export function parseExternalApplyUrl(value: unknown): string | null {
@@ -350,10 +359,12 @@ export function parsePublicationDate(value: unknown): Date | null {
 
 export function formatPublicationDate(date: Date | null | undefined): string | null {
   if (!date) return null;
-  const day = String(date.getUTCDate()).padStart(2, "0");
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const year = date.getUTCFullYear();
-  return `${day}/${month}/${year}`;
+  return new Intl.DateTimeFormat(uiIntlLocale(), {
+    timeZone: "UTC",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
 }
 
 export function toDateInputValue(date: Date | null | undefined): string {
@@ -476,6 +487,22 @@ export function salaryInputFromCents(cents: number | null): string {
   }).format(cents / 100);
 }
 
+const CONTRACT_KEYS = {
+  CLT: "surface.jobs.clt",
+  PJ: "surface.jobs.pj",
+  ESTAGIO: "surface.jobs.intern",
+  TEMPORARIO: "surface.jobs.temporary",
+  APRENDIZ: "surface.jobs.apprentice",
+  FREELANCER: "surface.jobs.freelancer",
+  OUTRO: "surface.jobs.other",
+} as const;
+
+const WORK_MODE_KEYS = {
+  HOME_OFFICE: "surface.jobs.homeOffice",
+  PRESENCIAL: "surface.jobs.onSite",
+  HIBRIDO: "surface.jobs.hybrid",
+} as const;
+
 export function contractLabel(type: string | null, other: string | null): string | null {
   if (!type) return null;
   if (type === "OUTRO") {
@@ -483,18 +510,19 @@ export function contractLabel(type: string | null, other: string | null): string
     if (!custom || /n[aã]o informad|n[aã]o preenchid/i.test(custom)) return null;
     return custom;
   }
-  return CONTRACT_TYPES.find((item) => item.value === type)?.label ?? null;
+  if (type in CONTRACT_KEYS) return t(CONTRACT_KEYS[type as keyof typeof CONTRACT_KEYS]);
+  return null;
 }
 
 export function workModeLabel(mode: string | null): string | null {
-  if (!mode) return null;
-  return WORK_MODES.find((item) => item.value === mode)?.label ?? null;
+  if (!mode || !(mode in WORK_MODE_KEYS)) return null;
+  return t(WORK_MODE_KEYS[mode as keyof typeof WORK_MODE_KEYS]);
 }
 
 export function publicCompanyLabel(job: { confidential: boolean; companyName: string }): string {
-  if (job.confidential) return "Empresa confidencial";
+  if (job.confidential) return t("surface.jobs.confidentialCompany");
   const name = job.companyName.trim();
-  return name || "Empresa";
+  return name || t("surface.jobs.companyFallback");
 }
 
 export function publicSalaryLabel(job: {
