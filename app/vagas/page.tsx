@@ -16,6 +16,7 @@ import {
   temFiltroDeVaga,
 } from "@/lib/jobs/public-vagas-filtros";
 import { caminhoDeVolta, hrefComVolta } from "@/lib/jobs/job-return-path";
+import { bindLocale } from "@/lib/i18n/active-locale";
 import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
 import { t } from "@/lib/i18n/translate";
 import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
@@ -63,6 +64,7 @@ export default async function VagasPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const locale = await resolveInterfaceLocale();
+  bindLocale(locale);
   const text = (key: MessageKey) => t(key, locale);
   const params = achatarSearchParams(await searchParams);
   const paginaPedida = Math.max(1, Number(params.pagina) || 1);

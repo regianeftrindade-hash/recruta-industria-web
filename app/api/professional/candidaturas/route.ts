@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { resolveAuthEmail } from "@/lib/api-auth";
 import { JobPostingError } from "@/lib/jobs/job-posting";
 import { listOwnJobApplications } from "@/lib/jobs/job-posting-db";
+import { bindJobInterfaceLocale } from "@/lib/jobs/job-locale";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,6 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
+    await bindJobInterfaceLocale();
     const applications = await listOwnJobApplications(auth.email);
     return NextResponse.json({ applications });
   } catch (error) {

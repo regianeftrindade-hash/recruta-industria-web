@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminJob, listAdminJobs } from "@/lib/jobs/job-posting-db";
+import { bindJobInterfaceLocale } from "@/lib/jobs/job-locale";
 import { jsonError, requireAdminUser } from "@/lib/jobs/job-api";
 
 export async function GET(request: NextRequest) {
@@ -7,6 +8,7 @@ export async function GET(request: NextRequest) {
   if (access.denied) return access.denied;
 
   try {
+    await bindJobInterfaceLocale();
     const jobs = await listAdminJobs();
     return NextResponse.json({ jobs });
   } catch (error) {
@@ -21,6 +23,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    await bindJobInterfaceLocale();
     const body = await request.json().catch(() => null);
     const job = await createAdminJob(access.userId, body);
     return NextResponse.json({ job }, { status: 201 });

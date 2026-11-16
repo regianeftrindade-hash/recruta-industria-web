@@ -37,6 +37,14 @@ describe("parseManualJobDraft", () => {
     expect(draft.applicationWhatsapp).toMatch(/^55/);
     expect(draft.deadline).toBe("20/11/2026");
     expect(draft.salaryCents).toBe(250000);
+    expect(draft.currency).toBe("BRL");
+  });
+
+  it("aceita a moeda da vaga e recusa código inválido", () => {
+    const draft = parseManualJobDraft(base({ salary: "3.500,00", currency: "usd" }), agora);
+    expect(draft.currency).toBe("USD");
+    expect(draft.salaryCents).toBe(350000);
+    expect(() => parseManualJobDraft(base({ currency: "real" }), agora)).toThrow(JobPostingError);
   });
 
   it("pede um destino para o currículo", () => {

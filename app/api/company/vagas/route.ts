@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { jsonError } from "@/lib/jobs/job-api";
 import { assertCompanyCanPublish, resolveCompanyPublisher } from "@/lib/jobs/company-publisher";
 import { createCompanyJob, listCompanyJobs } from "@/lib/jobs/job-posting-db";
+import { bindJobInterfaceLocale } from "@/lib/jobs/job-locale";
 
 export async function GET(request: NextRequest) {
   const access = await resolveCompanyPublisher(request);
   if ("error" in access) return access.error;
 
   try {
+    await bindJobInterfaceLocale();
     const jobs = await listCompanyJobs(access.ownerUserId);
     return NextResponse.json({ jobs, companyName: access.companyName });
   } catch (error) {
@@ -20,6 +22,7 @@ export async function POST(request: NextRequest) {
   if ("error" in access) return access.error;
 
   try {
+    await bindJobInterfaceLocale();
     const body = await request.json().catch(() => null);
     const status = body && typeof body === "object" && typeof (body as { status?: unknown }).status === "string"
       ? (body as { status: string }).status

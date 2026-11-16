@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { getPublicJob } from "@/lib/jobs/job-posting-db";
+import { bindJobInterfaceLocale } from "@/lib/jobs/job-locale";
 import { jsonError } from "@/lib/jobs/job-api";
 
 type Context = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, { params }: Context) {
   try {
+    await bindJobInterfaceLocale();
     const { id } = await params;
     const job = await getPublicJob(id);
     if (!job) {

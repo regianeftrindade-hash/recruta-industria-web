@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jsonError } from "@/lib/jobs/job-api";
 import { deleteCompanyJob, updateCompanyJob } from "@/lib/jobs/job-posting-db";
+import { bindJobInterfaceLocale } from "@/lib/jobs/job-locale";
 import { assertCompanyCanPublish, resolveCompanyPublisher } from "@/lib/jobs/company-publisher";
 
 type Context = { params: Promise<{ id: string }> };
@@ -10,6 +11,7 @@ export async function PATCH(request: NextRequest, { params }: Context) {
   if ("error" in access) return access.error;
 
   try {
+    await bindJobInterfaceLocale();
     const { id } = await params;
     const body = await request.json().catch(() => null);
     const status = body && typeof body === "object" && typeof (body as { status?: unknown }).status === "string"

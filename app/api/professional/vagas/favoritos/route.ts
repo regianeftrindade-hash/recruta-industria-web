@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireCurrentProfessional } from "@/lib/professional/current-professional";
 import { JobPostingError } from "@/lib/jobs/job-posting";
 import { isFavoriteJob, listFavoriteJobs, setFavoriteJob } from "@/lib/jobs/job-favorites";
+import { bindJobInterfaceLocale } from "@/lib/jobs/job-locale";
 
 export async function GET(request: NextRequest) {
   const auth = await requireCurrentProfessional(request);
@@ -11,6 +12,7 @@ export async function GET(request: NextRequest) {
     if (jobId) {
       return NextResponse.json({ favorited: await isFavoriteJob(auth.user.id, jobId) });
     }
+    await bindJobInterfaceLocale();
     const jobs = await listFavoriteJobs(auth.user.id);
     return NextResponse.json({ ids: jobs.map((job) => job.id), jobs });
   } catch (error) {

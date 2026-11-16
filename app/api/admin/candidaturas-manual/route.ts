@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createManualAdminJob, listManualJobApplications } from "@/lib/jobs/job-posting-db";
+import { bindJobInterfaceLocale } from "@/lib/jobs/job-locale";
 import { jsonError, requireAdminUser } from "@/lib/jobs/job-api";
 
 export async function GET(request: NextRequest) {
@@ -7,6 +8,7 @@ export async function GET(request: NextRequest) {
   if (access.denied) return access.denied;
 
   try {
+    await bindJobInterfaceLocale();
     const data = await listManualJobApplications();
     return NextResponse.json(data);
   } catch (error) {

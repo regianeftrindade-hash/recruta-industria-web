@@ -33,6 +33,7 @@ describe("busca pública de vagas", () => {
     const where = publicJobWhere(filters);
     expect(JSON.stringify(where)).toContain("Joinville");
     expect(JSON.stringify(where)).toContain('"salaryNegotiable":true');
+    expect(JSON.stringify(where)).not.toContain('"currency"');
     expect(JSON.stringify(where)).not.toContain("applicationEmail");
   });
 
@@ -57,6 +58,7 @@ describe("busca pública de vagas", () => {
     expect(text).toContain("2026-10-06T00:00:00.000Z");
     expect(text).toContain('"gte":100000');
     expect(text).toContain('"lte":200000');
+    expect(text).toContain('"currency":"BRL"');
     expect(text).toContain('"salaryNegotiable":false');
     expect(text).toContain("HOME_OFFICE");
     expect(text).toContain('"confidential":false');
@@ -71,8 +73,41 @@ describe("busca pública de vagas", () => {
   it("aceita só um limite da faixa e não inventa o outro", () => {
     const where = publicJobWhere(parseJobSearch({ minimo: "1500" }));
     const text = JSON.stringify(where);
+    expect(text).toContain('"currency":"BRL"');
     expect(text).toContain('"gte":150000');
     expect(text).not.toContain('"lte"');
     expect(text).toContain('"salaryNegotiable":false');
+  });
+
+  it("não compara salários de moedas diferentes", () => {
+    const reais = publicJobWhere(parseJobSearch({ minimo: "3000", maximo: "3000", moeda: "BRL" }));
+    const dolares = publicJobWhere(parseJobSearch({ minimo: "3000", maximo: "3000", moeda: "usd" }));
+    const euros = publicJobWhere(parseJobSearch({ salario: "informado", moeda: "EUR" }));
+    expect(JSON.stringify(reais)).toContain('"currency":"BRL"');
+    expect(JSON.stringify(dolares)).toContain('"currency":"USD"');
+    expect(JSON.stringify(dolares)).toContain('"gte":300000');
+    expect(JSON.stringify(euros)).toContain('"currency":"EUR"');
+    expect(JSON.stringify(reais)).not.toContain('"currency":"USD"');
+    expect(JSON.stringify(dolares)).not.toContain('"currency":"BRL"');
+  });
+
+  it("mantém a faixa brasileira em BRL quando a moeda é inválida ou ausente", () => {
+    const where = publicJobWhere(parseJobSearch({
+      cidade: "Campinas",
+      estado: "SP",
+      contrato: "CLT",
+      modalidade: "PRESENCIAL",
+      minimo: "1.000",
+      maximo: "2.000",
+      moeda: "dinheiro",
+    }));
+    const text = JSON.stringify(where);
+    expect(text).toContain("Campinas");
+    expect(text).toContain("CLT");
+    expect(text).toContain("PRESENCIAL");
+    expect(text).toContain('"currency":"BRL"');
+    expect(text).toContain('"gte":100000');
+    expect(text).toContain('"lte":200000');
+    expect(parseJobSearch({ salario: "informado" }).salaryCurrency).toBe("BRL");
   });
 });

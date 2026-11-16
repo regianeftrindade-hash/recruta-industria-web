@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { CONTRACT_TYPES, WORK_MODES } from "@/lib/jobs/job-posting";
+import { CONTRACT_TYPES, WORK_MODES, normalizeJobCurrency } from "@/lib/jobs/job-posting";
 
 const CONTRACT_VALUES = new Set<string>(CONTRACT_TYPES.map((item) => item.value));
 const WORK_MODE_VALUES = new Set<string>(WORK_MODES.map((item) => item.value));
@@ -21,6 +21,7 @@ export type JobSearchFilters = {
   city: string;
   state: string;
   salary: SalaryFilter;
+  salaryCurrency: string;
   salaryMinCents: number | null;
   salaryMaxCents: number | null;
   period: PeriodFilter;
@@ -44,7 +45,15 @@ function parseDay(value: string): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-export function parseReaisToCents(value: string): number | null {
+/** Limite de faixa. pt-BR é o padrão. A moeda não altera o número e não faz cotação. */
+export function parseReaisToCents(value: string, currency = "BRL", locale = "pt-BR"): number | null {
+  if (currency.trim().toUpperCase() === "BRL" && locale.trim().toLowerCase().startsWith("pt")) {
+    return parseBrazilianFilterCents(value);
+  }
+  return parseLocalizedFilterCents(value, locale);
+}
+
+function parseBrazilianFilterCents(value: string): number | null {
   const raw = value.trim().replace(/\s/g, "");
   if (!raw) return null;
   let normalized = raw;
@@ -54,6 +63,27 @@ export function parseReaisToCents(value: string): number | null {
     normalized = normalized.replace(",", ".");
   } else if (/^\d{1,3}(\.\d{3})+$/.test(normalized)) {
     normalized = normalized.replace(/\./g, "");
+  }
+  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null;
+  const amount = Number(normalized);
+  if (!Number.isFinite(amount) || amount < 0 || amount > 1_000_000) return null;
+  return Math.round(amount * 100);
+}
+
+function parseLocalizedFilterCents(value: string, locale: string): number | null {
+  const raw = value.trim();
+  if (!raw) return null;
+  const sample = new Intl.NumberFormat(locale).formatToParts(1000.1);
+  const group = sample.find((part) => part.type === "group")?.value ?? "";
+  const decimal = sample.find((part) => part.type === "decimal")?.value ?? ".";
+  let normalized = raw.replace(/[^\d.,\s]/g, "").replace(/\s/g, "");
+  if (decimal && normalized.includes(decimal)) {
+    const splitAt = normalized.lastIndexOf(decimal);
+    const whole = group ? normalized.slice(0, splitAt).split(group).join("") : normalized.slice(0, splitAt);
+    const fraction = normalized.slice(splitAt + decimal.length);
+    normalized = `${whole}.${fraction}`;
+  } else if (group) {
+    normalized = normalized.split(group).join("");
   }
   if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null;
   const amount = Number(normalized);
@@ -93,6 +123,7 @@ export function parseJobSearch(source: URLSearchParams | Record<string, string |
     city: clip(read(source, "cidade"), 80),
     state: clip(read(source, "estado"), 40),
     salary: salaryRaw === "negociavel" || salaryRaw === "informado" ? salaryRaw : "",
+    salaryCurrency: normalizeJobCurrency(read(source, "moeda")),
     salaryMinCents,
     salaryMaxCents,
     period: PERIODS.has(periodRaw) ? periodRaw as PeriodFilter : "",
@@ -132,11 +163,16 @@ export function publicJobWhere(filters: JobSearchFilters, now = new Date()): Pri
   if (filters.state) and.push(stateClause(filters.state));
   if (filters.salary === "negociavel") and.push({ salaryNegotiable: true });
   if (filters.salary === "informado") {
-    and.push({ salaryNegotiable: false, salaryCents: { not: null } });
+    and.push({
+      salaryNegotiable: false,
+      currency: filters.salaryCurrency,
+      salaryCents: { not: null },
+    });
   }
   if (filters.salaryMinCents != null || filters.salaryMaxCents != null) {
     and.push({
       salaryNegotiable: false,
+      currency: filters.salaryCurrency,
       salaryCents: {
         not: null,
         ...(filters.salaryMinCents != null ? { gte: filters.salaryMinCents } : {}),

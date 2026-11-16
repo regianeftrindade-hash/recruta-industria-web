@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { deleteAdminJob, updateAdminJob } from "@/lib/jobs/job-posting-db";
+import { bindJobInterfaceLocale } from "@/lib/jobs/job-locale";
 import { jsonError, requireAdminUser } from "@/lib/jobs/job-api";
 
 type Context = { params: Promise<{ id: string }> };
@@ -9,6 +10,7 @@ export async function PATCH(request: NextRequest, { params }: Context) {
   if (access.denied) return access.denied;
 
   try {
+    await bindJobInterfaceLocale();
     const { id } = await params;
     const body = await request.json().catch(() => null);
     const job = await updateAdminJob(id, body);

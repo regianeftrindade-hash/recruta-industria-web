@@ -21,6 +21,7 @@ import {
   jobStatusLabel,
   parseApplicationStage,
   parseJobWrite,
+  currencyPatch,
   publicCompanyLabel,
   publicSalaryLabel,
   toAdminJob,
@@ -72,6 +73,7 @@ function asRecord(job: JobPosting, applicationCount = 0): JobRecord {
     title: job.title,
     salaryCents: job.salaryCents,
     salaryNegotiable: job.salaryNegotiable,
+    currency: job.currency,
     contractType: job.contractType,
     contractTypeOther: job.contractTypeOther,
     workMode: job.workMode,
@@ -121,11 +123,13 @@ function jobDataForUpdate(
 ) {
   const payload = writeData(data, current);
   if (!input || typeof input !== "object" || Array.isArray(input)) return payload;
-  const { workplace, applicationInstructions, ...rest } = payload;
+  const { workplace, applicationInstructions, currency, ...rest } = payload;
+  const source = input as Record<string, unknown>;
   return {
     ...rest,
-    ...("workplace" in input ? { workplace } : {}),
-    ...("applicationInstructions" in input ? { applicationInstructions } : {}),
+    ...("workplace" in source ? { workplace } : {}),
+    ...("applicationInstructions" in source ? { applicationInstructions } : {}),
+    ...currencyPatch(input, currency),
   };
 }
 
@@ -137,6 +141,7 @@ function writeData(data: JobWriteData, current?: { publishedAt: Date | null; clo
     title: data.title,
     salaryCents: data.salaryCents,
     salaryNegotiable: data.salaryNegotiable,
+    currency: data.currency,
     contractType: data.contractType,
     contractTypeOther: data.contractTypeOther,
     workMode: data.workMode,
@@ -673,6 +678,7 @@ export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard
       publicationDate: true,
       salaryCents: true,
       salaryNegotiable: true,
+      currency: true,
       description: true,
       observations: true,
       applicationInstructions: true,
@@ -774,6 +780,7 @@ export async function createManualAdminJob(createdByUserId: string, input: unkno
       publicationDate: data.publicationDate,
       salaryCents: data.salaryCents,
       salaryNegotiable: data.salaryNegotiable,
+      currency: data.currency,
       workplace: data.workplace,
       description: data.description,
       observations: data.deadline
@@ -850,6 +857,7 @@ export async function listOwnJobApplications(email: string): Promise<OwnJobAppli
           workMode: true,
           salaryCents: true,
           salaryNegotiable: true,
+          currency: true,
         },
       },
     },

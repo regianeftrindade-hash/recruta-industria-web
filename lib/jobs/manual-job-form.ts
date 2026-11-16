@@ -4,6 +4,7 @@ import {
   parseApplicationEmail,
   parseApplicationWhatsapp,
   parsePublicationDate,
+  normalizeJobCurrency,
   parseSalaryToCents,
 } from "@/lib/jobs/job-posting";
 
@@ -15,6 +16,7 @@ export type ManualJobDraft = {
   publicationDate: Date;
   salaryCents: number | null;
   salaryNegotiable: boolean;
+  currency: string;
   applicationEmail: string | null;
   applicationWhatsapp: string | null;
   careOf: string;
@@ -79,7 +81,10 @@ export function parseManualJobDraft(input: unknown, now = new Date()): ManualJob
   if (!publicationDate) throw new JobPostingError("Informe a data da publicação.");
 
   const salaryNegotiable = body.salaryNegotiable === true;
-  const salaryCents = salaryNegotiable ? null : parseSalaryToCents(typeof body.salary === "string" ? body.salary : "");
+  const currency = normalizeJobCurrency(body.currency, "write");
+  const salaryCents = salaryNegotiable
+    ? null
+    : parseSalaryToCents(typeof body.salary === "string" ? body.salary : "", currency, "pt-BR");
   const applicationEmail = parseApplicationEmail(body.applicationEmail);
   const applicationWhatsapp = parseApplicationWhatsapp(body.applicationWhatsapp);
   if (!applicationEmail && !applicationWhatsapp) {
@@ -94,6 +99,7 @@ export function parseManualJobDraft(input: unknown, now = new Date()): ManualJob
     publicationDate,
     salaryCents,
     salaryNegotiable,
+    currency,
     applicationEmail,
     applicationWhatsapp,
     careOf,

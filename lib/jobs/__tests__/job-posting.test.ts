@@ -7,8 +7,11 @@ import {
   parseApplicationEmail,
   parseApplicationWhatsapp,
   parseExternalApplyUrl,
+  currencyPatch,
+  normalizeJobCurrency,
   parseJobWrite,
   parseSalaryToCents,
+  publicSalaryLabel,
   toAdminJob,
   toPublicJob,
   type JobRecord,
@@ -68,10 +71,13 @@ describe("publicação de vagas", () => {
     expect(parseSalaryToCents("3500")).toBe(350000);
     expect(parseSalaryToCents("3.500,50")).toBe(350050);
     expect(parseSalaryToCents("R$ 2.200,00")).toBe(220000);
+    expect(parseSalaryToCents("3,500.50", "USD", "en-US")).toBe(350050);
+    expect(parseSalaryToCents("3.500,50", "USD", "pt-BR")).toBe(350050);
 
     const data = parseJobWrite(baseInput());
     expect(formatPublicationDate(data.publicationDate)).toBe("21/10/2026");
     expect(data.salaryCents).toBe(350000);
+    expect(data.currency).toBe("BRL");
     expect(data.publicationDate?.toISOString()).toBe("2026-10-21T00:00:00.000Z");
 
     const pub = toPublicJob(recordFrom(data));
@@ -132,6 +138,11 @@ describe("publicação de vagas", () => {
     expect(data.salaryCents).toBeNull();
     expect(data.salaryNegotiable).toBe(true);
     expect(toPublicJob(recordFrom(data)).salaryLabel).toBe("A combinar");
+    expect(publicSalaryLabel({
+      salaryNegotiable: true,
+      salaryCents: 999900,
+      currency: "USD",
+    })).toBe("A combinar");
 
     const empty = parseJobWrite(baseInput({ salary: "", salaryNegotiable: true }));
     expect(empty.salaryCents).toBeNull();
@@ -301,5 +312,31 @@ describe("publicação de vagas", () => {
     expect(data.salaryCents).toBeNull();
     expect(toPublicJob(recordFrom(data)).workplace).toBe("Joinville/SC");
     expect(toAdminJob(recordFrom({ ...data, confidential: true })).companyLabel).toBe("Empresa confidencial");
+  });
+
+  it("grava a moeda da vaga sem alterar os centavos", () => {
+    const brl = parseJobWrite(baseInput({ salary: "3.000,00" }));
+    expect(brl.currency).toBe("BRL");
+    expect(brl.salaryCents).toBe(300000);
+
+    const usd = parseJobWrite(baseInput({ salary: "3.500,00", currency: "usd" }));
+    expect(usd.currency).toBe("USD");
+    expect(usd.salaryCents).toBe(350000);
+
+    expect(normalizeJobCurrency(undefined, "write")).toBe("BRL");
+    expect(normalizeJobCurrency("  ", "write")).toBe("BRL");
+    expect(normalizeJobCurrency("real")).toBe("BRL");
+    expect(() => parseJobWrite(baseInput({ currency: "US" }))).toThrow(JobPostingError);
+    expect(() => parseJobWrite(baseInput({ currency: "ZZZ" }))).toThrow(JobPostingError);
+    expect(() => parseJobWrite(baseInput({ currency: "real" }))).toThrow(/moeda válida/i);
+
+    const antigo = recordFrom(brl);
+    delete antigo.currency;
+    expect(publicSalaryLabel(antigo)).toMatch(/R\$\s*3\.000,00/);
+  });
+
+  it("não troca a moeda gravada quando a edição não envia o campo", () => {
+    expect(currencyPatch({ salary: "3.500,00" }, "USD")).toEqual({});
+    expect(currencyPatch({ currency: "eur" }, "EUR")).toEqual({ currency: "EUR" });
   });
 });

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { rankCompatibleJobs, type JobMatchProfile } from "@/lib/jobs/job-match";
 import { parseJobSearch } from "@/lib/jobs/job-search";
 import { searchPublicJobs } from "@/lib/jobs/job-posting-db";
+import { bindJobInterfaceLocale } from "@/lib/jobs/job-locale";
 import { jsonError } from "@/lib/jobs/job-api";
 import { requireCurrentProfessional } from "@/lib/professional/current-professional";
 import { getProfessionalPlanContext } from "@/lib/professional/professional-plan";
@@ -67,6 +68,7 @@ export async function GET(request: NextRequest) {
       cidade: profile?.cidade || "",
       estado: profile?.estado || "",
     };
+    await bindJobInterfaceLocale();
     const jobs = await searchPublicJobs(parseJobSearch(request.nextUrl.searchParams));
     const compatible = rankCompatibleJobs(signals, jobs);
     return NextResponse.json({ jobs: compatible, total: compatible.length, premium: true });

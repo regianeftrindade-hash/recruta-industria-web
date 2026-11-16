@@ -1,5 +1,8 @@
 import { normalizePhoneE164 } from "@/lib/notifications/sanitize";
 import { publicJobCopy, statedJobFact } from "@/lib/jobs/public-job-display";
+import { formatMoney, isIsoCurrency } from "@/lib/money/format-money";
+import { uiIntlLocale } from "@/lib/i18n/format-ui";
+import { t } from "@/lib/i18n/translate";
 
 export const CONTRACT_TYPES = [
   { value: "CLT", label: "CLT" },
@@ -79,6 +82,8 @@ export type JobRecord = {
   title: string;
   salaryCents: number | null;
   salaryNegotiable: boolean;
+  /** ISO 4217. Ausente significa BRL, o padrão da vaga. */
+  currency?: string;
   contractType: string | null;
   contractTypeOther: string | null;
   workMode: string | null;
@@ -168,6 +173,7 @@ export type JobWriteData = {
   title: string;
   salaryCents: number | null;
   salaryNegotiable: boolean;
+  currency: string;
   contractType: ContractType | null;
   contractTypeOther: string | null;
   workMode: WorkMode | null;
@@ -358,7 +364,23 @@ export function toDateInputValue(date: Date | null | undefined): string {
   return `${year}-${month}-${day}`;
 }
 
-export function parseSalaryToCents(value: unknown): number | null {
+function isBrazilianMoneyInput(currency: string, locale: string): boolean {
+  return currency.trim().toUpperCase() === "BRL" && locale.trim().toLowerCase().startsWith("pt");
+}
+
+/** Centavos do texto digitado. BRL e pt-BR seguem o cadastro atual, sem cotação. */
+export function parseSalaryToCents(
+  value: unknown,
+  currency = "BRL",
+  locale = "pt-BR",
+): number | null {
+  if (isBrazilianMoneyInput(currency, locale)) {
+    return parseBrazilianSalaryToCents(value);
+  }
+  return parseLocalizedSalaryToCents(value, locale);
+}
+
+function parseBrazilianSalaryToCents(value: unknown): number | null {
   if (value == null) return null;
   if (typeof value !== "string") {
     throw new JobPostingError("Informe o salário em reais.");
@@ -390,11 +412,60 @@ export function parseSalaryToCents(value: unknown): number | null {
   return Math.round(amount * 100);
 }
 
-export function formatSalaryFromCents(cents: number): string {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(cents / 100);
+function parseLocalizedSalaryToCents(value: unknown, locale: string): number | null {
+  if (value == null) return null;
+  if (typeof value !== "string") {
+    throw new JobPostingError("Informe o salário.");
+  }
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const sample = new Intl.NumberFormat(locale).formatToParts(1000.1);
+  const group = sample.find((part) => part.type === "group")?.value ?? "";
+  const decimal = sample.find((part) => part.type === "decimal")?.value ?? ".";
+  let normalized = trimmed.replace(/[^\d.,\s]/g, "").replace(/\s/g, "");
+  if (decimal && normalized.includes(decimal)) {
+    const splitAt = normalized.lastIndexOf(decimal);
+    const whole = group ? normalized.slice(0, splitAt).split(group).join("") : normalized.slice(0, splitAt);
+    const fraction = normalized.slice(splitAt + decimal.length);
+    normalized = `${whole}.${fraction}`;
+  } else if (group) {
+    normalized = normalized.split(group).join("");
+  }
+
+  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) {
+    throw new JobPostingError("Informe o salário, por exemplo 3500 ou 3.500,00.");
+  }
+  const amount = Number(normalized);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new JobPostingError("O salário precisa ser maior que zero.");
+  }
+  if (amount > 10_000_000) {
+    throw new JobPostingError("O salário informado passou do limite aceito.");
+  }
+  return Math.round(amount * 100);
+}
+
+/** Moeda da vaga. Ausente vira BRL. Código inválido é recusado no cadastro e ignorado na leitura. */
+export function normalizeJobCurrency(value: unknown, mode: "read" | "write" = "read"): string {
+  if (value == null || (typeof value === "string" && !value.trim())) return "BRL";
+  const code = typeof value === "string" ? value.trim().toUpperCase() : "";
+  if (isIsoCurrency(code)) return code;
+  if (mode === "write") {
+    throw new JobPostingError("Informe uma moeda válida, como BRL.");
+  }
+  return "BRL";
+}
+
+/** Atualização que não envia currency conserva a moeda já gravada na vaga. */
+export function currencyPatch(input: unknown, currency: string): { currency?: string } {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return { currency };
+  if (!("currency" in input)) return {};
+  return { currency };
+}
+
+export function formatSalaryFromCents(cents: number, currency = "BRL", locale?: string): string {
+  return formatMoney(cents, normalizeJobCurrency(currency), locale || uiIntlLocale());
 }
 
 export function salaryInputFromCents(cents: number | null): string {
@@ -429,10 +500,11 @@ export function publicCompanyLabel(job: { confidential: boolean; companyName: st
 export function publicSalaryLabel(job: {
   salaryNegotiable: boolean;
   salaryCents: number | null;
+  currency?: string | null;
 }): string | null {
-  if (job.salaryNegotiable) return "A combinar";
+  if (job.salaryNegotiable) return t("surface.jobs.salaryAgree");
   if (job.salaryCents == null) return null;
-  return formatSalaryFromCents(job.salaryCents);
+  return formatSalaryFromCents(job.salaryCents, job.currency || "BRL");
 }
 
 export function toPublicJob(job: JobRecord): PublicJob {
@@ -570,9 +642,14 @@ export function parseJobWrite(input: unknown): JobWriteData {
     throw new JobPostingError("Informe o WhatsApp da empresa para receber as candidaturas.");
   }
 
+  const currency = normalizeJobCurrency(body.currency, "write");
   let salaryCents: number | null = null;
   if (!salaryNegotiable) {
-    salaryCents = parseSalaryToCents(typeof body.salary === "string" ? body.salary : "");
+    salaryCents = parseSalaryToCents(
+      typeof body.salary === "string" ? body.salary : "",
+      currency,
+      "pt-BR",
+    );
   }
 
   if (!title) {
@@ -608,6 +685,7 @@ export function parseJobWrite(input: unknown): JobWriteData {
       title,
       salaryCents,
       salaryNegotiable,
+      currency,
       contractType,
       contractTypeOther: null,
       workMode,
@@ -630,6 +708,7 @@ export function parseJobWrite(input: unknown): JobWriteData {
     title,
     salaryCents,
     salaryNegotiable,
+    currency,
     contractType,
     contractTypeOther,
     workMode,
