@@ -100,9 +100,7 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
   return (
     <section style={{ ...dashCard, padding: 18, minWidth: 0, maxWidth: "100%", boxSizing: "border-box" }}>
       <h3 style={{ ...goldTitle, margin: "0 0 8px", fontSize: 16 }}>📝 Anotações internas</h3>
-      <p style={{ margin: "0 0 10px", fontSize: 11, color: "#000", lineHeight: 1.4 }}>
-        Visível só para a sua empresa. Salve para virar um card. Use Apagar para remover.
-      </p>
+      <p style={{ margin: "0 0 10px", fontSize: 11, color: "#000", lineHeight: 1.4 }}>{exactUi("Visível só para a sua empresa. Salve para virar um card. Use Apagar para remover.")}</p>
       <textarea
         value={notaTexto}
         onChange={(e) => {
@@ -193,9 +191,7 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
                 ...textoAviso,
                 borderColor: "rgba(229,115,115,0.55)",
               }}
-            >
-              Apagar
-            </button>
+            >{exactUi("Apagar")}</button>
           </div>
         ))}
       </div>

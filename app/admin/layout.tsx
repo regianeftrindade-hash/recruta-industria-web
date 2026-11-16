@@ -1,3 +1,4 @@
+import { exactUi } from "@/lib/i18n/exact-ui";
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -44,9 +45,7 @@ export default async function AdminLayout({
                 <span className={styles.liveDot} />
                 Tempo real
               </span>
-              <a href="/api/auth/logout" className={styles.btnGold}>
-                Sair
-              </a>
+              <a href="/api/auth/logout" className={styles.btnGold}>{exactUi("Sair")}</a>
             </div>
           </div>
           <AdminNav />

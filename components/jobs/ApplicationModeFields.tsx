@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import { APPLICATION_MODES, type ApplicationMode } from "@/lib/jobs/job-posting";
 import styles from "@/app/admin/vagas/vagas-admin.module.css";
@@ -40,9 +41,7 @@ export default function ApplicationModeFields({
           ))}
         </div>
         {mode === "INTERNAL" ? (
-          <span className={styles.help}>
-            A candidatura fica registrada no Recruta Indústria. Os outros contatos desta vaga não são exibidos.
-          </span>
+          <span className={styles.help}>{exactUi("A candidatura fica registrada no Recruta Indústria. Os outros contatos desta vaga não são exibidos.")}</span>
         ) : null}
       </fieldset>
 
@@ -57,16 +56,12 @@ export default function ApplicationModeFields({
             maxLength={500}
             placeholder="https://empresa.com.br/vaga"
           />
-          <span className={styles.help}>
-            Obrigatório para publicar. O profissional acessa este endereço para concluir a candidatura. O Recruta Indústria não preenche o site da empresa.
-          </span>
+          <span className={styles.help}>{exactUi("Obrigatório para publicar. O profissional acessa este endereço para concluir a candidatura. O Recruta Indústria não preenche o site da empresa.")}</span>
         </label>
       ) : null}
 
       {mode === "EMAIL" ? (
-        <label className={styles.field}>
-          E-mail para receber os currículos
-          <input
+        <label className={styles.field}>{exactUi("E-mail para receber os currículos")}<input
             type="email"
             inputMode="email"
             autoComplete="off"
@@ -75,16 +70,12 @@ export default function ApplicationModeFields({
             maxLength={254}
             placeholder="recrutamento@empresa.com.br"
           />
-          <span className={styles.help}>
-            Obrigatório para publicar. O endereço não aparece na página pública. O profissional Free copia este e-mail e envia o currículo por conta própria. O Premium envia o currículo automaticamente, sem exibir o endereço.
-          </span>
+          <span className={styles.help}>{exactUi("Obrigatório para publicar. O endereço não aparece na página pública. O profissional Free copia este e-mail e envia o currículo por conta própria. O Premium envia o currículo automaticamente, sem exibir o endereço.")}</span>
         </label>
       ) : null}
 
       {mode === "WHATSAPP" ? (
-        <label className={styles.field}>
-          WhatsApp para receber os currículos
-          <input
+        <label className={styles.field}>{exactUi("WhatsApp para receber os currículos")}<input
             type="tel"
             inputMode="tel"
             autoComplete="off"
@@ -93,9 +84,7 @@ export default function ApplicationModeFields({
             maxLength={40}
             placeholder="(11) 98888-7777"
           />
-          <span className={styles.help}>
-            Obrigatório para publicar. O número não aparece na página pública. Não há envio automático: o profissional copia o número e envia a mensagem por conta própria.
-          </span>
+          <span className={styles.help}>{exactUi("Obrigatório para publicar. O número não aparece na página pública. Não há envio automático: o profissional copia o número e envia a mensagem por conta própria.")}</span>
         </label>
       ) : null}
     </>

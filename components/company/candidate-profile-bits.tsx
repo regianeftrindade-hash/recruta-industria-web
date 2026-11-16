@@ -310,9 +310,7 @@ export function CursoDetalheItem({ curso }: { curso: CursoDetalhado }) {
           target="_blank"
           rel="noopener noreferrer"
           style={{ ...textoDourado, fontSize: 14, textDecoration: "underline", marginTop: 2 }}
-        >
-          Ver anexo
-        </a>
+        >{exactUi("Ver anexo")}</a>
       )}
     </div>
   );
@@ -368,9 +366,7 @@ export function CertificacaoDetalheItem({ cert }: { cert: CertificacaoDetalhada 
           target="_blank"
           rel="noopener noreferrer"
           style={{ ...textoDourado, fontSize: 14, textDecoration: "underline", marginTop: 2 }}
-        >
-          Ver anexo
-        </a>
+        >{exactUi("Ver anexo")}</a>
       )}
     </div>
   );

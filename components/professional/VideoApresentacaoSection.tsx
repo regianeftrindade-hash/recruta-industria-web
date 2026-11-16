@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import SecureVideoPlayer from "@/components/shared/SecureVideoPlayer";
@@ -657,9 +658,7 @@ export default function VideoApresentacaoSection({
                 setMode("idle");
               }}
               style={btnSecondary}
-            >
-              Cancelar
-            </button>
+            >{exactUi("Cancelar")}</button>
           </div>
         </div>
       )}

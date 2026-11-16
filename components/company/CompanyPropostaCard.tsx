@@ -130,9 +130,7 @@ export default function CompanyPropostaCard({
             el?.scrollIntoView({ behavior: "smooth", block: "start" });
           }}
           style={{ ...botaoPerfil, padding: "8px 12px", fontSize: 12, marginBottom: 8 }}
-        >
-          Responder em Mensagens
-        </button>
+        >{exactUi("Responder em Mensagens")}</button>
       )}
       <button
         type="button"
@@ -147,9 +145,7 @@ export default function CompanyPropostaCard({
           ...textoAviso,
           borderColor: "#000",
         }}
-      >
-        Excluir
-      </button>
+      >{exactUi("Excluir")}</button>
       {comprovante && (
         <div
           style={{
@@ -169,9 +165,7 @@ export default function CompanyPropostaCard({
               textTransform: "uppercase",
               letterSpacing: "0.04em",
             }}
-          >
-            Comprovante de agendamento
-          </p>
+          >{exactUi("Comprovante de agendamento")}</p>
           <p style={{ margin: "0 0 4px", fontSize: 12, color: COR_PRETO }}>
             <strong>{exactUi("Empresa:")}</strong> {p.companyName}
           </p>
@@ -199,9 +193,7 @@ export default function CompanyPropostaCard({
               type="button"
               onClick={onStartScheduling}
               style={{ ...botaoPerfil, padding: "8px 12px", fontSize: 12 }}
-            >
-              Agendar Entrevista
-            </button>
+            >{exactUi("Agendar Entrevista")}</button>
           ) : (
             <div style={{ display: "grid", gap: 8 }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
@@ -238,9 +230,7 @@ export default function CompanyPropostaCard({
                 >
                   <option value="ONLINE">{exactUi("Online (Meet / Teams)")}</option>
                   <option value="PRESENTIAL">{exactUi("Presencial")}</option>
-                  <option value="PLATFORM" disabled={!videoEntrevistaLiberada}>
-                    Pela plataforma (vídeo Recruta)
-                  </option>
+                  <option value="PLATFORM" disabled={!videoEntrevistaLiberada}>{exactUi("Pela plataforma (vídeo Recruta)")}</option>
                 </select>
                 {!videoEntrevistaLiberada ? (
                   <p style={{ margin: "6px 0 0", fontSize: 12, color: COR_PRETO, lineHeight: 1.4 }}>
@@ -273,9 +263,7 @@ export default function CompanyPropostaCard({
                   />
                 </div>
               ) : (
-                <p style={{ margin: 0, fontSize: 14, color: COR_PRETO, lineHeight: 1.45 }}>
-                  A entrevista será pela chamada de vídeo da plataforma. Não é necessário link externo.
-                </p>
+                <p style={{ margin: 0, fontSize: 14, color: COR_PRETO, lineHeight: 1.45 }}>{exactUi("A entrevista será pela chamada de vídeo da plataforma. Não é necessário link externo.")}</p>
               )}
               <div>
                 <p style={rotulo}>{exactUi("Observações (opcional)")}</p>
@@ -310,9 +298,7 @@ export default function CompanyPropostaCard({
                     fontSize: 12,
                     cursor: "pointer",
                   }}
-                >
-                  Cancelar
-                </button>
+                >{exactUi("Cancelar")}</button>
               </div>
             </div>
           )}

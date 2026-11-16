@@ -301,9 +301,7 @@ export default function PropostasEntrevistasEmpresa({
         ...textoAviso,
         borderColor: "#000",
       }}
-    >
-      Excluir
-    </button>
+    >{exactUi("Excluir")}</button>
   );
 
   const cardBase: React.CSSProperties = {
@@ -319,9 +317,7 @@ export default function PropostasEntrevistasEmpresa({
   if (!canSend && proposals.length === 0) {
     return (
       <section className="dash-card" style={{ ...dashCard, padding: 18, minWidth: 0, maxWidth: "100%", boxSizing: "border-box" }}>
-        <h3 style={{ ...dashSectionTitle, ...textoDourado, margin: "0 0 12px", fontSize: 16 }}>
-          Propostas e entrevistas
-        </h3>
+        <h3 style={{ ...dashSectionTitle, ...textoDourado, margin: "0 0 12px", fontSize: 16 }}>{exactUi("Propostas e entrevistas")}</h3>
         <p style={{ margin: "0 0 12px", fontSize: 13, color: COR_PRETO, lineHeight: 1.5 }}>
           Para enviar propostas a este profissional, é preciso plano pago (Basic ou superior) e
           verificação da empresa (e-mail corporativo + cartão CNPJ).
@@ -336,9 +332,7 @@ export default function PropostasEntrevistasEmpresa({
               fontSize: 12,
               textDecoration: "none",
             }}
-          >
-            Escolher plano
-          </a>
+          >{exactUi("Escolher plano")}</a>
           <a
             href="/company/register"
             style={{
@@ -350,9 +344,7 @@ export default function PropostasEntrevistasEmpresa({
               borderRadius: 8,
               textDecoration: "none",
             }}
-          >
-            Completar verificação
-          </a>
+          >{exactUi("Completar verificação")}</a>
         </div>
       </section>
     );
@@ -360,9 +352,7 @@ export default function PropostasEntrevistasEmpresa({
 
   return (
     <section className="dash-card" style={{ ...dashCard, padding: 18, minWidth: 0, maxWidth: "100%", boxSizing: "border-box" }}>
-      <h3 style={{ ...dashSectionTitle, ...textoDourado, margin: "0 0 12px", fontSize: 16 }}>
-        Propostas e entrevistas
-      </h3>
+      <h3 style={{ ...dashSectionTitle, ...textoDourado, margin: "0 0 12px", fontSize: 16 }}>{exactUi("Propostas e entrevistas")}</h3>
 
       {feedback && (
         <p
@@ -381,9 +371,7 @@ export default function PropostasEntrevistasEmpresa({
       {canSend && <CompanyEnviarPropostaForm profileId={profileId} onChanged={onChanged} />}
 
       {proposals.length === 0 ? (
-        <p style={{ margin: 0, fontSize: 12, color: COR_PRETO }}>
-          Nenhuma proposta enviada ainda para este profissional.
-        </p>
+        <p style={{ margin: 0, fontSize: 12, color: COR_PRETO }}>{exactUi("Nenhuma proposta enviada ainda para este profissional.")}</p>
       ) : (
         <div style={{ display: "grid", gap: 16 }}>
           <div>
@@ -419,9 +407,7 @@ export default function PropostasEntrevistasEmpresa({
               Entrevistas agendadas ({listas.entrevistas.length})
             </h4>
             {listas.entrevistas.length === 0 ? (
-              <p style={{ margin: 0, fontSize: 12, color: COR_PRETO }}>
-                Nenhuma entrevista agendada. Após o interesse do profissional, use Agendar entrevista na proposta.
-              </p>
+              <p style={{ margin: 0, fontSize: 12, color: COR_PRETO }}>{exactUi("Nenhuma entrevista agendada. Após o interesse do profissional, use Agendar entrevista na proposta.")}</p>
             ) : (
               <div style={{ display: "grid", gap: 12 }}>
                 {listas.entrevistas.map((p) => {

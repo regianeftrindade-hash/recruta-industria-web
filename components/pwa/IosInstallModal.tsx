@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { t } from "@/lib/i18n/translate";
 import styles from "./InstallAppPrompt.module.css";
 
 type Props = {
@@ -26,21 +27,16 @@ export default function IosInstallModal({ onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="ios-install-title" className={styles.modalTitle}>
-          Instalar no iPhone
+          {t("surface.pwa.iosTitle")}
         </h2>
-        <p className={styles.modalText}>
-          A Apple não permite baixar um arquivo de app pelo site. Sem a App Store, o iPhone
-          instala o Recruta pelo Safari — ele abre em tela cheia, com ícone próprio.
-        </p>
+        <p className={styles.modalText}>{t("surface.pwa.iosBody")}</p>
         <ol className={styles.modalSteps}>
-          <li>
-            Toque no ícone <strong>Compartilhar</strong> na barra inferior do Safari
-          </li>
-          <li>Role e escolha <strong>Adicionar à Tela de Início</strong></li>
-          <li>Confirme em <strong>Adicionar</strong></li>
+          <li>{t("surface.pwa.iosShare")}</li>
+          <li>{t("surface.pwa.iosHome")}</li>
+          <li>{t("surface.pwa.iosAdd")}</li>
         </ol>
         <button type="button" className={styles.modalCloseBtn} onClick={onClose}>
-          Entendi
+          {t("surface.pwa.gotIt")}
         </button>
       </div>
     </div>

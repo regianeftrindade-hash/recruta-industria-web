@@ -105,9 +105,7 @@ function LinhaDetalhe({ label, value }: { label: string; value?: string | null }
     <p style={{ margin: "3px 0", fontSize: 12, lineHeight: 1.5, color: DASH.text }}>
       <span style={{ color: DASH.muted, fontWeight: 600 }}>{exactUi(label)}: </span>
       {label === "WhatsApp" && value.startsWith("https://wa.me/") ? (
-        <a href={value} target="_blank" rel="noopener noreferrer">
-          Conversar no WhatsApp
-        </a>
+        <a href={value} target="_blank" rel="noopener noreferrer">{exactUi("Conversar no WhatsApp")}</a>
       ) : (
         value
       )}
@@ -249,9 +247,7 @@ function CardPerfil({
 
       {p.mensagem && p.mensagem !== "—" && (
         <div style={{ gridColumn: isFull ? "1 / -1" : undefined, marginTop: isFull ? 4 : 8 }}>
-          <p style={{ margin: "0 0 6px", color: DASH.muted, fontSize: isFull ? 12 : 11, fontWeight: 700, textTransform: "uppercase" }}>
-            Apresentação para empresas
-          </p>
+          <p style={{ margin: "0 0 6px", color: DASH.muted, fontSize: isFull ? 12 : 11, fontWeight: 700, textTransform: "uppercase" }}>{exactUi("Apresentação para empresas")}</p>
           <p style={{ margin: 0, fontSize: isFull ? 14 : 12, lineHeight: 1.65, color: DASH.text, whiteSpace: "pre-wrap" }}>
             {p.mensagem}
           </p>
@@ -379,9 +375,7 @@ function CardPerfil({
           <SecaoTags titulo="Segmentos" items={p.segmentosIndustria} />
           <SecaoTags titulo="Equipamentos" items={p.maquinasEquipamentos?.slice(0, isFull ? 12 : 3)} />
           {!isFull && (
-            <p style={{ margin: "10px 0 0", fontSize: 11, color: DASH.muted, fontWeight: 600 }}>
-              Clique para ver o perfil e liberar contato →
-            </p>
+            <p style={{ margin: "10px 0 0", fontSize: 11, color: DASH.muted, fontWeight: 600 }}>{exactUi("Clique para ver o perfil e liberar contato →")}</p>
           )}
         </>
       )}
@@ -389,9 +383,7 @@ function CardPerfil({
       {!p.bloqueado && !isFull && (
         <div style={{ marginTop: 10 }}>
           <SecaoTags titulo="Segmentos" items={p.segmentosIndustria?.slice(0, 3)} />
-          <p style={{ margin: "10px 0 0", fontSize: 11, color: DASH.muted, fontWeight: 600 }}>
-            Clique para ver o perfil completo →
-          </p>
+          <p style={{ margin: "10px 0 0", fontSize: 11, color: DASH.muted, fontWeight: 600 }}>{exactUi("Clique para ver o perfil completo →")}</p>
         </div>
       )}
 
@@ -498,9 +490,7 @@ function BarraPaginacaoPerfis({
         disabled={page <= 1 || loading || totalPages <= 1}
         onClick={() => onPage(page - 1)}
         style={btnPagina(false)}
-      >
-        ← Voltar
-      </button>
+      >{exactUi("← Voltar")}</button>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", justifyContent: "center" }}>
         {itens.map((item, index) =>
@@ -528,9 +518,7 @@ function BarraPaginacaoPerfis({
         disabled={page >= totalPages || loading || totalPages <= 1}
         onClick={() => onPage(page + 1)}
         style={btnPagina(false)}
-      >
-        Próximo →
-      </button>
+      >{exactUi("Próximo →")}</button>
 
       <p style={{ width: "100%", margin: "8px 0 0", textAlign: "center", fontSize: 11, color: DASH.muted }}>
         Página {page} de {totalPages}
@@ -599,9 +587,7 @@ export default function CompanyDashboardVitrineSection({
         <div className="ri-dash-vitrine-empty">
           {loadingProfissionais ? (
             <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-              <AmpulhetaLoading compact label="Buscando..." size={16} color={DASH.gold} />
-              Buscando profissionais…
-            </span>
+              <AmpulhetaLoading compact label="Buscando..." size={16} color={DASH.gold} />{exactUi("Buscando profissionais…")}</span>
           ) : buscaRealizada ? (
             <>
               <strong>{t("rest.search.none")}</strong>

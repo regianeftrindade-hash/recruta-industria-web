@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -30,9 +31,7 @@ type PaymentData = {
 export default function PagamentoEmpresaPage() {
   return (
     <Suspense fallback={
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F3E6C8", color: "#414141" }}>
-        Carregando...
-      </div>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F3E6C8", color: "#414141" }}>{exactUi("Carregando...")}</div>
     }>
       <PagamentoEmpresa />
     </Suspense>
@@ -238,9 +237,7 @@ function PagamentoEmpresa() {
 
   if (status === "loading") {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F3E6C8", color: "#414141" }}>
-        Carregando...
-      </div>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F3E6C8", color: "#414141" }}>{exactUi("Carregando...")}</div>
     );
   }
 
@@ -276,7 +273,7 @@ function PagamentoEmpresa() {
             {priceLabel.savings && (
               <p style={{ color: "#8D6B1F", fontSize: 11, margin: "0 0 12px" }}>{priceLabel.savings}</p>
             )}
-            <p style={{ color: "var(--dash-text, #414141)", fontSize: 12, margin: "0 0 16px" }}>Inclui:</p>
+            <p style={{ color: "var(--dash-text, #414141)", fontSize: 12, margin: "0 0 16px" }}>{exactUi("Inclui:")}</p>
             <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, lineHeight: 1.7 }}>
               {planDef.inclui.map((item) => <li key={item}>✅ {item}</li>)}
             </ul>
@@ -293,7 +290,7 @@ function PagamentoEmpresa() {
           <div style={{ background: "#E8D5A3", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
             {!paymentData ? (
               <>
-                <h2 style={{ color: "#C89B3C", margin: "0 0 16px", fontSize: 16 }}>Pagamento</h2>
+                <h2 style={{ color: "#C89B3C", margin: "0 0 16px", fontSize: 16 }}>{exactUi("Pagamento")}</h2>
 
                 <BillingOptions
                   billingPeriod={billingPeriod}
@@ -401,9 +398,7 @@ function PagamentoEmpresa() {
                     type="button"
                     onClick={resetPaymentForm}
                     style={{ ...btnGold, width: "100%", padding: 12, fontSize: 13 }}
-                  >
-                    Voltar e escolher outra forma
-                  </button>
+                  >{exactUi("Voltar e escolher outra forma")}</button>
                 </div>
                 {statusMessage && <p style={{ fontSize: 12, marginTop: 12, color: "#C89B3C", lineHeight: 1.45 }}>{statusMessage}</p>}
               </div>

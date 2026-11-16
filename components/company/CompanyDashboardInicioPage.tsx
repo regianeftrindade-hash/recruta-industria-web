@@ -1,5 +1,6 @@
-/* 🔒 BLOQUEADO (06/07/2026) — não editar sem pedido explícito. Ver .cursor/rules/dashboard-page-lock.mdc */
 "use client";
+/* 🔒 BLOQUEADO (06/07/2026) — não editar sem pedido explícito. Ver .cursor/rules/dashboard-page-lock.mdc */
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -328,7 +329,7 @@ export default function CompanyDashboardInicioPage() {
           <div style={{ padding: "2px 0 6px", minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
           {planFeatures.canViewDashboardStats && dashboardStats && (
             <div>
-              <h3 style={{ ...dashSectionTitle, margin: "0 0 6px", fontSize: 13 }}>Dashboard de recrutamento</h3>
+              <h3 style={{ ...dashSectionTitle, margin: "0 0 6px", fontSize: 13 }}>{exactUi("Dashboard de recrutamento")}</h3>
               <DashboardStatsBar stats={dashboardStats} />
             </div>
           )}
@@ -403,7 +404,7 @@ export default function CompanyDashboardInicioPage() {
             }}
           >
             <span style={{ fontSize: 12, color: DASH.muted }}>
-              {planLoaded ? `Plano ${planTier}` : "Carregando plano…"}
+              {planLoaded ? `Plano ${planTier}` : exactUi("Carregando plano…")}
               {typeof slotsRestantes === "number" ? ` · ${slotsRestantes} liberação(ões) restante(s)` : ""}
             </span>
             <button

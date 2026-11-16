@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { t } from '@/lib/i18n/translate';
 import { generateMathCaptcha } from '@/lib/security';
 import { READABLE_TEXT_STYLE } from '@/lib/theme';
 import styles from './MathCaptcha.module.css';
@@ -26,7 +27,7 @@ export default function MathCaptcha({ onVerify }: MathCaptchaProps) {
   const handleVerify = () => {
     const answer = parseInt(userAnswer, 10);
     if (isNaN(answer)) {
-      setError('Por favor, digite um número válido');
+      setError(t('surface.captcha.invalid'));
       return;
     }
 
@@ -35,7 +36,7 @@ export default function MathCaptcha({ onVerify }: MathCaptchaProps) {
       setError('');
       onVerify(true);
     } else {
-      setError('Resposta incorreta. Tente novamente.');
+      setError(t('surface.captcha.wrong'));
       setIsVerified(false);
       onVerify(false);
       handleRefresh();
@@ -52,7 +53,7 @@ export default function MathCaptcha({ onVerify }: MathCaptchaProps) {
     <div className={styles.wrap} style={READABLE_TEXT_STYLE}>
       <div className={styles.header}>
         <span className={styles.icon} aria-hidden>🤖</span>
-        <h4 className={styles.title}>Verificação de Segurança</h4>
+        <h4 className={styles.title}>{t('surface.captcha.title')}</h4>
       </div>
 
       <div className={styles.questionBox}>
@@ -67,7 +68,7 @@ export default function MathCaptcha({ onVerify }: MathCaptchaProps) {
           onKeyDown={(e) => {
             if (e.key === 'Enter') handleVerify();
           }}
-          placeholder="Sua resposta"
+          placeholder={t('surface.captcha.answer')}
           disabled={isVerified}
           className={`${styles.input} ${error ? styles.inputError : ''} ${isVerified ? styles.inputOk : ''}`}
         />
@@ -86,13 +87,13 @@ export default function MathCaptcha({ onVerify }: MathCaptchaProps) {
               type="button"
               onClick={handleRefresh}
               className={styles.btnRefresh}
-              aria-label="Gerar nova pergunta"
+              aria-label={t('surface.captcha.refresh')}
             >
               🔄
             </button>
           </>
         ) : (
-          <div className={styles.verified}>✓ Verificado</div>
+          <div className={styles.verified}>✓ {t('surface.captcha.verified')}</div>
         )}
       </div>
 

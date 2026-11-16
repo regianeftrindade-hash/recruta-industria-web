@@ -30,9 +30,7 @@ export function PixQrCode({ copyPasteKey, qrCodeDataUrl, expiresAt }: PixQrCodeP
 
   return (
     <div style={{ textAlign: "center" }}>
-      <p style={{ color: "#C89B3C", fontWeight: 700, margin: "0 0 12px", fontSize: 14 }}>
-        Escaneie o QR Code ou copie o código Pix
-      </p>
+      <p style={{ color: "#C89B3C", fontWeight: 700, margin: "0 0 12px", fontSize: 14 }}>{exactUi("Escaneie o QR Code ou copie o código Pix")}</p>
       <img
         src={imgSrc}
         alt={exactUi("QR Code Pix")}

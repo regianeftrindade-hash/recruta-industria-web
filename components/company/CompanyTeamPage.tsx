@@ -315,9 +315,7 @@ export default function CompanyTeamPage() {
                           padding: 0,
                           fontWeight: 700,
                         }}
-                      >
-                        Trocar
-                      </button>
+                      >{exactUi("Trocar")}</button>
                       <button
                         type="button"
                         onClick={() => void handleRevoke(m.id)}
@@ -329,9 +327,7 @@ export default function CompanyTeamPage() {
                           cursor: "pointer",
                           padding: 0,
                         }}
-                      >
-                        Remover
-                      </button>
+                      >{exactUi("Remover")}</button>
                     </div>
                   ) : null}
                 </div>
@@ -395,9 +391,7 @@ export default function CompanyTeamPage() {
             ) : null}
 
             {!isOwner ? (
-              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
-                Somente o Administrador Principal pode adicionar, remover ou trocar usuários.
-              </p>
+              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{exactUi("Somente o Administrador Principal pode adicionar, remover ou trocar usuários.")}</p>
             ) : null}
           </>
         )}
@@ -405,9 +399,7 @@ export default function CompanyTeamPage() {
 
       <section className="dash-card" style={{ ...dashCard, padding: 16, marginTop: 16 }}>
         <h3 style={{ ...dashSectionTitle, margin: "0 0 8px", fontSize: 15 }}>💬 Chat da equipe</h3>
-        <p style={{ margin: "0 0 12px", fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>
-          Converse com colegas da mesma assinatura e veja perfis compartilhados com você.
-        </p>
+        <p style={{ margin: "0 0 12px", fontSize: 12, color: DASH.muted, lineHeight: 1.45 }}>{exactUi("Converse com colegas da mesma assinatura e veja perfis compartilhados com você.")}</p>
         <CompanyChatPanel />
       </section>
     </main>

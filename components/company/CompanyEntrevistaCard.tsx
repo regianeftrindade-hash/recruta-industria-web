@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React from "react";
 import { useRouter } from "next/navigation";
@@ -155,9 +156,7 @@ export default function CompanyEntrevistaCard({
         disabled={busy}
         onClick={onExcluir}
         style={{ ...btnGhost, color: "#e57373", borderColor: "rgba(229,115,115,0.55)" }}
-      >
-        Excluir
-      </button>
+      >{exactUi("Excluir")}</button>
       <div style={{ flex: "1 1 180px", minWidth: 0 }}>
           <p
             style={{
@@ -179,7 +178,7 @@ export default function CompanyEntrevistaCard({
         <p style={{ margin: "2px 0 0", fontSize: 10, color: DASH.text }}>{comprovante.localLabel}</p>
         {p.interview.observacoes?.trim() ? (
           <p style={{ margin: "6px 0 0", fontSize: 11, color: DASH.text, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
-            <strong style={{ color: DASH.gold, fontWeight: 400 }}>Observação:</strong> {p.interview.observacoes.trim()}
+            <strong style={{ color: DASH.gold, fontWeight: 400 }}>{exactUi("Observação:")}</strong> {p.interview.observacoes.trim()}
           </p>
         ) : null}
         <p
@@ -227,33 +226,25 @@ export default function CompanyEntrevistaCard({
           disabled={busy}
           onClick={() => onToggleFunil("emTeste", t.emTeste)}
           style={chip(t.emTeste)}
-        >
-          Em teste
-        </button>
+        >{exactUi("Em teste")}</button>
         <button
           type="button"
           disabled={busy}
           onClick={() => onToggleFunil("contratado", t.contratado)}
           style={chip(t.contratado)}
-        >
-          Contratado
-        </button>
+        >{exactUi("Contratado")}</button>
         <button
           type="button"
           disabled={busy}
           onClick={() => onToggleFunil("naoContratado", t.naoContratado)}
           style={chip(t.naoContratado)}
-        >
-          Não contratado
-        </button>
+        >{exactUi("Não contratado")}</button>
         <button
           type="button"
           disabled={busy}
           onClick={() => (cancelOpen ? onFecharCancelar() : onAbrirCancelar())}
           style={{ ...btnGhost, color: "#e57373", borderColor: "rgba(229,115,115,0.55)" }}
-        >
-          Cancelar
-        </button>
+        >{exactUi("Cancelar")}</button>
         {p.interview.locationType === "PLATFORM" &&
         (p.status === "INTERVIEW_CONFIRMED" || p.status === "INTERVIEW_PENDING") ? (
           <button
@@ -376,7 +367,7 @@ export default function CompanyEntrevistaCard({
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <div>
-              <p style={{ margin: "0 0 4px", fontSize: 10, color: DASH.muted }}>Data</p>
+              <p style={{ margin: "0 0 4px", fontSize: 10, color: DASH.muted }}>{exactUi("Data")}</p>
               <input
                 type="date"
                 value={rescheduleForm.date}
@@ -393,7 +384,7 @@ export default function CompanyEntrevistaCard({
               />
             </div>
             <div>
-              <p style={{ margin: "0 0 4px", fontSize: 10, color: DASH.muted }}>Horário</p>
+              <p style={{ margin: "0 0 4px", fontSize: 10, color: DASH.muted }}>{exactUi("Horário")}</p>
               <input
                 type="time"
                 value={rescheduleForm.time}
@@ -430,11 +421,9 @@ export default function CompanyEntrevistaCard({
                 color: DASH.text,
               }}
             >
-              <option value="PLATFORM" disabled={!videoEntrevistaLiberada}>
-                Pela plataforma (vídeo Recruta)
-              </option>
+              <option value="PLATFORM" disabled={!videoEntrevistaLiberada}>{exactUi("Pela plataforma (vídeo Recruta)")}</option>
               <option value="ONLINE">Online (Meet/Teams)</option>
-              <option value="PRESENTIAL">Presencial</option>
+              <option value="PRESENTIAL">{exactUi("Presencial")}</option>
             </select>
           </div>
           {rescheduleForm.locationType === "ONLINE" && (
@@ -483,7 +472,7 @@ export default function CompanyEntrevistaCard({
           ) : null}
           <textarea
             rows={2}
-            placeholder="Observações (opcional)"
+            placeholder={exactUi("Observações (opcional)")}
             value={rescheduleForm.observacoes}
             onChange={(e) => onSetRescheduleForm((f) => ({ ...f, observacoes: e.target.value }))}
             style={{

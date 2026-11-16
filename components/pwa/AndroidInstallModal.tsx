@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { t } from "@/lib/i18n/translate";
 import styles from "./InstallAppPrompt.module.css";
 
 type Props = {
@@ -27,28 +28,23 @@ export default function AndroidInstallModal({ onClose, apkUrl }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="android-install-title" className={styles.modalTitle}>
-          Instalar o aplicativo Recruta
+          {t("surface.pwa.androidTitle")}
         </h2>
-        <p className={styles.modalText}>
-          Isso coloca o Recruta na <strong>lista de aplicativos</strong> do celular, como um app —
-          não é atalho da tela inicial.
-        </p>
+        <p className={styles.modalText}>{t("surface.pwa.androidBody")}</p>
         <ol className={styles.modalSteps}>
-          <li>Abra este site no <strong>Chrome</strong> (não no Instagram, WhatsApp ou Safari)</li>
-          <li>Toque nos <strong>três pontos</strong> no canto superior direito</li>
-          <li>Toque em <strong>Instalar aplicativo</strong> ou <strong>Instalar app</strong></li>
-          <li>Confirme em <strong>Instalar</strong></li>
+          <li>{t("surface.pwa.androidChrome")}</li>
+          <li>{t("surface.pwa.androidMenu")}</li>
+          <li>{t("surface.pwa.androidInstall")}</li>
+          <li>{t("surface.pwa.androidConfirm")}</li>
         </ol>
-        <p className={styles.modalText} style={{ marginTop: 8 }}>
-          No computador: Chrome mostra um ícone de instalar na barra de endereço.
-        </p>
+        <p className={styles.modalText} style={{ marginTop: 8 }}>{t("surface.pwa.desktop")}</p>
         {apkUrl ? (
           <a className={styles.modalCloseBtn} href={apkUrl} download style={{ display: "block", textAlign: "center", textDecoration: "none", marginBottom: 10 }}>
-            Baixar o arquivo do app (APK)
+            {t("surface.pwa.apk")}
           </a>
         ) : null}
         <button type="button" className={styles.modalCloseBtn} onClick={onClose}>
-          Entendi
+          {t("surface.pwa.gotIt")}
         </button>
       </div>
     </div>

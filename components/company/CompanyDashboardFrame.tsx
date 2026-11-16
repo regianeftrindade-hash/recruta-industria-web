@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -161,14 +162,14 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
             <LogoRecruta size="xs" as="h1" depth />
-            <span className="ri-dash-access-tag">Acesso Empresa</span>
+            <span className="ri-dash-access-tag">{exactUi("Acesso Empresa")}</span>
           </div>
           <div
             className="ri-company-header-actions"
             style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}
           >
             <span className="ri-company-header-meta" style={{ fontSize: 10, ...dashPlanAccent }}>
-              {dash.planReady && dash.planTier ? `Plano ${dash.planTier}` : "Carregando plano…"}
+              {dash.planReady && dash.planTier ? `Plano ${dash.planTier}` : exactUi("Carregando plano…")}
             </span>
             {prefsReady ? (
               <AnonymousModeToggle
@@ -179,9 +180,7 @@ function CompanyDashboardFrameInner({ children: _children }: { children: React.R
             ) : null}
             <DashboardThemeToggle />
             <InstallAppPrompt variant="inline" />
-            <button type="button" onClick={handleLogout} style={{ ...btnGold, padding: "5px 10px", fontSize: 10 }}>
-              Sair
-            </button>
+            <button type="button" onClick={handleLogout} style={{ ...btnGold, padding: "5px 10px", fontSize: 10 }}>{exactUi("Sair")}</button>
           </div>
         </div>
 

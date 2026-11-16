@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React from "react";
 import { botaoPerfil, CLASSE_PERFIL, COR_DOURADO, textoAviso } from "@/lib/ui/perfil-empresa-cores";
@@ -84,9 +85,7 @@ export default function CompanyCandidateProfilePanel({
     return (
       <div className={CLASSE_PERFIL} style={{ padding: "20px 0" }}>
         <p style={{ ...textoAviso, marginBottom: 16 }}>{error || "Perfil não encontrado"}</p>
-        <button type="button" onClick={onBack} style={{ ...botaoPerfil, padding: "8px 16px", fontSize: 13 }}>
-          ← Voltar
-        </button>
+        <button type="button" onClick={onBack} style={{ ...botaoPerfil, padding: "8px 16px", fontSize: 13 }}>{exactUi("← Voltar")}</button>
       </div>
     );
   }

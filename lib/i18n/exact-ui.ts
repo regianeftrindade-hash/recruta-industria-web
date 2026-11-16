@@ -243,8 +243,13 @@ const EXACT: Record<string, MessageKey> = {
   "Buscando...": "fix.u.216",
   "Buscar": "surface.jobs.search",
   "Limpar": "surface.jobs.clear",
+  "Escolaridade (nível)": "registration.ui.escolaridade-nivel",
+  "Disponibilidade para início": "registration.ui.disponibilidade-para-inicio",
+  "Acesso Empresa": "surface.auth.companyAccess",
+  "Acesso Profissional": "surface.auth.proAccess",
   "Filtros avançados": "fix.u.217",
   "Área de interesse": "registration.ui.area-de-interesse",
+  "Área operacional": "registration.ui.area-operacional",
   "Pretensão salarial": "registration.ui.pretensao-salarial",
   "R$ 0,00": "fix.u.218",
   "Trabalhou na indústria?": "registration.ui.trabalhou-na-industria",
@@ -744,8 +749,12 @@ const EXACT: Record<string, MessageKey> = {
   "❌ Pagamento não aprovado.": "fix.u.614",
 };
 
+export function exactMessageKey(value: string): MessageKey | undefined {
+  return EXACT[value];
+}
+
 export function exactUi(value: string): string {
   if (!value) return value;
-  const key = EXACT[value];
+  const key = exactMessageKey(value);
   return key ? t(key) : value;
 }

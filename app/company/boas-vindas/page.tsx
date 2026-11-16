@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -181,16 +182,12 @@ function BoasVindasEmpresaContent() {
             type="button"
             className={styles.secondaryBtn}
             onClick={() => router.push("/company/register")}
-          >
-            Completar verificação
-          </button>
+          >{exactUi("Completar verificação")}</button>
           <button
             type="button"
             className={styles.secondaryBtn}
             onClick={() => router.push("/company/pagamento?plan=BASIC")}
-          >
-            Escolher plano
-          </button>
+          >{exactUi("Escolher plano")}</button>
           <button
             type="button"
             className={styles.primaryBtn}

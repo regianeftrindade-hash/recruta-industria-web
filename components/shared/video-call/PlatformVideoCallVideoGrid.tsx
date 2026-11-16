@@ -87,9 +87,7 @@ export default function PlatformVideoCallVideoGrid({
               padding: "2px 6px",
               borderRadius: 4,
             }}
-          >
-            Você
-          </span>
+          >{exactUi("Você")}</span>
         )}
       </div>
 

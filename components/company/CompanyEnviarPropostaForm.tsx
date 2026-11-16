@@ -1,4 +1,6 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
+import { t } from "@/lib/i18n/translate";
 
 import React, { useState } from "react";
 import { dashInput } from "@/lib/dashboard-theme";
@@ -111,7 +113,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
       {showForm && (
         <div style={{ display: "grid", gap: 10, marginBottom: 14 }}>
           <div>
-            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>Cargo</p>
+            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>{exactUi("Cargo")}</p>
             <input
               value={form.cargo}
               placeholder="Inspetor de Qualidade"
@@ -124,7 +126,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             {fieldHint("cargo")}
           </div>
           <div>
-            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>Salário (R$)</p>
+            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>{t("surface.dash.company.salaryBrl")}</p>
             <input
               value={form.salario}
               placeholder="R$ 4.200"
@@ -138,7 +140,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             {fieldHint("salario")}
           </div>
           <div>
-            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>Turno</p>
+            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>{exactUi("Turno")}</p>
             <select
               value={form.turno}
               onChange={(e) => {
@@ -147,7 +149,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
               }}
               style={inputStyle(Boolean(fieldErrors.turno))}
             >
-              <option value="">Selecione</option>
+              <option value="">{exactUi("Selecione")}</option>
               {TURNOS_PROPOSTA.map((t) => (
                 <option key={t.value} value={t.value}>
                   {t.label}
@@ -157,7 +159,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             {fieldHint("turno")}
           </div>
           <div>
-            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>Cidade</p>
+            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>{exactUi("Cidade")}</p>
             <input
               value={form.cidade}
               placeholder="Campinas/SP"
@@ -170,7 +172,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             {fieldHint("cidade")}
           </div>
           <div>
-            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>Benefícios</p>
+            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>{t("surface.dash.company.benefits")}</p>
             <textarea
               value={form.beneficios}
               placeholder={"Convênio médico\nVA R$ 500\nPLR"}
@@ -180,7 +182,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
             />
           </div>
           <div>
-            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>Mensagem</p>
+            <p style={{ ...textoDourado, fontSize: 14, textTransform: "uppercase", margin: "0 0 4px" }}>{exactUi("Mensagem")}</p>
             <textarea
               value={form.mensagem}
               rows={3}

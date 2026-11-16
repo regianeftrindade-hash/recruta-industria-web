@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -90,7 +91,7 @@ function ConviteForm() {
           </p>
           <form onSubmit={handleSubmit} style={{ display: "grid", gap: 12 }}>
             <label>
-              <span style={{ ...dashLabel, display: "block", marginBottom: 4 }}>E-mail</span>
+              <span style={{ ...dashLabel, display: "block", marginBottom: 4 }}>{exactUi("E-mail")}</span>
               <input value={email} readOnly style={{ ...dashInput, opacity: 0.85 }} />
             </label>
             <label>

@@ -148,9 +148,7 @@ export default function AdminCompaniesPage() {
             <p style={{ margin: '4px 0', fontSize: 13 }}>E-mail corporativo: {company.emailCorporativo || '—'}</p>
             {company.cartaoCnpjUrl && (
               <p style={{ margin: '10px 0 0' }}>
-                <a href={company.cartaoCnpjUrl} target="_blank" rel="noreferrer" style={{ color: '#C89B3C' }}>
-                  Abrir cartão CNPJ
-                </a>
+                <a href={company.cartaoCnpjUrl} target="_blank" rel="noreferrer" style={{ color: '#C89B3C' }}>{exactUi("Abrir cartão CNPJ")}</a>
               </p>
             )}
             {isCompanyVerificationStatus(company.verificationStatus) ? (
@@ -165,25 +163,19 @@ export default function AdminCompaniesPage() {
                 disabled={busyId === company.userId}
                 onClick={() => void review(company.userId, 'verify')}
                 style={{ padding: '8px 14px', background: '#166534', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}
-              >
-                Aprovar e dar selo verificada
-              </button>
+              >{exactUi("Aprovar e dar selo verificada")}</button>
               <button
                 type="button"
                 disabled={busyId === company.userId}
                 onClick={() => void review(company.userId, 'reject')}
                 style={{ padding: '8px 14px', background: '#7f1d1d', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}
-              >
-                Negar
-              </button>
+              >{exactUi("Negar")}</button>
               <button
                 type="button"
                 disabled={busyId === company.userId}
                 onClick={() => void removeCompany(company)}
                 style={{ padding: '8px 14px', background: '#F3E6C8', color: '#414141', border: '2px solid #8D6B1F', borderRadius: 8, cursor: 'pointer', fontWeight: 800 }}
-              >
-                Excluir
-              </button>
+              >{exactUi("Excluir")}</button>
             </div>
           </div>
         ))}

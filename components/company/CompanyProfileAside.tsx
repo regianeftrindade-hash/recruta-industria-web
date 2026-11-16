@@ -80,9 +80,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : (
-            <span style={{ display: "flex", width: "100%", height: "100%", alignItems: "center", justifyContent: "center", color: "#414141", fontSize: 9, fontWeight: 700 }}>
-              Foto
-            </span>
+            <span style={{ display: "flex", width: "100%", height: "100%", alignItems: "center", justifyContent: "center", color: "#414141", fontSize: 9, fontWeight: 700 }}>{exactUi("Foto")}</span>
           )}
         </div>
         <div>
@@ -213,9 +211,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
                     fontWeight: 700,
                     textTransform: "uppercase",
                   }}
-                >
-                  Foto
-                </span>
+                >{exactUi("Foto")}</span>
               )}
             </div>
           </div>
@@ -241,9 +237,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
                 type="button"
                 onClick={() => router.push("/company/register?edit=1")}
                 style={{ ...btnGold, padding: "6px 10px", fontSize: 10, flexShrink: 0 }}
-              >
-                Atualizar cadastro
-              </button>
+              >{exactUi("Atualizar cadastro")}</button>
             ) : null}
             <DeleteAccountControl variant="compact" />
           </div>
@@ -257,12 +251,8 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
               borderRadius: 14,
             }}
           >
-            <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 800, color: "#000", lineHeight: 1.35 }}>
-              Verificação de empresas: proteção para todos
-            </p>
-            <p style={{ margin: 0, fontSize: 12, color: "#414141", lineHeight: 1.5 }}>
-              Golpistas podem utilizar nomes de empresas reais sem autorização para publicar falsas vagas e aplicar golpes. A verificação documental ajuda a proteger os candidatos contra fraudes e as empresas contra o uso indevido de seus nomes e identidades, tornando o Recruta Indústria um ambiente mais seguro e confiável.
-            </p>
+            <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 800, color: "#000", lineHeight: 1.35 }}>{exactUi("Verificação de empresas: proteção para todos")}</p>
+            <p style={{ margin: 0, fontSize: 12, color: "#414141", lineHeight: 1.5 }}>{exactUi("Golpistas podem utilizar nomes de empresas reais sem autorização para publicar falsas vagas e aplicar golpes. A verificação documental ajuda a proteger os candidatos contra fraudes e as empresas contra o uso indevido de seus nomes e identidades, tornando o Recruta Indústria um ambiente mais seguro e confiável.")}</p>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 6 }}>
@@ -292,15 +282,13 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
             >
               <p style={{ ...dashLabel, margin: "0 0 2px", fontSize: 9, textTransform: "uppercase", display: "flex", alignItems: "center", gap: 6 }}>
                 {label === "E-mail corporativo" && companyProfile.emailCorporativoVerificado ? (
-                  <span aria-label="E-mail verificado" style={{ color: "#1b7a32", fontSize: 12, lineHeight: 1 }}>✓</span>
+                  <span aria-label={exactUi("E-mail verificado")} style={{ color: "#1b7a32", fontSize: 12, lineHeight: 1 }}>✓</span>
                 ) : null}
                 {label}
               </p>
               <p style={{ color: DASH.text, margin: 0, fontSize: 11, wordBreak: "break-word" }}>
                 {typeof val === "string" && /^https?:\/\//i.test(val) ? (
-                  <a href={val} target="_blank" rel="noopener noreferrer" style={{ color: "#414141", fontWeight: 700, textDecoration: "underline" }}>
-                    Abrir arquivo
-                  </a>
+                  <a href={val} target="_blank" rel="noopener noreferrer" style={{ color: "#414141", fontWeight: 700, textDecoration: "underline" }}>{exactUi("Abrir arquivo")}</a>
                 ) : (
                   texto || "—"
                 )}

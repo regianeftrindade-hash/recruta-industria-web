@@ -173,18 +173,14 @@ export default function PlatformVideoCall({
     return (
       <div ref={wrapRef} id="chamada-video-profissional">
         <section className="dash-card" style={{ ...dashCard, padding: 14 }}>
-          <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 6px", fontSize: 14, fontWeight: 400 }}>
-            Chamada de vídeo
-          </h3>
+          <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 6px", fontSize: 14, fontWeight: 400 }}>{exactUi("Chamada de vídeo")}</h3>
           {proxima ? (
             <p style={{ margin: "0 0 6px", fontSize: 12, fontWeight: 700, color: DASH.gold, lineHeight: 1.45 }}>
               Entrevista com {proxima.empresa}
               {proxima.quando ? ` · ${proxima.quando}` : ""}
             </p>
           ) : null}
-          <p style={{ margin: "0 0 10px", fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>
-            Quando a empresa ligar, Aceitar e Recusar aparecem neste card. Preparar a câmera deixa você pronto antes do aceite.
-          </p>
+          <p style={{ margin: "0 0 10px", fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>{exactUi("Quando a empresa ligar, Aceitar e Recusar aparecem neste card. Preparar a câmera deixa você pronto antes do aceite.")}</p>
           {preparar ? (
             <div
               style={{
@@ -219,9 +215,7 @@ export default function PlatformVideoCall({
                     textAlign: "center",
                     padding: 8,
                   }}
-                >
-                  Abrindo câmera…
-                </div>
+                >{exactUi("Abrindo câmera…")}</div>
               ) : null}
             </div>
           ) : null}
@@ -405,9 +399,7 @@ export default function PlatformVideoCall({
                   cursor: "pointer",
             width: "100%",
               }}
-            >
-              Encerrar
-            </button>
+            >{exactUi("Encerrar")}</button>
           )}
 
       {!overlayPip && !compact && (

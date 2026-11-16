@@ -198,9 +198,7 @@ export default function CandidaturasManuaisPage() {
           >
             {creating ? exactUi("Fechar cadastro") : exactUi("Cadastrar vaga")}
           </button>
-          <button type="button" className={styles.btnGold} onClick={() => void load()}>
-            Atualizar
-          </button>
+          <button type="button" className={styles.btnGold} onClick={() => void load()}>{exactUi("Atualizar")}</button>
         </div>
       </div>
 
@@ -236,9 +234,7 @@ export default function CandidaturasManuaisPage() {
               <input className={styles.replyInput} value={form.salary} placeholder="2.500,00" disabled={form.salaryNegotiable} onChange={(event) => updateForm("salary", event.target.value)} />
             </label>
             <label className={styles.manualCheck}>
-              <input type="checkbox" checked={form.salaryNegotiable} onChange={(event) => updateForm("salaryNegotiable", event.target.checked)} />
-              A combinar
-            </label>
+              <input type="checkbox" checked={form.salaryNegotiable} onChange={(event) => updateForm("salaryNegotiable", event.target.checked)} />{exactUi("A combinar")}</label>
             <label className={styles.manualField}>
               <span className={styles.replyLabel}>{t("surface.jobs.publishedOn")}</span>
               <input className={styles.replyInput} type="date" value={form.publicationDate} onChange={(event) => updateForm("publicationDate", event.target.value)} />
@@ -333,9 +329,7 @@ export default function CandidaturasManuaisPage() {
               type="button"
               className={styles.btnGhost}
               onClick={() => setOpenId(null)}
-            >
-              Voltar às vagas
-            </button>
+            >{exactUi("Voltar às vagas")}</button>
           </div>
           <section className={styles.jobSection}>
             <h3 className={styles.replyTitle}>{t("rest.admin.description")}</h3>

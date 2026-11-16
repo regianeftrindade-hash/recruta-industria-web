@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -485,8 +486,7 @@ export default function ResumeToolkit({
             <label>{t("surface.jobs.state")}
               <input value={draft.estado} onChange={(event) => setDraft({ ...draft, estado: event.target.value })} />
             </label>
-            <label>CNH
-              <input value={draft.cnh} onChange={(event) => setDraft({ ...draft, cnh: event.target.value })} />
+            <label>{exactUi("CNH")}<input value={draft.cnh} onChange={(event) => setDraft({ ...draft, cnh: event.target.value })} />
             </label>
           </div>
           <label>{t("internal.resume.objective")}

@@ -287,13 +287,9 @@ export default function CompanyCandidateProfileDetails({
             gap: 8,
           }}
         >
-          <span aria-hidden>🧍</span>
-          Sobre mim
-        </h4>
+          <span aria-hidden>🧍</span>{exactUi("Sobre mim")}</h4>
         {resumo.bloqueado ? (
-          <p style={{ margin: 0, fontSize: 13, color: COR_PRETO }}>
-            Libere o contato para ver as informações pessoais do candidato.
-          </p>
+          <p style={{ margin: 0, fontSize: 13, color: COR_PRETO }}>{exactUi("Libere o contato para ver as informações pessoais do candidato.")}</p>
         ) : sobreMimPreenchido && sobreMim ? (
           <PerfilTextoCorrido
             pares={CAMPOS_SOBRE_MIM.map(({ key, label }) => ({
@@ -302,9 +298,7 @@ export default function CompanyCandidateProfileDetails({
             }))}
           />
         ) : (
-          <p style={{ margin: 0, fontSize: 13, color: COR_PRETO }}>
-            O candidato ainda não preencheu esta seção.
-          </p>
+          <p style={{ margin: 0, fontSize: 13, color: COR_PRETO }}>{exactUi("O candidato ainda não preencheu esta seção.")}</p>
         )}
       </section>
 
@@ -338,9 +332,7 @@ export default function CompanyCandidateProfileDetails({
             );
           })()
         ) : (
-          <p style={{ margin: 0, fontSize: 13, color: COR_PRETO }}>
-            O candidato ainda não realizou o teste de perfil pessoal.
-          </p>
+          <p style={{ margin: 0, fontSize: 13, color: COR_PRETO }}>{exactUi("O candidato ainda não realizou o teste de perfil pessoal.")}</p>
         )}
       </section>
 
@@ -355,13 +347,9 @@ export default function CompanyCandidateProfileDetails({
             gap: 8,
           }}
         >
-          <span aria-hidden>📎</span>
-          Currículo e anexos
-        </h4>
+          <span aria-hidden>📎</span>{exactUi("Currículo e anexos")}</h4>
         {resumo.bloqueado ? (
-          <p style={{ margin: 0, fontSize: 13, color: COR_PRETO }}>
-            Libere o contato para acessar currículo, atestados e demais anexos.
-          </p>
+          <p style={{ margin: 0, fontSize: 13, color: COR_PRETO }}>{exactUi("Libere o contato para acessar currículo, atestados e demais anexos.")}</p>
         ) : (
           (() => {
             const docEscolar =

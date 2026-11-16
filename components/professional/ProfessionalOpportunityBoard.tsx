@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useEffect, useMemo, useState } from "react";
 import { DASH, dashCard, dashInnerBox, dashSectionTitle } from "@/lib/dashboard-theme";
@@ -553,9 +554,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
             padding: "4px 8px",
             fontSize: 10,
           }}
-        >
-          Excluir
-        </button>
+        >{exactUi("Excluir")}</button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <p
             style={{

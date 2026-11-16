@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { t } from "@/lib/i18n/translate";
 import { botaoPerfil, textoAviso, textoDourado } from "@/lib/ui/perfil-empresa-cores";
 import { dashCard, dashInput } from "@/lib/dashboard-theme";
 import { goldTitle } from "@/components/company/candidate-profile-bits";
@@ -60,7 +61,7 @@ export default function CompanyCandidateTalentBankCard({
           >
             {talentLists.length === 0 ? (
               <option value="" disabled>
-                Nenhuma lista criada ainda
+                {t("surface.dash.company.noListYet")}
               </option>
             ) : (
               talentLists.map((l) => (

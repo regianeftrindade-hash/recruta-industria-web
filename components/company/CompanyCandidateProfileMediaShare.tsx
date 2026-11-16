@@ -1,4 +1,6 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
+import { t } from "@/lib/i18n/translate";
 
 import React, { useEffect, useState } from "react";
 import { botaoPerfil, textoAviso, textoDourado, textoPreto } from "@/lib/ui/perfil-empresa-cores";
@@ -114,9 +116,7 @@ export default function CompanyCandidateProfileMediaShare({
                 padding: "4px 8px",
                 background: "transparent",
               }}
-            >
-              Vídeo de apresentação
-            </p>
+            >{exactUi("Vídeo de apresentação")}</p>
           </div>
         ) : !bloqueado ? (
           <div
@@ -143,7 +143,7 @@ export default function CompanyCandidateProfileMediaShare({
           <PlatformVideoCall
             role="company"
             profileId={profileId}
-            title="Chamada de vídeo"
+            title={exactUi("Chamada de vídeo")}
             compact
             peerLabel={nome.split(" ")[0] || "candidato"}
             autoChamar={autoChamar}
@@ -159,9 +159,7 @@ export default function CompanyCandidateProfileMediaShare({
               gap: 8,
             }}
           >
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, ...textoDourado }}>
-              Chamada de vídeo
-            </p>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, ...textoDourado }}>{exactUi("Chamada de vídeo")}</p>
             <p style={{ margin: 0, fontSize: 13, color: "#000", lineHeight: 1.45 }}>
               {VIDEO_INTERVIEW_PAID_ONLY}
             </p>
@@ -209,7 +207,7 @@ export default function CompanyCandidateProfileMediaShare({
                 compartilhados.
               </p>
               {loadingShareMembers ? (
-                <p style={{ margin: 0, fontSize: 12, color: "#000" }}>Buscando equipe...</p>
+                <p style={{ margin: 0, fontSize: 12, color: "#000" }}>{t("surface.dash.company.searchingTeam")}</p>
               ) : shareMembers.length === 0 ? (
                 <p style={{ margin: 0, fontSize: 12, color: "#000" }}>
                   Nenhuma outra pessoa no mesmo plano. Cadastre usuários na aba Equipe.

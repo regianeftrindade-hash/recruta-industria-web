@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React from "react";
 import Link from "next/link";
@@ -178,9 +179,7 @@ export default function CompanyCandidateProfileHeader({
                   fontSize: 13,
                   textDecoration: "none",
                 }}
-              >
-                Completar verificação
-              </Link>
+              >{exactUi("Completar verificação")}</Link>
             ) : canUnlock ? (
               <button
                 type="button"

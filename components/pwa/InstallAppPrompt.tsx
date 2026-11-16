@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/lib/i18n/translate";
 import { useInstallPrompt } from "./InstallPromptProvider";
 import styles from "./InstallAppPrompt.module.css";
 
@@ -29,14 +30,10 @@ export default function InstallAppPrompt({ variant = "banner", className }: Prop
         type="button"
         className={`${styles.installBtnInline} ${className ?? ""}`}
         onClick={handleClick}
-        title={
-          isIos
-            ? "Instalar o Recruta no iPhone"
-            : "Baixar o aplicativo Recruta no celular"
-        }
-        aria-label="Baixar aplicativo"
+        title={isIos ? t("surface.pwa.titleIos") : t("surface.pwa.titleAndroid")}
+        aria-label={t("surface.pwa.download")}
       >
-        Baixar app
+        {t("surface.pwa.downloadShort")}
       </button>
     );
   }
@@ -44,9 +41,9 @@ export default function InstallAppPrompt({ variant = "banner", className }: Prop
   if (variant === "footer") {
     return (
       <div className={`${styles.footerWrap} ${className ?? ""}`}>
-        <p className={styles.footerText}>Tenha o Recruta Indústria sempre à mão no seu dispositivo.</p>
+        <p className={styles.footerText}>{t("surface.pwa.footer")}</p>
         <button type="button" className={`${styles.installBtn} ${styles.installBtnCompact}`} onClick={handleClick}>
-          Baixar aplicativo
+          {t("surface.pwa.download")}
         </button>
       </div>
     );
@@ -55,13 +52,13 @@ export default function InstallAppPrompt({ variant = "banner", className }: Prop
   if (variant === "menu") {
     return (
       <div className={`${styles.menuCard} ${className ?? ""}`}>
-        <p className={styles.menuTitle}>Instalar aplicativo</p>
+        <p className={styles.menuTitle}>{t("surface.pwa.menuTitle")}</p>
         <p className={styles.menuText}>
-          Instala o Recruta na lista de aplicativos do celular, com ícone próprio.
-          {isIos ? " No iPhone, a Apple instala pelo Safari até o app estar na App Store." : ""}
+          {t("surface.pwa.menuBody")}
+          {isIos ? ` ${t("surface.pwa.menuIos")}` : ""}
         </p>
         <button type="button" className={`${styles.installBtn} ${styles.installBtnCompact}`} onClick={handleClick}>
-          Baixar aplicativo
+          {t("surface.pwa.download")}
         </button>
       </div>
     );
@@ -69,23 +66,19 @@ export default function InstallAppPrompt({ variant = "banner", className }: Prop
 
   return (
     <section className={`${styles.banner} ${className ?? ""}`} aria-labelledby="install-app-title">
-      <p className={styles.bannerKicker}>Instalar Recruta Indústria</p>
+      <p className={styles.bannerKicker}>{t("surface.pwa.kicker")}</p>
       <h2 id="install-app-title" className={styles.bannerTitle}>
-        Tenha o Recruta Indústria sempre à mão
+        {t("surface.pwa.headline")}
       </h2>
-      <p className={styles.bannerText}>
-        Instale o aplicativo e acesse seu perfil, mensagens e oportunidades com mais rapidez.
-      </p>
+      <p className={styles.bannerText}>{t("surface.pwa.banner")}</p>
       <button type="button" className={styles.installBtn} onClick={handleClick}>
-        Baixar aplicativo
+        {t("surface.pwa.download")}
       </button>
       <p className={styles.bannerHint}>
-        {isIos
-          ? "No iPhone a Apple não deixa baixar um arquivo de app pelo site. O Recruta abre como aplicativo pelo Safari."
-          : "No Android, o Chrome instala o Recruta na lista de aplicativos (não é atalho)."}
+        {isIos ? t("surface.pwa.hintIos") : t("surface.pwa.hintAndroid")}
         {" "}
         <a href="/baixar-app" className={styles.guideLink}>
-          Ver guia completo
+          {t("surface.pwa.guide")}
         </a>
       </p>
     </section>

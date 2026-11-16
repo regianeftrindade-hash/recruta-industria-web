@@ -137,9 +137,7 @@ export default function CompanyCandidateTipsCard({
                   fontFamily: "inherit",
                 }}
                 title={exactUi("Excluir dica")}
-              >
-                Excluir
-              </button>
+              >{exactUi("Excluir")}</button>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ margin: "0 0 4px", fontSize: 13, lineHeight: 1.5, color: "#000" }}>{tip.message}</p>
                 <p style={{ margin: 0, fontSize: 11, color: "#000" }}>{formatUiDateTime(tip.createdAt)}</p>

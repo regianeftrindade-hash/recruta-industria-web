@@ -111,9 +111,7 @@ export function CompanyRecrutaContactBox({ unlocked = false }: Props) {
                 fontSize: 11,
                 cursor: "pointer",
               }}
-            >
-              Ver planos pagos
-            </button>
+            >{exactUi("Ver planos pagos")}</button>
           </>
         ) : (
           <>

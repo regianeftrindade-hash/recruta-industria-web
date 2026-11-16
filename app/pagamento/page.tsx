@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -151,7 +152,7 @@ export default function Pagamento() {
       <div style={{ position: "relative", minHeight: "100vh", background: COLORS.preto, padding: "30px", color: COLORS.branco, overflow: "hidden" }}>
         <AuthAtmosphere />
         <div style={{ position: "relative", zIndex: 1, maxWidth: 560, margin: "80px auto", background: "#E8D5A3", borderRadius: 16, padding: 28, border: "2px solid #8D6B1F", textAlign: "center" }}>
-          <h1 style={{ margin: "0 0 12px", fontSize: 24, color: COLORS.dourado }}>Plano profissional</h1>
+          <h1 style={{ margin: "0 0 12px", fontSize: 24, color: COLORS.dourado }}>{exactUi("Plano profissional")}</h1>
           <p style={{ margin: "0 0 18px", lineHeight: 1.5 }}>
             {offering === null
               ? "Carregando..."
@@ -177,7 +178,7 @@ export default function Pagamento() {
             <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "16px" }}>
             <span style={{ fontSize: "18px", color: COLORS.textoSuave }}>R$</span>
             <span style={{ fontSize: "48px", fontWeight: 900, color: COLORS.branco }}>19,90</span>
-            <span style={{ fontSize: "16px", color: COLORS.textoSuave }}>/mês</span>
+            <span style={{ fontSize: "16px", color: COLORS.textoSuave }}>{exactUi("/mês")}</span>
           </div>
 
           <div style={{ display: "grid", gap: "10px", marginBottom: "22px" }}>
@@ -206,7 +207,7 @@ export default function Pagamento() {
         </div>
 
         <div style={{ background: "#E8D5A3", borderRadius: "16px", padding: "24px", boxShadow: "0 16px 40px rgba(0,0,0,0.45)", border: "1px solid rgba(200,155,60,0.7)" }}>
-          <h2 style={{ margin: "0 0 12px 0", color: COLORS.dourado, fontSize: "20px" }}>Pagamento</h2>
+          <h2 style={{ margin: "0 0 12px 0", color: COLORS.dourado, fontSize: "20px" }}>{exactUi("Pagamento")}</h2>
           <p style={{ margin: "0 0 18px 0", color: "rgba(242,242,242,0.82)", fontSize: "14px" }}>Escolha o método e conclua a assinatura Premium.</p>
 
           <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
@@ -238,11 +239,11 @@ export default function Pagamento() {
           ) : (
             <div style={{ display: "grid", gap: "12px" }}>
               <div>
-                <label htmlFor="nome" style={{ display: "block", fontWeight: 700, marginBottom: "6px", color: COLORS.dourado }}>Nome completo</label>
+                <label htmlFor="nome" style={{ display: "block", fontWeight: 700, marginBottom: "6px", color: COLORS.dourado }}>{exactUi("Nome completo")}</label>
                 <input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} required style={{ width: "100%", padding: "12px", borderRadius: "10px", border: `2px solid ${COLORS.douradoEscuro}`, fontSize: "14px", background: COLORS.preto, color: COLORS.branco }} />
               </div>
               <div>
-                <label htmlFor="email" style={{ display: "block", fontWeight: 700, marginBottom: "6px", color: COLORS.dourado }}>E-mail</label>
+                <label htmlFor="email" style={{ display: "block", fontWeight: 700, marginBottom: "6px", color: COLORS.dourado }}>{exactUi("E-mail")}</label>
                 <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ width: "100%", padding: "12px", borderRadius: "10px", border: `2px solid ${COLORS.douradoEscuro}`, fontSize: "14px", background: COLORS.preto, color: COLORS.branco }} />
               </div>
 
@@ -261,7 +262,7 @@ export default function Pagamento() {
                   <div style={{ background: COLORS.preto, border: `2px solid ${COLORS.douradoEscuro}`, borderRadius: "12px", padding: "16px", textAlign: "center" }}>
                     <div style={{ fontWeight: 800, color: COLORS.branco, marginBottom: "6px" }}>Boleto gerado</div>
                     {paymentData.line && <div style={{ marginBottom: '8px', fontWeight: 700, color: COLORS.branco }}>{paymentData.line}</div>}
-                    {paymentData.boletoUrl && <a href={paymentData.boletoUrl} target="_blank" rel="noreferrer" style={{ color: COLORS.branco }}>Abrir boleto</a>}
+                    {paymentData.boletoUrl && <a href={paymentData.boletoUrl} target="_blank" rel="noreferrer" style={{ color: COLORS.branco }}>{exactUi("Abrir boleto")}</a>}
                     {paymentData.expiresAt && (
                       <div style={{ marginTop: "6px", fontSize: "12px", color: COLORS.textoSuave }}>Válido até: {new Date(paymentData.expiresAt).toLocaleString()}</div>
                     )}
@@ -269,7 +270,7 @@ export default function Pagamento() {
                 ) : (
                   <div style={{ background: COLORS.preto, border: `2px solid ${COLORS.douradoEscuro}`, borderRadius: "12px", padding: "16px", textAlign: "center" }}>
                     <div style={{ fontWeight: 800, color: COLORS.branco, marginBottom: "6px" }}>Checkout</div>
-                    {paymentData.checkoutUrl && <a href={paymentData.checkoutUrl} target="_blank" rel="noreferrer" style={{ color: COLORS.branco }}>Abrir checkout</a>}
+                    {paymentData.checkoutUrl && <a href={paymentData.checkoutUrl} target="_blank" rel="noreferrer" style={{ color: COLORS.branco }}>{exactUi("Abrir checkout")}</a>}
                   </div>
                 )
               ) : null}

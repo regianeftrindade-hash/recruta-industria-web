@@ -672,7 +672,7 @@ export default function CompanyVagasPanel({
             <strong>{draftCount}</strong>
           </div>
         </div>
-        <div className={styles.tabs} role="tablist" aria-label="Publicação de vagas">
+        <div className={styles.tabs} role="tablist" aria-label={exactUi("Publicação de vagas")}>
           <button type="button" className={`${styles.tab} ${screen !== "form" ? styles.tabOn : ""}`} onClick={openList}>
             Vagas publicadas ({jobs.length})
           </button>
@@ -682,9 +682,7 @@ export default function CompanyVagasPanel({
             onClick={openNew}
             disabled={publicacaoBloqueada}
             title={publicacaoBloqueada ? COMPANY_VIEW_ONLY_NOTICE : undefined}
-          >
-            + Nova vaga
-          </button>
+          >{exactUi("+ Nova vaga")}</button>
         </div>
         {error ? <p className={styles.bad} role="alert">{error}</p> : null}
         {message ? <p className={styles.ok} role="status">{message}</p> : null}
@@ -699,24 +697,16 @@ export default function CompanyVagasPanel({
             {selected ? `${statusLabel(selected.status)}. O identificador desta vaga permanece o mesmo.` : exactUi("Preencha os dados para divulgar sua vaga.")}
           </p>
           <div className={styles.grid}>
-            <label className={fields.field}>
-              Nome da empresa
-              <input value={form.companyName} onChange={(event) => update("companyName", event.target.value)} maxLength={160} />
+            <label className={fields.field}>{exactUi("Nome da empresa")}<input value={form.companyName} onChange={(event) => update("companyName", event.target.value)} maxLength={160} />
             </label>
-            <label className={fields.field}>
-              Data da vaga
-              <input type="date" value={form.publicationDate} onChange={(event) => update("publicationDate", event.target.value)} />
+            <label className={fields.field}>{exactUi("Data da vaga")}<input type="date" value={form.publicationDate} onChange={(event) => update("publicationDate", event.target.value)} />
               <span className={fields.help}>{t("internal.company.publishDate")}</span>
             </label>
             <fieldset className={`${fields.field} ${styles.span}`}>
               <legend>{t("internal.company.howToPost")}</legend>
               <div className={fields.choices} role="radiogroup" aria-label="Como deseja divulgar esta vaga?">
-                <button type="button" className={`${fields.choice} ${form.confidential ? "" : fields.choiceOn}`} aria-pressed={!form.confidential} onClick={() => update("confidential", false)}>
-                  Publicar com o nome da empresa
-                </button>
-                <button type="button" className={`${fields.choice} ${form.confidential ? fields.choiceOn : ""}`} aria-pressed={form.confidential} onClick={() => update("confidential", true)}>
-                  Publicar anonimamente
-                </button>
+                <button type="button" className={`${fields.choice} ${form.confidential ? "" : fields.choiceOn}`} aria-pressed={!form.confidential} onClick={() => update("confidential", false)}>{exactUi("Publicar com o nome da empresa")}</button>
+                <button type="button" className={`${fields.choice} ${form.confidential ? fields.choiceOn : ""}`} aria-pressed={form.confidential} onClick={() => update("confidential", true)}>{exactUi("Publicar anonimamente")}</button>
               </div>
             </fieldset>
             <p className={`${fields.help} ${styles.span}`}>
@@ -724,9 +714,7 @@ export default function CompanyVagasPanel({
                 ? exactUi("Na página pública e no compartilhamento aparece somente “Empresa confidencial”. O nome real continua salvo aqui.")
                 : exactUi("O nome da empresa aparece na página pública. E-mail, telefone e documentos não são divulgados.")}
             </p>
-            <label className={fields.field}>
-              Cargo
-              <input value={form.title} onChange={(event) => update("title", event.target.value)} maxLength={160} placeholder={exactUi("Ex.: Operador CNC")} />
+            <label className={fields.field}>{exactUi("Cargo")}<input value={form.title} onChange={(event) => update("title", event.target.value)} maxLength={160} placeholder={exactUi("Ex.: Operador CNC")} />
             </label>
             <ListaSuspensa
               label="Salário"
@@ -775,14 +763,12 @@ export default function CompanyVagasPanel({
                 </div>
               </fieldset>
               {form.contractType === "OUTRO" ? (
-                <label className={fields.field}>
-                  Qual tipo de contratação?
-                  <input value={form.contractTypeOther} onChange={(event) => update("contractTypeOther", event.target.value)} maxLength={80} />
+                <label className={fields.field}>{exactUi("Qual tipo de contratação?")}<input value={form.contractTypeOther} onChange={(event) => update("contractTypeOther", event.target.value)} maxLength={80} />
                 </label>
               ) : null}
               <fieldset className={fields.field}>
                 <legend>{t("surface.jobs.mode")}</legend>
-                <div className={fields.choices} role="radiogroup" aria-label="Modalidade de trabalho">
+                <div className={fields.choices} role="radiogroup" aria-label={exactUi("Modalidade de trabalho")}>
                   {WORK_MODES.map((option) => (
                     <button key={option.value} type="button" className={`${fields.choice} ${form.workMode === option.value ? fields.choiceOn : ""}`} aria-pressed={form.workMode === option.value} onClick={() => update("workMode", option.value)}>
                       {exactUi(option.label)}
@@ -790,13 +776,9 @@ export default function CompanyVagasPanel({
                   ))}
                 </div>
               </fieldset>
-              <label className={fields.field}>
-                Descrição da vaga
-                <textarea value={form.description} onChange={(event) => update("description", event.target.value)} maxLength={8000} />
+              <label className={fields.field}>{exactUi("Descrição da vaga")}<textarea value={form.description} onChange={(event) => update("description", event.target.value)} maxLength={8000} />
               </label>
-              <label className={fields.field}>
-                Observações
-                <textarea value={form.observations} onChange={(event) => update("observations", event.target.value)} maxLength={4000} placeholder={exactUi("Opcional.")} />
+              <label className={fields.field}>{exactUi("Observações")}<textarea value={form.observations} onChange={(event) => update("observations", event.target.value)} maxLength={4000} placeholder={exactUi("Opcional.")} />
               </label>
               <ApplicationModeFields
                 mode={form.applicationMode}
@@ -812,13 +794,9 @@ export default function CompanyVagasPanel({
           </div>
           <div className={styles.actions}>
             {selected && selected.status !== "DRAFT" ? (
-              <button type="button" className={styles.ghost} disabled={busy} onClick={() => void save(selected.status, "list")}>
-                Salvar alterações
-              </button>
+              <button type="button" className={styles.ghost} disabled={busy} onClick={() => void save(selected.status, "list")}>{exactUi("Salvar alterações")}</button>
             ) : (
-              <button type="button" className={styles.ghost} disabled={busy} onClick={() => void save("DRAFT")}>
-                Salvar rascunho
-              </button>
+              <button type="button" className={styles.ghost} disabled={busy} onClick={() => void save("DRAFT")}>{exactUi("Salvar rascunho")}</button>
             )}
             {selected?.status !== "PUBLISHED" ? (
               <button
@@ -826,9 +804,7 @@ export default function CompanyVagasPanel({
                 disabled={busy || publicacaoBloqueada}
                 title={publicacaoBloqueada ? COMPANY_VIEW_ONLY_NOTICE : undefined}
                 onClick={() => void save("PUBLISHED", "list")}
-              >
-                Publicar vaga
-              </button>
+              >{exactUi("Publicar vaga")}</button>
             ) : null}
           </div>
         </form>
@@ -837,27 +813,21 @@ export default function CompanyVagasPanel({
       {screen === "list" && jobs.length > 0 ? (
         <>
         <div className={styles.listFilters}>
-          <label>
-            Título da vaga
-            <input
+          <label>{exactUi("Título da vaga")}<input
               value={filtroTitulo}
               onChange={(event) => setFiltroTitulo(event.target.value)}
               maxLength={160}
               placeholder={exactUi("Título da vaga")}
             />
           </label>
-          <label>
-            Estado
-            <select value={filtroEstado} onChange={(event) => setFiltroEstado(event.target.value)}>
+          <label>{exactUi("Estado")}<select value={filtroEstado} onChange={(event) => setFiltroEstado(event.target.value)}>
               <option value="">Todos</option>
               {ESTADOS.map((estado) => (
                 <option key={estado.uf} value={estado.uf}>{estado.uf} — {estado.nome}</option>
               ))}
             </select>
           </label>
-          <label>
-            Cidade
-            <input
+          <label>{exactUi("Cidade")}<input
               value={filtroCidade}
               onChange={(event) => setFiltroCidade(event.target.value)}
               maxLength={80}
@@ -907,9 +877,7 @@ export default function CompanyVagasPanel({
                             void changeStatus(job, "UNPUBLISHED");
                           }
                         }}
-                      >
-                        Pausar vaga
-                      </button>
+                      >{exactUi("Pausar vaga")}</button>
                     ) : null}
                     {job.status === "UNPUBLISHED" ? (
                       <button
@@ -918,9 +886,7 @@ export default function CompanyVagasPanel({
                         disabled={busy || publicacaoBloqueada}
                         title={publicacaoBloqueada ? COMPANY_VIEW_ONLY_NOTICE : undefined}
                         onClick={() => void changeStatus(job, "PUBLISHED")}
-                      >
-                        Reativar vaga
-                      </button>
+                      >{exactUi("Reativar vaga")}</button>
                     ) : null}
                     {job.status === "PUBLISHED" || job.status === "UNPUBLISHED" ? (
                       <button
@@ -932,9 +898,7 @@ export default function CompanyVagasPanel({
                             void changeStatus(job, "CLOSED");
                           }
                         }}
-                      >
-                        Encerrar vaga
-                      </button>
+                      >{exactUi("Encerrar vaga")}</button>
                     ) : null}
                     {showOrigin && job.status === "PUBLISHED" ? (
                       <details className={styles.more}>
@@ -980,9 +944,7 @@ export default function CompanyVagasPanel({
                                 () => setError(exactUi("Não foi possível copiar o resumo da vaga.")),
                               );
                             }}
-                          >
-                            Copiar link
-                          </button>
+                          >{exactUi("Copiar link")}</button>
                           <a className={styles.ghost} href={hrefComVolta("/vagas", voltaPainel)} target="_blank" rel="noopener noreferrer">
                             Visualizar vagas
                           </a>
@@ -992,9 +954,7 @@ export default function CompanyVagasPanel({
                     <details className={styles.more}>
                       <summary>{t("internal.company.more")}</summary>
                       <div className={styles.moreMenu}>
-                        <button type="button" className={styles.danger} disabled={busy} onClick={() => void removeJob(job)}>
-                          Excluir
-                        </button>
+                        <button type="button" className={styles.danger} disabled={busy} onClick={() => void removeJob(job)}>{exactUi("Excluir")}</button>
                       </div>
                     </details>
                   </div>
@@ -1007,14 +967,10 @@ export default function CompanyVagasPanel({
 
       {screen === "applications" && selected ? (
         <div className={styles.card}>
-          <button type="button" className={`${styles.ghost} ${styles.back}`} onClick={openList}>
-            Voltar às vagas
-          </button>
+          <button type="button" className={`${styles.ghost} ${styles.back}`} onClick={openList}>{exactUi("Voltar às vagas")}</button>
           <h2 className={styles.cardTitle}>Candidaturas · {selected.title}</h2>
           <p className={styles.cardText}>{statusLabel(selected.status)} · {selected.applicationCount} candidatura{selected.applicationCount === 1 ? "" : "s"}</p>
-          <label className={fields.field}>
-            Filtrar por nome
-            <input className={styles.filter} value={candidateQuery} onChange={(event) => setCandidateQuery(event.target.value)} placeholder={exactUi("Nome do candidato")} />
+          <label className={fields.field}>{exactUi("Filtrar por nome")}<input className={styles.filter} value={candidateQuery} onChange={(event) => setCandidateQuery(event.target.value)} placeholder={exactUi("Nome do candidato")} />
           </label>
           {loadingApplications ? <p className={styles.cardText}>{t("internal.company.loadingCandidates")}</p> : null}
           {!loadingApplications && applications.length === 0 ? (
@@ -1060,9 +1016,7 @@ export default function CompanyVagasPanel({
                     className={styles.danger}
                     disabled={busy}
                     onClick={() => void removeApplication(application)}
-                  >
-                    Excluir
-                  </button>
+                  >{exactUi("Excluir")}</button>
                 </div>
               </div>
             );

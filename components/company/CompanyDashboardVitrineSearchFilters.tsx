@@ -1,6 +1,7 @@
 /* 🔒 BLOQUEADO (06/07/2026) — não editar sem pedido explícito. Ver .cursor/rules/dashboard-page-lock.mdc */
 "use client";
 import { exactUi } from "@/lib/i18n/exact-ui";
+import { t } from "@/lib/i18n/translate";
 
 import React from "react";
 import { rotuloOpcao } from "@/lib/i18n/option-label";
@@ -204,7 +205,7 @@ export default function CompanyDashboardVitrineSearchFilters({
             >
               <option value="">{exactUi("Selecione")}</option>
               {TEMPOS_EXPERIENCIA_OPCOES.map((t) => (
-                <option key={t} value={t}>{t}</option>
+                <option key={t} value={t}>{rotuloOpcao(t)}</option>
               ))}
             </select>
           </div>
@@ -259,9 +260,7 @@ export default function CompanyDashboardVitrineSearchFilters({
             >
               {loadingProfissionais ? (
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                  <AmpulhetaLoading compact label="Buscando..." size={16} color="#1a1a1a" />
-                  Buscando...
-                </span>
+                  <AmpulhetaLoading compact label={exactUi("Buscando...")} size={16} color="#1a1a1a" />{exactUi("Buscando...")}</span>
               ) : exactUi("Buscar")}
             </button>
             <button
@@ -274,20 +273,16 @@ export default function CompanyDashboardVitrineSearchFilters({
                 borderRadius: 8,
                 cursor: "pointer",
               }}
-            >
-              Limpar
-            </button>
+            >{exactUi("Limpar")}</button>
           </div>
         </div>
 
         {buscaAvancadaAberta && (
           <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${DASH.border}` }}>
-            <p style={{ margin: "0 0 8px", fontSize: 11, fontWeight: 600, color: DASH.muted }}>
-              Filtros avançados
-            </p>
+            <p style={{ margin: "0 0 8px", fontSize: 11, fontWeight: 600, color: DASH.muted }}>{exactUi("Filtros avançados")}</p>
             {advancedFilterDisabled && (
               <p style={{ margin: "0 0 8px", fontSize: 10, color: DASH.muted }}>
-                Filtros avançados disponíveis a partir do plano <span style={dashPlanAccent}>Basic</span>.
+                {t("surface.dash.company.advancedLocked")} <span style={dashPlanAccent}>Basic</span>.
               </p>
             )}
             <div style={filtersGridStyle}>
@@ -295,46 +290,46 @@ export default function CompanyDashboardVitrineSearchFilters({
                 <label style={filterLabelStyle}>{exactUi("Área de interesse")}</label>
                 <select value={filtros.area} onChange={(e) => onFiltrosChange({ ...filtros, area: e.target.value })} style={filterControlStyle}>
                   <option value="">{exactUi("Selecione")}</option>
-                  {AREAS_INTERESSE.map((a) => <option key={a} value={a}>{a}</option>)}
+                  {AREAS_INTERESSE.map((a) => <option key={a} value={a}>{rotuloOpcao(a)}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Escolaridade (nível) {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Escolaridade (nível)")} {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.escolaridade} onChange={(e) => onFiltrosChange({ ...filtros, escolaridade: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">{exactUi("Selecione")}</option>
                   {ESCOLARIDADES_OPCOES.map((e) => <option key={e} value={e}>{rotuloOpcao(e)}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Situação profissional {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Situação profissional")} {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.situacaoProfissional} onChange={(e) => onFiltrosChange({ ...filtros, situacaoProfissional: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">{exactUi("Selecione")}</option>
-                  {SITUACAO_PROFISSIONAL_OPCOES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  {SITUACAO_PROFISSIONAL_OPCOES.map((s) => <option key={s} value={s}>{rotuloOpcao(s)}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Nível operacional {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Nível operacional")} {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.nivelOperacional} onChange={(e) => onFiltrosChange({ ...filtros, nivelOperacional: e.target.value, areaNivel: e.target.value ? filtros.areaNivel : "" })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">{exactUi("Selecione")}</option>
                   {NIVEIS_OPERACIONAIS.map((n) => <option key={n} value={n}>{rotuloOpcao(n)}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Área operacional {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Área operacional")} {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled || !filtros.nivelOperacional} value={filtros.areaNivel} onChange={(e) => onFiltrosChange({ ...filtros, areaNivel: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled || !filtros.nivelOperacional ? 0.5 : 1 }}>
                   <option value="">{exactUi("Selecione")}</option>
                   {AREAS_COMPLEMENTO_NIVEL.map((a) => <option key={a} value={a}>{rotuloOpcao(a)}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Disponibilidade para início {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Disponibilidade para início")} {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.disponibilidadeInicio} onChange={(e) => onFiltrosChange({ ...filtros, disponibilidadeInicio: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">{exactUi("Selecione")}</option>
-                  {DISPONIBILIDADE_INICIO_OPCOES.map((d) => <option key={d} value={d}>{d}</option>)}
+                  {DISPONIBILIDADE_INICIO_OPCOES.map((d) => <option key={d} value={d}>{rotuloOpcao(d)}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Pretensão salarial {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Pretensão salarial")} {advancedFilterDisabled && "🔒"}</label>
                 <input
                   disabled={advancedFilterDisabled}
                   placeholder={exactUi("R$ 0,00")}
@@ -347,84 +342,84 @@ export default function CompanyDashboardVitrineSearchFilters({
                 />
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Trabalhou na indústria? {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Trabalhou na indústria?")} {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.trabalhouIndustria} onChange={(e) => onFiltrosChange({ ...filtros, trabalhouIndustria: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">{exactUi("Selecione")}</option>
-                  {TRABALHO_INDUSTRIA_OPCOES.map((t) => <option key={t} value={t}>{t}</option>)}
+                  {TRABALHO_INDUSTRIA_OPCOES.map((t) => <option key={t} value={t}>{rotuloOpcao(t)}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Segmento (experiência) {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Segmento (experiência)")} {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.segmentoIndustria} onChange={(e) => onFiltrosChange({ ...filtros, segmentoIndustria: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">{exactUi("Selecione")}</option>
                   {SEGMENTOS_INDUSTRIA.map((s) => <option key={s} value={s}>{rotuloOpcao(s)}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Máquinas/equipamentos {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Máquinas/equipamentos")} {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.maquinaEquipamento} onChange={(e) => onFiltrosChange({ ...filtros, maquinaEquipamento: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">{exactUi("Selecione")}</option>
                   {MAQUINAS_EQUIPAMENTOS.map((m) => <option key={m} value={m}>{rotuloOpcao(m)}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Qualidade e processos {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Qualidade e processos")} {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.qualidadeProcesso} onChange={(e) => onFiltrosChange({ ...filtros, qualidadeProcesso: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">{exactUi("Selecione")}</option>
                   {QUALIDADE_PROCESSOS.map((q) => <option key={q} value={q}>{rotuloOpcao(q)}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Informática/ERP {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Informática/ERP")} {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.informatica} onChange={(e) => onFiltrosChange({ ...filtros, informatica: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">{exactUi("Selecione")}</option>
                   {INFORMATICA_OPCOES.map((i) => <option key={i} value={i}>{rotuloOpcao(i)}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Possui CNH? {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Possui CNH?")} {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.possuiCNH} onChange={(e) => onFiltrosChange({ ...filtros, possuiCNH: e.target.value, categoriaCNH: e.target.value === "Sim" ? filtros.categoriaCNH : "" })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">{exactUi("Selecione")}</option>
-                  {POSSUI_CNH_OPCOES.map((v) => <option key={v} value={v}>{v}</option>)}
+                  {POSSUI_CNH_OPCOES.map((v) => <option key={v} value={v}>{rotuloOpcao(v)}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Categoria CNH {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Categoria CNH")} {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled || filtros.possuiCNH !== "Sim"} value={filtros.categoriaCNH} onChange={(e) => onFiltrosChange({ ...filtros, categoriaCNH: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled || filtros.possuiCNH !== "Sim" ? 0.5 : 1 }}>
                   <option value="">{exactUi("Selecione")}</option>
-                  {CNH_CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
+                  {CNH_CATEGORIAS.map((c) => <option key={c} value={c}>{rotuloOpcao(c)}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Curso/Certificação {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Curso/Certificação")} {advancedFilterDisabled && "🔒"}</label>
                 <input disabled={advancedFilterDisabled} placeholder={exactUi("Ex: NR-12")} value={filtros.cursoCertificacao} onChange={(e) => onFiltrosChange({ ...filtros, cursoCertificacao: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }} />
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Área do curso {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Área do curso")} {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.areaCurso} onChange={(e) => onFiltrosChange({ ...filtros, areaCurso: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">{exactUi("Selecione")}</option>
                   {AREAS_CURSO.map((a) => <option key={a} value={a}>{rotuloOpcao(a)}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Idioma {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Idioma")} {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.idioma} onChange={(e) => onFiltrosChange({ ...filtros, idioma: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">{exactUi("Selecione")}</option>
                   {IDIOMAS_OPCOES.map((i) => <option key={i} value={i}>{rotuloOpcao(i)}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Disponibilidade para mudança {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Disponibilidade para mudança")} {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.disponibilidadeMudanca} onChange={(e) => onFiltrosChange({ ...filtros, disponibilidadeMudanca: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">{exactUi("Selecione")}</option>
-                  {DISPONIBILIDADE_MUDANCA_OPCOES.map((v) => <option key={v} value={v}>{v}</option>)}
+                  {DISPONIBILIDADE_MUDANCA_OPCOES.map((v) => <option key={v} value={v}>{rotuloOpcao(v)}</option>)}
                 </select>
               </div>
               <div style={filterFieldStyle}>
-                <label style={filterLabelStyle}>Disponibilidade para viagens {advancedFilterDisabled && "🔒"}</label>
+                <label style={filterLabelStyle}>{exactUi("Disponibilidade para viagens")} {advancedFilterDisabled && "🔒"}</label>
                 <select disabled={advancedFilterDisabled} value={filtros.aceitaViagens} onChange={(e) => onFiltrosChange({ ...filtros, aceitaViagens: e.target.value })} style={{ ...filterControlStyle, opacity: advancedFilterDisabled ? 0.5 : 1 }}>
                   <option value="">{exactUi("Selecione")}</option>
-                  {ACEITA_VIAGENS_OPCOES.map((v) => <option key={v} value={v}>{v}</option>)}
+                  {ACEITA_VIAGENS_OPCOES.map((v) => <option key={v} value={v}>{rotuloOpcao(v)}</option>)}
                 </select>
               </div>
             </div>

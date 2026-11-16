@@ -98,14 +98,10 @@ export default function CompanyCandidateMessagesCard({
         {exactUi(AVISO_RETENCAO_INBOX)}
       </p>
       {bloqueado ? (
-        <p style={{ fontSize: 13, color: "#000", margin: 0 }}>
-          Libere o contato para enviar mensagem direta ao profissional.
-        </p>
+        <p style={{ fontSize: 13, color: "#000", margin: 0 }}>{exactUi("Libere o contato para enviar mensagem direta ao profissional.")}</p>
       ) : (
         <>
-          <p style={{ fontSize: 12, color: "#000", margin: "0 0 10px", lineHeight: 1.45 }}>
-            A mensagem aparece na caixa de entrada do candidato. Ele pode ler e responder por lá.
-          </p>
+          <p style={{ fontSize: 12, color: "#000", margin: "0 0 10px", lineHeight: 1.45 }}>{exactUi("A mensagem aparece na caixa de entrada do candidato. Ele pode ler e responder por lá.")}</p>
 
           {conversa.length > 0 && (
             <div
@@ -156,9 +152,7 @@ export default function CompanyCandidateMessagesCard({
                         fontFamily: "inherit",
                       }}
                       title={exactUi("Excluir mensagem")}
-                    >
-                      Excluir
-                    </button>
+                    >{exactUi("Excluir")}</button>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p
                         style={{

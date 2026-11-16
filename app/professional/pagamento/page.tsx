@@ -42,9 +42,7 @@ type PaymentData = {
 export default function PagamentoProfissionalPage() {
   return (
     <Suspense fallback={
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F3E6C8", color: "#414141" }}>
-        Carregando...
-      </div>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F3E6C8", color: "#414141" }}>{exactUi("Carregando...")}</div>
     }>
       <PagamentoProfissional />
     </Suspense>
@@ -295,9 +293,7 @@ function PagamentoProfissional() {
 
   if (status === "loading") {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F3E6C8", color: "#414141" }}>
-        Carregando...
-      </div>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F3E6C8", color: "#414141" }}>{exactUi("Carregando...")}</div>
     );
   }
 
@@ -309,9 +305,7 @@ function PagamentoProfissional() {
           type="button"
           onClick={() => router.push("/professional/dashboard")}
           style={{ ...btnGold, padding: "8px 14px", fontSize: 12, marginBottom: 20 }}
-        >
-          ← Voltar ao painel
-        </button>
+        >{exactUi("← Voltar ao painel")}</button>
 
         <p style={{ color: "#C89B3C", margin: "0 0 8px", fontWeight: 800, letterSpacing: "0.04em", lineHeight: 1.3 }}>
           {offeringEnabled ? "DEIXE QUE O RECRUTA FAZ POR VOCÊ." : "SEU PLANO"}
@@ -496,9 +490,7 @@ function PagamentoProfissional() {
                   </a>
                 )}
                 {paymentData.checkoutUrl && !paymentData.boletoUrl && (
-                  <a href={paymentData.checkoutUrl} target="_blank" rel="noreferrer" style={{ color: "#C89B3C", display: "block", marginTop: 12 }}>
-                    Abrir checkout
-                  </a>
+                  <a href={paymentData.checkoutUrl} target="_blank" rel="noreferrer" style={{ color: "#C89B3C", display: "block", marginTop: 12 }}>{exactUi("Abrir checkout")}</a>
                 )}
                 <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
                   <button
@@ -517,9 +509,7 @@ function PagamentoProfissional() {
                     type="button"
                     onClick={resetPaymentForm}
                     style={{ ...btnGold, width: "100%", padding: 12, fontSize: 13 }}
-                  >
-                    Voltar e escolher outra forma
-                  </button>
+                  >{exactUi("Voltar e escolher outra forma")}</button>
                 </div>
                 {statusMessage && <p style={{ fontSize: 12, marginTop: 12, color: "#C89B3C", lineHeight: 1.45 }}>{statusMessage}</p>}
               </div>

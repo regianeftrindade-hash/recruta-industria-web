@@ -179,9 +179,7 @@ export function CompanyChatPanel() {
             {loadingMembers ? (
               <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{t("rest.chat.loadingPeople")}</p>
             ) : members.length === 0 ? (
-              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
-                Nenhuma outra pessoa na mesma assinatura. Cadastre usuários na seção Equipe RH abaixo.
-              </p>
+              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{exactUi("Nenhuma outra pessoa na mesma assinatura. Cadastre usuários na seção Equipe RH abaixo.")}</p>
             ) : (
               members.map((member) => {
                 const invited = invitedIds.has(member.id);
@@ -239,9 +237,7 @@ export function CompanyChatPanel() {
           {loadingMessages ? (
             <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{t("rest.chat.loading")}</p>
           ) : messages.length === 0 ? (
-            <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
-              Nenhuma mensagem ainda. Convide alguém do RH ou envie a primeira mensagem.
-            </p>
+            <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{exactUi("Nenhuma mensagem ainda. Convide alguém do RH ou envie a primeira mensagem.")}</p>
           ) : (
             messages.map((msg) => {
               const mine = msg.authorUserId === currentUserId;

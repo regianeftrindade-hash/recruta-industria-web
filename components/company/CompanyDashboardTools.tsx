@@ -1,4 +1,6 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
+import { t } from "@/lib/i18n/translate";
 
 
 
@@ -120,7 +122,7 @@ export function AlertsPanel({
 
       {alerts.length === 0 ? (
 
-        <p style={{ color: DASH.muted, fontSize: 10, margin: 0 }}>Nenhum alerta configurado.</p>
+        <p style={{ color: DASH.muted, fontSize: 10, margin: 0 }}>{exactUi("Nenhum alerta configurado.")}</p>
 
       ) : (
 
@@ -134,9 +136,7 @@ export function AlertsPanel({
 
               <label style={{ color: DASH.muted, fontSize: 9 }}>
 
-                <input type="checkbox" checked={a.active} onChange={(e) => onToggle(a.id, e.target.checked)} /> Ativo
-
-              </label>
+                <input type="checkbox" checked={a.active} onChange={(e) => onToggle(a.id, e.target.checked)} />{exactUi("Ativo")}</label>
 
             </div>
 
@@ -182,11 +182,7 @@ export function AlertsPanel({
 
             </button>
 
-            <button type="button" onClick={() => onDelete(a.id)} style={{ background: "none", border: "none", color: "#dc3545", fontSize: 9, cursor: "pointer", marginTop: 4, padding: 0 }}>
-
-              Excluir
-
-            </button>
+            <button type="button" onClick={() => onDelete(a.id)} style={{ background: "none", border: "none", color: "#dc3545", fontSize: 9, cursor: "pointer", marginTop: 4, padding: 0 }}>{exactUi("Excluir")}</button>
 
           </div>
 
@@ -244,13 +240,13 @@ export function TalentBankPanel({
 
         <h4 style={{ ...dashSectionTitle, color: DASH.gold, margin: 0, fontSize: 12 }}>📁 Banco de talentos</h4>
 
-        <button type="button" onClick={onAddList} style={{ ...btnGold, padding: "4px 8px", fontSize: 9 }}>+ Lista</button>
+        <button type="button" onClick={onAddList} style={{ ...btnGold, padding: "4px 8px", fontSize: 9 }}>{exactUi("+ Lista")}</button>
 
       </div>
 
       {lists.length === 0 ? (
 
-        <p style={{ color: DASH.muted, fontSize: 10, margin: 0 }}>Nenhuma lista criada.</p>
+        <p style={{ color: DASH.muted, fontSize: 10, margin: 0 }}>{t("surface.dash.company.noList")}</p>
 
       ) : (
 
@@ -315,7 +311,7 @@ export function TalentBankPanel({
 
               {selected && (
 
-                <p style={{ color: DASH.muted, fontSize: 9, margin: "4px 0 0" }}>Lista selecionada para adicionar</p>
+                <p style={{ color: DASH.muted, fontSize: 9, margin: "4px 0 0" }}>{t("surface.dash.company.listSelected")}</p>
 
               )}
 

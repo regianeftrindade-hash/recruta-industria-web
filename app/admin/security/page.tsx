@@ -108,9 +108,7 @@ export default function SecurityDashboard() {
     return (
       <div style={{ padding: '30px', maxWidth: '600px', margin: '0 auto', textAlign: 'center', minHeight: '100vh', background: COLORS.preto, color: COLORS.branco }}>
         <h1 style={{ color: COLORS.dourado }}>Acesso negado</h1>
-        <p style={{ color: COLORS.textoSuave }}>
-          Você não tem permissão para acessar o painel de segurança.
-        </p>
+        <p style={{ color: COLORS.textoSuave }}>{exactUi("Você não tem permissão para acessar o painel de segurança.")}</p>
       </div>
     )
   }
@@ -172,9 +170,7 @@ export default function SecurityDashboard() {
         <p style={{ color: COLORS.textoSuave }}>{exactUi("Carregando...")}</p>
       ) : activeTab === 'logs' ? (
         <div>
-          <h2 style={{ color: COLORS.dourado, marginBottom: '20px' }}>
-            Logs de Auditoria
-          </h2>
+          <h2 style={{ color: COLORS.dourado, marginBottom: '20px' }}>{exactUi("Logs de Auditoria")}</h2>
           <div
             style={{
               overflowX: 'auto',
@@ -217,9 +213,7 @@ export default function SecurityDashboard() {
         </div>
       ) : (
         <div>
-          <h2 style={{ color: COLORS.dourado, marginBottom: '20px' }}>
-            Contas Bloqueadas
-          </h2>
+          <h2 style={{ color: COLORS.dourado, marginBottom: '20px' }}>{exactUi("Contas Bloqueadas")}</h2>
           <div
             style={{
               display: 'grid',

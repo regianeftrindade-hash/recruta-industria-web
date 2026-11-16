@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React from "react";
 import { DASH, dashCard, dashInnerBox, dashPlanAccent, dashSectionTitle } from "@/lib/dashboard-theme";
@@ -228,7 +229,7 @@ export default function CompanyExclusiveFeatures({
 
         <FeatureSection
           emoji="📊"
-          title="Dashboard de recrutamento"
+          title={exactUi("Dashboard de recrutamento")}
           description="Acompanhe números da sua atividade na plataforma."
           items={[
             "Perfis favoritados",
@@ -241,7 +242,7 @@ export default function CompanyExclusiveFeatures({
 
         <FeatureSection
           emoji="📬"
-          title="Contato Recruta Indústria"
+          title={exactUi("Contato Recruta Indústria")}
           description="Caixa de mensagem aberta no painel: a empresa escreve e a mensagem chega direto no e-mail da Recruta Indústria."
           items={[
             "Disponível em Basic, Premium e Empresarial",
@@ -281,7 +282,7 @@ export default function CompanyExclusiveFeatures({
 
         <FeatureSection
           emoji="🔔"
-          title="Alertas de talentos"
+          title={exactUi("Alertas de talentos")}
           description="Salve combinações de filtros como alerta e consulte no painel quando houver novos profissionais compatíveis nos últimos 30 dias."
           items={[]}
           plano="Premium+"
@@ -297,7 +298,7 @@ export default function CompanyExclusiveFeatures({
 
         <FeatureSection
           emoji="📁"
-          title="Banco de talentos"
+          title={exactUi("Banco de talentos")}
           description="Organize profissionais desbloqueados em listas (ex.: Operadores CNC, Qualidade, PCP) para consultas futuras."
           items={[
             "Listas padrão criadas automaticamente",

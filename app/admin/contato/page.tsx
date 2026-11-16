@@ -291,12 +291,8 @@ function CaixaEmailPage() {
           </p>
         </div>
         <div className={styles.actions}>
-          <button type="button" className={styles.btnGhost} onClick={startNew}>
-            Novo e-mail
-          </button>
-          <button type="button" className={styles.btnGold} onClick={() => void loadInbox()}>
-            Atualizar
-          </button>
+          <button type="button" className={styles.btnGhost} onClick={startNew}>{exactUi("Novo e-mail")}</button>
+          <button type="button" className={styles.btnGold} onClick={() => void loadInbox()}>{exactUi("Atualizar")}</button>
         </div>
       </div>
 
@@ -358,9 +354,7 @@ IMAP_PASS=sua-senha`}
                         className={styles.mailDelete}
                         disabled={busy}
                         onClick={() => void removeMessage(uid)}
-                      >
-                        Excluir
-                      </button>
+                      >{exactUi("Excluir")}</button>
                     </div>
                   );
                 })}
@@ -401,9 +395,7 @@ IMAP_PASS=sua-senha`}
                   placeholder={exactUi("Escreva a mensagem")}
                   maxLength={8000}
                 />
-                <label className={styles.replyLabel} htmlFor="caixa-anexo">
-                  Anexos
-                  <input
+                <label className={styles.replyLabel} htmlFor="caixa-anexo">{exactUi("Anexos")}<input
                     id="caixa-anexo"
                     type="file"
                     multiple
@@ -423,9 +415,7 @@ IMAP_PASS=sua-senha`}
                           type="button"
                           className={styles.btnGhost}
                           onClick={() => setFiles((current) => current.filter((_, item) => item !== index))}
-                        >
-                          Tirar
-                        </button>
+                        >{exactUi("Tirar")}</button>
                       </li>
                     ))}
                   </ul>
@@ -464,9 +454,7 @@ IMAP_PASS=sua-senha`}
                       className={styles.mailDelete}
                       disabled={busy}
                       onClick={() => void removeMessage(selectedUid)}
-                    >
-                      Excluir
-                    </button>
+                    >{exactUi("Excluir")}</button>
                   ) : null}
                 </div>
 
@@ -515,9 +503,7 @@ IMAP_PASS=sua-senha`}
                         onChange={(event) => setReplyText(event.target.value)}
                         placeholder={exactUi("Escreva a resposta…")}
                       />
-                      <label className={styles.replyLabel} htmlFor="reply-anexo">
-                        Anexos
-                        <input
+                      <label className={styles.replyLabel} htmlFor="reply-anexo">{exactUi("Anexos")}<input
                           id="reply-anexo"
                           type="file"
                           multiple
@@ -537,9 +523,7 @@ IMAP_PASS=sua-senha`}
                                 type="button"
                                 className={styles.btnGhost}
                                 onClick={() => setReplyFiles((current) => current.filter((_, item) => item !== index))}
-                              >
-                                Tirar
-                              </button>
+                              >{exactUi("Tirar")}</button>
                             </li>
                           ))}
                         </ul>

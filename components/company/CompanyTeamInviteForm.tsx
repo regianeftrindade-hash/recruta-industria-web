@@ -118,9 +118,7 @@ export default function CompanyTeamInviteForm({
               fontSize: 12,
               cursor: "pointer",
             }}
-          >
-            Cancelar
-          </button>
+          >{exactUi("Cancelar")}</button>
         </div>
       )}
 

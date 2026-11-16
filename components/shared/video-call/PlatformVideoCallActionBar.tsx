@@ -57,9 +57,7 @@ export default function PlatformVideoCallActionBar({
             disabled={busy}
             onClick={onTeamAccept}
             style={{ ...btnGold, padding: "8px 12px", fontSize: 12, flex: 1, opacity: busy ? 0.7 : 1 }}
-          >
-            Aceitar
-          </button>
+          >{exactUi("Aceitar")}</button>
           <button
             type="button"
             disabled={busy}
@@ -74,9 +72,7 @@ export default function PlatformVideoCallActionBar({
               cursor: "pointer",
               flex: 1,
             }}
-          >
-            Recusar
-          </button>
+          >{exactUi("Recusar")}</button>
         </>
       )}
 
@@ -95,9 +91,7 @@ export default function PlatformVideoCallActionBar({
             cursor: "pointer",
             flex: 1,
           }}
-        >
-          Cancelar
-        </button>
+        >{exactUi("Cancelar")}</button>
       )}
 
       {role === "company" && status === "ringing" && !isInitiator && (
@@ -115,9 +109,7 @@ export default function PlatformVideoCallActionBar({
             cursor: "pointer",
             flex: 1,
           }}
-        >
-          Sair
-        </button>
+        >{exactUi("Sair")}</button>
       )}
 
       {role === "professional" && status === "ringing" && (
@@ -127,9 +119,7 @@ export default function PlatformVideoCallActionBar({
             disabled={busy}
             onClick={onAccept}
             style={{ ...btnGold, padding: "8px 12px", fontSize: 12, flex: 1, opacity: busy ? 0.7 : 1 }}
-          >
-            Aceitar
-          </button>
+          >{exactUi("Aceitar")}</button>
           <button
             type="button"
             disabled={busy}
@@ -144,9 +134,7 @@ export default function PlatformVideoCallActionBar({
               cursor: "pointer",
               flex: 1,
             }}
-          >
-            Recusar
-          </button>
+          >{exactUi("Recusar")}</button>
         </>
       )}
 
@@ -164,9 +152,7 @@ export default function PlatformVideoCallActionBar({
             cursor: "pointer",
             flex: 1,
           }}
-        >
-          Encerrar
-        </button>
+        >{exactUi("Encerrar")}</button>
       )}
 
       {(status === "declined" || status === "missed" || status === "ended") && (

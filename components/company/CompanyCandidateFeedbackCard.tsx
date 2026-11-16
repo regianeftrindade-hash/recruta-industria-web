@@ -94,9 +94,7 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
   return (
     <section style={{ ...dashCard, padding: 18 }}>
       <h3 style={{ ...goldTitle, margin: "0 0 12px", fontSize: 16 }}>💬 Feedback da equipe</h3>
-      <p style={{ margin: "0 0 10px", fontSize: 12, color: "#000", lineHeight: 1.45 }}>
-        Todos da mesma assinatura veem os feedbacks deixados sobre este candidato.
-      </p>
+      <p style={{ margin: "0 0 10px", fontSize: 12, color: "#000", lineHeight: 1.45 }}>{exactUi("Todos da mesma assinatura veem os feedbacks deixados sobre este candidato.")}</p>
 
       <div
         style={{
@@ -146,9 +144,7 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
       </div>
 
       {feedbacks.length === 0 ? (
-        <p style={{ margin: 0, fontSize: 12, color: "#000" }}>
-          Nenhum feedback ainda. Seja o primeiro a avaliar.
-        </p>
+        <p style={{ margin: 0, fontSize: 12, color: "#000" }}>{exactUi("Nenhum feedback ainda. Seja o primeiro a avaliar.")}</p>
       ) : (
         <div style={{ display: "grid", gap: 8, maxHeight: 320, overflowY: "auto" }}>
           {feedbacks.map((fb) => (
@@ -183,9 +179,7 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
                     opacity: deletingFeedbackId === fb.id ? 0.7 : 1,
                   }}
                   title={exactUi("Excluir meu feedback")}
-                >
-                  Excluir
-                </button>
+                >{exactUi("Excluir")}</button>
               ) : null}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div

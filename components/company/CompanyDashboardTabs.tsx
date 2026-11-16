@@ -230,9 +230,7 @@ export default function CompanyDashboardTabPanel({
     ) : (
       <div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginBottom: 14 }}>
-          <span style={{ fontSize: 11, color: DASH.muted, fontWeight: 700, textTransform: "uppercase" }}>
-            Listas:
-          </span>
+          <span style={{ fontSize: 11, color: DASH.muted, fontWeight: 700, textTransform: "uppercase" }}>{exactUi("Listas:")}</span>
           {talentListsDetalhadas.map((l) => (
             <button
               key={l.id}
@@ -253,15 +251,11 @@ export default function CompanyDashboardTabPanel({
               {l.name} ({l.itemCount})
             </button>
           ))}
-          <button type="button" onClick={onCreateList} style={{ ...btnGold, padding: "5px 12px", fontSize: 11, color: "#000" }}>
-            + Lista
-          </button>
+          <button type="button" onClick={onCreateList} style={{ ...btnGold, padding: "5px 12px", fontSize: 11, color: "#000" }}>{exactUi("+ Lista")}</button>
         </div>
 
         {cargosOrdenados.length === 0 ? (
-          <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
-            Nenhum profissional guardado ainda. Abra um perfil na vitrine e adicione ao banco de talentos.
-          </p>
+          <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{exactUi("Nenhum profissional guardado ainda. Abra um perfil na vitrine e adicione ao banco de talentos.")}</p>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
             {cargosOrdenados.map((cargo) => {
@@ -366,12 +360,8 @@ export default function CompanyDashboardTabPanel({
     ) : (
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-          <p style={{ margin: 0, fontSize: 11, color: DASH.muted, lineHeight: 1.5 }}>
-            Defina filtros de busca e crie um alerta. Sempre que um perfil compatível aparecer, ele é listado aqui.
-          </p>
-          <button type="button" onClick={onCreateAlert} style={{ ...btnGold, padding: "6px 12px", fontSize: 11 }}>
-            + Novo alerta
-          </button>
+          <p style={{ margin: 0, fontSize: 11, color: DASH.muted, lineHeight: 1.5 }}>{exactUi("Defina filtros de busca e crie um alerta. Sempre que um perfil compatível aparecer, ele é listado aqui.")}</p>
+          <button type="button" onClick={onCreateAlert} style={{ ...btnGold, padding: "6px 12px", fontSize: 11 }}>{exactUi("+ Novo alerta")}</button>
         </div>
         {alerts.length === 0 ? (
           <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{exactUi("Nenhum alerta configurado.")}</p>
@@ -382,8 +372,7 @@ export default function CompanyDashboardTabPanel({
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center", marginBottom: 6 }}>
                   <strong style={{ color: "#000", fontSize: 13 }}>🔔 {a.name}</strong>
                   <label style={{ color: DASH.muted, fontSize: 10, whiteSpace: "nowrap" }}>
-                    <input type="checkbox" checked={a.active} onChange={(e) => onToggleAlert(a.id, e.target.checked)} /> Ativo
-                  </label>
+                    <input type="checkbox" checked={a.active} onChange={(e) => onToggleAlert(a.id, e.target.checked)} />{exactUi("Ativo")}</label>
                 </div>
 
                 {a.newMatches.length > 0 ? (
@@ -422,9 +411,7 @@ export default function CompanyDashboardTabPanel({
                     ))}
                   </div>
                 ) : (
-                  <p style={{ margin: "0 0 8px", fontSize: 11, color: DASH.muted }}>
-                    Nenhum perfil novo compatível nos últimos 30 dias.
-                  </p>
+                  <p style={{ margin: "0 0 8px", fontSize: 11, color: DASH.muted }}>{exactUi("Nenhum perfil novo compatível nos últimos 30 dias.")}</p>
                 )}
 
                 <div style={{ display: "flex", gap: 10 }}>
@@ -441,16 +428,12 @@ export default function CompanyDashboardTabPanel({
                       cursor: "pointer",
                       textDecoration: "underline",
                     }}
-                  >
-                    Abrir na vitrine
-                  </button>
+                  >{exactUi("Abrir na vitrine")}</button>
                   <button
                     type="button"
                     onClick={() => onDeleteAlert(a.id)}
                     style={{ background: "none", border: "none", color: "#f87171", fontSize: 11, cursor: "pointer", padding: 0 }}
-                  >
-                    Excluir
-                  </button>
+                  >{exactUi("Excluir")}</button>
                 </div>
               </div>
             ))}
@@ -466,9 +449,7 @@ export default function CompanyDashboardTabPanel({
     );
   } else if (tab === "meu-plano") {
     conteudo = (
-      <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
-        Abra a aba Meu Plano pelo menu superior.
-      </p>
+      <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{exactUi("Abra a aba Meu Plano pelo menu superior.")}</p>
     );
   }
 

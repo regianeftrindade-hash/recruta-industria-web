@@ -27,17 +27,14 @@ export default function CompanyPlanCards({ currentTier, onSelectFree }: CompanyP
 
   return (
     <section>
-      <h2 style={{ ...dashPlanAccent, margin: "0 0 4px", fontSize: 16, fontWeight: 700 }}>
-        Planos para Empresas
-      </h2>
+      <h2 style={{ ...dashPlanAccent, margin: "0 0 4px", fontSize: 16, fontWeight: 700 }}>{exactUi("Planos para Empresas")}</h2>
       <p style={{ color: DASH.muted, margin: "0 0 14px", fontSize: 12, lineHeight: 1.45 }}>
         {currentTier ? (
-          <>
-            Plano atual: <strong style={dashPlanAccent}>{currentTier}</strong>
+          <>{exactUi("Plano atual:")}<strong style={dashPlanAccent}>{currentTier}</strong>
             {" · "}
           </>
         ) : (
-          <>Carregando plano… · </>
+          <>{exactUi("Carregando plano…")} · </>
         )}
         Preço e o que muda em cada plano. O detalhe completo abre no próprio card.
       </p>
@@ -107,9 +104,7 @@ export default function CompanyPlanCards({ currentTier, onSelectFree }: CompanyP
               </ul>
 
               {plano.id === "FREE" && !isPaid && !isCurrent && onSelectFree && (
-                <button onClick={onSelectFree} style={{ ...btnGold, padding: "8px 10px", fontSize: 12, width: "100%" }}>
-                  Usar plano Free
-                </button>
+                <button onClick={onSelectFree} style={{ ...btnGold, padding: "8px 10px", fontSize: 12, width: "100%" }}>{exactUi("Usar plano Free")}</button>
               )}
 
               {isPaid && !isCurrent && (
@@ -126,9 +121,7 @@ export default function CompanyPlanCards({ currentTier, onSelectFree }: CompanyP
               )}
 
               {isCurrent && isPaid && (
-                <p style={{ ...dashPlanAccent, fontSize: 12, margin: 0, textAlign: "center", fontWeight: "bold" }}>
-                  Plano ativo
-                </p>
+                <p style={{ ...dashPlanAccent, fontSize: 12, margin: 0, textAlign: "center", fontWeight: "bold" }}>{exactUi("Plano ativo")}</p>
               )}
 
               <details style={{ marginTop: 10 }}>
@@ -139,9 +132,7 @@ export default function CompanyPlanCards({ currentTier, onSelectFree }: CompanyP
                     fontWeight: 700,
                     color: DASH.gold,
                   }}
-                >
-                  Ver tudo que inclui
-                </summary>
+                >{exactUi("Ver tudo que inclui")}</summary>
                 <div style={{ marginTop: 8 }}>
                   <p style={{ margin: "0 0 8px", fontSize: 12, color: DASH.muted, lineHeight: 1.4 }}>
                     {exactUi(plano.descricao)}

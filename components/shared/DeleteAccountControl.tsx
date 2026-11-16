@@ -69,13 +69,11 @@ export default function DeleteAccountControl({ variant = "card" }: Props) {
   return (
     <div style={{ position: "relative" }}>
       {!open ? (
-        <button type="button" onClick={() => setOpen(true)} style={triggerStyle}>
-          Excluir cadastro
-        </button>
+        <button type="button" onClick={() => setOpen(true)} style={triggerStyle}>{exactUi("Excluir cadastro")}</button>
       ) : (
         <div
           role="dialog"
-          aria-label="Confirmar exclusão de cadastro"
+          aria-label={exactUi("Confirmar exclusão de cadastro")}
           style={{
             padding: 12,
             borderRadius: 10,
@@ -99,9 +97,7 @@ export default function DeleteAccountControl({ variant = "card" }: Props) {
           <p style={{ margin: "0 0 8px", fontSize: 12, color: DASH.text || "#F2F2F2", lineHeight: 1.45 }}>
             Isso apaga permanentemente sua conta e dados. Digite <strong>EXCLUIR</strong> para confirmar.
           </p>
-          <label htmlFor="delete-account-confirm" style={{ display: "block", fontSize: 10, color: DASH.muted, marginBottom: 4 }}>
-            Confirmação
-          </label>
+          <label htmlFor="delete-account-confirm" style={{ display: "block", fontSize: 10, color: DASH.muted, marginBottom: 4 }}>{exactUi("Confirmação")}</label>
           <input
             id="delete-account-confirm"
             type="text"
@@ -140,9 +136,7 @@ export default function DeleteAccountControl({ variant = "card" }: Props) {
                 borderRadius: 8,
                 cursor: loading ? "wait" : "pointer",
               }}
-            >
-              Cancelar
-            </button>
+            >{exactUi("Cancelar")}</button>
             <button
               type="button"
               onClick={() => void handleDelete()}

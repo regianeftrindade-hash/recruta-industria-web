@@ -50,9 +50,7 @@ export default function PlatformVideoCallInvitePanel({
         marginBottom: 10,
       }}
     >
-      <p style={{ margin: "0 0 6px", fontSize: 10, color: DASH.text, lineHeight: 1.45 }}>
-        Colegas do mesmo plano podem entrar se estiverem com este perfil aberto — cada um aceita ou recusa no próprio painel.
-      </p>
+      <p style={{ margin: "0 0 6px", fontSize: 10, color: DASH.text, lineHeight: 1.45 }}>{exactUi("Colegas do mesmo plano podem entrar se estiverem com este perfil aberto — cada um aceita ou recusa no próprio painel.")}</p>
       <p style={{ margin: "0 0 6px", fontSize: 10, fontWeight: 700, color: DASH.gold, textTransform: "uppercase" }}>
         Convidados ({extrasCount}/3)
       </p>
@@ -76,9 +74,7 @@ export default function PlatformVideoCallInvitePanel({
                 type="button"
                 onClick={() => onRemovePendingInvite(invite.id)}
                 style={{ background: "none", border: "none", color: "#f87171", fontSize: 10, cursor: "pointer", padding: 0 }}
-              >
-                Remover
-              </button>
+              >{exactUi("Remover")}</button>
             </div>
           ))
         : participants.map((part, index) => (
@@ -100,9 +96,7 @@ export default function PlatformVideoCallInvitePanel({
                   type="button"
                   onClick={() => onRemoveParticipant(part.id)}
                   style={{ background: "none", border: "none", color: "#f87171", fontSize: 10, cursor: "pointer", padding: 0 }}
-                >
-                  Remover
-                </button>
+                >{exactUi("Remover")}</button>
               )}
             </div>
           ))}
@@ -127,9 +121,7 @@ export default function PlatformVideoCallInvitePanel({
           {showRhMembers && (
             <div style={{ display: "grid", gap: 6, marginTop: 8 }}>
               {rhMembers.length === 0 && !loadingRhMembers ? (
-                <p style={{ margin: 0, fontSize: 10, color: DASH.muted, lineHeight: 1.4 }}>
-                  Nenhuma outra pessoa na mesma assinatura. Cadastre usuários na aba Equipe.
-                </p>
+                <p style={{ margin: 0, fontSize: 10, color: DASH.muted, lineHeight: 1.4 }}>{exactUi("Nenhuma outra pessoa na mesma assinatura. Cadastre usuários na aba Equipe.")}</p>
               ) : (
                 rhMembers
                   .filter((member) => {
@@ -172,9 +164,7 @@ export default function PlatformVideoCallInvitePanel({
           )}
         </>
       )}
-      <p style={{ margin: "6px 0 0", fontSize: 9, color: DASH.muted, lineHeight: 1.4 }}>
-        Só aparecem pessoas da mesma assinatura/plano. Quem estiver vendo este perfil recebe o convite com sobreposição.
-      </p>
+      <p style={{ margin: "6px 0 0", fontSize: 9, color: DASH.muted, lineHeight: 1.4 }}>{exactUi("Só aparecem pessoas da mesma assinatura/plano. Quem estiver vendo este perfil recebe o convite com sobreposição.")}</p>
     </div>
   );
 }

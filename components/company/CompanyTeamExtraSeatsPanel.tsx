@@ -94,12 +94,8 @@ export default function CompanyTeamExtraSeatsPanel({
         border: `2px solid #8D6B1F`,
       }}
     >
-      <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: DASH.gold }}>
-        Sua empresa atingiu o limite do plano
-      </p>
-      <p style={{ margin: 0, fontSize: 12, color: DASH.text, lineHeight: 1.5 }}>
-        Deseja adquirir usuários adicionais? Escolha um pacote:
-      </p>
+      <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: DASH.gold }}>{exactUi("Sua empresa atingiu o limite do plano")}</p>
+      <p style={{ margin: 0, fontSize: 12, color: DASH.text, lineHeight: 1.5 }}>{exactUi("Deseja adquirir usuários adicionais? Escolha um pacote:")}</p>
 
       {canBuyExtra ? (
         <>
@@ -134,9 +130,7 @@ export default function CompanyTeamExtraSeatsPanel({
                   <strong style={{ color: DASH.gold, fontSize: 12 }}>{exactUi(pack.title)}</strong>
                   <span style={{ display: "block", fontSize: 14, fontWeight: 800, marginTop: 4 }}>
                     {pack.priceLabel}
-                    <span style={{ fontSize: 11, fontWeight: 500, color: DASH.muted }}>
-                      /mês
-                    </span>
+                    <span style={{ fontSize: 11, fontWeight: 500, color: DASH.muted }}>{exactUi("/mês")}</span>
                   </span>
                 </button>
               );
@@ -173,15 +167,11 @@ export default function CompanyTeamExtraSeatsPanel({
                 fontSize: 12,
                 cursor: "pointer",
               }}
-            >
-              Cancelar
-            </button>
+            >{exactUi("Cancelar")}</button>
           </div>
         </>
       ) : (
-        <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
-          Contrate um plano pago (Basic ou superior) para adicionar usuários extras.
-        </p>
+        <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{exactUi("Contrate um plano pago (Basic ou superior) para adicionar usuários extras.")}</p>
       )}
 
       {error && atLimit ? (
@@ -209,9 +199,7 @@ export default function CompanyTeamExtraSeatsPanel({
               target="_blank"
               rel="noreferrer"
               style={{ color: DASH.gold, fontSize: 12 }}
-            >
-              Abrir boleto
-            </a>
+            >{exactUi("Abrir boleto")}</a>
           ) : null}
         </div>
       ) : null}

@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -315,9 +316,7 @@ export default function CompanyEntrevistasBoard() {
           disabled={busy}
           onClick={() => void excluir(p.id)}
           style={{ ...btnGhost, color: "#e57373", borderColor: "rgba(229,115,115,0.55)" }}
-        >
-          Excluir
-        </button>
+        >{exactUi("Excluir")}</button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <p
             style={{
@@ -380,7 +379,7 @@ export default function CompanyEntrevistasBoard() {
           type="button"
           disabled={busy}
           onClick={() => void excluir(p.id)}
-          title="Excluir"
+          title={exactUi("Excluir")}
           style={{
             ...btnGhost,
             color: "#e57373",
@@ -389,9 +388,7 @@ export default function CompanyEntrevistasBoard() {
             padding: "4px 8px",
             fontSize: 10,
           }}
-        >
-          Excluir
-        </button>
+        >{exactUi("Excluir")}</button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <p
             style={{
@@ -481,7 +478,7 @@ export default function CompanyEntrevistasBoard() {
               Propostas ativas ({listas.propostas.length})
             </h4>
             {listas.propostas.length === 0 ? (
-              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Nenhuma proposta ativa.</p>
+              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{exactUi("Nenhuma proposta ativa.")}</p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {listas.propostas.map(renderProposta)}
@@ -494,9 +491,7 @@ export default function CompanyEntrevistasBoard() {
               Entrevistas agendadas ({listas.entrevistas.length})
             </h4>
             {listas.entrevistas.length === 0 ? (
-              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
-                Quando você agendar entrevistas a partir de propostas, elas aparecerão aqui.
-              </p>
+              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{exactUi("Quando você agendar entrevistas a partir de propostas, elas aparecerão aqui.")}</p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {listas.entrevistas.map((p) => (
@@ -530,7 +525,7 @@ export default function CompanyEntrevistasBoard() {
               Arquivadas ({listas.arquivadas.length})
             </h4>
             {listas.arquivadas.length === 0 ? (
-              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Nenhum item arquivado.</p>
+              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{exactUi("Nenhum item arquivado.")}</p>
             ) : (
               <div
                 style={{

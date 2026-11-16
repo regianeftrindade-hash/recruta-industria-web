@@ -1,3 +1,4 @@
+import { exactMessageKey } from "@/lib/i18n/exact-ui";
 import { t } from "@/lib/i18n/translate";
 import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
 
@@ -54,6 +55,6 @@ const KNOWN: Record<string, MessageKey> = {
 
 export function localizeServerText(value: unknown): string {
   if (typeof value !== "string") return "";
-  const key = KNOWN[value];
+  const key = KNOWN[value] ?? exactMessageKey(value);
   return key ? t(key) : value;
 }
