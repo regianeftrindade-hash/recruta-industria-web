@@ -319,8 +319,8 @@ export default function CompanyDashboardTabPanel({
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 12 }}>
           {entrevistas.map((ev) => {
             const when = new Date(ev.scheduledAt);
-            const dataLabel = when.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
-            const horaLabel = when.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+            const dataLabel = formatUiDate(when, { day: "2-digit", month: "short", year: "numeric" });
+            const horaLabel = when.toLocaleTimeString(uiIntlLocale(), { hour: "2-digit", minute: "2-digit" });
             return (
               <button
                 key={ev.proposalId}

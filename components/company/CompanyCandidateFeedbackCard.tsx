@@ -199,7 +199,7 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
                 >
                   <strong style={{ fontSize: 12, ...textoDourado }}>{fb.authorName}</strong>
                   <span style={{ fontSize: 10, color: "#000", flexShrink: 0 }}>
-                    {new Date(fb.createdAt).toLocaleDateString("pt-BR", {
+                    {formatUiDateTime(fb.createdAt, {
                       day: "2-digit",
                       month: "2-digit",
                       year: "2-digit",

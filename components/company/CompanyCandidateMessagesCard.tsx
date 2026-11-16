@@ -120,7 +120,7 @@ export default function CompanyCandidateMessagesCard({
             >
               {conversa.map((m) => {
                 const isProf = m.senderRole === "PROFESSIONAL";
-                const quando = new Date(m.createdAt).toLocaleString("pt-BR", {
+                const quando = formatUiDateTime(m.createdAt, {
                   day: "2-digit",
                   month: "2-digit",
                   hour: "2-digit",

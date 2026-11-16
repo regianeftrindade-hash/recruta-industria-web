@@ -13,7 +13,7 @@ import {
 import { CurriculoAnexadoSemLeituraError } from "@/lib/curriculum/resume-read-error";
 import styles from "./resume-toolkit.module.css";
 import { formatInTimeZone } from "@/lib/datetime/format-in-zone";
-import { getBoundLocale } from "@/lib/i18n/active-locale";
+import { uiIntlLocale } from "@/lib/i18n/format-ui";
 import { t } from "@/lib/i18n/translate";
 
 type Status = {
@@ -93,7 +93,7 @@ function formatUpdatedAt(value: string | null): string | null {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
-  return formatInTimeZone(date, getBoundLocale() === "en" ? "en" : "pt-BR", "America/Sao_Paulo", { dateStyle: "short" });
+  return formatInTimeZone(date, uiIntlLocale(), "America/Sao_Paulo", { dateStyle: "short" });
 }
 
 async function readError(response: Response, fallback: string): Promise<string> {

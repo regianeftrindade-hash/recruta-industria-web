@@ -10,7 +10,7 @@ import DashboardThemeToggle from "@/app/components/DashboardThemeToggle";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import InstallAppPrompt from "@/components/pwa/InstallAppPrompt";
 import "@/app/dashboard/dashboard-theme.css";
-import { getBoundLocale } from "@/lib/i18n/active-locale";
+import { uiIntlLocale } from "@/lib/i18n/format-ui";
 import { t } from "@/lib/i18n/translate";
 import {
   DASH,
@@ -90,7 +90,7 @@ const btnExcluirStyle: React.CSSProperties = {
 };
 
 function formatarDataHora(iso: string): string {
-  return new Date(iso).toLocaleString(getBoundLocale() === "en" ? "en" : "pt-BR", {
+  return new Date(iso).toLocaleString(uiIntlLocale(), {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -100,11 +100,11 @@ function formatarDataHora(iso: string): string {
 }
 
 function formatarData(iso: string): string {
-  return new Date(iso).toLocaleDateString(getBoundLocale() === "en" ? "en" : "pt-BR");
+  return new Date(iso).toLocaleDateString(uiIntlLocale());
 }
 
 function formatarDataHoraCurta(iso: string): string {
-  return new Date(iso).toLocaleString(getBoundLocale() === "en" ? "en" : "pt-BR", {
+  return new Date(iso).toLocaleString(uiIntlLocale(), {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

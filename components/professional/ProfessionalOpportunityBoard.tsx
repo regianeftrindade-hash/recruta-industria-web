@@ -14,7 +14,7 @@ import {
 import { formatReaisDisplay, turnoPropostaLabel } from "@/lib/format-reais";
 import css from "./ProfessionalOpportunityBoard.module.css";
 import { formatInTimeZone } from "@/lib/datetime/format-in-zone";
-import { getBoundLocale } from "@/lib/i18n/active-locale";
+import { uiIntlLocale } from "@/lib/i18n/format-ui";
 import { t as ui } from "@/lib/i18n/translate";
 
 type Props = {
@@ -64,7 +64,7 @@ function trackingOf(p: JobProposalDTO) {
 function dataCandidatura(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
-  return formatInTimeZone(date, getBoundLocale() === "en" ? "en" : "pt-BR", "America/Sao_Paulo");
+  return formatInTimeZone(date, uiIntlLocale(), "America/Sao_Paulo");
 }
 
 function detalheCandidatura(item: OwnJobApplicationView): string {

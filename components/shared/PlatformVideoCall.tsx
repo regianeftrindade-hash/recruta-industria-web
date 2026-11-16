@@ -1,5 +1,6 @@
 "use client";
-import { formatUiDateTime } from "@/lib/i18n/format-ui";
+import { uiIntlLocale } from "@/lib/i18n/format-ui";
+import { formatInTimeZone } from "@/lib/datetime/format-in-zone";
 import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useEffect, useRef, useState } from "react";
@@ -111,12 +112,11 @@ export default function PlatformVideoCall({
         const when = new Date(next.interview.scheduledAt || "");
         const quando = Number.isNaN(when.getTime())
           ? ""
-          : when.toLocaleString("pt-BR", {
+          : formatInTimeZone(when, uiIntlLocale(), "America/Sao_Paulo", {
               day: "2-digit",
               month: "2-digit",
               hour: "2-digit",
               minute: "2-digit",
-              timeZone: "America/Sao_Paulo",
             });
         setProxima({ empresa: String(next.companyName || exactUi("Empresa")), quando });
       })

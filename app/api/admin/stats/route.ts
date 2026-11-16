@@ -10,6 +10,10 @@ import {
   sumPaidExcludingTestEmails,
 } from '@/lib/admin/admin-exclude-test-accounts';
 import { limitesDoPainel, somarDiasCivis, ultimosDias } from '@/lib/admin/admin-day';
+import '@/lib/i18n/active-locale.server';
+import { bindLocale } from '@/lib/i18n/active-locale';
+import { resolveInterfaceLocale } from '@/lib/i18n/resolve-interface-locale';
+import { formatPriceBRL } from '@/lib/payment/billing';
 
 function isActiveSubscription(expiresAt: Date | null | undefined): boolean {
   if (!expiresAt) return true;
@@ -37,6 +41,7 @@ export async function GET(request: NextRequest) {
   if (denied) return denied;
 
   try {
+    bindLocale(await resolveInterfaceLocale());
     const agora = new Date();
     const { inicioHoje, fimHoje, inicioSemana, inicioMes } = limitesDoPainel(agora);
     const days = ultimosDias(14, agora);
@@ -373,9 +378,7 @@ export async function GET(request: NextRequest) {
         unitPriceCentavos,
         subscriptions,
         revenueCentavos,
-        revenueLabel: `R$ ${(revenueCentavos / 100).toLocaleString('pt-BR', {
-          minimumFractionDigits: 2,
-        })}`,
+        revenueLabel: formatPriceBRL(revenueCentavos),
       };
     });
 
@@ -396,8 +399,7 @@ export async function GET(request: NextRequest) {
       excludeEmails,
       baselineAt,
     );
-    const formatBrlFromCentavos = (centavos: number) =>
-      `R$ ${(centavos / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    const formatBrlFromCentavos = (centavos: number) => formatPriceBRL(centavos);
 
     return NextResponse.json({
       site: {
