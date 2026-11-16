@@ -16,6 +16,7 @@ import {
   temFiltroDeVaga,
 } from "@/lib/jobs/public-vagas-filtros";
 import { caminhoDeVolta, hrefComVolta } from "@/lib/jobs/job-return-path";
+import "@/lib/i18n/active-locale.server";
 import { bindLocale } from "@/lib/i18n/active-locale";
 import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
 import { t } from "@/lib/i18n/translate";

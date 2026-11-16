@@ -1,5 +1,6 @@
 import React from "react";
 import type { Metadata, Viewport } from "next";
+import "@/lib/i18n/active-locale.server";
 import { bindLocale } from "@/lib/i18n/active-locale";
 import { htmlLang, textDirection, type SupportedLocale } from "@/lib/i18n/locales";
 import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";

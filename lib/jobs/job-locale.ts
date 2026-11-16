@@ -1,3 +1,4 @@
+import "@/lib/i18n/active-locale.server";
 import { bindLocale } from "@/lib/i18n/active-locale";
 import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
 

@@ -12,6 +12,7 @@ import JobFavoriteButton from "@/components/jobs/JobFavoriteButton";
 import JobPanelLink from "../JobPanelLink";
 import JobShareButton from "../JobShareButton";
 import JobText from "../JobText";
+import "@/lib/i18n/active-locale.server";
 import { bindLocale } from "@/lib/i18n/active-locale";
 import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
 import { t } from "@/lib/i18n/translate";

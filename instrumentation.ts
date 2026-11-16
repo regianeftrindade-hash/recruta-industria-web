@@ -2,6 +2,10 @@ import * as Sentry from "@sentry/nextjs";
 import { isSentryConfigured } from "@/lib/observability/report-error";
 
 export async function register() {
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    await import("./lib/i18n/active-locale.server");
+  }
+
   if (!isSentryConfigured()) return;
 
   if (process.env.NEXT_RUNTIME === "nodejs") {

@@ -1,8 +1,28 @@
-import { AsyncLocalStorage } from "node:async_hooks";
 import { DEFAULT_LOCALE, resolveLocale, type SupportedLocale } from "@/lib/i18n/locales";
 
-const requestLocale = new AsyncLocalStorage<SupportedLocale>();
-let browserLocale: SupportedLocale = DEFAULT_LOCALE;
+type LocaleHooks = {
+  getStore(): SupportedLocale | undefined;
+  enterWith(locale: SupportedLocale): void;
+  run<T>(locale: SupportedLocale, fn: () => T): T;
+};
+
+type LocaleSlot = {
+  hooks?: LocaleHooks;
+  browser: SupportedLocale;
+};
+
+const SLOT = "__recrutaInterfaceLocale";
+
+function slot(): LocaleSlot {
+  const g = globalThis as typeof globalThis & { [SLOT]?: LocaleSlot };
+  if (!g[SLOT]) g[SLOT] = { browser: DEFAULT_LOCALE };
+  return g[SLOT];
+}
+
+/** O módulo de servidor registra o isolamento por pedido. O cliente não importa Node. */
+export function registerLocaleHooks(hooks: LocaleHooks): void {
+  slot().hooks = hooks;
+}
 
 /**
  * Vale só para a execução atual.
@@ -11,25 +31,29 @@ let browserLocale: SupportedLocale = DEFAULT_LOCALE;
  */
 export function bindLocale(input?: string | null): SupportedLocale {
   const locale = resolveLocale(input);
-  if (typeof window === "undefined") requestLocale.enterWith(locale);
-  else browserLocale = locale;
+  if (typeof window === "undefined") {
+    slot().hooks?.enterWith(locale);
+    return locale;
+  }
+  slot().browser = locale;
   return locale;
 }
 
 /** Isola o locale no trecho executado agora, sem depender do layout. */
 export function runWithLocale<T>(input: string | null | undefined, render: (locale: SupportedLocale) => T): T {
   const locale = resolveLocale(input);
-  if (typeof window === "undefined") return requestLocale.run(locale, () => render(locale));
-  const previous = browserLocale;
-  browserLocale = locale;
+  const hooks = slot().hooks;
+  if (typeof window === "undefined" && hooks) return hooks.run(locale, () => render(locale));
+  const previous = slot().browser;
+  slot().browser = locale;
   try {
     return render(locale);
   } finally {
-    browserLocale = previous;
+    slot().browser = previous;
   }
 }
 
 export function getBoundLocale(): SupportedLocale {
-  if (typeof window === "undefined") return requestLocale.getStore() ?? DEFAULT_LOCALE;
-  return browserLocale;
+  if (typeof window === "undefined") return slot().hooks?.getStore() ?? DEFAULT_LOCALE;
+  return slot().browser;
 }

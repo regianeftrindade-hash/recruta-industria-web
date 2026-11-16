@@ -7,6 +7,7 @@ import { surfacesEn } from "@/lib/i18n/messages/surfaces.en";
 import { messagesPtBR } from "@/lib/i18n/messages/pt-BR";
 
 const messagesEn = { ...messagesEnCore, ...surfacesEn, ...internalEn, ...restEn, ...fixEn };
+import "@/lib/i18n/active-locale.server";
 import { bindLocale } from "@/lib/i18n/active-locale";
 import { parseLocalePreference } from "@/lib/i18n/locale-preference";
 import { t } from "@/lib/i18n/translate";
