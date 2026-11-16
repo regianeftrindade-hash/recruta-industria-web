@@ -1,4 +1,7 @@
 "use client";
+import { localizeServerText } from "@/lib/i18n/server-text";
+import { formatUiDate } from "@/lib/i18n/format-ui";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -81,14 +84,14 @@ function PagamentoProfissional() {
     latestChargeStatus: subscription?.latestCharge?.status,
   });
   const accessLabel = accessState === "active"
-    ? "Premium ativo"
+    ? exactUi("Premium ativo")
     : accessState === "pending"
-      ? "Pagamento pendente"
+      ? exactUi("Pagamento pendente")
       : accessState === "declined"
         ? "Pagamento recusado ou não concluído"
         : accessState === "canceled"
           ? "Pagamento cancelado ou não concluído"
-          : "Gratuito";
+          : exactUi("Gratuito");
   const showCheckout = offeringEnabled && subscription !== null && !subscription.isPremium && (
     accessState === "free"
     || accessState === "declined"
@@ -155,7 +158,7 @@ function PagamentoProfissional() {
       body: JSON.stringify({ planTier: "PREMIUM" as ProfessionalPlanTier, chargeId }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Erro ao ativar plano");
+    if (!res.ok) throw new Error(localizeServerText(data.error) || "Erro ao ativar plano");
     return data;
   };
 
@@ -194,7 +197,7 @@ function PagamentoProfissional() {
         return "paid" as const;
       }
       if (["DECLINED", "CANCELED"].includes(data?.status)) {
-        setStatusMessage("❌ Pagamento não aprovado.");
+        setStatusMessage(exactUi("❌ Pagamento não aprovado."));
         stopPolling();
         setProcessing(false);
         return "failed" as const;
@@ -319,7 +322,7 @@ function PagamentoProfissional() {
           </p>
         ) : null}
         <h1 style={{ color: "#C89B3C", margin: "0 0 8px" }}>
-          {offeringEnabled ? `${planDef.emoji} Assinar plano ${planDef.nome}` : "Plano profissional"}
+          {offeringEnabled ? `${planDef.emoji} Assinar plano ${planDef.nome}` : exactUi("Plano profissional")}
         </h1>
         {offeringEnabled ? (
           <p style={{ color: "rgba(242,242,242,0.82)", margin: "0 0 12px", lineHeight: 1.5 }}>{planDef.descricao}</p>
@@ -327,7 +330,7 @@ function PagamentoProfissional() {
         <p style={{ color: offeringEnabled ? "rgba(242,242,242,0.92)" : "#414141", margin: "0 0 24px", lineHeight: 1.5 }}>
           Situação da assinatura: <strong>{subscription ? accessLabel : "Consultando..."}</strong>
           {subscription?.isPremium && subscription.subscriptionExpiresAt
-            ? ` até ${new Date(subscription.subscriptionExpiresAt).toLocaleDateString("pt-BR")}.`
+            ? ` até ${formatUiDate(subscription.subscriptionExpiresAt)}.`
             : "."}
           {subscription?.isPremium && subscription.autoRenew
             ? " A renovação segue a assinatura registrada no gateway. O acesso acompanha o estado confirmado dessa cobrança."
@@ -369,7 +372,7 @@ function PagamentoProfissional() {
             {priceLabel.savings && (
               <p style={{ color: "#8D6B1F", fontSize: 11, margin: "0 0 12px" }}>{priceLabel.savings}</p>
             )}
-            <p style={{ color: "var(--dash-text, #414141)", fontSize: 12, margin: "0 0 16px" }}>Inclui:</p>
+            <p style={{ color: "var(--dash-text, #414141)", fontSize: 12, margin: "0 0 16px" }}>{exactUi("Inclui:")}</p>
             <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, lineHeight: 1.7 }}>
               {planDef.inclui.map((item) => <li key={item}>✅ {item}</li>)}
             </ul>
@@ -378,7 +381,7 @@ function PagamentoProfissional() {
 
           <div style={{ background: "#E8D5A3", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.45)" }}>
             {!paymentData && subscription === null ? (
-              <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5 }}>Consultando a assinatura...</p>
+              <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5 }}>{exactUi("Consultando a assinatura...")}</p>
             ) : !paymentData && !showCheckout ? (
               <div>
                 <h2 style={{ color: "#C89B3C", margin: "0 0 12px", fontSize: 16 }}>{accessLabel}</h2>
@@ -412,7 +415,7 @@ function PagamentoProfissional() {
               </div>
             ) : !paymentData ? (
               <>
-                <h2 style={{ color: "#C89B3C", margin: "0 0 16px", fontSize: 16 }}>Pagamento</h2>
+                <h2 style={{ color: "#C89B3C", margin: "0 0 16px", fontSize: 16 }}>{exactUi("Pagamento")}</h2>
 
                 <BillingOptions
                   billingPeriod={billingPeriod}
@@ -469,7 +472,7 @@ function PagamentoProfissional() {
                   disabled={processing}
                   style={{ ...btnGold, width: "100%", padding: 14, fontSize: 14, opacity: processing ? 0.7 : 1 }}
                 >
-                  {processing ? "Processando..." : "Assinar Premium"}
+                  {processing ? exactUi("Processando...") : exactUi("Assinar Premium")}
                 </button>
                 {statusMessage && (
                   <p style={{ color: "#C89B3C", fontSize: 12, marginTop: 12 }}>{statusMessage}</p>
@@ -478,7 +481,7 @@ function PagamentoProfissional() {
             ) : (
               <div>
                 <h2 style={{ color: "#C89B3C", fontSize: 16, marginBottom: 16 }}>
-                  {paymentData.recurring ? "Finalize sua assinatura" : "Finalize o pagamento"}
+                  {paymentData.recurring ? exactUi("Finalize sua assinatura") : exactUi("Finalize o pagamento")}
                 </h2>
                 {paymentData.copyPasteKey && (
                   <PixQrCode
@@ -489,7 +492,7 @@ function PagamentoProfissional() {
                 )}
                 {paymentData.boletoUrl && (
                   <a href={paymentData.boletoUrl} target="_blank" rel="noreferrer" style={{ color: "#C89B3C", display: "block", marginTop: 12 }}>
-                    Abrir boleto {paymentData.recurring ? "da assinatura" : ""}
+                    Abrir boleto {paymentData.recurring ? exactUi("da assinatura") : ""}
                   </a>
                 )}
                 {paymentData.checkoutUrl && !paymentData.boletoUrl && (

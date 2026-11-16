@@ -1,4 +1,6 @@
 'use client'
+import { formatUiDateTime } from "@/lib/i18n/format-ui";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import { useState, useEffect } from 'react'
 
@@ -167,7 +169,7 @@ export default function SecurityDashboard() {
       </div>
 
       {loading ? (
-        <p style={{ color: COLORS.textoSuave }}>Carregando...</p>
+        <p style={{ color: COLORS.textoSuave }}>{exactUi("Carregando...")}</p>
       ) : activeTab === 'logs' ? (
         <div>
           <h2 style={{ color: COLORS.dourado, marginBottom: '20px' }}>
@@ -188,18 +190,18 @@ export default function SecurityDashboard() {
             >
               <thead>
                 <tr style={{ background: 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)', color: COLORS.tinta }}>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Data</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Evento</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Usuário</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Ação</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Detalhes</th>
+                  <th style={{ padding: '12px', textAlign: 'left' }}>{exactUi("Data")}</th>
+                  <th style={{ padding: '12px', textAlign: 'left' }}>{exactUi("Evento")}</th>
+                  <th style={{ padding: '12px', textAlign: 'left' }}>{exactUi("Usuário")}</th>
+                  <th style={{ padding: '12px', textAlign: 'left' }}>{exactUi("Ação")}</th>
+                  <th style={{ padding: '12px', textAlign: 'left' }}>{exactUi("Detalhes")}</th>
                 </tr>
               </thead>
               <tbody>
                 {logs.map(log => (
                   <tr key={log.id} style={{ borderBottom: `2px solid ${COLORS.douradoEscuro}`, color: COLORS.textoSuave }}>
                     <td style={{ padding: '12px' }}>
-                      {new Date(log.timestamp).toLocaleString('pt-BR')}
+                      {formatUiDateTime(log.timestamp)}
                     </td>
                     <td style={{ padding: '12px' }}>{log.event}</td>
                     <td style={{ padding: '12px' }}>{log.userId}</td>
@@ -265,7 +267,7 @@ export default function SecurityDashboard() {
                         }}
                       >
                         Tentativas falhadas: {lock.attemptCount} | Bloqueado em:{' '}
-                        {new Date(lock.lockedAt).toLocaleString('pt-BR')}
+                        {formatUiDateTime(lock.lockedAt)}
                       </p>
                     </div>
                     <button
@@ -285,7 +287,7 @@ export default function SecurityDashboard() {
                 </div>
               ))}
             {locks.filter(l => !l.unlockedAt).length === 0 && (
-              <p style={{ color: COLORS.textoSuave }}>Nenhuma conta bloqueada no momento ✅</p>
+              <p style={{ color: COLORS.textoSuave }}>{exactUi("Nenhuma conta bloqueada no momento ✅")}</p>
             )}
           </div>
         </div>

@@ -208,7 +208,7 @@ video {
 .ri-readable label,
 .ri-readable p,
 .ri-readable span {
-  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", "Nirmala UI", "Malgun Gothic", "Yu Gothic UI", "Microsoft YaHei", "Segoe UI Historic", sans-serif;
   letter-spacing: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -242,4 +242,34 @@ video {
 [style*="#c89b3c"] {
   -webkit-text-stroke: 0.75px #000;
   paint-order: stroke fill;
+}
+
+html[dir="rtl"] {
+  direction: rtl;
+}
+
+html[lang="ja"] button,
+html[lang="zh-CN"] button,
+html[lang="ko"] button,
+html[lang="ar"] button,
+html[lang="hi"] button,
+html[lang="ja"] input,
+html[lang="zh-CN"] input,
+html[lang="ko"] input,
+html[lang="ar"] input,
+html[lang="hi"] input,
+html[lang="ja"] select,
+html[lang="zh-CN"] select,
+html[lang="ko"] select,
+html[lang="ar"] select,
+html[lang="hi"] select {
+  line-height: 1.45;
+}
+
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="tel"],
+html[dir="rtl"] input[type="url"],
+html[dir="rtl"] input[type="number"] {
+  direction: ltr;
+  unicode-bidi: plaintext;
 }

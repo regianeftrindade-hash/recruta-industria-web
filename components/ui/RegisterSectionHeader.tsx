@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { rotuloOpcao } from "@/lib/i18n/option-label";
 import styles from "@/app/professional/register/register.module.css";
 import type { MarcadorPreenchimento } from "@/app/professional/register/RegisterLabelMarcador";
 
@@ -50,7 +51,7 @@ export function CheckboxGroup({
                 else onChange(selected.filter((s) => s !== opt));
               }}
             />
-            {opt}
+            {rotuloOpcao(opt)}
           </label>
         ))}
       </div>

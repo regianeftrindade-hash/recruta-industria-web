@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n/translate';
 import { isValidEmail } from '@/lib/security';
 
 export type CampoObrigatorioId =
@@ -113,44 +114,44 @@ export function validarCamposObrigatoriosCadastro(input: ValidacaoCadastroInput)
     }
   };
 
-  if (campoVazio(input.nome)) add('nome', 'Nome completo');
+  if (campoVazio(input.nome)) add('nome', t("registration.simple.fullName"));
   if (!dataNascimentoValida(input.dataNascimentoValue, input.dataNascimento)) {
-    add('dataNascimento', 'Nascimento');
+    add('dataNascimento', t("registration.ui.nascimento"));
   }
 
-  if (campoVazio(input.email)) add('email', 'E-mail');
-  else if (!isValidEmail(input.email)) add('email', 'E-mail válido');
+  if (campoVazio(input.email)) add('email', t("registration.simple.email"));
+  else if (!isValidEmail(input.email)) add('email', t("registration.ui.e-mail-valido"));
 
   const telPrincipal = input.telefone.replace(/\D/g, '');
   const telAlternativo = input.telefone2.replace(/\D/g, '');
   if (telPrincipal.length < 10 && telAlternativo.length < 10) {
-    add('telefone', 'Telefone / WhatsApp (DDD)');
+    add('telefone', t("registration.ui.telefone-whatsapp-ddd"));
   }
-  if (campoVazio(input.whatsapp)) add('whatsapp', 'Este número é WhatsApp?');
+  if (campoVazio(input.whatsapp)) add('whatsapp', t("registration.ui.este-numero-e-whatsapp"));
 
-  if (campoVazio(input.estado)) add('estado', 'Estado (UF)');
-  if (campoVazio(input.cidade)) add('cidade', 'Cidade');
+  if (campoVazio(input.estado)) add('estado', t("registration.ui.estado-uf"));
+  if (campoVazio(input.cidade)) add('cidade', t("registration.ui.cidade"));
 
-  if (campoVazio(input.escolaridade)) add('escolaridade', 'Escolaridade (nível)');
+  if (campoVazio(input.escolaridade)) add('escolaridade', t("registration.ui.escolaridade-nivel"));
 
-  if (campoVazio(input.situacaoProfissional)) add('situacaoProfissional', 'Situação profissional atual');
-  if (campoVazio(input.cargoDesejado)) add('cargoDesejado', 'Cargo desejado');
-  if (campoVazio(input.pretensaoSalarial)) add('pretensaoSalarial', 'Pretensão salarial');
+  if (campoVazio(input.situacaoProfissional)) add('situacaoProfissional', t("registration.ui.situacao-profissional-atual"));
+  if (campoVazio(input.cargoDesejado)) add('cargoDesejado', t("registration.ui.cargo-desejado"));
+  if (campoVazio(input.pretensaoSalarial)) add('pretensaoSalarial', t("registration.ui.pretensao-salarial"));
 
-  if (!input.autorizoDados) add('autorizoDados', 'Termo de Autorização de Uso de Dados');
-  if (!input.declaroVerdadeiro) add('declaroVerdadeiro', 'Termo de Declaração de Veracidade');
-  if (!input.aceitoLGPD) add('aceitoLGPD', 'Termo LGPD');
+  if (!input.autorizoDados) add('autorizoDados', t("registration.ui.termo-de-autorizacao-de-uso-de-dados"));
+  if (!input.declaroVerdadeiro) add('declaroVerdadeiro', t("registration.ui.termo-de-declaracao-de-veracidade"));
+  if (!input.aceitoLGPD) add('aceitoLGPD', t("registration.ui.termo-lgpd"));
 
   if (input.exigeSenha) {
-    if (!input.password || input.password.length < 8) add('password', 'Senha (mínimo 8 caracteres)');
-    if (!input.confirmPassword) add('confirmPassword', 'Confirmar senha');
+    if (!input.password || input.password.length < 8) add('password', t("registration.ui.senha-minimo-8-caracteres"));
+    if (!input.confirmPassword) add('confirmPassword', t("registration.simple.confirmPassword"));
     if (
       input.password
       && input.confirmPassword
       && input.password !== input.confirmPassword
     ) {
-      add('password', 'Senha e confirmação iguais');
-      add('confirmPassword', 'Senha e confirmação iguais');
+      add('password', t("registration.ui.senha-e-confirmacao-iguais"));
+      add('confirmPassword', t("registration.ui.senha-e-confirmacao-iguais"));
     }
   }
 

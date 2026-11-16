@@ -1,4 +1,7 @@
 "use client";
+import { localizeServerText } from "@/lib/i18n/server-text";
+import { exactUi } from "@/lib/i18n/exact-ui";
+import { t } from "@/lib/i18n/translate";
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -215,19 +218,19 @@ function ManualCard({ section, forceOpen }: { section: ManualSection; forceOpen?
         }}
       >
         <span style={{ fontSize: 14, fontWeight: 800, color: DASH.gold }}>
-          {section.emoji} {section.titulo}
+          {section.emoji} {exactUi(section.titulo)}
         </span>
         <span style={{ fontSize: 12, color: DASH.muted, flexShrink: 0 }}>{expanded ? "▲" : "▼"}</span>
       </button>
       {expanded ? (
         <div style={{ padding: "0 14px 14px", display: "grid", gap: 10 }}>
           <p style={{ margin: 0, fontSize: 11, color: DASH.muted }}>
-            Disponibilidade: <strong style={{ color: DASH.gold }}>{section.planos}</strong>
+            Disponibilidade: <strong style={{ color: DASH.gold }}>{exactUi(section.planos)}</strong>
           </p>
           <ol style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: DASH.text, lineHeight: 1.55 }}>
             {section.passos.map((p) => (
-              <li key={p} style={{ marginBottom: 6 }}>
-                {p}
+              <li key={exactUi(p)} style={{ marginBottom: 6 }}>
+                {exactUi(p)}
               </li>
             ))}
           </ol>
@@ -241,12 +244,12 @@ function ManualCard({ section, forceOpen }: { section: ManualSection; forceOpen?
               }}
             >
               <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 800, color: DASH.gold }}>
-                Dicas
+                {t("surface.dash.pro.tips")}
               </p>
               <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, color: DASH.text, lineHeight: 1.5 }}>
                 {section.dicas.map((d) => (
-                  <li key={d} style={{ marginBottom: 4 }}>
-                    {d}
+                  <li key={exactUi(d)} style={{ marginBottom: 4 }}>
+                    {exactUi(d)}
                   </li>
                 ))}
               </ul>
@@ -301,14 +304,14 @@ export default function CompanyMeuPlanoPage() {
       });
       if (res.ok) {
         setPlanTier("FREE");
-        setFeedback({ tone: "ok", text: "Plano alterado para Free." });
+        setFeedback({ tone: "ok", text: exactUi("Plano alterado para Free.") });
         router.refresh();
       } else {
         const data = await res.json().catch(() => ({}));
-        setFeedback({ tone: "err", text: data.error || "Não foi possível alterar o plano." });
+        setFeedback({ tone: "err", text: localizeServerText(data.error) || exactUi("Não foi possível alterar o plano.") });
       }
     } catch {
-      setFeedback({ tone: "err", text: "Erro de rede ao alterar o plano." });
+      setFeedback({ tone: "err", text: exactUi("Erro de rede ao alterar o plano.") });
     }
   };
 
@@ -317,7 +320,7 @@ export default function CompanyMeuPlanoPage() {
       <section className="dash-card" style={{ ...dashCard, padding: 16 }}>
         <h3 style={{ ...dashSectionTitle, margin: "0 0 8px", fontSize: 15 }}>📋 Meu Plano</h3>
         {loading ? (
-          <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Carregando plano...</p>
+          <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{exactUi("Carregando plano...")}</p>
         ) : (
           <>
             <p style={{ margin: "0 0 6px", fontSize: 14, fontWeight: 800, color: DASH.gold }}>
@@ -325,10 +328,10 @@ export default function CompanyMeuPlanoPage() {
             </p>
             <p style={{ margin: "0 0 4px", fontSize: 13, color: DASH.text }}>
               {planDef.preco}
-              <span style={{ color: DASH.muted, fontSize: 11 }}>{planDef.periodo}</span>
+              <span style={{ color: DASH.muted, fontSize: 11 }}>{exactUi(planDef.periodo)}</span>
             </p>
             <p style={{ margin: 0, fontSize: 12, color: DASH.muted, lineHeight: 1.5 }}>
-              {primeiraFrase(planDef.descricao)}
+              {primeiraFrase(exactUi(planDef.descricao))}
             </p>
             {feedback ? (
               <p
@@ -394,7 +397,7 @@ export default function CompanyMeuPlanoPage() {
                   boxShadow: expandAll ? undefined : "none",
                 }}
               >
-                {expandAll ? "Recolher tudo" : "Expandir tudo"}
+                {expandAll ? exactUi("Recolher tudo") : exactUi("Expandir tudo")}
               </button>
             </div>
             <div style={{ display: "grid", gap: 10 }}>
@@ -404,7 +407,7 @@ export default function CompanyMeuPlanoPage() {
             </div>
             <p style={{ margin: "16px 0 0", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
               Dúvidas sobre cobrança, verificação ou planos? Use a aba{" "}
-              <strong style={dashPlanAccent}>Contato</strong> para falar com a Recruta Indústria.
+              <strong style={dashPlanAccent}>{exactUi("Contato")}</strong> para falar com a Recruta Indústria.
             </p>
           </div>
         </details>

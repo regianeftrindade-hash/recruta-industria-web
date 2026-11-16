@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React from "react";
 import { useRouter } from "next/navigation";
@@ -84,10 +85,10 @@ export default function CompanyPlanCards({ currentTier, onSelectFree }: CompanyP
               </p>
               <p style={{ color: DASH.text, margin: "0 0 6px", fontSize: 18, fontWeight: "bold", lineHeight: 1.2 }}>
                 {plano.preco}
-                <span style={{ fontSize: 11, fontWeight: "normal", color: DASH.muted }}>{plano.periodo}</span>
+                <span style={{ fontSize: 11, fontWeight: "normal", color: DASH.muted }}>{exactUi(plano.periodo)}</span>
               </p>
               <p style={{ color: DASH.muted, margin: "0 0 8px", fontSize: 12, lineHeight: 1.4 }}>
-                {primeiraFrase(plano.descricao)}
+                {primeiraFrase(exactUi(plano.descricao))}
               </p>
 
               <ul
@@ -101,7 +102,7 @@ export default function CompanyPlanCards({ currentTier, onSelectFree }: CompanyP
                 }}
               >
                 {destaques.map((item) => (
-                  <li key={item}>{item}</li>
+                  <li key={item}>{exactUi(item)}</li>
                 ))}
               </ul>
 
@@ -121,7 +122,7 @@ export default function CompanyPlanCards({ currentTier, onSelectFree }: CompanyP
               )}
 
               {isCurrent && plano.id === "FREE" && !isPaid && (
-                <p style={{ color: DASH.muted, fontSize: 12, margin: 0, textAlign: "center" }}>Plano gratuito ativo</p>
+                <p style={{ color: DASH.muted, fontSize: 12, margin: 0, textAlign: "center" }}>{exactUi("Plano gratuito ativo")}</p>
               )}
 
               {isCurrent && isPaid && (
@@ -143,24 +144,24 @@ export default function CompanyPlanCards({ currentTier, onSelectFree }: CompanyP
                 </summary>
                 <div style={{ marginTop: 8 }}>
                   <p style={{ margin: "0 0 8px", fontSize: 12, color: DASH.muted, lineHeight: 1.4 }}>
-                    {plano.descricao}
+                    {exactUi(plano.descricao)}
                   </p>
                   <ul style={{ margin: "0 0 8px", paddingLeft: 16, fontSize: 12, color: DASH.text, lineHeight: 1.4 }}>
                     {plano.inclui.map((item) => (
-                      <li key={item}>{item}</li>
+                      <li key={item}>{exactUi(item)}</li>
                     ))}
                   </ul>
                   {plano.naoInclui && plano.naoInclui.length > 0 ? (
                     <ul style={{ margin: "0 0 8px", paddingLeft: 16, fontSize: 12, color: DASH.muted, lineHeight: 1.4 }}>
                       {plano.naoInclui.map((item) => (
-                        <li key={item}>Não inclui: {item}</li>
+                        <li key={item}>{exactUi("Não inclui:")} {exactUi(item)}</li>
                       ))}
                     </ul>
                   ) : null}
                   {plano.limites && plano.limites.length > 0 ? (
                     <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, color: DASH.text, lineHeight: 1.4 }}>
                       {plano.limites.map((item) => (
-                        <li key={item}>{item}</li>
+                        <li key={item}>{exactUi(item)}</li>
                       ))}
                     </ul>
                   ) : null}

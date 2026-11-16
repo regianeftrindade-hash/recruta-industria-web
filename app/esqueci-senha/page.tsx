@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import PageLoader from "@/app/components/PageLoader";
 import { AuthAtmosphere } from "@/components/shared/AuthAtmosphere";
+import { t } from "@/lib/i18n/translate";
 import styles from "@/app/login/login.module.css";
 
 function EsqueciSenhaContent() {
@@ -31,7 +32,7 @@ function EsqueciSenhaContent() {
     setDevToken(null);
 
     if (!email.trim()) {
-      setErrorMessage("Informe o e-mail da conta.");
+      setErrorMessage(t("surface.reset.emailRequired"));
       return;
     }
 
@@ -49,17 +50,16 @@ function EsqueciSenhaContent() {
       };
 
       if (!res.ok) {
-        setErrorMessage(data.error || "Não foi possível enviar o link.");
+        setErrorMessage(data.error || t("surface.reset.sendFailed"));
         return;
       }
 
       setSuccessMessage(
-        data.message ||
-          "Se o e-mail existir, você receberá um link para redefinir a senha.",
+        data.message || t("surface.reset.sent"),
       );
       if (data.token) setDevToken(data.token);
     } catch {
-      setErrorMessage("Erro ao processar a solicitação. Tente novamente.");
+      setErrorMessage(t("surface.reset.requestError"));
     } finally {
       setLoading(false);
     }
@@ -68,7 +68,7 @@ function EsqueciSenhaContent() {
   return (
     <div className={styles.page}>
       <AuthAtmosphere />
-      {loading && <PageLoader message="Enviando..." mode="overlay" />}
+      {loading && <PageLoader message={t("surface.reset.sending")} mode="overlay" />}
 
       <div className={styles.card}>
         <div className={styles.loginHeader}>
@@ -76,10 +76,10 @@ function EsqueciSenhaContent() {
             <LogoRecruta size="sm" as="h1" depth />
           </div>
           <p className={styles.subtitle}>
-            <span className={styles.accessTag}>Esqueci a senha</span>
+            <span className={styles.accessTag}>{t("surface.reset.title")}</span>
           </p>
           <p className={styles.supportLine}>
-            Digite o e-mail da sua conta. Enviaremos um link para criar uma nova senha.
+            {t("surface.reset.help")}
           </p>
         </div>
 
@@ -93,7 +93,7 @@ function EsqueciSenhaContent() {
 
           <input
             type="email"
-            placeholder="E-mail"
+            placeholder={t("surface.auth.email")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className={styles.input}
@@ -101,14 +101,14 @@ function EsqueciSenhaContent() {
           />
 
           <button type="submit" disabled={loading} className={styles.btnPrimary}>
-            {loading ? "Enviando..." : "Enviar link"}
+            {loading ? t("surface.reset.sending") : t("surface.reset.send")}
           </button>
 
           {devToken && (
             <p style={{ margin: 0, fontSize: 12, lineHeight: 1.45, color: "#c89b3c" }}>
-              Ambiente de desenvolvimento —{" "}
+              {t("surface.reset.dev")}{" "}
               <Link href={`/reset-password?token=${encodeURIComponent(devToken)}`} className={styles.forgotLink}>
-                abrir link de redefinição
+                {t("surface.reset.openLink")}
               </Link>
             </p>
           )}
@@ -116,7 +116,7 @@ function EsqueciSenhaContent() {
 
         <div className={styles.footer}>
           <Link href={loginHref} className={styles.footerLink}>
-            ← Voltar ao login
+            {t("surface.reset.backLogin")}
           </Link>
         </div>
       </div>
@@ -126,7 +126,7 @@ function EsqueciSenhaContent() {
 
 export default function EsqueciSenhaPage() {
   return (
-    <Suspense fallback={<PageLoader message="Carregando..." />}>
+    <Suspense fallback={<PageLoader message={t("surface.auth.loading")} />}>
       <EsqueciSenhaContent />
     </Suspense>
   );

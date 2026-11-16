@@ -1,7 +1,10 @@
 /* 🔒 BLOQUEADO (06/07/2026) — não editar sem pedido explícito. Ver .cursor/rules/dashboard-page-lock.mdc */
 "use client";
+import { formatUiDate } from "@/lib/i18n/format-ui";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React from "react";
+import { t } from "@/lib/i18n/translate";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 import { dedupeStrings } from "@/lib/company-profile-display";
 import { avatarImageStyle } from "@/lib/theme";
@@ -100,7 +103,7 @@ function LinhaDetalhe({ label, value }: { label: string; value?: string | null }
   if (!value || value === "—") return null;
   return (
     <p style={{ margin: "3px 0", fontSize: 12, lineHeight: 1.5, color: DASH.text }}>
-      <span style={{ color: DASH.muted, fontWeight: 600 }}>{label}: </span>
+      <span style={{ color: DASH.muted, fontWeight: 600 }}>{exactUi(label)}: </span>
       {label === "WhatsApp" && value.startsWith("https://wa.me/") ? (
         <a href={value} target="_blank" rel="noopener noreferrer">
           Conversar no WhatsApp
@@ -126,7 +129,7 @@ function SecaoTags({
   return (
     <div style={{ marginTop: 8 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: list.length ? 4 : 0 }}>
-        <p style={{ margin: 0, color: DASH.muted, fontSize: 10, fontWeight: 700, textTransform: "uppercase" }}>{titulo}</p>
+        <p style={{ margin: 0, color: DASH.muted, fontSize: 10, fontWeight: 700, textTransform: "uppercase" }}>{exactUi(titulo)}</p>
         {trailing}
       </div>
       {list.length > 0 && <TagList items={list} max={12} />}
@@ -201,7 +204,7 @@ function CardPerfil({
         </span>
       )}
       {p.visualizado && !p.bloqueado && (
-        <span style={badgeBase}>Perfil visualizado</span>
+        <span style={badgeBase}>{t("rest.search.viewed")}</span>
       )}
     </div>
   );
@@ -257,7 +260,7 @@ function CardPerfil({
 
       {p.empresas && p.empresas.length > 0 && (
         <div style={{ gridColumn: isFull ? "1 / -1" : undefined, marginTop: isFull ? 4 : 8 }}>
-          <p style={{ margin: "0 0 6px", color: DASH.muted, fontSize: isFull ? 12 : 10, fontWeight: 700, textTransform: "uppercase" }}>Experiências</p>
+          <p style={{ margin: "0 0 6px", color: DASH.muted, fontSize: isFull ? 12 : 10, fontWeight: 700, textTransform: "uppercase" }}>{t("rest.profile.experiences")}</p>
           {p.empresas.map((e, i) => (
             <p key={`${e.nome}-${e.cargo}-${i}`} style={{ margin: "0 0 4px", fontSize: isFull ? 13 : 11 }}>
               • {e.cargo} — {e.nome}
@@ -269,7 +272,7 @@ function CardPerfil({
       <div style={{ gridColumn: isFull ? "1 / -1" : undefined }}>
         {p.ultimaAtualizacao && (
           <p style={{ margin: "8px 0 0", fontSize: isFull ? 12 : 10, color: "var(--dash-text, #414141)" }}>
-            Atualizado: {new Date(p.ultimaAtualizacao).toLocaleDateString("pt-BR")}
+            {exactUi("Atualizado")}: {formatUiDate(p.ultimaAtualizacao)}
           </p>
         )}
         {p.curriculoURL && (
@@ -414,17 +417,17 @@ function CardPerfil({
           disabled={unlocking}
           style={{ ...btnGold, width: "100%", marginTop: 10, padding: isFull ? "10px" : "8px", fontSize: isFull ? 13 : 11, opacity: unlocking ? 0.6 : 1 }}
         >
-          {unlocking ? "Desbloqueando..." : "🔓 Liberar contato"}
+          {unlocking ? exactUi("Desbloqueando...") : "🔓 Liberar contato"}
         </button>
       )}
 
       {p.bloqueado && !canUnlock && (
         <p style={{ marginTop: 10, fontSize: 10, ...dashPlanAccent, textAlign: "center" }}>
           {blockHint === "verification"
-            ? "Confirme e-mail corporativo e cartão CNPJ para liberar contatos"
+            ? exactUi("Confirme e-mail corporativo e cartão CNPJ para liberar contatos")
             : blockHint === "slots"
-              ? "Limite de liberações do plano atingido neste mês"
-              : "Upgrade para Basic para liberar contatos"}
+              ? exactUi("Limite de liberações do plano atingido neste mês")
+              : exactUi("Upgrade para Basic para liberar contatos")}
         </p>
       )}
     </div>
@@ -588,7 +591,7 @@ export default function CompanyDashboardVitrineSection({
       <h2 style={{ ...dashSectionTitle, margin: "0 0 8px", fontSize: 15 }}>
         {vitrineListaNome
           ? `Banco de talentos — ${vitrineListaNome}`
-          : "Profissionais na vitrine"}
+          : exactUi("Profissionais na vitrine")}
         {buscaRealizada ? ` (${paginacao.total || totalEncontrados})` : ""}
       </h2>
 
@@ -601,13 +604,13 @@ export default function CompanyDashboardVitrineSection({
             </span>
           ) : buscaRealizada ? (
             <>
-              <strong>Nenhum profissional encontrado</strong>
-              <span>Ajuste os filtros e clique em Buscar novamente.</span>
+              <strong>{t("rest.search.none")}</strong>
+              <span>{t("rest.search.noneHint")}</span>
             </>
           ) : (
             <>
-              <strong>Nenhuma busca ainda</strong>
-              <span>Preencha ao menos um filtro acima e clique em Buscar para ver profissionais compatíveis.</span>
+              <strong>{t("rest.search.empty")}</strong>
+              <span>{t("rest.search.emptyHint")}</span>
             </>
           )}
         </div>

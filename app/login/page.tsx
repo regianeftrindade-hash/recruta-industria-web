@@ -14,6 +14,7 @@ import ProfessionalVitrinePitch from '@/components/auth/ProfessionalVitrinePitch
 import CompanyVitrinePitch from '@/components/auth/CompanyVitrinePitch';
 import GoogleSignInButton from '@/app/components/GoogleSignInButton';
 import styles from './login.module.css';
+import { t } from '@/lib/i18n/translate';
 import { safeJobReturnPath } from '@/lib/jobs/public-job-link';
 
 function LoginContent() {
@@ -48,15 +49,15 @@ function LoginContent() {
     const authError = searchParams.get('error');
     if (authError) {
       const messages: Record<string, string> = {
-        OAuthSignin: 'Não foi possível iniciar o login com Google.',
-        OAuthCallback: 'Falha ao retornar do Google. Tente novamente.',
-        OAuthAccountNotLinked: 'Este e-mail já está vinculado a outro método de login.',
-        Callback: 'Erro na autenticação. Tente novamente.',
-        Configuration: 'Login com Google não está configurado no servidor. Confira NEXTAUTH_URL e as credenciais Google.',
-        AccessDenied: 'Acesso com Google recusado. Tente outro e-mail ou o login com senha.',
-        google: 'Erro ao logar com Google.',
+        OAuthSignin: t('surface.auth.oauthStart'),
+        OAuthCallback: t('surface.auth.oauthCallback'),
+        OAuthAccountNotLinked: t('surface.auth.oauthLinked'),
+        Callback: t('surface.auth.oauthGeneric'),
+        Configuration: t('surface.auth.oauthConfig'),
+        AccessDenied: t('surface.auth.oauthDenied'),
+        google: t('surface.auth.oauthError'),
       };
-      setErrorMessage(messages[authError] || 'Erro ao logar com Google.');
+      setErrorMessage(messages[authError] || t('surface.auth.oauthError'));
     }
   }, [searchParams]);
 
@@ -70,9 +71,9 @@ function LoginContent() {
           window.location.href = redirectTo;
           return;
         }
-        const atual = data.email ? ` (logado como ${data.email})` : '';
+        const atual = data.email ? ` (${t('surface.auth.signedInAs')} ${data.email})` : '';
         setErrorMessage(
-          `Sem permissão de admin${atual}. Clique em "Sair e entrar com e-mail admin" e use um e-mail autorizado (ADMIN_EMAILS) ou a conta de teste paizaonacozinha.`,
+          `${t('surface.auth.noAdminPermission')}${atual}. ${t('surface.auth.noAdminHelp')}`,
         );
       })
       .catch(() => undefined);
@@ -85,18 +86,18 @@ function LoginContent() {
     setErrorMessage('');
 
     if (!formData.email || !formData.senha) {
-      setErrorMessage('Por favor, preencha todos os campos');
+      setErrorMessage(t('surface.auth.fillAll'));
       return;
     }
 
     if (!checkRateLimit(formData.email)) {
-      setErrorMessage('Muitas tentativas de login. Tente novamente em 15 minutos.');
+      setErrorMessage(t('surface.auth.tooMany'));
       setShowCaptcha(true);
       return;
     }
 
     if (showCaptcha && !captchaVerified) {
-      setErrorMessage('Por favor, resolva o captcha antes de continuar.');
+      setErrorMessage(t('surface.auth.captcha'));
       return;
     }
 
@@ -110,7 +111,7 @@ function LoginContent() {
       });
 
       if (result?.error) {
-        setErrorMessage('Email ou senha inválidos');
+        setErrorMessage(t('surface.auth.badCredentials'));
         setLoading(false);
         return;
       }
@@ -124,7 +125,7 @@ function LoginContent() {
             return;
           }
           setErrorMessage(
-            'Este e-mail não tem permissão de admin. Confira ADMIN_EMAILS no .env e entre com o e-mail correto.',
+            t('surface.auth.wrongAdmin'),
           );
           setLoading(false);
           return;
@@ -152,7 +153,7 @@ function LoginContent() {
       }
     } catch (error) {
       console.error('Erro no login:', error);
-      setErrorMessage('Erro ao processar login.');
+      setErrorMessage(t('surface.auth.processError'));
       setLoading(false);
     }
   };
@@ -191,7 +192,7 @@ function LoginContent() {
 
   const handleCadastro = () => {
     if (isAdminRedirect) {
-      setErrorMessage('Para acessar o admin, entre com o e-mail de administrador. Não use criar conta.');
+      setErrorMessage(t('surface.auth.noAdminCreate'));
       return;
     }
     if (tipoLogin === 'company') {
@@ -208,7 +209,7 @@ function LoginContent() {
     <div className={styles.page}>
       <div className={styles.atmosphere} aria-hidden />
       <div className={styles.atmosphereGlow} aria-hidden />
-      {loading && <PageLoader message="Entrando..." mode="overlay" />}
+      {loading && <PageLoader message={t('surface.auth.entering')} mode="overlay" />}
 
       <div className={styles.authShell}>
         {!isAdminRedirect && tipoLogin === 'professional' && <ProfessionalVitrinePitch />}
@@ -223,18 +224,18 @@ function LoginContent() {
           <p className={styles.subtitle}>
             <span className={styles.accessTag}>
               {isAdminRedirect
-                ? 'Acesso Admin'
+                ? t('surface.auth.adminAccess')
                 : tipoLogin === 'company'
-                  ? 'Acesso Empresa'
-                  : 'Acesso Profissional'}
+                  ? t('surface.auth.companyAccess')
+                  : t('surface.auth.proAccess')}
             </span>
           </p>
           <p className={styles.supportLine}>
             {isAdminRedirect
-              ? 'Entre com o e-mail autorizado do painel.'
+              ? t('surface.auth.adminHint')
               : tipoLogin === 'company'
-                ? 'Acesse o painel da sua indústria.'
-                : 'Acesse seu perfil profissional.'}
+                ? t('surface.auth.companyHint')
+                : t('surface.auth.proHint')}
           </p>
         </div>
 
@@ -248,7 +249,7 @@ function LoginContent() {
               }}
               className={`${styles.tab} ${tipoLogin === 'professional' ? styles.tabActive : ''}`}
             >
-              Profissional
+              {t('surface.auth.professional')}
             </button>
             <button
               type="button"
@@ -258,7 +259,7 @@ function LoginContent() {
               }}
               className={`${styles.tab} ${tipoLogin === 'company' ? styles.tabActive : ''}`}
             >
-              Empresa
+              {t('surface.auth.company')}
             </button>
           </div>
         )}
@@ -266,7 +267,7 @@ function LoginContent() {
         <form onSubmit={handleSubmit} className={styles.form}>
           {isAdminRedirect && (
             <p className={styles.error} style={{ color: '#C89B3C', borderColor: '#8D6B1F', background: 'rgba(200,155,60,0.12)' }}>
-              Acesso administrativo — use o e-mail de admin do sistema.
+              {t('surface.auth.adminBanner')}
             </p>
           )}
           {errorMessage && <p className={styles.error}>{errorMessage}</p>}
@@ -277,13 +278,13 @@ function LoginContent() {
               className={styles.btnPrimary}
               style={{ marginBottom: 12 }}
             >
-              Sair e entrar com e-mail admin
+              {t('surface.auth.switchAdmin')}
             </button>
           )}
 
           <div className={styles.fieldGroup}>
             <label className={styles.fieldLabel} htmlFor="login-email">
-              E-mail
+              {t('surface.auth.email')}
             </label>
             <input
               id="login-email"
@@ -298,12 +299,12 @@ function LoginContent() {
 
           <div className={styles.fieldGroup}>
             <label className={styles.fieldLabel} htmlFor="login-senha">
-              Senha
+              {t('surface.auth.password')}
             </label>
             <input
               id="login-senha"
               type={showPassword ? 'text' : 'password'}
-              placeholder="Sua senha"
+              placeholder={t('surface.auth.passwordPlaceholder')}
               value={formData.senha}
               onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
               className={styles.input}
@@ -317,7 +318,7 @@ function LoginContent() {
               checked={showPassword}
               onChange={(e) => setShowPassword(e.target.checked)}
             />
-            Mostrar senha
+            {t('surface.auth.showPassword')}
           </label>
 
           <div className={styles.forgotWrap}>
@@ -329,14 +330,14 @@ function LoginContent() {
               }
               className={styles.forgotLink}
             >
-              Esqueci a senha
+              {t('surface.auth.forgot')}
             </Link>
           </div>
 
           {showCaptcha && <MathCaptcha onVerify={(ok) => setCaptchaVerified(ok)} />}
 
           <button type="submit" disabled={loading} className={styles.btnPrimary}>
-            {loading ? 'Entrando...' : 'Entrar'}
+            {loading ? t('surface.auth.entering') : t('surface.auth.enter')}
           </button>
         </form>
 
@@ -344,16 +345,16 @@ function LoginContent() {
 
         {!isAdminRedirect && (
           <div className={styles.createAccountWrap}>
-            <p className={styles.createAccountHint}>Ainda não tem conta? Entre ou faça cadastro.</p>
+            <p className={styles.createAccountHint}>{t('surface.auth.noAccount')}</p>
             <button type="button" onClick={handleCadastro} className={styles.btnSecondary}>
-              Fazer cadastro
+              {t('surface.auth.register')}
             </button>
           </div>
         )}
 
         <div className={styles.footer}>
           <Link href="/" className={styles.footerLink}>
-            ← Voltar para a página inicial
+            {t('surface.auth.backHome')}
           </Link>
         </div>
         </div>
@@ -364,7 +365,7 @@ function LoginContent() {
 
 export default function Login() {
   return (
-    <Suspense fallback={<PageLoader message="Carregando..." />}>
+    <Suspense fallback={<PageLoader message={t('surface.auth.loading')} />}>
       <LoginContent />
     </Suspense>
   );

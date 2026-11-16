@@ -1,4 +1,6 @@
 "use client";
+import { localizeServerText } from "@/lib/i18n/server-text";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
@@ -60,7 +62,7 @@ export default function CompanyTeamPage() {
       const res = await fetch("/api/company/team", { credentials: "include" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error || "Erro ao carregar equipe.");
+        setError(localizeServerText(data.error) || "Erro ao carregar equipe.");
         return;
       }
       setMembers(data.members || []);
@@ -79,7 +81,7 @@ export default function CompanyTeamPage() {
         );
       }
     } catch {
-      setError("Erro de rede ao carregar equipe.");
+      setError(exactUi("Erro de rede ao carregar equipe."));
     } finally {
       setLoading(false);
     }
@@ -95,7 +97,7 @@ export default function CompanyTeamPage() {
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (atLimit && !replacingId) {
-      setError("Sua empresa atingiu o limite do plano. Adquira um pacote de usuários extras abaixo.");
+      setError(exactUi("Sua empresa atingiu o limite do plano. Adquira um pacote de usuários extras abaixo."));
       return;
     }
     setSaving(true);
@@ -116,11 +118,11 @@ export default function CompanyTeamPage() {
       if (!res.ok) {
         if (data.error?.includes("Limite") || res.status === 403) {
           setError(
-            data.error ||
-              "Sua empresa atingiu o limite do plano. Deseja adquirir usuários adicionais?",
+            localizeServerText(data.error) ||
+              exactUi("Sua empresa atingiu o limite do plano. Deseja adquirir usuários adicionais?"),
           );
         } else {
-          setError(data.error || "Não foi possível convidar.");
+          setError(localizeServerText(data.error) || exactUi("Não foi possível convidar."));
         }
         return;
       }
@@ -138,14 +140,14 @@ export default function CompanyTeamPage() {
       }
       await load();
     } catch {
-      setError("Erro de rede ao convidar.");
+      setError(exactUi("Erro de rede ao convidar."));
     } finally {
       setSaving(false);
     }
   };
 
   const handleRevoke = async (memberId: string) => {
-    if (!window.confirm("Remover este usuário da equipe? O assento fica livre para outro e-mail.")) {
+    if (!window.confirm(exactUi("Remover este usuário da equipe? O assento fica livre para outro e-mail."))) {
       return;
     }
     const res = await fetch(`/api/company/team?memberId=${encodeURIComponent(memberId)}`, {
@@ -154,7 +156,7 @@ export default function CompanyTeamPage() {
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setError(data.error || "Erro ao remover.");
+      setError(localizeServerText(data.error) || exactUi("Erro ao remover."));
       return;
     }
     if (replacingId === memberId) setReplacingId(null);
@@ -189,7 +191,7 @@ export default function CompanyTeamPage() {
         });
         const data = await res.json().catch(() => ({}));
         if (data.status === "PAID" || data.activated) {
-          setExtraPayMsg("Usuário(s) extra(s) ativado(s). Você já pode cadastrar o novo membro.");
+          setExtraPayMsg(exactUi("Usuário(s) extra(s) ativado(s). Você já pode cadastrar o novo membro."));
           setExtraPayment(null);
           setShowAddForm(true);
           await load();
@@ -217,7 +219,7 @@ export default function CompanyTeamPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error || "Não foi possível iniciar o pagamento.");
+        setError(localizeServerText(data.error) || exactUi("Não foi possível iniciar o pagamento."));
         return;
       }
       setExtraPayment({
@@ -231,16 +233,16 @@ export default function CompanyTeamPage() {
       });
       if (data.chargeId) pollExtraPayment(data.chargeId);
     } catch {
-      setError("Erro de rede ao comprar usuários extras.");
+      setError(exactUi("Erro de rede ao comprar usuários extras."));
     } finally {
       setBuyingExtra(false);
     }
   };
 
   const roleLabel = (memberRole: string) => {
-    if (memberRole === "OWNER") return "Administrador Principal";
+    if (memberRole === "OWNER") return exactUi("Administrador Principal");
     if (memberRole === "ADMIN") return "Admin";
-    if (memberRole === "RECRUITER") return "Recrutador";
+    if (memberRole === "RECRUITER") return exactUi("Recrutador");
     return "RH";
   };
 
@@ -272,7 +274,7 @@ export default function CompanyTeamPage() {
         </p>
 
         {loading ? (
-          <p style={{ color: DASH.muted, fontSize: 12 }}>Carregando...</p>
+          <p style={{ color: DASH.muted, fontSize: 12 }}>{exactUi("Carregando...")}</p>
         ) : (
           <>
             <div style={{ display: "grid", gap: 8, marginBottom: 16 }}>
@@ -296,7 +298,7 @@ export default function CompanyTeamPage() {
                     </p>
                     <p style={{ margin: "2px 0 0", fontSize: 11, color: DASH.muted }}>
                       {roleLabel(m.role)} · {m.invitedEmail} ·{" "}
-                      {m.status === "PENDING" ? "Convite pendente" : "Ativo"}
+                      {m.status === "PENDING" ? exactUi("Convite pendente") : exactUi("Ativo")}
                     </p>
                   </div>
                   {isOwner && m.role !== "OWNER" ? (

@@ -2,6 +2,8 @@
 
 import React from "react";
 import { DASH, dashCard, dashSectionTitle } from "@/lib/dashboard-theme";
+import { t } from "@/lib/i18n/translate";
+import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
 
 export type RecruitmentHistoryCounts = {
   propostas: number;
@@ -15,19 +17,19 @@ type Props = {
   history: RecruitmentHistoryCounts;
 };
 
-const STEPS: Array<{ key: keyof RecruitmentHistoryCounts; label: string }> = [
-  { key: "propostas", label: "Propostas" },
-  { key: "entrevistas", label: "Entrevistas" },
-  { key: "testes", label: "Testes" },
-  { key: "contratacoes", label: "Contratação" },
-  { key: "naoContratacoes", label: "Não contratações" },
+const STEPS: Array<{ key: keyof RecruitmentHistoryCounts; labelKey: MessageKey }> = [
+  { key: "propostas", labelKey: "internal.pro.proposals" },
+  { key: "entrevistas", labelKey: "internal.pro.interviews" },
+  { key: "testes", labelKey: "internal.pro.tests" },
+  { key: "contratacoes", labelKey: "internal.pro.hired" },
+  { key: "naoContratacoes", labelKey: "internal.pro.notHiredCount" },
 ];
 
 export default function ProfessionalRecruitmentHistory({ history }: Props) {
   return (
     <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
       <h3 style={{ ...dashSectionTitle, margin: "0 0 12px", fontSize: 14, fontWeight: 400 }}>
-        Histórico
+        {t("internal.pro.history")}
       </h3>
       <div
         style={{
@@ -92,7 +94,7 @@ export default function ProfessionalRecruitmentHistory({ history }: Props) {
                     lineHeight: 1.25,
                   }}
                 >
-                  {step.label}
+                  {t(step.labelKey)}
                 </p>
               </div>
             </React.Fragment>

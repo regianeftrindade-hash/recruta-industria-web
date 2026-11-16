@@ -11,6 +11,7 @@ import {
   manualApplicationMessage,
 } from "@/lib/jobs/manual-application-notice";
 import type { ApplicationMode } from "@/lib/jobs/job-posting";
+import { t } from "@/lib/i18n/translate";
 import CopyTextButton from "./CopyTextButton";
 import JobText from "./JobText";
 import styles from "./vagas.module.css";
@@ -85,7 +86,7 @@ export default function JobApplyButton({
     const response = await fetch(`/api/vagas/${jobId}/candidatura${verify ? "?verificar=1" : ""}`, { credentials: "include" });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(data.error || "Não foi possível consultar a candidatura.");
+      throw new Error(data.error || t("surface.jobs.cannotCheck"));
     }
     const next = data as ApplyState;
     setState(next);
@@ -109,7 +110,7 @@ export default function JobApplyButton({
       }
 
       if (response.status === 401 || response.status === 403) {
-        const text = data.error || "A candidatura é feita com uma conta de profissional.";
+        const text = data.error || t("surface.jobs.proAccount");
         setError(text);
         setOutcome(text);
         return;
@@ -123,7 +124,7 @@ export default function JobApplyButton({
       }
 
       if (data.code === "RESUME_REQUIRED" || data.code === "PREMIUM_REQUIRED" || data.code === "MANUAL_CHANNEL" || data.code === "EMAIL_BUSY") {
-        const text = data.error || "Não foi possível concluir a candidatura.";
+        const text = data.error || t("surface.jobs.cannotFinish");
         setError(text);
         setOutcome(text);
         return;
@@ -131,8 +132,8 @@ export default function JobApplyButton({
 
       if (response.status === 409 || data.alreadyApplied) {
         const text = aviso || (mode === "EMAIL"
-          ? "Você já enviou sua candidatura para esta vaga."
-          : "Você já registrou candidatura nesta vaga.");
+          ? t("surface.jobs.alreadySent")
+          : t("surface.jobs.alreadyRecorded"));
         setMessage(text);
         setOutcome(text);
         setOpen(false);
@@ -147,15 +148,15 @@ export default function JobApplyButton({
       }
 
       if (!response.ok) {
-        const text = data.error || "Não foi possível registrar a candidatura.";
+        const text = data.error || t("surface.jobs.cannotRecord");
         setError(text);
         setOutcome(text);
         return;
       }
 
       const text = aviso || data.message || (mode === "EMAIL"
-        ? "Candidatura enviada com sucesso! Seu currículo foi encaminhado para o processo seletivo desta vaga."
-        : "Candidatura registrada.");
+        ? t("surface.jobs.sentSuccess")
+        : t("surface.jobs.registeredShort") + ".");
       setMessage(text);
       setOutcome(text);
       setOpen(false);
@@ -167,7 +168,7 @@ export default function JobApplyButton({
         contact: null,
       } : current);
     } catch {
-      const text = "Não foi possível registrar a candidatura.";
+      const text = t("surface.jobs.cannotRecord");
       setError(text);
       setOutcome(text);
     } finally {
@@ -203,7 +204,7 @@ export default function JobApplyButton({
         if (current.authenticated) setOpen(true);
       } catch (loadError) {
         if (!cancelled) {
-          setError(loadError instanceof Error ? loadError.message : "Não foi possível consultar a candidatura.");
+          setError(loadError instanceof Error ? loadError.message : t("surface.jobs.cannotCheck"));
         }
       }
     })();
@@ -234,7 +235,7 @@ export default function JobApplyButton({
     try {
       current = await loadState(true);
     } catch (loadError) {
-      const text = loadError instanceof Error ? loadError.message : "Não foi possível consultar a candidatura.";
+      const text = loadError instanceof Error ? loadError.message : t("surface.jobs.cannotCheck");
       setError(text);
       setOutcome(text);
       return;
@@ -254,8 +255,8 @@ export default function JobApplyButton({
 
     if (current.applied) {
       const text = aviso || ((current.applicationMode || mode) === "EMAIL"
-        ? "Você já enviou sua candidatura para esta vaga."
-        : "Você já registrou candidatura nesta vaga.");
+        ? t("surface.jobs.alreadySent")
+        : t("surface.jobs.alreadyRecorded"));
       setMessage(text);
       setOutcome(text);
       return;
@@ -281,12 +282,12 @@ export default function JobApplyButton({
   }
 
   const buttonLabel = busy
-    ? (currentMode === "EMAIL" && panel.automatic ? "Enviando..." : currentMode === "INTERNAL" ? "Registrando..." : "Candidatar-se")
+    ? (currentMode === "EMAIL" && panel.automatic ? t("surface.jobs.sending") : currentMode === "INTERNAL" ? t("surface.jobs.registering") : t("surface.jobs.apply"))
     : outcome
       ? outcome
         : applied
-        ? (manualMessage ?? (currentMode === "EMAIL" ? "Candidatura enviada" : "Candidatura registrada"))
-        : "Candidatar-se";
+        ? (manualMessage ?? (currentMode === "EMAIL" ? t("surface.jobs.sentShort") : t("surface.jobs.registeredShort")))
+        : t("surface.jobs.apply");
 
   return (
     <div className={styles.apply}>
@@ -302,7 +303,7 @@ export default function JobApplyButton({
       </button>
       {showHow && howToApply ? (
         <section className={styles.section}>
-          <h2>Como se candidatar</h2>
+          <h2>{t("surface.jobs.howTo")}</h2>
           <JobText text={howToApply} />
         </section>
       ) : null}
@@ -335,7 +336,7 @@ export default function JobApplyButton({
               variant="apply"
               missing
               onSaved={() => {
-                setMessage("Currículo salvo no perfil. A candidatura ainda não foi enviada.");
+                setMessage(t("surface.jobs.resumeSaved"));
                 setError("");
                 void loadState(true);
               }}
@@ -352,7 +353,7 @@ export default function JobApplyButton({
                   <ContactLink contact={panel.contact} />
                 </p>
               ) : panel.automatic ? null : (
-                <p className={styles.error}>A empresa ainda não informou o dado deste método de candidatura.</p>
+                <p className={styles.error}>{t("surface.jobs.missingContact")}</p>
               )}
               <div className={styles.contactActions}>
                 {panel.contact && panel.copyLabel ? (
@@ -365,7 +366,7 @@ export default function JobApplyButton({
                 ) : null}
                 {panel.automatic ? (
                   <button type="button" className="ri-btn-3d-gold" disabled={busy} onClick={() => void sendAutomatic()}>
-                    {busy ? "Enviando..." : "Enviar candidatura"}
+                    {busy ? t("surface.jobs.sending") : t("surface.jobs.send")}
                   </button>
                 ) : null}
               </div>
@@ -375,7 +376,7 @@ export default function JobApplyButton({
                   missing={false}
                   resumeName={state?.resumeName}
                   onSaved={() => {
-                    setMessage("Currículo salvo no perfil. A candidatura ainda não foi enviada.");
+                    setMessage(t("surface.jobs.resumeSaved"));
                     setError("");
                     void loadState(true);
                   }}

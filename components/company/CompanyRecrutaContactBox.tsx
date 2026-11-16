@@ -1,4 +1,6 @@
 "use client";
+import { localizeServerText } from "@/lib/i18n/server-text";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -21,7 +23,7 @@ export function CompanyRecrutaContactBox({ unlocked = false }: Props) {
     if (!unlocked) {
       setFeedback({
         ok: false,
-        text: "Disponível apenas nos planos pagos (Basic, Premium e Empresarial).",
+        text: exactUi("Disponível apenas nos planos pagos (Basic, Premium e Empresarial)."),
       });
       return;
     }
@@ -30,11 +32,11 @@ export function CompanyRecrutaContactBox({ unlocked = false }: Props) {
     const texto = message.trim();
 
     if (assunto.length < 3) {
-      setFeedback({ ok: false, text: "Informe um assunto com pelo menos 3 caracteres." });
+      setFeedback({ ok: false, text: exactUi("Informe um assunto com pelo menos 3 caracteres.") });
       return;
     }
     if (texto.length < 5) {
-      setFeedback({ ok: false, text: "Escreva a mensagem com pelo menos 5 caracteres." });
+      setFeedback({ ok: false, text: exactUi("Escreva a mensagem com pelo menos 5 caracteres.") });
       return;
     }
 
@@ -49,7 +51,7 @@ export function CompanyRecrutaContactBox({ unlocked = false }: Props) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setFeedback({ ok: false, text: data.error || "Erro ao enviar mensagem." });
+        setFeedback({ ok: false, text: localizeServerText(data.error) || exactUi("Erro ao enviar mensagem.") });
         return;
       }
       setSubject("");
@@ -57,10 +59,10 @@ export function CompanyRecrutaContactBox({ unlocked = false }: Props) {
       setFeedback({
         ok: true,
         text: data.warning
-          || "Mensagem enviada. A Recruta Indústria recebe na caixa de e-mail e pode responder pelo seu e-mail.",
+          || exactUi("Mensagem enviada. A Recruta Indústria recebe na caixa de e-mail e pode responder pelo seu e-mail."),
       });
     } catch {
-      setFeedback({ ok: false, text: "Erro de rede ao enviar." });
+      setFeedback({ ok: false, text: exactUi("Erro de rede ao enviar.") });
     } finally {
       setSending(false);
     }
@@ -81,8 +83,8 @@ export function CompanyRecrutaContactBox({ unlocked = false }: Props) {
 
       <p style={{ color: DASH.muted, fontSize: 9, margin: "0 0 8px", lineHeight: 1.45 }}>
         {unlocked
-          ? "Funcionalidade dos planos pagos (Basic, Premium e Empresarial). Sua mensagem chega no e-mail da Recruta Indústria."
-          : "Exclusivo dos planos pagos (Basic, Premium e Empresarial): caixa de e-mail aberta para falar direto com a equipe Recruta Indústria."}
+          ? exactUi("Funcionalidade dos planos pagos (Basic, Premium e Empresarial). Sua mensagem chega no e-mail da Recruta Indústria.")
+          : exactUi("Exclusivo dos planos pagos (Basic, Premium e Empresarial): caixa de e-mail aberta para falar direto com a equipe Recruta Indústria.")}
       </p>
 
       <div
@@ -115,7 +117,7 @@ export function CompanyRecrutaContactBox({ unlocked = false }: Props) {
           </>
         ) : (
           <>
-            <label style={{ ...dashLabel, display: "block", marginBottom: 4, fontSize: 9 }}>Assunto</label>
+            <label style={{ ...dashLabel, display: "block", marginBottom: 4, fontSize: 9 }}>{exactUi("Assunto")}</label>
             <input
               type="text"
               value={subject}
@@ -124,11 +126,11 @@ export function CompanyRecrutaContactBox({ unlocked = false }: Props) {
                 if (feedback && !feedback.ok) setFeedback(null);
               }}
               maxLength={120}
-              placeholder="Ex.: Dúvida sobre liberações"
+              placeholder={exactUi("Ex.: Dúvida sobre liberações")}
               style={{ ...dashInput, fontSize: 10, marginBottom: 8, pointerEvents: "auto" }}
             />
 
-            <label style={{ ...dashLabel, display: "block", marginBottom: 4, fontSize: 9 }}>Mensagem</label>
+            <label style={{ ...dashLabel, display: "block", marginBottom: 4, fontSize: 9 }}>{exactUi("Mensagem")}</label>
             <textarea
               value={message}
               onChange={(e) => {
@@ -137,7 +139,7 @@ export function CompanyRecrutaContactBox({ unlocked = false }: Props) {
               }}
               maxLength={4000}
               rows={5}
-              placeholder="Escreva sua mensagem para a Recruta Indústria..."
+              placeholder={exactUi("Escreva sua mensagem para a Recruta Indústria...")}
               style={{
                 ...dashInput,
                 fontSize: 10,
@@ -169,7 +171,7 @@ export function CompanyRecrutaContactBox({ unlocked = false }: Props) {
                 opacity: sending ? 0.75 : 1,
               }}
             >
-              {sending ? "Enviando..." : "Enviar para a Recruta"}
+              {sending ? exactUi("Enviando...") : exactUi("Enviar para a Recruta")}
             </button>
           </>
         )}

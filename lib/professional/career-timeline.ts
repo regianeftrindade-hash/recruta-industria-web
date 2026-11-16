@@ -1,3 +1,5 @@
+import { t } from "@/lib/i18n/translate";
+
 /** Utilitários da linha do tempo de carreira (experiências do cadastro). */
 
 export type CareerTimelineInput = {
@@ -70,9 +72,13 @@ export function parseCareerDate(raw: string | undefined | null): { year: number;
   return null;
 }
 
+function atualLabel(): string {
+  return t("rest.profile.current");
+}
+
 function formatYearLabel(raw: string | undefined | null, fallbackAtual = false): string {
   const s = String(raw || "").trim();
-  if (!s || ATUAL_RE.test(s)) return fallbackAtual ? "Atual" : "";
+  if (!s || ATUAL_RE.test(s)) return fallbackAtual ? atualLabel() : "";
   const parsed = parseCareerDate(s);
   if (parsed) return String(parsed.year);
   // Último recurso: primeiros 4 dígitos
@@ -93,8 +99,8 @@ function sortKeyFromDate(raw: string | undefined | null): number {
 
 export function formatCareerPeriodo(dataInicio?: string, dataFim?: string): string {
   const inicio = formatYearLabel(dataInicio);
-  if (!inicio) return isEndAtual(dataFim) ? "Atual" : formatYearLabel(dataFim) || "—";
-  const fim = isEndAtual(dataFim) ? "Atual" : formatYearLabel(dataFim);
+  if (!inicio) return isEndAtual(dataFim) ? atualLabel() : formatYearLabel(dataFim) || "—";
+  const fim = isEndAtual(dataFim) ? atualLabel() : formatYearLabel(dataFim);
   if (!fim) return inicio;
   if (inicio === fim) return inicio;
   return `${inicio}–${fim}`;
@@ -111,8 +117,8 @@ export function buildCareerTimeline(experiencias: CareerTimelineInput[] | null |
   const items: CareerTimelineItem[] = experiencias
     .filter(hasMeaningfulExperience)
     .map((e) => {
-      const cargo = String(e.cargo || "").trim() || "Cargo não informado";
-      const empresa = String(e.nome || "").trim() || "Empresa não informada";
+      const cargo = String(e.cargo || "").trim() || t("rest.profile.roleMissing");
+      const empresa = String(e.nome || "").trim() || t("rest.profile.companyMissing");
       const periodo = formatCareerPeriodo(e.dataInicio, e.dataFim);
       const segmento = String(e.segmento || "").trim() || undefined;
       const descricao = String(e.descricao || "").trim() || undefined;

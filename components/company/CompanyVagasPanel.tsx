@@ -1,6 +1,9 @@
 "use client";
+import { localizeServerText } from "@/lib/i18n/server-text";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { t } from "@/lib/i18n/translate";
 import { useRouter } from "next/navigation";
 import {
   APPLICATION_STAGES,
@@ -283,10 +286,10 @@ function payloadFromJob(job: AdminJob, status: string) {
 }
 
 function statusLabel(status: string): string {
-  if (status === "DRAFT") return "Rascunho";
-  if (status === "PUBLISHED") return "Publicada";
-  if (status === "UNPUBLISHED") return "Pausada";
-  if (status === "CLOSED") return "Encerrada";
+  if (status === "DRAFT") return exactUi("Rascunho");
+  if (status === "PUBLISHED") return exactUi("Publicada");
+  if (status === "UNPUBLISHED") return exactUi("Pausada");
+  if (status === "CLOSED") return exactUi("Encerrada");
   return status;
 }
 
@@ -356,7 +359,7 @@ export default function CompanyVagasPanel({
     const response = await fetch(`${apiBase}/${jobId}/candidaturas`, { credentials: "include" });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(data.error || "Não foi possível carregar as candidaturas.");
+      throw new Error(localizeServerText(data.error) || exactUi("Não foi possível carregar as candidaturas."));
     }
     setApplications(data.applications || []);
   }, [apiBase]);
@@ -389,14 +392,14 @@ export default function CompanyVagasPanel({
     void fetch(apiBase, { credentials: "include" })
       .then(async (response) => {
         const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.error || "Não foi possível carregar as vagas.");
+        if (!response.ok) throw new Error(localizeServerText(data.error) || exactUi("Não foi possível carregar as vagas."));
         const name = String(data.companyName || "");
         setCompanyName(name);
         setJobs(data.jobs || []);
         rememberForm(emptyForm(name));
       })
       .catch((loadError) => {
-        setError(loadError instanceof Error ? loadError.message : "Não foi possível carregar as vagas.");
+        setError(loadError instanceof Error ? loadError.message : exactUi("Não foi possível carregar as vagas."));
       })
       .finally(() => setLoading(false));
   }, [apiBase, rememberForm]);
@@ -419,7 +422,7 @@ export default function CompanyVagasPanel({
       setScreen("applications");
       void loadApplications(memory.jobId).catch((loadError) => {
         setApplications([]);
-        setError(loadError instanceof Error ? loadError.message : "Não foi possível carregar as candidaturas.");
+        setError(loadError instanceof Error ? loadError.message : exactUi("Não foi possível carregar as candidaturas."));
       }).finally(() => setLoadingApplications(false));
       return;
     }
@@ -428,7 +431,7 @@ export default function CompanyVagasPanel({
 
   function confirmLeave(): boolean {
     if (!dirty) return true;
-    return window.confirm("Há alterações não salvas. Deseja sair sem salvar?");
+    return window.confirm(exactUi("Há alterações não salvas. Deseja sair sem salvar?"));
   }
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -472,7 +475,7 @@ export default function CompanyVagasPanel({
     try {
       await loadApplications(job.id);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Não foi possível carregar as candidaturas.");
+      setError(loadError instanceof Error ? loadError.message : exactUi("Não foi possível carregar as candidaturas."));
     } finally {
       setLoadingApplications(false);
     }
@@ -507,7 +510,7 @@ export default function CompanyVagasPanel({
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.job) {
-        setError(data.error || "Não foi possível salvar a vaga.");
+        setError(localizeServerText(data.error) || exactUi("Não foi possível salvar a vaga."));
         return;
       }
       const job = data.job as AdminJob;
@@ -517,7 +520,7 @@ export default function CompanyVagasPanel({
       setMessage(status === "PUBLISHED" ? "Vaga publicada." : status === "DRAFT" ? "Rascunho salvo." : "Vaga salva.");
       if (nextScreen === "list") setScreen("list");
     } catch {
-      setError("Não foi possível salvar a vaga.");
+      setError(exactUi("Não foi possível salvar a vaga."));
     } finally {
       setBusy(false);
     }
@@ -541,14 +544,14 @@ export default function CompanyVagasPanel({
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.job) {
-        setError(data.error || "Não foi possível atualizar a vaga.");
+        setError(localizeServerText(data.error) || exactUi("Não foi possível atualizar a vaga."));
         return;
       }
       const saved = data.job as AdminJob;
       setJobs((current) => current.map((item) => (item.id === saved.id ? saved : item)));
       setMessage(status === "PUBLISHED" ? "Vaga reativada." : status === "UNPUBLISHED" ? "Vaga pausada." : "Vaga encerrada.");
     } catch {
-      setError("Não foi possível atualizar a vaga.");
+      setError(exactUi("Não foi possível atualizar a vaga."));
     } finally {
       setBusy(false);
     }
@@ -556,7 +559,7 @@ export default function CompanyVagasPanel({
 
   async function removeJob(job: AdminJob) {
     if (busy) return;
-    const confirmed = window.confirm("Excluir esta vaga? Esta ação não pode ser desfeita.");
+    const confirmed = window.confirm(exactUi("Excluir esta vaga? Esta ação não pode ser desfeita."));
     if (!confirmed) return;
     setBusy(true);
     setError("");
@@ -568,14 +571,14 @@ export default function CompanyVagasPanel({
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setError(data.error || "Não foi possível excluir a vaga.");
+        setError(localizeServerText(data.error) || exactUi("Não foi possível excluir a vaga."));
         return;
       }
       setJobs((current) => current.filter((item) => item.id !== job.id));
       if (selectedId === job.id) setSelectedId(null);
-      setMessage("Vaga excluída.");
+      setMessage(exactUi("Vaga excluída."));
     } catch {
-      setError("Não foi possível excluir a vaga.");
+      setError(exactUi("Não foi possível excluir a vaga."));
     } finally {
       setBusy(false);
     }
@@ -595,7 +598,7 @@ export default function CompanyVagasPanel({
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setError(data.error || "Não foi possível excluir a candidatura.");
+        setError(localizeServerText(data.error) || exactUi("Não foi possível excluir a candidatura."));
         return;
       }
       setApplications((current) => current.filter((item) => item.id !== application.id));
@@ -604,9 +607,9 @@ export default function CompanyVagasPanel({
           ? { ...job, applicationCount: Math.max(0, job.applicationCount - 1) }
           : job
       )));
-      setMessage("Candidatura excluída.");
+      setMessage(exactUi("Candidatura excluída."));
     } catch {
-      setError("Não foi possível excluir a candidatura.");
+      setError(exactUi("Não foi possível excluir a candidatura."));
     } finally {
       setBusy(false);
     }
@@ -625,14 +628,14 @@ export default function CompanyVagasPanel({
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || data.application?.stage !== stage) {
-        setError(data.error || "Não foi possível atualizar a etapa.");
+        setError(localizeServerText(data.error) || exactUi("Não foi possível atualizar a etapa."));
         return;
       }
       setApplications((current) => current.map((item) => (
         item.id === application.id ? { ...item, stage } : item
       )));
     } catch {
-      setError("Não foi possível atualizar a etapa.");
+      setError(exactUi("Não foi possível atualizar a etapa."));
     } finally {
       setBusy(false);
     }
@@ -657,15 +660,15 @@ export default function CompanyVagasPanel({
   return (
     <section className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Publicar vagas</h1>
-        <p className={styles.subtitle}>Cadastre, divulgue e acompanhe suas oportunidades em um só lugar.</p>
+        <h1 className={styles.title}>{t("internal.company.jobsTitle")}</h1>
+        <p className={styles.subtitle}>{t("internal.company.jobsLead")}</p>
         <div className={styles.stats}>
           <div className={styles.stat}>
-            <span>Total de vagas</span>
+            <span>{t("internal.company.totalJobs")}</span>
             <strong>{jobs.length}</strong>
           </div>
           <div className={styles.stat}>
-            <span>Em rascunho</span>
+            <span>{t("internal.company.drafts")}</span>
             <strong>{draftCount}</strong>
           </div>
         </div>
@@ -687,13 +690,13 @@ export default function CompanyVagasPanel({
         {message ? <p className={styles.ok} role="status">{message}</p> : null}
       </div>
 
-      {loading || screen === null ? <p className={styles.cardText}>Carregando vagas...</p> : null}
+      {loading || screen === null ? <p className={styles.cardText}>{t("internal.company.loadingJobs")}</p> : null}
 
       {screen === "form" ? (
         <form className={styles.card} onSubmit={(event) => event.preventDefault()}>
-          <h2 className={styles.cardTitle}>{selected ? "Editar vaga" : "Cadastrar oportunidade"}</h2>
+          <h2 className={styles.cardTitle}>{selected ? exactUi("Editar vaga") : exactUi("Cadastrar oportunidade")}</h2>
           <p className={styles.cardText}>
-            {selected ? `${statusLabel(selected.status)}. O identificador desta vaga permanece o mesmo.` : "Preencha os dados para divulgar sua vaga."}
+            {selected ? `${statusLabel(selected.status)}. O identificador desta vaga permanece o mesmo.` : exactUi("Preencha os dados para divulgar sua vaga.")}
           </p>
           <div className={styles.grid}>
             <label className={fields.field}>
@@ -703,10 +706,10 @@ export default function CompanyVagasPanel({
             <label className={fields.field}>
               Data da vaga
               <input type="date" value={form.publicationDate} onChange={(event) => update("publicationDate", event.target.value)} />
-              <span className={fields.help}>Data de publicação. Não é a data de encerramento.</span>
+              <span className={fields.help}>{t("internal.company.publishDate")}</span>
             </label>
             <fieldset className={`${fields.field} ${styles.span}`}>
-              <legend>Como deseja divulgar esta vaga?</legend>
+              <legend>{t("internal.company.howToPost")}</legend>
               <div className={fields.choices} role="radiogroup" aria-label="Como deseja divulgar esta vaga?">
                 <button type="button" className={`${fields.choice} ${form.confidential ? "" : fields.choiceOn}`} aria-pressed={!form.confidential} onClick={() => update("confidential", false)}>
                   Publicar com o nome da empresa
@@ -718,19 +721,19 @@ export default function CompanyVagasPanel({
             </fieldset>
             <p className={`${fields.help} ${styles.span}`}>
               {form.confidential
-                ? "Na página pública e no compartilhamento aparece somente “Empresa confidencial”. O nome real continua salvo aqui."
-                : "O nome da empresa aparece na página pública. E-mail, telefone e documentos não são divulgados."}
+                ? exactUi("Na página pública e no compartilhamento aparece somente “Empresa confidencial”. O nome real continua salvo aqui.")
+                : exactUi("O nome da empresa aparece na página pública. E-mail, telefone e documentos não são divulgados.")}
             </p>
             <label className={fields.field}>
               Cargo
-              <input value={form.title} onChange={(event) => update("title", event.target.value)} maxLength={160} placeholder="Ex.: Operador CNC" />
+              <input value={form.title} onChange={(event) => update("title", event.target.value)} maxLength={160} placeholder={exactUi("Ex.: Operador CNC")} />
             </label>
             <ListaSuspensa
               label="Salário"
               value={faixaId}
-              placeholder="Faixa"
-              options={FAIXAS_SALARIO.map((faixa) => ({ id: faixa.id, label: faixa.label }))}
-              vazio="Nenhuma faixa encontrada."
+              placeholder={exactUi("Faixa")}
+              options={FAIXAS_SALARIO.map((faixa) => ({ id: faixa.id, label: exactUi(faixa.label) }))}
+              vazio={exactUi("Nenhuma faixa encontrada.")}
               onChange={(id) => {
                 setFaixaId(id);
                 const salario = salarioDaFaixa(id);
@@ -740,9 +743,9 @@ export default function CompanyVagasPanel({
             <ListaSuspensa
               label="Estado"
               value={estado}
-              placeholder="UF"
+              placeholder={exactUi("UF")}
               options={ESTADOS.map((item) => ({ id: item.uf, label: `${item.uf} — ${item.nome}` }))}
-              vazio="Nenhum estado encontrado."
+              vazio={exactUi("Nenhum estado encontrado.")}
               onChange={(uf) => {
                 setEstado(uf);
                 setCidade("");
@@ -752,9 +755,9 @@ export default function CompanyVagasPanel({
             <ListaSuspensa
               label="Cidade"
               value={cidade}
-              placeholder={estado ? "Cidade" : "Escolha o estado"}
+              placeholder={estado ? exactUi("Cidade") : exactUi("Escolha o estado")}
               options={cidades.map((nome) => ({ id: nome, label: nome }))}
-              vazio={estado ? (carregandoCidades ? "Carregando cidades..." : "Nenhuma cidade encontrada.") : "Escolha o estado para ver as cidades."}
+              vazio={estado ? (carregandoCidades ? exactUi("Carregando cidades...") : exactUi("Nenhuma cidade encontrada.")) : exactUi("Escolha o estado para ver as cidades.")}
               onChange={(nome) => {
                 setCidade(nome);
                 setForm((current) => ({ ...current, workplace: textoDoLocal(estado, nome) }));
@@ -762,11 +765,11 @@ export default function CompanyVagasPanel({
             />
             <div className={styles.span}>
               <fieldset className={fields.field}>
-                <legend>Tipo de contratação</legend>
+                <legend>{t("internal.company.contractType")}</legend>
                 <div className={fields.choices} role="radiogroup" aria-label="Tipo de contratação">
                   {CONTRACT_TYPES.map((option) => (
                     <button key={option.value} type="button" className={`${fields.choice} ${form.contractType === option.value ? fields.choiceOn : ""}`} aria-pressed={form.contractType === option.value} onClick={() => update("contractType", option.value)}>
-                      {option.label}
+                      {exactUi(option.label)}
                     </button>
                   ))}
                 </div>
@@ -778,11 +781,11 @@ export default function CompanyVagasPanel({
                 </label>
               ) : null}
               <fieldset className={fields.field}>
-                <legend>Modalidade</legend>
+                <legend>{t("surface.jobs.mode")}</legend>
                 <div className={fields.choices} role="radiogroup" aria-label="Modalidade de trabalho">
                   {WORK_MODES.map((option) => (
                     <button key={option.value} type="button" className={`${fields.choice} ${form.workMode === option.value ? fields.choiceOn : ""}`} aria-pressed={form.workMode === option.value} onClick={() => update("workMode", option.value)}>
-                      {option.label}
+                      {exactUi(option.label)}
                     </button>
                   ))}
                 </div>
@@ -793,7 +796,7 @@ export default function CompanyVagasPanel({
               </label>
               <label className={fields.field}>
                 Observações
-                <textarea value={form.observations} onChange={(event) => update("observations", event.target.value)} maxLength={4000} placeholder="Opcional." />
+                <textarea value={form.observations} onChange={(event) => update("observations", event.target.value)} maxLength={4000} placeholder={exactUi("Opcional.")} />
               </label>
               <ApplicationModeFields
                 mode={form.applicationMode}
@@ -840,7 +843,7 @@ export default function CompanyVagasPanel({
               value={filtroTitulo}
               onChange={(event) => setFiltroTitulo(event.target.value)}
               maxLength={160}
-              placeholder="Título da vaga"
+              placeholder={exactUi("Título da vaga")}
             />
           </label>
           <label>
@@ -858,12 +861,12 @@ export default function CompanyVagasPanel({
               value={filtroCidade}
               onChange={(event) => setFiltroCidade(event.target.value)}
               maxLength={80}
-              placeholder="Cidade"
+              placeholder={exactUi("Cidade")}
             />
           </label>
         </div>
         {jobsVisiveis.length === 0 ? (
-          <p className={styles.meta}>Nenhuma vaga com esse título, estado ou cidade.</p>
+          <p className={styles.meta}>{t("internal.company.noJobMatch")}</p>
         ) : (
         <div className={styles.rows}>
               {jobsVisiveis.map((job) => (
@@ -875,32 +878,32 @@ export default function CompanyVagasPanel({
                     </h2>
                     <p className={styles.meta}>
                       {showOrigin
-                        ? `${job.companyName || "Sem empresa"} · ${job.confidential ? "Anônima" : "Identificada"}${job.origin === "COMPANY" ? ` · ${job.originLabel}` : ""}`
-                        : (job.confidential ? "Vaga confidencial" : (job.companyName || "Empresa"))}
+                        ? `${job.companyName || exactUi("Sem empresa")} · ${job.confidential ? exactUi("Anônima") : exactUi("Identificada")}${job.origin === "COMPANY" ? ` · ${job.originLabel}` : ""}`
+                        : (job.confidential ? exactUi("Vaga confidencial") : (job.companyName || exactUi("Empresa")))}
                       {job.contractLabel ? ` · ${job.contractLabel}` : ""}
                       {job.workModeLabel ? ` · ${job.workModeLabel}` : ""}
                       {job.workplace ? ` · ${job.workplace}` : ""}
                     </p>
                     <p className={styles.meta}>
-                      {job.publicationDate ? `Publicada em ${job.publicationDate}` : "Sem data de publicação"}
+                      {job.publicationDate ? `Publicada em ${job.publicationDate}` : exactUi("Sem data de publicação")}
                       {` · Candidaturas: ${job.applicationCount}`}
                     </p>
                   </div>
                   <div className={styles.rowActions}>
-                    <button type="button" className={styles.ghost} onClick={() => void openApplications(job)}>Candidaturas</button>
+                    <button type="button" className={styles.ghost} onClick={() => void openApplications(job)}>{t("internal.company.applications")}</button>
                     {job.status === "PUBLISHED" ? (
-                      <a className={styles.ghost} href={hrefComVolta(`/vagas/${job.id}`, voltaPainel)} target="_blank" rel="noopener noreferrer">Ver vaga</a>
+                      <a className={styles.ghost} href={hrefComVolta(`/vagas/${job.id}`, voltaPainel)} target="_blank" rel="noopener noreferrer">{t("internal.pro.seeJob")}</a>
                     ) : (
-                      <button type="button" className={styles.ghost} disabled title="A vaga não está na divulgação pública.">Ver vaga</button>
+                      <button type="button" className={styles.ghost} disabled title={t("internal.company.notPublic")}>{t("internal.pro.seeJob")}</button>
                     )}
-                    <button type="button" className={styles.ghost} onClick={() => editJob(job)}>Editar</button>
+                    <button type="button" className={styles.ghost} onClick={() => editJob(job)}>{t("internal.company.edit")}</button>
                     {job.status === "PUBLISHED" ? (
                       <button
                         type="button"
                         className={styles.ghost}
                         disabled={busy}
                         onClick={() => {
-                          if (window.confirm("Deseja pausar esta vaga? A oportunidade deixará de receber novas candidaturas enquanto estiver pausada.")) {
+                          if (window.confirm(exactUi("Deseja pausar esta vaga? A oportunidade deixará de receber novas candidaturas enquanto estiver pausada."))) {
                             void changeStatus(job, "UNPUBLISHED");
                           }
                         }}
@@ -925,7 +928,7 @@ export default function CompanyVagasPanel({
                         className={styles.ghost}
                         disabled={busy}
                         onClick={() => {
-                          if (window.confirm("Encerrar esta vaga? Ela deixará de receber candidaturas e sairá da lista pública. Os candidatos já registrados permanecem.")) {
+                          if (window.confirm(exactUi("Encerrar esta vaga? Ela deixará de receber candidaturas e sairá da lista pública. Os candidatos já registrados permanecem."))) {
                             void changeStatus(job, "CLOSED");
                           }
                         }}
@@ -935,7 +938,7 @@ export default function CompanyVagasPanel({
                     ) : null}
                     {showOrigin && job.status === "PUBLISHED" ? (
                       <details className={styles.more}>
-                        <summary>Compartilhar vaga</summary>
+                        <summary>{t("internal.company.share")}</summary>
                         <div className={`${styles.moreMenu} ${styles.shareMenu}`}>
                           <a className={styles.ghost} href={whatsAppShareUrl(job)} target="_blank" rel="noopener noreferrer">
                             WhatsApp
@@ -951,9 +954,9 @@ export default function CompanyVagasPanel({
                               void navigator.clipboard?.writeText(texto).then(
                                 () => {
                                   setError("");
-                                  setMessage("Resumo da vaga copiado. Cole no Instagram.");
+                                  setMessage(exactUi("Resumo da vaga copiado. Cole no Instagram."));
                                 },
-                                () => setError("Não foi possível copiar o resumo da vaga."),
+                                () => setError(exactUi("Não foi possível copiar o resumo da vaga.")),
                               );
                               window.open(INSTAGRAM_SHARE_URL, "_blank", "noopener,noreferrer");
                             }}
@@ -966,15 +969,15 @@ export default function CompanyVagasPanel({
                             onClick={() => {
                               const texto = jobShareMessage(job);
                               if (!navigator.clipboard?.writeText) {
-                                setError("Não foi possível copiar o resumo da vaga.");
+                                setError(exactUi("Não foi possível copiar o resumo da vaga."));
                                 return;
                               }
                               void navigator.clipboard.writeText(texto).then(
                                 () => {
                                   setError("");
-                                  setMessage("Resumo e link da vaga copiados.");
+                                  setMessage(exactUi("Resumo e link da vaga copiados."));
                                 },
-                                () => setError("Não foi possível copiar o resumo da vaga."),
+                                () => setError(exactUi("Não foi possível copiar o resumo da vaga.")),
                               );
                             }}
                           >
@@ -987,7 +990,7 @@ export default function CompanyVagasPanel({
                       </details>
                     ) : null}
                     <details className={styles.more}>
-                      <summary>Mais</summary>
+                      <summary>{t("internal.company.more")}</summary>
                       <div className={styles.moreMenu}>
                         <button type="button" className={styles.danger} disabled={busy} onClick={() => void removeJob(job)}>
                           Excluir
@@ -1011,14 +1014,14 @@ export default function CompanyVagasPanel({
           <p className={styles.cardText}>{statusLabel(selected.status)} · {selected.applicationCount} candidatura{selected.applicationCount === 1 ? "" : "s"}</p>
           <label className={fields.field}>
             Filtrar por nome
-            <input className={styles.filter} value={candidateQuery} onChange={(event) => setCandidateQuery(event.target.value)} placeholder="Nome do candidato" />
+            <input className={styles.filter} value={candidateQuery} onChange={(event) => setCandidateQuery(event.target.value)} placeholder={exactUi("Nome do candidato")} />
           </label>
-          {loadingApplications ? <p className={styles.cardText}>Carregando candidaturas...</p> : null}
+          {loadingApplications ? <p className={styles.cardText}>{t("internal.company.loadingCandidates")}</p> : null}
           {!loadingApplications && applications.length === 0 ? (
-            <p className={styles.empty}>Ainda não há candidatos para esta vaga.</p>
+            <p className={styles.empty}>{t("internal.company.noCandidates")}</p>
           ) : null}
           {!loadingApplications && applications.length > 0 && visibleApplications.length === 0 ? (
-            <p className={styles.empty}>Nenhum candidato com esse nome.</p>
+            <p className={styles.empty}>{t("internal.company.noNameMatch")}</p>
           ) : null}
           {visibleApplications.length > 0 ? (
           <div className={styles.candidateList}>
@@ -1030,16 +1033,16 @@ export default function CompanyVagasPanel({
                 <div className={styles.candidateMain}>
                   {profilePath && application.profileId ? (
                     <button type="button" className={styles.name} onClick={() => openProfile(application)}>
-                      {application.name || "Nome não informado"}
+                      {application.name || exactUi("Nome não informado")}
                     </button>
                   ) : (
-                    <span className={styles.plainName}>{application.name || "Nome não informado"}</span>
+                    <span className={styles.plainName}>{application.name || exactUi("Nome não informado")}</span>
                   )}
                   <span className={styles.stage}>{applicationStageLabel(stage)}</span>
                 </div>
                 <div className={styles.candidateActions}>
                   <label className={styles.stageField}>
-                    <span className={styles.stage}>Etapa</span>
+                    <span className={styles.stage}>{t("internal.company.stage")}</span>
                     <select
                       className={styles.stageSelect}
                       value={stage}
@@ -1048,7 +1051,7 @@ export default function CompanyVagasPanel({
                       onChange={(event) => void changeStage(application, event.target.value)}
                     >
                       {APPLICATION_STAGES.map((option) => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
+                        <option key={option.value} value={option.value}>{exactUi(option.label)}</option>
                       ))}
                     </select>
                   </label>

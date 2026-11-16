@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import PageLoader from "@/app/components/PageLoader";
 import { AuthAtmosphere } from "@/components/shared/AuthAtmosphere";
+import { t } from "@/lib/i18n/translate";
 import styles from "@/app/login/login.module.css";
 
 function ResetPasswordContent() {
@@ -27,7 +28,7 @@ function ResetPasswordContent() {
     if (!token) {
       setChecking(false);
       setTokenValid(false);
-      setErrorMessage("Link inválido. Solicite um novo reset de senha.");
+      setErrorMessage(t("surface.reset.badLink"));
       return;
     }
 
@@ -41,7 +42,7 @@ function ResetPasswordContent() {
         if (cancelled) return;
         if (!res.ok || !data.email) {
           setTokenValid(false);
-          setErrorMessage(data.error || "Token inválido ou expirado.");
+          setErrorMessage(data.error || t("surface.reset.badToken"));
         } else {
           setTokenValid(true);
           setEmail(data.email);
@@ -49,7 +50,7 @@ function ResetPasswordContent() {
       } catch {
         if (!cancelled) {
           setTokenValid(false);
-          setErrorMessage("Não foi possível validar o link.");
+          setErrorMessage(t("surface.reset.cannotValidate"));
         }
       } finally {
         if (!cancelled) setChecking(false);
@@ -67,11 +68,11 @@ function ResetPasswordContent() {
     setSuccessMessage("");
 
     if (novaSenha.length < 8) {
-      setErrorMessage("A senha deve ter no mínimo 8 caracteres.");
+      setErrorMessage(t("surface.reset.minLength"));
       return;
     }
     if (novaSenha !== confirmarSenha) {
-      setErrorMessage("As senhas não conferem.");
+      setErrorMessage(t("surface.reset.mismatch"));
       return;
     }
 
@@ -88,26 +89,26 @@ function ResetPasswordContent() {
       });
       const data = (await res.json()) as { error?: string; message?: string };
       if (!res.ok) {
-        setErrorMessage(data.error || "Não foi possível alterar a senha.");
+        setErrorMessage(data.error || t("surface.reset.cannotChange"));
         return;
       }
-      setSuccessMessage(data.message || "Senha alterada com sucesso.");
+      setSuccessMessage(data.message || t("surface.reset.changed"));
       setTimeout(() => router.push("/login"), 1800);
     } catch {
-      setErrorMessage("Erro ao alterar a senha. Tente novamente.");
+      setErrorMessage(t("surface.reset.changeError"));
     } finally {
       setLoading(false);
     }
   };
 
   if (checking) {
-    return <PageLoader message="Validando link..." />;
+    return <PageLoader message={t("surface.reset.validating")} />;
   }
 
   return (
     <div className={styles.page}>
       <AuthAtmosphere />
-      {loading && <PageLoader message="Salvando..." mode="overlay" />}
+      {loading && <PageLoader message={t("surface.reset.saving")} mode="overlay" />}
 
       <div className={styles.card}>
         <div className={styles.loginHeader}>
@@ -115,10 +116,10 @@ function ResetPasswordContent() {
             <LogoRecruta size="sm" as="h1" depth />
           </div>
           <p className={styles.subtitle}>
-            <span className={styles.accessTag}>Nova senha</span>
+            <span className={styles.accessTag}>{t("surface.reset.newTitle")}</span>
           </p>
           {tokenValid && (
-            <p className={styles.supportLine}>Escolha uma senha forte para sua conta.</p>
+            <p className={styles.supportLine}>{t("surface.reset.newHelp")}</p>
           )}
         </div>
 
@@ -126,14 +127,14 @@ function ResetPasswordContent() {
           <div className={styles.form}>
             {errorMessage && <p className={styles.error}>{errorMessage}</p>}
             <Link href="/esqueci-senha" className={styles.btnPrimary} style={{ textAlign: "center", textDecoration: "none" }}>
-              Solicitar novo link
+              {t("surface.reset.requestNew")}
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className={styles.form}>
             {email && (
               <p style={{ margin: 0, fontSize: 13, color: "#c89b3c" }}>
-                Conta: {email}
+                {t("surface.reset.account")} {email}
               </p>
             )}
             {errorMessage && <p className={styles.error}>{errorMessage}</p>}
@@ -145,7 +146,7 @@ function ResetPasswordContent() {
 
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Nova senha"
+              placeholder={t("surface.reset.newPassword")}
               value={novaSenha}
               onChange={(e) => setNovaSenha(e.target.value)}
               className={styles.input}
@@ -153,7 +154,7 @@ function ResetPasswordContent() {
             />
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Confirmar nova senha"
+              placeholder={t("surface.reset.confirm")}
               value={confirmarSenha}
               onChange={(e) => setConfirmarSenha(e.target.value)}
               className={styles.input}
@@ -166,18 +167,18 @@ function ResetPasswordContent() {
                 checked={showPassword}
                 onChange={(e) => setShowPassword(e.target.checked)}
               />
-              Mostrar senha
+              {t("surface.auth.showPassword")}
             </label>
 
             <button type="submit" disabled={loading || !!successMessage} className={styles.btnPrimary}>
-              {loading ? "Salvando..." : "Redefinir senha"}
+              {loading ? t("surface.reset.saving") : t("surface.reset.redefine")}
             </button>
           </form>
         )}
 
         <div className={styles.footer}>
           <Link href="/login" className={styles.footerLink}>
-            ← Voltar ao login
+            {t("surface.reset.backLogin")}
           </Link>
         </div>
       </div>
@@ -187,7 +188,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<PageLoader message="Carregando..." />}>
+    <Suspense fallback={<PageLoader message={t("surface.auth.loading")} />}>
       <ResetPasswordContent />
     </Suspense>
   );

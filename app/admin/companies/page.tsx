@@ -1,7 +1,10 @@
 'use client';
+import { localizeServerText } from "@/lib/i18n/server-text";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useCallback, useEffect, useState } from 'react';
 import CompanyVerificationBadge from '@/components/company/CompanyVerificationBadge';
+import { t } from '@/lib/i18n/translate';
 import { isCompanyVerificationStatus, type CompanyVerificationStatus } from '@/lib/company/company-verification';
 
 type PendingCompany = {
@@ -42,7 +45,7 @@ export default function AdminCompaniesPage() {
         setError('');
         setCompanies(data.companies || []);
       })
-      .catch(() => setError('Erro ao carregar empresas.'))
+      .catch(() => setError(exactUi("Erro ao carregar empresas.")))
       .finally(() => setLoading(false));
   }, []);
 
@@ -63,7 +66,7 @@ export default function AdminCompaniesPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        alert(data.error || 'Não foi possível excluir a empresa.');
+        alert(localizeServerText(data.error) || exactUi("Não foi possível excluir a empresa."));
         return;
       }
       load(filtro);
@@ -75,11 +78,11 @@ export default function AdminCompaniesPage() {
   const review = async (userId: string, action: 'verify' | 'reject') => {
     let reason: string | undefined;
     if (action === 'reject') {
-      const typed = window.prompt('Justificativa da negativa:');
+      const typed = window.prompt(exactUi("Justificativa da negativa:"));
       if (typed == null) return;
       reason = typed.trim();
       if (!reason) {
-        alert('Informe a justificativa da negativa.');
+        alert(exactUi("Informe a justificativa da negativa."));
         return;
       }
     }
@@ -94,7 +97,7 @@ export default function AdminCompaniesPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        alert(data.error || 'Erro ao atualizar verificação.');
+        alert(localizeServerText(data.error) || exactUi("Erro ao atualizar verificação."));
         return;
       }
       load(filtro);
@@ -105,8 +108,8 @@ export default function AdminCompaniesPage() {
 
   return (
     <div style={{ padding: 24, color: '#414141', maxWidth: 1100, margin: '0 auto' }}>
-      <h1 style={{ color: '#C89B3C' }}>Verificação de empresas</h1>
-      <p style={{ color: 'var(--dash-text, #414141)' }}>Analise o cartão CNPJ. O status fica abaixo dos dados: em análise, aprovado ou negado. A negativa exige justificativa.</p>
+      <h1 style={{ color: '#C89B3C' }}>{t('rest.admin.verifyTitle')}</h1>
+      <p style={{ color: 'var(--dash-text, #414141)' }}>{t('rest.admin.verifyLead')}</p>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
         {FILTROS.map((item) => (
           <button
@@ -123,16 +126,16 @@ export default function AdminCompaniesPage() {
               cursor: 'pointer',
             }}
           >
-            {item.label}
+            {exactUi(item.label)}
           </button>
         ))}
       </div>
 
-      {loading && <p>Carregando...</p>}
+      {loading && <p>{t('surface.auth.loading')}</p>}
       {error && <p style={{ color: '#7f1d1d' }}>{error}</p>}
 
       {!loading && companies.length === 0 && !error && (
-        <p>Nenhuma empresa neste status.</p>
+        <p>{t('rest.admin.noneStatus')}</p>
       )}
 
       <div style={{ display: 'grid', gap: 16, marginTop: 20 }}>

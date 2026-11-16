@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import { t } from "@/lib/i18n/translate";
+import { localizeServerText } from "@/lib/i18n/server-text";
 import {
   CURSO_CERTIFICADO_MAX_BYTES,
   CURSO_STATUS_META,
@@ -28,18 +30,18 @@ async function uploadCertificadoCurso(file: File, uploadType: string): Promise<s
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = () => reject(new Error("Erro ao ler arquivo localmente"));
+      reader.onerror = () => reject(new Error(t("rest.cert.readError")));
       reader.readAsDataURL(file);
     });
   }
-  throw new Error(data.error || "Erro ao enviar certificado");
+  throw new Error(localizeServerText(data.error) || t("rest.cert.sendError"));
 }
 
 export default function CertificadoCursoUpload({
   curso,
   onChange,
   uploadType = "curso-certificados",
-  checkboxLabel = "Anexar certificado (Opcional)",
+  checkboxLabel,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [enviando, setEnviando] = useState(false);
@@ -54,12 +56,12 @@ export default function CertificadoCursoUpload({
     setErro(null);
 
     if (!isCursoCertificadoMime(file.type)) {
-      setErro("Formato não permitido. Use PDF, JPG ou PNG.");
+      setErro(t("rest.cert.badFormat"));
       return;
     }
 
     if (file.size > CURSO_CERTIFICADO_MAX_BYTES) {
-      setErro("Arquivo muito grande (máx. 10 MB).");
+      setErro(t("rest.cert.tooBig"));
       return;
     }
 
@@ -67,7 +69,7 @@ export default function CertificadoCursoUpload({
     try {
       const url = await uploadCertificadoCurso(file, uploadType);
       if (!url) {
-        setErro("Não foi possível enviar o certificado.");
+        setErro(t("rest.cert.failed"));
         return;
       }
       onChange({
@@ -76,7 +78,7 @@ export default function CertificadoCursoUpload({
         verificado: false,
       });
     } catch (err) {
-      setErro(err instanceof Error ? err.message : "Erro ao enviar certificado.");
+      setErro(err instanceof Error ? err.message : t("rest.cert.failedDot"));
     } finally {
       setEnviando(false);
     }
@@ -96,7 +98,7 @@ export default function CertificadoCursoUpload({
             });
           }}
         />
-        {checkboxLabel}
+        {checkboxLabel || t("rest.cert.attach")}
       </label>
 
       {(curso.possuiCertificado || anexado) && (
@@ -179,7 +181,7 @@ export default function CertificadoCursoUpload({
                       "inset 0 1px 0 rgba(200, 155, 60, 0.45), inset 0 -2px 0 rgba(74, 50, 12, 0.42), 0 3px 0 #5a4512, 0 4px 10px rgba(0, 0, 0, 0.45)",
                   }}
                 >
-                  {enviando ? "Enviando..." : "Trocar arquivo"}
+                  {enviando ? t("surface.jobs.sending") : t("rest.cert.replace")}
                 </button>
               </div>
             </div>
@@ -203,7 +205,7 @@ export default function CertificadoCursoUpload({
                     "inset 0 1px 0 rgba(200, 155, 60, 0.45), inset 0 -2px 0 rgba(74, 50, 12, 0.42), 0 3px 0 #5a4512, 0 4px 10px rgba(0, 0, 0, 0.45)",
                 }}
               >
-                {enviando ? "Enviando certificado..." : "Enviar certificado (PDF/JPG/PNG)"}
+                {enviando ? t("rest.cert.sending") : t("rest.cert.send")}
               </button>
             </div>
           )}

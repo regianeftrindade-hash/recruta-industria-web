@@ -1,5 +1,8 @@
 "use client";
+import { localizeServerText } from "@/lib/i18n/server-text";
+import { formatUiNumber } from "@/lib/i18n/format-ui";
 
+import { t } from "@/lib/i18n/translate";
 import React, { useRef, useState } from "react";
 import styles from "./register.module.css";
 import type { ResumeExtractionResult, ResumeStructuredFields } from "@/lib/curriculum/types";
@@ -103,11 +106,11 @@ export default function RegisterImportCurriculo({
           onCurriculoAnexado(urlFallback, file.name);
           setAnexoOk(file.name);
           setError(
-            (data.error || "Não foi possível ler o texto do currículo.") +
-              " Arquivo anexado — complete os campos manualmente.",
+            (localizeServerText(data.error) || t("registration.ui.nao-foi-possivel-ler-o-texto-do-curriculo")) +
+              t("registration.ui.arquivo-anexado-complete-os-campos-manualmente"),
           );
         } else {
-          setError(data.error || "Não foi possível ler o currículo.");
+          setError(localizeServerText(data.error) || t("registration.ui.nao-foi-possivel-ler-o-curriculo"));
         }
         return;
       }
@@ -127,14 +130,14 @@ export default function RegisterImportCurriculo({
           : data.extraction.structured) || null;
       const semPadroes = !structured?.matchedFields?.length;
       if (!url && semPadroes) {
-        setError("Não foi possível anexar nem encontrar padrões. Tente outro arquivo.");
+        setError(t("registration.ui.nao-foi-possivel-anexar-nem-encontrar-padroes-tente-outro-arquiv"));
       } else if (!url) {
-        setError("Texto lido, mas não foi possível anexar o arquivo.");
+        setError(t("registration.ui.texto-lido-mas-nao-foi-possivel-anexar-o-arquivo"));
       } else if (semPadroes) {
-        setError("Arquivo anexado. Poucos padrões encontrados — complete manualmente.");
+        setError(t("registration.ui.arquivo-anexado-poucos-padroes-encontrados-complete-manualmente"));
       }
     } catch {
-      setError("Erro de rede ao enviar o arquivo.");
+      setError(t("registration.ui.erro-de-rede-ao-enviar-o-arquivo"));
     } finally {
       setBusy(false);
     }
@@ -142,9 +145,9 @@ export default function RegisterImportCurriculo({
 
   return (
     <section className={`${styles.sectionCard} ${styles.importCurriculoCard}`}>
-      <h3 className={styles.importCurriculoTitle}>Importar currículo</h3>
+      <h3 className={styles.importCurriculoTitle}>{t("registration.ui.importar-curriculo")}</h3>
       <p className={styles.importCurriculoHint}>
-        PDF, DOC ou DOCX (até 8 MB). Preenche o cadastro e anexa o arquivo automaticamente.
+        {t("registration.ui.pdf-doc-docx")}
       </p>
 
       <input
@@ -162,7 +165,7 @@ export default function RegisterImportCurriculo({
           onClick={onPick}
           disabled={busy}
         >
-          {busy ? "Importando…" : "Escolher arquivo"}
+          {busy ? t("registration.ui.importando") : t("registration.ui.escolher-arquivo")}
         </button>
         <button
           type="button"
@@ -170,7 +173,7 @@ export default function RegisterImportCurriculo({
           onClick={onPick}
           disabled={busy}
         >
-          {busy ? "Aguarde…" : "Importar"}
+          {busy ? t("registration.ui.aguarde") : t("registration.ui.importar")}
         </button>
       </div>
 
@@ -179,7 +182,7 @@ export default function RegisterImportCurriculo({
           <div className={styles.importCurriculoDivider} />
           <div className={styles.importCurriculoFileRow}>
             <span className={styles.importCurriculoFileName} title={anexoOk || undefined}>
-              {anexoOk || "Arquivo processado"}
+              {anexoOk || t("registration.ui.arquivo-processado")}
             </span>
             <div className={styles.importCurriculoFileActions}>
               <button
@@ -188,7 +191,7 @@ export default function RegisterImportCurriculo({
                 onClick={onPick}
                 disabled={busy}
               >
-                Enviar outro arquivo
+                {t("registration.ui.enviar-outro-arquivo")}
               </button>
               <button
                 type="button"
@@ -196,7 +199,7 @@ export default function RegisterImportCurriculo({
                 disabled={busy || !extraction?.structured}
                 onClick={() => extraction && applyFromExtraction(extraction, true)}
               >
-                Preencher de novo
+                {t("registration.ui.preencher-de-novo")}
               </button>
             </div>
           </div>
@@ -211,9 +214,9 @@ export default function RegisterImportCurriculo({
 
       {filledLabels.length > 0 && (
         <p className={styles.importCurriculoSuccess} role="status">
-          Preenchido: {filledLabels.join(", ")}.
+          {t("registration.ui.preenchido")} {filledLabels.join(", ")}.
           {extraction?.structured?.estado || extraction?.structured?.cidade
-            ? ` Localização detectada: ${[
+            ? ` ${t("registration.ui.localizacao-detectada")} ${[
                 extraction.structured.cidade,
                 extraction.structured.estado,
               ]
@@ -226,14 +229,14 @@ export default function RegisterImportCurriculo({
       {extraction && (
         <details className={styles.importCurriculoPreview}>
           <summary>
-            Texto extraído ({extraction.format.toUpperCase()} ·{" "}
-            {extraction.charCount.toLocaleString("pt-BR")} caracteres)
+            {t("registration.ui.texto-extraido")} ({extraction.format.toUpperCase()} ·{" "}
+            {formatUiNumber(extraction.charCount)} {t("registration.ui.caracteres")})
           </summary>
           <textarea
             readOnly
             value={extraction.rawText}
             className={styles.importCurriculoTextarea}
-            aria-label="Texto extraído do currículo"
+            aria-label={t("registration.ui.texto-extraido-do-curriculo")}
             rows={6}
           />
         </details>

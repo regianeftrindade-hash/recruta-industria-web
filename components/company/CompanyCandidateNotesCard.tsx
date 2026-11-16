@@ -1,4 +1,7 @@
 "use client";
+import { localizeServerText } from "@/lib/i18n/server-text";
+import { formatUiDateTime } from "@/lib/i18n/format-ui";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useState } from "react";
 import { botaoPerfil, textoAviso, textoDourado } from "@/lib/ui/perfil-empresa-cores";
@@ -55,13 +58,13 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
       });
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao salvar" });
+        setFeedback({ tone: "err", text: localizeServerText(data.error) || exactUi("Erro ao salvar") });
         return false;
       }
       onNotesChange(String(data.tracking?.notes || patchNotes));
       return true;
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao salvar anotações" });
+      setFeedback({ tone: "err", text: exactUi("Erro ao salvar anotações") });
       return false;
     } finally {
       setSavingNotes(false);
@@ -71,7 +74,7 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
   const salvarNotaInterna = async () => {
     const text = notaTexto.trim();
     if (!text) {
-      setFeedback({ tone: "err", text: "Escreva a anotação antes de salvar." });
+      setFeedback({ tone: "err", text: exactUi("Escreva a anotação antes de salvar.") });
       return;
     }
     const atuais = parseNotasInternas(notes);
@@ -83,15 +86,15 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
     const ok = await salvar(JSON.stringify([nova, ...atuais]));
     if (ok) {
       setNotaTexto("");
-      setFeedback({ tone: "ok", text: "Anotação salva." });
+      setFeedback({ tone: "ok", text: exactUi("Anotação salva.") });
     }
   };
 
   const apagarNotaInterna = async (id: string) => {
-    if (!confirm("Apagar esta anotação?")) return;
+    if (!confirm(exactUi("Apagar esta anotação?"))) return;
     const atuais = parseNotasInternas(notes).filter((n) => n.id !== id);
     const ok = await salvar(atuais.length ? JSON.stringify(atuais) : "");
-    if (ok) setFeedback({ tone: "ok", text: "Anotação apagada." });
+    if (ok) setFeedback({ tone: "ok", text: exactUi("Anotação apagada.") });
   };
 
   return (
@@ -107,7 +110,7 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
           if (feedback) setFeedback(null);
         }}
         rows={4}
-        placeholder="Escreva uma observação sobre este candidato..."
+        placeholder={exactUi("Escreva uma observação sobre este candidato...")}
         style={{
           width: "100%",
           boxSizing: "border-box",
@@ -148,7 +151,7 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
           opacity: savingNotes || !notaTexto.trim() ? 0.7 : 1,
         }}
       >
-        {savingNotes ? "Salvando..." : "Salvar"}
+        {savingNotes ? exactUi("Salvando...") : "Salvar"}
       </button>
       <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
         {parseNotasInternas(notes).map((nota) => (
@@ -175,7 +178,7 @@ export default function CompanyCandidateNotesCard({ profileId, notes, onNotesCha
               {nota.text}
             </p>
             <p style={{ margin: "8px 0 0", fontSize: 10, color: "#000" }}>
-              {new Date(nota.createdAt).toLocaleString("pt-BR")}
+              {formatUiDateTime(nota.createdAt)}
             </p>
             <button
               type="button"

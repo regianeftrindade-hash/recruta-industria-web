@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { rotuloOpcao } from "@/lib/i18n/option-label";
 import {
   SOBRE_MIM_CAMPOS,
   SOBRE_MIM_LIMITES,
@@ -24,7 +25,7 @@ export default function RegisterSobreMimFields({ value, onChange }: Props) {
           <div key={key} className={styles.sobreMimCampo}>
             <div className={styles.sobreMimCampoTopo}>
               <label className={styles.label} htmlFor={`sobreMim-${key}`}>
-                {label}
+                {rotuloOpcao(label)}
               </label>
               <span className={styles.sobreMimContador}>
                 {campoValor.length}/{maxLength}
@@ -36,7 +37,7 @@ export default function RegisterSobreMimFields({ value, onChange }: Props) {
               className={styles.input}
               value={campoValor}
               maxLength={maxLength}
-              placeholder={placeholder}
+              placeholder={rotuloOpcao(placeholder)}
               onChange={(e) => onChange(key, e.target.value)}
             />
           </div>

@@ -2,10 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  PREMIUM_HIRE_NOTICE,
-  PREMIUM_RESUME_PROMPT,
-} from "@/lib/curriculum/resume-copy";
-import {
   emptyResumeDraft,
   renderResumePdf,
   RESUME_MODELS,
@@ -16,6 +12,9 @@ import {
 } from "@/lib/curriculum/resume-draft";
 import { CurriculoAnexadoSemLeituraError } from "@/lib/curriculum/resume-read-error";
 import styles from "./resume-toolkit.module.css";
+import { formatInTimeZone } from "@/lib/datetime/format-in-zone";
+import { getBoundLocale } from "@/lib/i18n/active-locale";
+import { t } from "@/lib/i18n/translate";
 
 type Status = {
   hasResume: boolean;
@@ -69,7 +68,7 @@ function ModelPicker({
   onChange: (id: ResumeModelId) => void;
 }) {
   return (
-    <div className={styles.models} role="radiogroup" aria-label="Modelo do currículo">
+    <div className={styles.models} role="radiogroup" aria-label={t("internal.resume.model")}>
       {RESUME_MODELS.map((item) => {
         const selected = item.id === value;
         return (
@@ -94,10 +93,7 @@ function formatUpdatedAt(value: string | null): string | null {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeZone: "America/Sao_Paulo",
-  }).format(date);
+  return formatInTimeZone(date, getBoundLocale() === "en" ? "en" : "pt-BR", "America/Sao_Paulo", { dateStyle: "short" });
 }
 
 async function readError(response: Response, fallback: string): Promise<string> {
@@ -108,10 +104,10 @@ async function readError(response: Response, fallback: string): Promise<string> 
 export async function attachResumeFile(file: File): Promise<{ ok: true; fileName: string } | { ok: false; error: string }> {
   const name = file.name.toLowerCase();
   if (!name.endsWith(".pdf") && !name.endsWith(".docx")) {
-    return { ok: false, error: "Envie um arquivo PDF ou DOCX." };
+    return { ok: false, error: t("internal.resume.pdfOrDocx") };
   }
-  if (!file.size) return { ok: false, error: "O arquivo está vazio." };
-  if (file.size > 10 * 1024 * 1024) return { ok: false, error: "Arquivo muito grande (máx. 10MB)." };
+  if (!file.size) return { ok: false, error: t("internal.resume.emptyFile") };
+  if (file.size > 10 * 1024 * 1024) return { ok: false, error: t("internal.resume.tooBig") };
 
   const body = new FormData();
   body.set("file", file);
@@ -119,7 +115,7 @@ export async function attachResumeFile(file: File): Promise<{ ok: true; fileName
   const uploaded = await fetch("/api/upload", { method: "POST", body, credentials: "include" });
   const uploadData = await uploaded.json().catch(() => ({}));
   if (!uploaded.ok || !uploadData?.file?.path) {
-    return { ok: false, error: uploadData?.error || "Não foi possível enviar o currículo." };
+    return { ok: false, error: uploadData?.error || t("internal.resume.uploadError") };
   }
 
   const saved = await fetch("/api/professional/curriculo", {
@@ -129,7 +125,7 @@ export async function attachResumeFile(file: File): Promise<{ ok: true; fileName
     body: JSON.stringify({ path: uploadData.file.path }),
   });
   if (!saved.ok) {
-    return { ok: false, error: await readError(saved, "Não foi possível salvar o currículo no perfil.") };
+    return { ok: false, error: await readError(saved, t("internal.resume.saveError")) };
   }
   const savedData = await saved.json().catch(() => ({}));
   return { ok: true, fileName: savedData.fileName || file.name };
@@ -166,7 +162,7 @@ export default function ResumeToolkit({
     const response = await fetch("/api/professional/curriculo", { credentials: "include" });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(data.error || "Não foi possível consultar o currículo.");
+      throw new Error(data.error || t("internal.resume.loadError"));
     }
     const next = data as Status;
     setStatus(next);
@@ -177,7 +173,7 @@ export default function ResumeToolkit({
     if (!authenticated) return;
     let cancelled = false;
     void loadStatus().catch((loadError) => {
-      if (!cancelled) setError(loadError instanceof Error ? loadError.message : "Não foi possível consultar o currículo.");
+      if (!cancelled) setError(loadError instanceof Error ? loadError.message : t("internal.resume.loadError"));
     });
     return () => {
       cancelled = true;
@@ -213,7 +209,7 @@ export default function ResumeToolkit({
       const current = status?.draft ? status : await loadStatus();
       openReviewFrom(current?.draft || emptyResumeDraft());
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Não foi possível consultar o currículo.");
+      setError(loadError instanceof Error ? loadError.message : t("internal.resume.loadError"));
     }
   }
 
@@ -223,7 +219,7 @@ export default function ResumeToolkit({
       const aviso = await onAttachFile(file);
       return typeof aviso === "string" ? aviso : "";
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível ler o currículo.");
+      setError(err instanceof Error ? err.message : t("internal.resume.readError"));
       if (err instanceof CurriculoAnexadoSemLeituraError) return "";
       throw err;
     }
@@ -238,23 +234,23 @@ export default function ResumeToolkit({
       if (!authenticated) {
         const lower = file.name.toLowerCase();
         if (pdfOnly ? !lower.endsWith(".pdf") : !lower.endsWith(".pdf") && !lower.endsWith(".docx")) {
-          setError(pdfOnly ? "Envie um currículo em PDF." : "Envie um arquivo PDF ou DOCX.");
+          setError(pdfOnly ? t("internal.resume.pdfOnly") : t("internal.resume.pdfOrDocx"));
           return;
         }
         if (file.size > 10 * 1024 * 1024) {
-          setError("Arquivo muito grande (máx. 10MB).");
+          setError(t("internal.resume.tooBig"));
           return;
         }
         const aviso = await preencherComArquivo(file);
         onHoldFile?.(file);
         setHeldName(file.name);
-        setMessage(aviso || "Arquivo selecionado. Ele ainda não está no perfil.");
+        setMessage(aviso || t("internal.resume.selected"));
         return;
       }
 
       const lower = file.name.toLowerCase();
       if (pdfOnly && !lower.endsWith(".pdf")) {
-        setError("Envie um currículo em PDF.");
+          setError(t("internal.resume.pdfOnly"));
         return;
       }
       const aviso = await preencherComArquivo(file);
@@ -264,7 +260,7 @@ export default function ResumeToolkit({
         setMessage(aviso);
         return;
       }
-      setMessage([aviso, "Currículo salvo no perfil."].filter(Boolean).join(" "));
+      setMessage([aviso, t("internal.resume.saved")].filter(Boolean).join(" "));
       await loadStatus();
       onSaved?.();
       setView("home");
@@ -272,7 +268,7 @@ export default function ResumeToolkit({
       if (!(err instanceof CurriculoAnexadoSemLeituraError)) {
         setError(err instanceof Error && err.message
           ? err.message
-          : "Não foi possível enviar o currículo. Tente novamente.");
+          : t("internal.resume.uploadRetry"));
         setMessage("");
       }
     } finally {
@@ -283,7 +279,7 @@ export default function ResumeToolkit({
   async function generate(saveAsMain: boolean) {
     const clean = sanitizeResumeDraft(draft);
     if (!clean.nome) {
-      setError("Informe o nome profissional para gerar o currículo. Os demais campos podem ficar em branco.");
+      setError(t("internal.resume.nameRequired"));
       return;
     }
     setBusy(true);
@@ -298,7 +294,7 @@ export default function ResumeToolkit({
         if (saveAsMain) {
           onHoldFile?.(new File([blob], "curriculo.pdf", { type: "application/pdf" }));
           setHeldName("curriculo.pdf");
-          setMessage("Currículo em PDF pronto. Ele ainda não está no perfil.");
+          setMessage(t("internal.resume.pdfReady"));
         }
       } else {
         const response = await fetch("/api/professional/curriculo/gerar", {
@@ -308,17 +304,17 @@ export default function ResumeToolkit({
           body: JSON.stringify({ draft: clean, saveAsMain, model }),
         });
         if (!response.ok) {
-          setError(await readError(response, "Não foi possível gerar o currículo."));
+          setError(await readError(response, t("internal.resume.generateError")));
           return;
         }
         saved = response.headers.get("X-Resume-Saved") === "1";
         blob = await response.blob();
         if (saved) {
-          setMessage("Currículo em PDF salvo no perfil.");
+          setMessage(t("internal.resume.pdfSaved"));
           await loadStatus();
           onSaved?.();
         } else if (saveAsMain) {
-          setError("O PDF não foi salvo no perfil.");
+          setError(t("internal.resume.pdfNotSaved"));
           return;
         }
       }
@@ -327,7 +323,7 @@ export default function ResumeToolkit({
       setPreviewUrl(URL.createObjectURL(blob));
       setView("preview");
     } catch {
-      setError("Não foi possível gerar o currículo. Tente novamente.");
+      setError(t("fix.resume.generateError"));
     } finally {
       setBusy(false);
     }
@@ -349,7 +345,7 @@ export default function ResumeToolkit({
 
   function saveAsMain() {
     const replacing = Boolean(status?.valid || heldName);
-    if (replacing && !window.confirm("Substituir o currículo principal do perfil por este PDF?")) return;
+    if (replacing && !window.confirm(t("fix.resume.replaceConfirm"))) return;
     void generate(true);
   }
 
@@ -382,17 +378,17 @@ export default function ResumeToolkit({
 
   if (variant === "checkout" && status === null && !error) {
     return (
-      <section className={styles.card} aria-label="Meu currículo">
-        <p className={styles.note}>Consultando o currículo do perfil...</p>
+      <section className={styles.card} aria-label={t("fix.aria.resume")}>
+        <p className={styles.note}>{t("internal.resume.checking")}</p>
       </section>
     );
   }
 
   if (variant === "checkout" && status?.valid) {
     return (
-      <section className={styles.card} aria-label="Meu currículo">
-        <p className={styles.status}>Você já possui um currículo disponível para as candidaturas Premium.</p>
-        {shownName ? <p className={styles.note}>{shownName}{updated ? ` · Atualizado em ${updated}` : ""}</p> : null}
+      <section className={styles.card} aria-label={t("fix.aria.resume")}>
+        <p className={styles.status}>{t("internal.resume.readyPremium")}</p>
+        {shownName ? <p className={styles.note}>{shownName}{updated ? ` · ${t("fix.resume.updatedOn")} ${updated}` : ""}</p> : null}
       </section>
     );
   }
@@ -400,66 +396,66 @@ export default function ResumeToolkit({
   const generateOnly = focus === "generate";
 
   return (
-    <section className={`${styles.card} ${generateOnly && view === "home" ? styles.compact : ""}`} aria-label={generateOnly ? "Gerar currículo em PDF" : "Meu currículo"}>
+    <section className={`${styles.card} ${generateOnly && view === "home" ? styles.compact : ""}`} aria-label={generateOnly ? t("internal.resume.generate") : t("rest.resume.mine")}>
       {generateOnly ? null : fileInput}
       {view === "home" ? (
         <>
           {variant !== "apply" || showGate ? (
-            <h2 className={styles.title}>{generateOnly ? "Gerar currículo em PDF" : "Meu currículo"}</h2>
+            <h2 className={styles.title}>{generateOnly ? t("internal.resume.generate") : t("rest.resume.mine")}</h2>
           ) : null}
-          {showGate ? <p className={styles.lead}>{PREMIUM_RESUME_PROMPT}</p> : null}
-          {showCheckoutWarning ? PREMIUM_HIRE_NOTICE.map((paragraph) => (
-            <p key={paragraph.slice(0, 24)} className={styles.lead}>{paragraph}</p>
+          {showGate ? <p className={styles.lead}>{t("rest.premium.prompt")}</p> : null}
+          {showCheckoutWarning ? (["rest.premium.notice1", "rest.premium.notice2", "rest.premium.notice3", "rest.premium.notice4"] as const).map((key) => (
+            <p key={key} className={styles.lead}>{t(key)}</p>
           )) : null}
           {generateOnly ? (
             <p className={styles.note}>
-              {notice || "Não tem um currículo para anexar? Não tem problema. Geramos seu currículo em PDF gratuito com os dados preenchidos neste cadastro."}
+              {notice || t("rest.resume.generateNote")}
             </p>
           ) : null}
           {!generateOnly && variant === "register" ? (
             <p className={styles.note}>
-              Anexar currículo usa um arquivo que você já tem. Gerar currículo em PDF cria um documento com os dados deste cadastro. Nenhum dos dois é obrigatório para concluir.
+              {t("fix.resume.explain")}
             </p>
           ) : null}
           {variant === "checkout" && showCheckoutWarning ? (
-            <p className={styles.note}>Você pode continuar a contratação sem currículo. As funções que dependem dele ficam indisponíveis até o arquivo ser salvo.</p>
+            <p className={styles.note}>{t("internal.resume.continueWithout")}</p>
           ) : null}
           {!showGate && !showCheckoutWarning && shownName ? (
             <>
               <p className={styles.status}>
                 {shownName}
                 {status?.format ? ` · ${status.format.toUpperCase()}` : ""}
-                {updated ? ` · Atualizado em ${updated}` : ""}
+                {updated ? ` · ${t("internal.resume.updated")} ${updated}` : ""}
               </p>
               <p className={styles.note}>
                 {hasValid
-                  ? "Há um currículo disponível para as candidaturas Premium."
+                  ? t("internal.resume.available")
                   : heldName
-                    ? "O arquivo ainda será associado à sua conta."
-                    : "O arquivo salvo não pôde ser confirmado. Envie ou gere outro para usar o envio automático."}
+                    ? t("internal.resume.pendingAccount")
+                    : t("internal.resume.unconfirmed")}
               </p>
             </>
           ) : null}
           {!generateOnly && !showGate && !shownName && variant === "profile" ? (
-            <p className={styles.note}>Nenhum currículo salvo. Você pode anexar um PDF ou DOCX ou gerar um PDF pelos dados do perfil.</p>
+            <p className={styles.note}>{t("internal.resume.none")}</p>
           ) : null}
           <div className={styles.actions}>
             {generateOnly ? null : (
               <button type="button" className="ri-btn-3d-gold" disabled={busy} onClick={() => inputRef.current?.click()}>
-                {shownName && !showGate && !showCheckoutWarning ? "Substituir currículo" : "Anexar currículo"}
+                {shownName && !showGate && !showCheckoutWarning ? t("internal.resume.replace") : t("internal.resume.attach")}
               </button>
             )}
             <button type="button" className="ri-btn-3d-gold" disabled={busy} onClick={openReview}>
-              Gerar currículo em PDF
+              {t("internal.resume.generate")}
             </button>
             {authenticated && status?.valid ? (
               <a className={styles.secondary} href="/api/professional/curriculo/arquivo" target="_blank" rel="noopener noreferrer">
-                Visualizar ou baixar
+                {t("internal.resume.viewDownload")}
               </a>
             ) : null}
             {showGate && onCancel ? (
               <button type="button" className={styles.secondary} disabled={busy} onClick={onCancel}>
-                Voltar à vaga
+                {t("internal.resume.backToJob")}
               </button>
             ) : null}
           </div>
@@ -468,69 +464,69 @@ export default function ResumeToolkit({
 
       {view === "review" ? (
         <div className={styles.form}>
-          <h2 className={styles.title}>Revisar currículo</h2>
+          <h2 className={styles.title}>{t("internal.resume.review")}</h2>
           <p className={styles.note}>
-            Confira os dados do perfil. Campos em branco ficam de fora do PDF. Os três modelos usam os mesmos dados, em uma coluna, sem foto e sem gráficos. A prévia é o próprio PDF, com margens, páginas e rodapé.
+            {t("internal.resume.reviewHelp")}
           </p>
           <ModelPicker value={model} onChange={chooseModel} />
           <div className={styles.grid}>
-            <label>Nome profissional
+            <label>{t("internal.resume.professionalName")}
               <input value={draft.nome} onChange={(event) => setDraft({ ...draft, nome: event.target.value })} />
             </label>
-            <label>E-mail
+            <label>{t("surface.auth.email")}
               <input value={draft.email} onChange={(event) => setDraft({ ...draft, email: event.target.value })} />
             </label>
-            <label>Telefone
+            <label>{t("registration.simple.phone")}
               <input value={draft.telefone} onChange={(event) => setDraft({ ...draft, telefone: event.target.value })} />
             </label>
-            <label>Cidade
+            <label>{t("surface.jobs.city")}
               <input value={draft.cidade} onChange={(event) => setDraft({ ...draft, cidade: event.target.value })} />
             </label>
-            <label>Estado
+            <label>{t("surface.jobs.state")}
               <input value={draft.estado} onChange={(event) => setDraft({ ...draft, estado: event.target.value })} />
             </label>
             <label>CNH
               <input value={draft.cnh} onChange={(event) => setDraft({ ...draft, cnh: event.target.value })} />
             </label>
           </div>
-          <label>Objetivo
+          <label>{t("internal.resume.objective")}
             <input value={draft.objetivo} onChange={(event) => setDraft({ ...draft, objetivo: event.target.value })} />
           </label>
-          <label>Resumo profissional
+          <label>{t("internal.resume.summary")}
             <textarea rows={3} value={draft.resumo} onChange={(event) => setDraft({ ...draft, resumo: event.target.value })} />
           </label>
-          <label>Escolaridade
+          <label>{t("internal.resume.education")}
             <input value={draft.escolaridade} onChange={(event) => setDraft({ ...draft, escolaridade: event.target.value })} />
           </label>
           <div className={styles.grid}>
-            <label>Curso
+            <label>{t("internal.resume.course")}
               <input value={draft.curso} onChange={(event) => setDraft({ ...draft, curso: event.target.value })} />
             </label>
-            <label>Instituição
+            <label>{t("internal.resume.institution")}
               <input value={draft.instituicao} onChange={(event) => setDraft({ ...draft, instituicao: event.target.value })} />
             </label>
           </div>
-          <label>Ano de conclusão
+          <label>{t("internal.resume.year")}
             <input value={draft.ano} onChange={(event) => setDraft({ ...draft, ano: event.target.value })} />
           </label>
           {draft.experiencias.map((job, index) => (
             <div key={`exp-${index}`} className={styles.job}>
-              <strong>Experiência {index + 1}</strong>
+              <strong>{t("rest.profile.experience")} {index + 1}</strong>
               <div className={styles.grid}>
-                <label>Empresa
+                <label>{t("internal.resume.company")}
                   <input value={job.empresa} onChange={(event) => setJob(index, { empresa: event.target.value })} />
                 </label>
-                <label>Cargo
+                <label>{t("internal.resume.role")}
                   <input value={job.cargo} onChange={(event) => setJob(index, { cargo: event.target.value })} />
                 </label>
-                <label>Início
+                <label>{t("internal.resume.start")}
                   <input value={job.inicio} onChange={(event) => setJob(index, { inicio: event.target.value })} />
                 </label>
-                <label>Fim
+                <label>{t("internal.resume.end")}
                   <input value={job.fim} onChange={(event) => setJob(index, { fim: event.target.value })} />
                 </label>
               </div>
-              <label>Atividades
+              <label>{t("internal.resume.activities")}
                 <textarea rows={2} value={job.atividades} onChange={(event) => setJob(index, { atividades: event.target.value })} />
               </label>
             </div>
@@ -540,23 +536,23 @@ export default function ResumeToolkit({
             className={styles.secondary}
             onClick={() => setDraft((current) => ({ ...current, experiencias: [...current.experiencias, { ...EMPTY_JOB }] }))}
           >
-            Adicionar experiência
+            {t("fix.resume.add")}
           </button>
-          <label>Cursos, um por linha
+          <label>{t("internal.resume.courses")}
             <textarea rows={3} value={listText.cursos} onChange={(event) => setList("cursos", event.target.value)} />
           </label>
-          <label>Habilidades, uma por linha
+          <label>{t("internal.resume.skills")}
             <textarea rows={3} value={listText.habilidades} onChange={(event) => setList("habilidades", event.target.value)} />
           </label>
-          <label>Idiomas, um por linha
+          <label>{t("internal.resume.languages")}
             <textarea rows={2} value={listText.idiomas} onChange={(event) => setList("idiomas", event.target.value)} />
           </label>
           <div className={styles.actions}>
             <button type="button" className="ri-btn-3d-gold" disabled={busy} onClick={() => void generate(false)}>
-              {busy ? "Gerando..." : "Gerar prévia em PDF"}
+              {busy ? t("fix.resume.generating") : t("fix.resume.previewPdf")}
             </button>
             <button type="button" className={styles.secondary} disabled={busy} onClick={() => setView("home")}>
-              Voltar
+              {t("internal.pro.back")}
             </button>
           </div>
         </div>
@@ -564,17 +560,17 @@ export default function ResumeToolkit({
 
       {view === "preview" && previewUrl ? (
         <>
-          <h2 className={styles.title}>Prévia do currículo</h2>
-          <p className={styles.note}>Trocar o modelo atualiza a prévia sem apagar as informações.</p>
+          <h2 className={styles.title}>{t("internal.resume.preview")}</h2>
+          <p className={styles.note}>{t("internal.resume.previewNote")}</p>
           <ModelPicker value={model} onChange={chooseModel} />
-          <iframe className={styles.preview} title="Prévia do currículo em PDF" src={previewUrl} />
+          <iframe className={styles.preview} title={t("fix.resume.previewFrame")} src={previewUrl} />
           <div className={styles.actions}>
-            <a className={styles.secondary} href={previewUrl} download="curriculo.pdf">Baixar PDF</a>
+            <a className={styles.secondary} href={previewUrl} download="curriculo.pdf">{t("fix.resume.download")}</a>
             <button type="button" className="ri-btn-3d-gold" disabled={busy} onClick={saveAsMain}>
-              {busy ? "Salvando..." : "Salvar como currículo principal"}
+              {busy ? t("surface.reset.saving") : t("fix.resume.saveMain")}
             </button>
             <button type="button" className={styles.secondary} disabled={busy} onClick={() => setView("review")}>
-              Voltar à revisão
+              {t("fix.resume.backReview")}
             </button>
           </div>
         </>
@@ -583,7 +579,7 @@ export default function ResumeToolkit({
       {message ? <p className={styles.status} role="status">{message}</p> : null}
       {!authenticated && heldName ? (
         <p className={styles.note}>
-          Conclua o cadastro nesta página para salvar o currículo no perfil. Se você sair ou fechar a aba antes disso, o arquivo será perdido.
+          {t("fix.resume.holdAccount")}
         </p>
       ) : null}
       {error ? <p className={styles.error} role="alert">{error}</p> : null}

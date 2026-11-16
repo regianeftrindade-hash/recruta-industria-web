@@ -1,7 +1,10 @@
 "use client";
+import { localizeServerText } from "@/lib/i18n/server-text";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { t } from "@/lib/i18n/translate";
 import styles from "../admin.module.css";
 
 function caixaEmailHref(email: string, extra?: {
@@ -120,11 +123,11 @@ export default function CandidaturasManuaisPage() {
     try {
       const response = await fetch("/api/admin/candidaturas-manual", { credentials: "include" });
       const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(body.error || "Não foi possível carregar as vagas.");
+      if (!response.ok) throw new Error(localizeServerText(body.error) || exactUi("Não foi possível carregar as vagas."));
       setJobs(Array.isArray(body.jobs) ? body.jobs : []);
       setError("");
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Não foi possível carregar as vagas.");
+      setError(loadError instanceof Error ? loadError.message : exactUi("Não foi possível carregar as vagas."));
     } finally {
       setLoading(false);
     }
@@ -152,13 +155,13 @@ export default function CandidaturasManuaisPage() {
         body: JSON.stringify(form),
       });
       const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(body.error || "Não foi possível cadastrar a vaga.");
+      if (!response.ok) throw new Error(localizeServerText(body.error) || exactUi("Não foi possível cadastrar a vaga."));
       setCreating(false);
       setForm(vagaEmBranco());
-      setNotice("Vaga cadastrada. Ela já aparece nesta lista e no site.");
+      setNotice(exactUi("Vaga cadastrada. Ela já aparece nesta lista e no site."));
       await load();
     } catch (saveError) {
-      setFormError(saveError instanceof Error ? saveError.message : "Não foi possível cadastrar a vaga.");
+      setFormError(saveError instanceof Error ? saveError.message : exactUi("Não foi possível cadastrar a vaga."));
     } finally {
       setSaving(false);
     }
@@ -178,7 +181,7 @@ export default function CandidaturasManuaisPage() {
     <main className={styles.main}>
       <div className={styles.hero}>
         <div>
-          <h1 className={styles.heroTitle}>CANDIDATURAS MANUAL</h1>
+          <h1 className={styles.heroTitle}>{t("internal.admin.manualTitle")}</h1>
           <p className={styles.heroMeta}>
             Abra a vaga para ver a descrição, o envio aos cuidados de quem recebe, o link para compartilhar e os currículos em PDF.
           </p>
@@ -193,7 +196,7 @@ export default function CandidaturasManuaisPage() {
               setCreating((open) => !open);
             }}
           >
-            {creating ? "Fechar cadastro" : "Cadastrar vaga"}
+            {creating ? exactUi("Fechar cadastro") : exactUi("Cadastrar vaga")}
           </button>
           <button type="button" className={styles.btnGold} onClick={() => void load()}>
             Atualizar
@@ -201,7 +204,7 @@ export default function CandidaturasManuaisPage() {
         </div>
       </div>
 
-      {loading ? <p className={styles.empty}>Carregando vagas...</p> : null}
+      {loading ? <p className={styles.empty}>{t("internal.company.loadingJobs")}</p> : null}
       {error ? <div className={styles.errorBox}>{error}</div> : null}
       {notice ? <p className={styles.panelSub}>{notice}</p> : null}
 
@@ -209,7 +212,7 @@ export default function CandidaturasManuaisPage() {
         <section className={styles.panel}>
           <div className={styles.panelHead}>
             <div>
-              <h2 className={styles.panelTitle}>Nova vaga</h2>
+              <h2 className={styles.panelTitle}>{t("rest.admin.manualNew")}</h2>
               <p className={styles.panelSub}>
                 A vaga entra no site. A pessoa se candidata por lá e o currículo fica nesta aba para você enviar.
               </p>
@@ -217,19 +220,19 @@ export default function CandidaturasManuaisPage() {
           </div>
           <div className={styles.manualForm}>
             <label className={styles.manualField}>
-              <span className={styles.replyLabel}>Cargo</span>
+              <span className={styles.replyLabel}>{t("rest.admin.role")}</span>
               <input className={styles.replyInput} value={form.title} maxLength={160} onChange={(event) => updateForm("title", event.target.value)} />
             </label>
             <label className={styles.manualField}>
-              <span className={styles.replyLabel}>Empresa</span>
+              <span className={styles.replyLabel}>{t("internal.resume.company")}</span>
               <input className={styles.replyInput} value={form.companyName} maxLength={160} onChange={(event) => updateForm("companyName", event.target.value)} />
             </label>
             <label className={styles.manualField}>
-              <span className={styles.replyLabel}>Local</span>
+              <span className={styles.replyLabel}>{t("rest.admin.place")}</span>
               <input className={styles.replyInput} value={form.workplace} maxLength={120} onChange={(event) => updateForm("workplace", event.target.value)} />
             </label>
             <label className={styles.manualField}>
-              <span className={styles.replyLabel}>Salário</span>
+              <span className={styles.replyLabel}>{t("surface.jobs.salary")}</span>
               <input className={styles.replyInput} value={form.salary} placeholder="2.500,00" disabled={form.salaryNegotiable} onChange={(event) => updateForm("salary", event.target.value)} />
             </label>
             <label className={styles.manualCheck}>
@@ -237,38 +240,38 @@ export default function CandidaturasManuaisPage() {
               A combinar
             </label>
             <label className={styles.manualField}>
-              <span className={styles.replyLabel}>Data da publicação</span>
+              <span className={styles.replyLabel}>{t("surface.jobs.publishedOn")}</span>
               <input className={styles.replyInput} type="date" value={form.publicationDate} onChange={(event) => updateForm("publicationDate", event.target.value)} />
             </label>
             <label className={`${styles.manualField} ${styles.manualWide}`}>
-              <span className={styles.replyLabel}>Descrição</span>
+              <span className={styles.replyLabel}>{t("rest.admin.description")}</span>
               <textarea className={styles.replyTextarea} rows={6} value={form.description} onChange={(event) => updateForm("description", event.target.value)} />
             </label>
             <label className={styles.manualField}>
-              <span className={styles.replyLabel}>E-mail para envio</span>
+              <span className={styles.replyLabel}>{t("rest.admin.emailTo")}</span>
               <input className={styles.replyInput} type="email" value={form.applicationEmail} onChange={(event) => updateForm("applicationEmail", event.target.value)} />
             </label>
             <label className={styles.manualField}>
-              <span className={styles.replyLabel}>WhatsApp para envio</span>
+              <span className={styles.replyLabel}>{t("rest.admin.whatsappTo")}</span>
               <input className={styles.replyInput} value={form.applicationWhatsapp} placeholder="(11) 98888-7777" onChange={(event) => updateForm("applicationWhatsapp", event.target.value)} />
             </label>
             <label className={styles.manualField}>
-              <span className={styles.replyLabel}>Aos cuidados de</span>
+              <span className={styles.replyLabel}>{t("rest.admin.attention")}</span>
               <input className={styles.replyInput} value={form.careOf} maxLength={80} onChange={(event) => updateForm("careOf", event.target.value)} />
             </label>
             <label className={styles.manualField}>
-              <span className={styles.replyLabel}>Assunto do e-mail</span>
+              <span className={styles.replyLabel}>{t("rest.admin.subject")}</span>
               <input className={styles.replyInput} value={form.subject} maxLength={120} onChange={(event) => updateForm("subject", event.target.value)} />
             </label>
             <label className={styles.manualField}>
-              <span className={styles.replyLabel}>Prazo, se houver</span>
+              <span className={styles.replyLabel}>{t("rest.admin.deadline")}</span>
               <input className={styles.replyInput} type="date" value={form.deadline} onChange={(event) => updateForm("deadline", event.target.value)} />
             </label>
           </div>
           {formError ? <div className={styles.errorBox}>{formError}</div> : null}
           <div className={styles.actions}>
             <button type="button" className={styles.btnGold} disabled={saving} onClick={() => void publishJob()}>
-              {saving ? "Publicando..." : "Publicar vaga"}
+              {saving ? exactUi("Publicando...") : exactUi("Publicar vaga")}
             </button>
           </div>
         </section>
@@ -276,7 +279,7 @@ export default function CandidaturasManuaisPage() {
 
       {!loading && !error && !openJob ? (
         jobs.length === 0 ? (
-          <p className={styles.empty}>Nenhuma vaga de envio manual.</p>
+          <p className={styles.empty}>{t("rest.admin.noManual")}</p>
         ) : (
           <div className={styles.jobCards}>
             {jobs.map((job) => (
@@ -298,18 +301,18 @@ export default function CandidaturasManuaisPage() {
                   </span>
                 </button>
                 <details className={styles.jobCopy}>
-                  <summary>Dados, envio e link</summary>
+                  <summary>{t("rest.admin.shareData")}</summary>
                   <p className={styles.jobDelivery}>{job.deliveryText}</p>
                   <p className={styles.jobCardMeta}>{job.shareUrl}</p>
                   <div className={styles.actions}>
                     <button type="button" className={styles.btnGhost} onClick={() => void copyValue(job.deliveryText, `${job.id}-envio`)}>
-                      {copiedId === `${job.id}-envio` ? "Copiado" : "Copiar envio"}
+                      {copiedId === `${job.id}-envio` ? exactUi("Copiado") : exactUi("Copiar envio")}
                     </button>
                     <button type="button" className={styles.btnGhost} onClick={() => void copyValue(job.shareUrl, `${job.id}-link`)}>
-                      {copiedId === `${job.id}-link` ? "Copiado" : "Copiar link"}
+                      {copiedId === `${job.id}-link` ? exactUi("Copiado") : exactUi("Copiar link")}
                     </button>
                     <button type="button" className={styles.btnGhost} onClick={() => void copyValue(job.shareText, `${job.id}-texto`)}>
-                      {copiedId === `${job.id}-texto` ? "Copiado" : "Copiar texto"}
+                      {copiedId === `${job.id}-texto` ? exactUi("Copiado") : exactUi("Copiar texto")}
                     </button>
                   </div>
                 </details>
@@ -335,15 +338,15 @@ export default function CandidaturasManuaisPage() {
             </button>
           </div>
           <section className={styles.jobSection}>
-            <h3 className={styles.replyTitle}>Descrição</h3>
+            <h3 className={styles.replyTitle}>{t("rest.admin.description")}</h3>
             <textarea className={styles.jobCopyText} readOnly value={openJob.description} rows={10} />
             <button type="button" className={styles.btnGhost} onClick={() => void copyValue(openJob.description, "descricao")}>
-              {copiedId === "descricao" ? "Copiado" : "Copiar descrição"}
+              {copiedId === "descricao" ? exactUi("Copiado") : exactUi("Copiar descrição")}
             </button>
           </section>
 
           <section className={styles.jobSection}>
-            <h3 className={styles.replyTitle}>Forma de candidatura</h3>
+            <h3 className={styles.replyTitle}>{t("rest.admin.how")}</h3>
             <p className={styles.panelSub}>
               {openJob.careOf ? `Aos cuidados de ${openJob.careOf}. ` : null}
               Assunto: {openJob.subject}.
@@ -362,7 +365,7 @@ export default function CandidaturasManuaisPage() {
                   {openJob.applicationEmail}
                 </Link>
               ) : (
-                "Esta vaga não tem e-mail."
+                exactUi("Esta vaga não tem e-mail.")
               )}
               {openJob.applicationWhatsapp && openJob.applicationWhatsappHref ? (
                 <>
@@ -375,12 +378,12 @@ export default function CandidaturasManuaisPage() {
             </p>
             <textarea className={styles.jobCopyText} readOnly value={openJob.deliveryText} rows={5} />
             <button type="button" className={styles.btnGhost} onClick={() => void copyValue(openJob.deliveryText, "envio")}>
-              {copiedId === "envio" ? "Copiado" : "Copiar forma de envio"}
+              {copiedId === "envio" ? exactUi("Copiado") : exactUi("Copiar forma de envio")}
             </button>
           </section>
 
           <section className={styles.jobSection}>
-            <h3 className={styles.replyTitle}>Compartilhar</h3>
+            <h3 className={styles.replyTitle}>{t("rest.admin.share")}</h3>
             <p className={styles.panelSub}>
               O link abre a vaga no site. A pessoa clica em Candidatar-se, faz o cadastro e a candidatura aparece aqui, com o PDF.
             </p>
@@ -388,18 +391,18 @@ export default function CandidaturasManuaisPage() {
             <textarea className={styles.jobCopyText} readOnly value={openJob.shareText} rows={8} />
             <div className={styles.actions}>
               <button type="button" className={styles.btnGhost} onClick={() => void copyValue(openJob.shareUrl, "link")}>
-                {copiedId === "link" ? "Copiado" : "Copiar link"}
+                {copiedId === "link" ? exactUi("Copiado") : exactUi("Copiar link")}
               </button>
               <button type="button" className={styles.btnGhost} onClick={() => void copyValue(openJob.shareText, "texto")}>
-                {copiedId === "texto" ? "Copiado" : "Copiar texto e link"}
+                {copiedId === "texto" ? exactUi("Copiado") : exactUi("Copiar texto e link")}
               </button>
             </div>
           </section>
 
           <section className={styles.jobSection}>
-            <h3 className={styles.replyTitle}>Currículos em PDF</h3>
+            <h3 className={styles.replyTitle}>{t("rest.admin.pdfs")}</h3>
             {openJob.applications.length === 0 ? (
-              <p className={styles.empty}>Ainda não há candidaturas nesta vaga.</p>
+              <p className={styles.empty}>{exactUi("Ainda não há candidaturas nesta vaga.")}</p>
             ) : (
             <ul className={styles.candidateLines}>
               {openJob.applications.map((application) => {
@@ -407,7 +410,7 @@ export default function CandidaturasManuaisPage() {
                 return (
                   <li key={application.id} className={styles.candidateLine}>
                     <div>
-                      <span className={styles.candidateName}>{application.name || "Nome não informado"}</span>
+                      <span className={styles.candidateName}>{application.name || exactUi("Nome não informado")}</span>
                       <span className={styles.jobCardMeta}>
                         {application.email ? (
                           <Link
@@ -424,7 +427,7 @@ export default function CandidaturasManuaisPage() {
                             {application.email}
                           </Link>
                         ) : (
-                          "Sem e-mail"
+                          exactUi("Sem e-mail")
                         )}
                         {" · "}
                         {application.whatsapp && application.whatsappHref ? (
@@ -432,7 +435,7 @@ export default function CandidaturasManuaisPage() {
                             {application.whatsapp}
                           </a>
                         ) : (
-                          "Sem WhatsApp"
+                          exactUi("Sem WhatsApp")
                         )}
                       </span>
                     </div>
@@ -446,7 +449,7 @@ export default function CandidaturasManuaisPage() {
                         Baixar PDF
                       </a>
                     ) : (
-                      <span>Sem PDF</span>
+                      <span>{exactUi("Sem PDF")}</span>
                     )}
                   </li>
                 );

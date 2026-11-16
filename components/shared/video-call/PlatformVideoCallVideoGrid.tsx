@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import type { RefObject } from "react";
 import { DASH } from "@/lib/dashboard-theme";
@@ -70,7 +71,7 @@ export default function PlatformVideoCallVideoGrid({
               padding: 8,
             }}
           >
-            {status === "accepted" ? "Abrindo câmera…" : "Câmera off"}
+            {status === "accepted" ? exactUi("Abrindo câmera…") : exactUi("Câmera off")}
           </div>
         )}
         {!overlayPip && (
@@ -124,7 +125,7 @@ export default function PlatformVideoCallVideoGrid({
         {!remoteLive && (
           <div style={{ padding: 8 }}>
             {status === "accepted"
-              ? "Conectando o vídeo da outra pessoa…"
+              ? exactUi("Conectando o vídeo da outra pessoa…")
               : `Aguardando ${peerLabel}…`}
           </div>
         )}

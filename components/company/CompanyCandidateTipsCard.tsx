@@ -1,4 +1,7 @@
 "use client";
+import { localizeServerText } from "@/lib/i18n/server-text";
+import { formatUiDateTime } from "@/lib/i18n/format-ui";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useState } from "react";
 import { botaoPerfil, textoAviso, textoDourado } from "@/lib/ui/perfil-empresa-cores";
@@ -46,7 +49,7 @@ export default function CompanyCandidateTipsCard({
       });
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao enviar dica" });
+        setFeedback({ tone: "err", text: localizeServerText(data.error) || exactUi("Erro ao enviar dica") });
         return;
       }
       const created = data.tip as TipItem | undefined;
@@ -67,16 +70,16 @@ export default function CompanyCandidateTipsCard({
           };
       onTipsChange([nova, ...tips]);
       setTipText("");
-      setFeedback({ tone: "ok", text: "Dica enviada." });
+      setFeedback({ tone: "ok", text: exactUi("Dica enviada.") });
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao enviar dica" });
+      setFeedback({ tone: "err", text: exactUi("Erro ao enviar dica") });
     } finally {
       setSendingTip(false);
     }
   };
 
   const handleExcluirDica = async (tipId: string) => {
-    if (!window.confirm("Excluir esta dica? Itens com mais de 1 mês também são apagados automaticamente.")) {
+    if (!window.confirm(exactUi("Excluir esta dica? Itens com mais de 1 mês também são apagados automaticamente."))) {
       return;
     }
     setFeedback(null);
@@ -87,13 +90,13 @@ export default function CompanyCandidateTipsCard({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setFeedback({ tone: "err", text: data.error || "Não foi possível excluir a dica." });
+        setFeedback({ tone: "err", text: localizeServerText(data.error) || exactUi("Não foi possível excluir a dica.") });
         return;
       }
       onTipsChange(tips.filter((t) => t.id !== tipId));
-      setFeedback({ tone: "ok", text: "Dica excluída." });
+      setFeedback({ tone: "ok", text: exactUi("Dica excluída.") });
     } catch {
-      setFeedback({ tone: "err", text: "Não foi possível excluir a dica." });
+      setFeedback({ tone: "err", text: exactUi("Não foi possível excluir a dica.") });
     }
   };
 
@@ -101,7 +104,7 @@ export default function CompanyCandidateTipsCard({
     <section style={{ ...dashCard, padding: 18 }}>
       <h3 style={{ ...goldTitle, margin: "0 0 8px", fontSize: 16 }}>💡 Dicas enviadas ao candidato</h3>
       <p style={{ fontSize: 11, color: "#000", margin: "0 0 12px", lineHeight: 1.45 }}>
-        {AVISO_RETENCAO_INBOX}
+        {exactUi(AVISO_RETENCAO_INBOX)}
       </p>
       {tips.length > 0 ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14, maxHeight: 220, overflowY: "auto" }}>
@@ -133,19 +136,19 @@ export default function CompanyCandidateTipsCard({
                   flexShrink: 0,
                   fontFamily: "inherit",
                 }}
-                title="Excluir dica"
+                title={exactUi("Excluir dica")}
               >
                 Excluir
               </button>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ margin: "0 0 4px", fontSize: 13, lineHeight: 1.5, color: "#000" }}>{tip.message}</p>
-                <p style={{ margin: 0, fontSize: 11, color: "#000" }}>{new Date(tip.createdAt).toLocaleString("pt-BR")}</p>
+                <p style={{ margin: 0, fontSize: 11, color: "#000" }}>{formatUiDateTime(tip.createdAt)}</p>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <p style={{ fontSize: 13, color: "#000", margin: "0 0 14px" }}>Nenhuma dica enviada ainda.</p>
+        <p style={{ fontSize: 13, color: "#000", margin: "0 0 14px" }}>{exactUi("Nenhuma dica enviada ainda.")}</p>
       )}
       {canSendTips && !bloqueado && (
         <>
@@ -157,7 +160,7 @@ export default function CompanyCandidateTipsCard({
             }}
             rows={3}
             maxLength={500}
-            placeholder="Escreva uma dica anônima para o candidato..."
+            placeholder={exactUi("Escreva uma dica anônima para o candidato...")}
             style={{
               width: "100%",
               boxSizing: "border-box",
@@ -187,7 +190,7 @@ export default function CompanyCandidateTipsCard({
             disabled={sendingTip || !tipText.trim()}
             style={{ ...botaoPerfil, width: "100%", marginTop: 8, padding: 10, fontSize: 13, opacity: sendingTip || !tipText.trim() ? 0.7 : 1 }}
           >
-            {sendingTip ? "Enviando..." : "Enviar dica"}
+            {sendingTip ? exactUi("Enviando...") : exactUi("Enviar dica")}
           </button>
         </>
       )}

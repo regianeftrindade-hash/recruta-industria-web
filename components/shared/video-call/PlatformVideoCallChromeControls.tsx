@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import { DASH } from "@/lib/dashboard-theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
@@ -33,9 +34,9 @@ export default function PlatformVideoCallChromeControls({
           border: "2px solid #8D6B1F",
           borderRadius: 14,
         }}
-        title="Mantém o vídeo no lugar enquanto você rola a página"
+        title={exactUi("Mantém o vídeo no lugar enquanto você rola a página")}
       >
-        {overlay ? (overlayPip ? "Fixo" : "Fixo ✓") : "Sobrepor"}
+        {overlay ? (overlayPip ? exactUi("Fixo") : exactUi("Fixo ✓")) : exactUi("Sobrepor")}
       </button>
       {overlay && (
         <button

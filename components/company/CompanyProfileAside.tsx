@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -86,7 +87,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
         </div>
         <div>
           <p style={{ margin: "0 0 6px", fontWeight: 800, fontSize: 16, color: DASH.title }}>
-            {companyProfile?.razaoSocial || "Empresa"}
+            {companyProfile?.razaoSocial || exactUi("Empresa")}
           </p>
           <span
             style={{
@@ -196,7 +197,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={companyProfile.fotoResponsavelUrl}
-                  alt="Foto do responsável"
+                  alt={exactUi("Foto do responsável")}
                   style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }}
                 />
               ) : (
@@ -267,15 +268,15 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 6 }}>
           {(
             [
-              ["Razão social", companyProfile.razaoSocial],
+              [exactUi("Razão social"), companyProfile.razaoSocial],
               ["CNPJ", companyProfile.cnpj],
-              ["Responsável", companyProfile.responsavelNome],
-              ["CPF", companyProfile.responsavelCpf],
-              ["E-mail de login", companyProfile.email],
-              ["E-mail corporativo", companyProfile.emailCorporativo],
-              ["Telefone", companyProfile.telefone],
-              ["Endereço", companyProfile.endereco],
-              ["Cartão CNPJ", companyProfile.cartaoCnpjUrl],
+              [exactUi("Responsável"), companyProfile.responsavelNome],
+              [exactUi("CPF"), companyProfile.responsavelCpf],
+              [exactUi("E-mail de login"), companyProfile.email],
+              [exactUi("E-mail corporativo"), companyProfile.emailCorporativo],
+              [exactUi("Telefone"), companyProfile.telefone],
+              [exactUi("Endereço"), companyProfile.endereco],
+              [exactUi("Cartão CNPJ"), companyProfile.cartaoCnpjUrl],
             ] as const
           ).map(([label, val]) => {
             const texto = typeof val === "string" ? val.trim() : "";
@@ -312,7 +313,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
           <CompanyVerificationBadge status={verificationStatus} reason={dash.rejectionReason} />
 
           <div style={{ marginTop: 12, ...dashPlanBox }}>
-            <p style={{ ...dashPlanAccent, margin: "0 0 4px", fontSize: 10, fontWeight: "bold" }}>Plano atual</p>
+            <p style={{ ...dashPlanAccent, margin: "0 0 4px", fontSize: 10, fontWeight: "bold" }}>{exactUi("Plano atual")}</p>
             <p style={{ ...dashPlanAccent, margin: 0, fontSize: 16, fontWeight: "bold" }}>
               {dash.planReady && dash.planTier ? dash.planTier : "…"}
             </p>
@@ -322,7 +323,7 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
           </div>
         </div>
       ) : (
-        <p style={{ fontSize: 11, color: DASH.muted }}>Perfil da empresa indisponível.</p>
+        <p style={{ fontSize: 11, color: DASH.muted }}>{exactUi("Perfil da empresa indisponível.")}</p>
       )}
     </aside>
   );

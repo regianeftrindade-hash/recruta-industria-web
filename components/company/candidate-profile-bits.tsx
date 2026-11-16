@@ -1,4 +1,6 @@
 "use client";
+import { formatUiDate } from "@/lib/i18n/format-ui";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React from "react";
 import {
@@ -73,7 +75,7 @@ export function Campo({ label, value, span = 1 }: { label: string; value?: unkno
   const text = value === undefined || value === null || value === "" ? "—" : String(value);
   return (
     <div style={{ ...fieldBox, gridColumn: span > 1 ? `span ${span}` : undefined }}>
-      <p style={labelStyle}>{label}</p>
+      <p style={labelStyle}>{exactUi(label)}</p>
       <p style={valueStyle}>{text}</p>
     </div>
   );
@@ -119,7 +121,7 @@ export function PerfilTextoCorrido({
     .filter(Boolean) as Array<{ label: string; texto: string; vazio: boolean }>;
 
   if (partes.length === 0) {
-    return <p style={valueStyle}>Sem dados para exibir.</p>;
+    return <p style={valueStyle}>{exactUi("Sem dados para exibir.")}</p>;
   }
 
   const linhaInteira = (label: string, texto: string) => {
@@ -138,7 +140,7 @@ export function PerfilTextoCorrido({
         textDecoration: "none",
       }}
     >
-      {label}
+      {exactUi(label)}
     </span>
   );
 
@@ -226,7 +228,7 @@ export function CardSecaoPerfil({
         }}
       >
         <span aria-hidden>{emoji}</span>
-        {titulo}
+        {exactUi(titulo)}
       </h4>
       <PerfilTextoCorrido pares={pares} />
     </section>
@@ -261,7 +263,7 @@ function formatarDataCurta(iso: string | undefined): string {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("pt-BR", { year: "numeric", month: "2-digit" });
+  return formatUiDate(d, { year: "numeric", month: "2-digit" });
 }
 
 export function CursoDetalheItem({ curso }: { curso: CursoDetalhado }) {
@@ -393,7 +395,7 @@ export function SimNaoToggle({
         gap: 8,
       }}
     >
-      <p style={{ ...labelStyle, margin: 0 }}>{label}</p>
+      <p style={{ ...labelStyle, margin: 0 }}>{exactUi(label)}</p>
       <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
         {[
           { label: "Sim", active: value },

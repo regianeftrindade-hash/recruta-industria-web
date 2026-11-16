@@ -2,6 +2,8 @@
  * Tipos da camada de notificações (independente da OpenAI).
  */
 
+import type { SupportedLocale } from "@/lib/i18n/locales";
+
 export type NotificationChannel = "IN_APP" | "EMAIL" | "WHATSAPP";
 
 export type NotificationEvent =
@@ -47,7 +49,7 @@ export type SafeNotificationPayload = {
   /** Path autenticado na plataforma (ex.: /professional/dashboard) — sem dados privados na URL */
   platformPath: string;
   stageLabel?: string;
-  locale?: "pt-BR";
+  locale?: SupportedLocale;
 };
 
 export type NotificationJobInput = {

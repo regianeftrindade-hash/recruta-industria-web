@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import { DASH } from "@/lib/dashboard-theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
@@ -45,7 +46,7 @@ export default function PlatformVideoCallActionBar({
           onClick={onChamar}
           style={{ ...btnGold, padding: "8px 12px", fontSize: 12, flex: 1, opacity: busy ? 0.7 : 1 }}
         >
-          {busy ? "Chamando…" : "Chamar"}
+          {busy ? exactUi("Chamando…") : exactUi("Chamar")}
         </button>
       )}
 
@@ -174,7 +175,7 @@ export default function PlatformVideoCallActionBar({
           onClick={onResetIdle}
           style={{ ...btnGold, padding: "8px 12px", fontSize: 12, flex: 1 }}
         >
-          {role === "company" ? "Nova chamada" : "Ok"}
+          {role === "company" ? exactUi("Nova chamada") : exactUi("Ok")}
         </button>
       )}
     </div>

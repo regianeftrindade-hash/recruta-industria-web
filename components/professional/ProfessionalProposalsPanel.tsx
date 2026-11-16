@@ -4,8 +4,9 @@ import React, { useState } from "react";
 import { DASH, dashCard, dashSectionTitle } from "@/lib/dashboard-theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
-import { AVISO_RETENCAO_PROPOSTAS } from "@/lib/profile/inbox-retention";
 import { formatReaisDisplay, turnoPropostaLabel } from "@/lib/format-reais";
+import { t } from "@/lib/i18n/translate";
+import { localizeServerText } from "@/lib/i18n/server-text";
 
 type Props = {
   proposals: JobProposalDTO[];
@@ -50,19 +51,19 @@ export default function ProfessionalProposalsPanel({ proposals, onChanged }: Pro
       });
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao responder" });
+        setFeedback({ tone: "err", text: localizeServerText(data.error) || t("fix.proposal.respondFail") });
         return;
       }
       onChanged();
       if (action === "INTERESTED") {
-        setFeedback({ tone: "ok", text: "Interesse registrado. A empresa poderá agendar a entrevista." });
+        setFeedback({ tone: "ok", text: t("fix.proposal.interestOk") });
       } else if (action === "MORE_INFO") {
-        setFeedback({ tone: "ok", text: "Pedido enviado. Acompanhe também em Mensagens." });
+        setFeedback({ tone: "ok", text: t("fix.proposal.moreOk") });
       } else {
-        setFeedback({ tone: "ok", text: "Proposta recusada." });
+        setFeedback({ tone: "ok", text: t("fix.proposal.declinedOk") });
       }
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao responder proposta" });
+      setFeedback({ tone: "err", text: t("fix.proposal.respondError") });
     } finally {
       setBusyId(null);
     }
@@ -84,10 +85,10 @@ export default function ProfessionalProposalsPanel({ proposals, onChanged }: Pro
   return (
     <section style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
       <h3 style={{ ...dashSectionTitle, margin: "0 0 6px", fontSize: 14 }}>
-        Propostas recebidas ({lista.length})
+        {t("fix.proposal.title").replace("{count}", String(lista.length))}
       </h3>
       <p style={{ margin: "0 0 10px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
-        {AVISO_RETENCAO_PROPOSTAS}
+        {t("fix.proposal.retention")}
       </p>
 
       {feedback && (
@@ -106,8 +107,8 @@ export default function ProfessionalProposalsPanel({ proposals, onChanged }: Pro
 
       {lista.length === 0 ? (
         <div className="ri-dash-empty">
-          <strong>Nenhuma proposta ainda</strong>
-          <span>Quando uma empresa enviar uma proposta de vaga, ela aparece aqui para você responder.</span>
+          <strong>{t("fix.proposal.empty")}</strong>
+          <span>{t("fix.proposal.emptyHint")}</span>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -174,7 +175,7 @@ export default function ProfessionalProposalsPanel({ proposals, onChanged }: Pro
                         onClick={() => void responder(p.id, "INTERESTED")}
                         style={{ ...btnGold, padding: "6px 8px", fontSize: 10, whiteSpace: "nowrap" }}
                       >
-                        Interesse
+                        {t("fix.proposal.interest")}
                       </button>
                       {p.status === "SENT" && (
                         <button
@@ -184,7 +185,7 @@ export default function ProfessionalProposalsPanel({ proposals, onChanged }: Pro
                           className="ri-dash-btn-secondary"
                           style={btnGhost}
                         >
-                          + Info
+                          {t("fix.proposal.more")}
                         </button>
                       )}
                       <button
@@ -193,17 +194,17 @@ export default function ProfessionalProposalsPanel({ proposals, onChanged }: Pro
                         onClick={() => void responder(p.id, "DECLINED")}
                         style={{ ...btnGhost, color: "#e57373" }}
                       >
-                        Recusar
+                        {t("fix.proposal.decline")}
                       </button>
                     </>
                   )}
                   {p.status === "INTERESTED" && (
                     <span style={{ fontSize: 10, color: DASH.muted, fontWeight: 700, whiteSpace: "nowrap" }}>
-                      Aguardando agenda
+                      {t("fix.proposal.waiting")}
                     </span>
                   )}
                   {p.status === "DECLINED" && (
-                    <span style={{ fontSize: 10, color: DASH.muted, whiteSpace: "nowrap" }}>Recusada</span>
+                    <span style={{ fontSize: 10, color: DASH.muted, whiteSpace: "nowrap" }}>{t("fix.proposal.declined")}</span>
                   )}
                 </div>
               </article>

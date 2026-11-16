@@ -1,4 +1,6 @@
 "use client";
+import { localizeServerText } from "@/lib/i18n/server-text";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useState } from "react";
 import { DASH } from "@/lib/dashboard-theme";
@@ -41,13 +43,13 @@ export default function DeleteAccountControl({ variant = "card" }: Props) {
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string; success?: boolean };
       if (!res.ok || !data.success) {
-        setError(data.error || "Não foi possível excluir o cadastro.");
+        setError(localizeServerText(data.error) || exactUi("Não foi possível excluir o cadastro."));
         setLoading(false);
         return;
       }
       window.location.href = "/api/auth/logout?redirect=/";
     } catch {
-      setError("Erro de rede ao excluir o cadastro.");
+      setError(exactUi("Erro de rede ao excluir o cadastro."));
       setLoading(false);
     }
   };
@@ -156,7 +158,7 @@ export default function DeleteAccountControl({ variant = "card" }: Props) {
                 cursor: canSubmit ? "pointer" : "not-allowed",
               }}
             >
-              {loading ? "Excluindo…" : "Excluir definitivamente"}
+              {loading ? exactUi("Excluindo…") : exactUi("Excluir definitivamente")}
             </button>
           </div>
         </div>

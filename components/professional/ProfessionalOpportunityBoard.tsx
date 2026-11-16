@@ -11,9 +11,11 @@ import {
   isEntrevista,
   isPropostaAtiva,
 } from "@/lib/company/job-proposals-shared";
-import { AVISO_RETENCAO_PROPOSTAS } from "@/lib/profile/inbox-retention";
 import { formatReaisDisplay, turnoPropostaLabel } from "@/lib/format-reais";
 import css from "./ProfessionalOpportunityBoard.module.css";
+import { formatInTimeZone } from "@/lib/datetime/format-in-zone";
+import { getBoundLocale } from "@/lib/i18n/active-locale";
+import { t as ui } from "@/lib/i18n/translate";
 
 type Props = {
   proposals: JobProposalDTO[];
@@ -62,7 +64,7 @@ function trackingOf(p: JobProposalDTO) {
 function dataCandidatura(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+  return formatInTimeZone(date, getBoundLocale() === "en" ? "en" : "pt-BR", "America/Sao_Paulo");
 }
 
 function detalheCandidatura(item: OwnJobApplicationView): string {
@@ -74,7 +76,7 @@ function detalheCandidatura(item: OwnJobApplicationView): string {
     item.contractLabel,
     item.salaryLabel,
     item.stageLabel,
-    quando ? `Candidatura em ${quando}` : null,
+    quando ? `${ui("internal.pro.appliedOn")} ${quando}` : null,
     item.open ? null : item.statusLabel,
   ].filter(Boolean);
   return partes.join(" · ");
@@ -133,19 +135,19 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
       });
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao responder" });
+        setFeedback({ tone: "err", text: data.error || ui("internal.pro.replyFailed") });
         return;
       }
       onChanged();
       if (action === "INTERESTED") {
-        setFeedback({ tone: "ok", text: "Interesse registrado. A empresa poderá agendar a entrevista." });
+        setFeedback({ tone: "ok", text: ui("internal.pro.interestSaved") });
       } else if (action === "MORE_INFO") {
-        setFeedback({ tone: "ok", text: "Pedido enviado. Acompanhe também em Mensagens." });
+        setFeedback({ tone: "ok", text: ui("internal.pro.infoSent") });
       } else {
-        setFeedback({ tone: "ok", text: "Proposta recusada." });
+        setFeedback({ tone: "ok", text: ui("internal.pro.proposalDeclined") });
       }
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao responder proposta" });
+      setFeedback({ tone: "err", text: ui("internal.pro.proposalReplyError") });
     } finally {
       setBusyId(null);
     }
@@ -163,16 +165,16 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
       });
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao responder entrevista" });
+        setFeedback({ tone: "err", text: data.error || ui("internal.pro.interviewReplyError") });
         return;
       }
       onChanged();
       setFeedback({
         tone: "ok",
-        text: action === "CONFIRM" ? "Entrevista confirmada." : "Entrevista recusada.",
+        text: action === "CONFIRM" ? ui("internal.pro.interviewConfirmed") : ui("internal.pro.interviewDeclined"),
       });
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao responder entrevista" });
+      setFeedback({ tone: "err", text: ui("internal.pro.interviewReplyError") });
     } finally {
       setBusyId(null);
     }
@@ -189,7 +191,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
       const body: Record<string, unknown> = { [campo]: !atual };
       if (campo === "entrevistaCancelada" && !atual) {
         const justification = window.prompt(
-          "Justificativa do cancelamento da entrevista (opcional):",
+          ui("internal.pro.cancelPrompt"),
           "",
         );
         if (justification === null) {
@@ -209,19 +211,19 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
       });
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao atualizar" });
+        setFeedback({ tone: "err", text: data.error || ui("internal.pro.updateError") });
         return;
       }
       onChanged();
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao atualizar histórico" });
+      setFeedback({ tone: "err", text: ui("internal.pro.historyError") });
     } finally {
       setBusyId(null);
     }
   };
 
   const excluir = async (id: string) => {
-    if (!confirm("Excluir este item? Itens com mais de 1 mês também são removidos automaticamente.")) {
+    if (!confirm(ui("internal.pro.confirmDeleteItem"))) {
       return;
     }
     setBusyId(id);
@@ -233,13 +235,13 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
       });
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao excluir" });
+        setFeedback({ tone: "err", text: data.error || ui("internal.pro.deleteError") });
         return;
       }
       onChanged();
-      setFeedback({ tone: "ok", text: "Item excluído." });
+      setFeedback({ tone: "ok", text: ui("internal.pro.itemDeleted") });
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao excluir" });
+      setFeedback({ tone: "err", text: ui("internal.pro.deleteError") });
     } finally {
       setBusyId(null);
     }
@@ -301,8 +303,8 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
           </p>
           <p className={css.sub} style={{ marginTop: 2, fontSize: 10, color: DASH.muted }}>
             {detalhe}
-            {p.status === "INTERESTED" ? " · Aguardando agenda" : ""}
-            {aberto ? "" : " · Toque para ver a proposta"}
+            {p.status === "INTERESTED" ? ` · ${ui("internal.pro.waitingSchedule")}` : ""}
+            {aberto ? "" : ` · ${ui("internal.pro.tapProposal")}`}
           </p>
         </div>
         <div className={css.acoes} onClick={(e) => e.stopPropagation()}>
@@ -314,7 +316,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
                 onClick={() => void responder(p.id, "INTERESTED")}
                 style={{ ...btnGold, padding: "5px 8px", fontSize: 10, whiteSpace: "nowrap" }}
               >
-                Interesse
+                {ui("internal.pro.interest")}
               </button>
               {p.status === "SENT" && (
                 <button
@@ -324,7 +326,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
                   className="ri-dash-btn-secondary"
                   style={btnGhost}
                 >
-                  + Info
+                  {ui("internal.pro.moreInfo")}
                 </button>
               )}
               <button
@@ -333,7 +335,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
                 onClick={() => void responder(p.id, "DECLINED")}
                 style={{ ...btnGhost, color: "#e57373" }}
               >
-                Recusar
+                {ui("internal.pro.decline")}
               </button>
             </>
           )}
@@ -343,18 +345,18 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
             onClick={() => void excluir(p.id)}
             style={{ ...btnGhost, color: "#e57373" }}
           >
-            Excluir
+            {ui("internal.pro.delete")}
           </button>
         </div>
         {aberto && (
           <div className={css.detalhe} style={{ color: DASH.text }}>
             {p.beneficios?.trim() ? (
               <p style={{ margin: "0 0 8px" }}>
-                <strong style={{ color: DASH.title }}>Benefícios:</strong> {p.beneficios}
+                <strong style={{ color: DASH.title }}>{ui("internal.pro.benefits")}</strong> {p.beneficios}
               </p>
             ) : null}
             <p style={{ margin: 0 }}>
-              <strong style={{ color: DASH.title }}>Mensagem:</strong> {p.mensagem || "Sem mensagem."}
+              <strong style={{ color: DASH.title }}>{ui("internal.pro.message")}</strong> {p.mensagem || ui("internal.pro.noMessage")}
             </p>
           </div>
         )}
@@ -396,7 +398,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
           </p>
           {p.interview.observacoes?.trim() ? (
             <p className={css.sub} style={{ marginTop: 6, fontSize: 11, color: DASH.text, whiteSpace: "pre-wrap" }}>
-              <strong style={{ color: DASH.title }}>Observação:</strong> {p.interview.observacoes.trim()}
+              <strong style={{ color: DASH.title }}>{ui("internal.pro.note")}</strong> {p.interview.observacoes.trim()}
             </p>
           ) : null}
         </div>
@@ -418,7 +420,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
               }}
               style={{ ...btnGold, padding: "5px 8px", fontSize: 10, whiteSpace: "nowrap" }}
             >
-              Ir para a chamada
+              {ui("internal.pro.goToCall")}
             </button>
           ) : null}
           {p.interview.locationType === "ONLINE" && salaUrl ? (
@@ -428,7 +430,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
               rel="noopener noreferrer"
               style={{ ...btnGold, padding: "5px 8px", fontSize: 10, whiteSpace: "nowrap", textDecoration: "none" }}
             >
-              Abrir a sala
+              {ui("internal.pro.openRoom")}
             </a>
           ) : null}
           {p.status === "INTERVIEW_PENDING" && (
@@ -439,7 +441,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
                 onClick={() => void responderEntrevista(p.id, "CONFIRM")}
                 style={{ ...btnGold, padding: "5px 8px", fontSize: 10, whiteSpace: "nowrap" }}
               >
-                Confirmar
+                {ui("internal.pro.confirm")}
               </button>
               <button
                 type="button"
@@ -447,7 +449,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
                 onClick={() => void responderEntrevista(p.id, "DECLINE")}
                 style={{ ...btnGhost, color: "#e57373" }}
               >
-                Recusar
+                {ui("internal.pro.decline")}
               </button>
             </>
           )}
@@ -457,7 +459,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
             onClick={() => void toggleFunil(p.id, "entrevistado", t.entrevistado)}
             style={chip(t.entrevistado)}
           >
-            {t.entrevistado ? "✓ " : ""}Entrevistado
+            {t.entrevistado ? "✓ " : ""}{ui("internal.pro.interviewed")}
           </button>
           <button
             type="button"
@@ -465,7 +467,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
             onClick={() => void toggleFunil(p.id, "emTeste", t.emTeste)}
             style={chip(t.emTeste)}
           >
-            {t.emTeste ? "✓ " : ""}Teste
+            {t.emTeste ? "✓ " : ""}{ui("internal.pro.test")}
           </button>
           <button
             type="button"
@@ -473,7 +475,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
             onClick={() => void toggleFunil(p.id, "entrevistaCancelada", t.entrevistaCancelada)}
             style={chip(t.entrevistaCancelada)}
           >
-            {t.entrevistaCancelada ? "✓ " : ""}Entrevista cancelada
+            {t.entrevistaCancelada ? "✓ " : ""}{ui("internal.pro.interviewCancelled")}
           </button>
           <button
             type="button"
@@ -481,7 +483,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
             onClick={() => void toggleFunil(p.id, "contratado", t.contratado)}
             style={chip(t.contratado)}
           >
-            {t.contratado ? "✓ " : ""}Contratado
+            {t.contratado ? "✓ " : ""}{ui("internal.pro.hiredStatus")}
           </button>
           <button
             type="button"
@@ -489,7 +491,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
             onClick={() => void toggleFunil(p.id, "naoContratado", t.naoContratado)}
             style={chip(t.naoContratado)}
           >
-            {t.naoContratado ? "✓ " : ""}Não contratado
+            {t.naoContratado ? "✓ " : ""}{ui("internal.pro.notHired")}
           </button>
           <button
             type="button"
@@ -497,7 +499,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
             onClick={() => void excluir(p.id)}
             style={{ ...btnGhost, color: "#e57373" }}
           >
-            Excluir
+            {ui("internal.pro.delete")}
           </button>
         </div>
       </article>
@@ -508,16 +510,16 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
     const busy = busyId === p.id;
     const t = trackingOf(p);
     const motivo = t.contratado
-      ? "Contratado"
+      ? ui("internal.pro.hiredStatus")
       : t.naoContratado
-        ? "Não contratado"
+        ? ui("internal.pro.notHired")
         : t.entrevistaCancelada || p.status === "INTERVIEW_CANCELLED"
-          ? "Entrevista cancelada"
+          ? ui("internal.pro.interviewCancelled")
           : p.status === "DECLINED"
-            ? "Sem interesse"
+            ? ui("internal.pro.noInterest")
             : p.status === "INTERVIEW_DECLINED"
-              ? "Entrevista recusada"
-              : "Arquivada";
+              ? ui("internal.pro.interviewDeclined")
+              : ui("internal.pro.archived");
 
     return (
       <article
@@ -542,7 +544,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
           type="button"
           disabled={busy}
           onClick={() => void excluir(p.id)}
-          title="Excluir"
+          title={ui("internal.pro.delete")}
           style={{
             ...btnGhost,
             color: "#e57373",
@@ -604,10 +606,10 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
       style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow, overflow: "visible" }}
     >
       <h3 style={{ ...dashSectionTitle, margin: "0 0 6px", fontSize: 14 }}>
-        Oportunidades
+        {ui("internal.pro.opportunities")}
       </h3>
       <p style={{ margin: "0 0 12px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
-        {AVISO_RETENCAO_PROPOSTAS}
+        {ui("internal.pro.proposalRetention")}
       </p>
 
       {feedback && (
@@ -636,10 +638,10 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
           }}
         >
           <p style={{ margin: "0 0 8px", fontSize: 12, fontWeight: 800, color: DASH.gold }}>
-            Confirme sua entrevista
+            {ui("internal.pro.confirmInterview")}
           </p>
           <p style={{ margin: "0 0 10px", fontSize: 11, color: DASH.text, lineHeight: 1.45 }}>
-            Há convite(s) aguardando sua confirmação. Use Confirmar ou Recusar na lista abaixo.
+            {ui("internal.pro.confirmInterviewHint")}
           </p>
           <button
             type="button"
@@ -651,7 +653,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
             }}
             style={{ ...btnGold, padding: "7px 12px", fontSize: 11 }}
           >
-            Ver entrevistas
+            {ui("internal.pro.seeInterviews")}
           </button>
         </div>
       )}
@@ -659,18 +661,18 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <div style={nestedCard}>
           <h4 style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 600, color: DASH.muted }}>
-            Vagas candidatadas{candidaturasEstado === "pronto" ? ` (${candidaturas.length})` : ""}
+            {ui("internal.pro.appliedJobs")}{candidaturasEstado === "pronto" ? ` (${candidaturas.length})` : ""}
           </h4>
           {candidaturasEstado === "carregando" ? (
-            <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Carregando candidaturas...</p>
+            <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{ui("internal.pro.loadingApplications")}</p>
           ) : null}
           {candidaturasEstado === "erro" ? (
-            <p style={{ margin: 0, fontSize: 12, color: "#e57373" }}>Não foi possível carregar as vagas candidatadas.</p>
+            <p style={{ margin: 0, fontSize: 12, color: "#e57373" }}>{ui("internal.pro.applicationsError")}</p>
           ) : null}
           {candidaturasEstado === "pronto" && candidaturas.length === 0 ? (
             <div className="ri-dash-empty">
-              <strong>Nenhuma vaga candidatada</strong>
-              <span>Quando você se candidatar a uma vaga, ela aparece nesta lista.</span>
+              <strong>{ui("internal.pro.noApplications")}</strong>
+              <span>{ui("internal.pro.noApplicationsHint")}</span>
             </div>
           ) : null}
           {candidaturasEstado === "pronto" && candidaturas.length > 0 ? (
@@ -691,12 +693,12 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
 
         <div style={nestedCard}>
           <h4 style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 600, color: DASH.muted }}>
-            Propostas recebidas ({listas.propostas.length})
+            {ui("internal.pro.receivedProposals")} ({listas.propostas.length})
           </h4>
           {listas.propostas.length === 0 ? (
             <div className="ri-dash-empty">
-              <strong>Nenhuma proposta ativa</strong>
-              <span>Quando uma empresa enviar uma proposta de vaga, ela aparece aqui para você responder.</span>
+              <strong>{ui("internal.pro.noActiveProposal")}</strong>
+              <span>{ui("internal.pro.noActiveProposalHint")}</span>
             </div>
           ) : (
             <div className={css.listaScroll}>
@@ -707,12 +709,12 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
 
         <div id="prof-entrevistas-agendadas" style={nestedCard}>
           <h4 style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 600, color: DASH.muted }}>
-            Entrevistas agendadas ({listas.entrevistas.length})
+            {ui("internal.pro.scheduledInterviews")} ({listas.entrevistas.length})
           </h4>
           {listas.entrevistas.length === 0 ? (
             <div className="ri-dash-empty">
-              <strong>Nenhuma entrevista agendada</strong>
-              <span>Após demonstrar interesse, a empresa pode marcar a entrevista — ela entra nesta lista.</span>
+              <strong>{ui("internal.pro.noScheduled")}</strong>
+              <span>{ui("internal.pro.noScheduledHint")}</span>
             </div>
           ) : (
             <div className={css.listaScroll}>
@@ -723,12 +725,12 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
 
         <div style={nestedCard}>
           <h4 style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 600, color: DASH.muted }}>
-            Arquivadas ({listas.arquivadas.length})
+            {ui("internal.pro.archivedTitle")} ({listas.arquivadas.length})
           </h4>
           {listas.arquivadas.length === 0 ? (
             <div className="ri-dash-empty">
-              <strong>Nada arquivado ainda</strong>
-              <span>Propostas recusadas, entrevistas encerradas ou canceladas ficam aqui por um tempo.</span>
+              <strong>{ui("internal.pro.nothingArchived")}</strong>
+              <span>{ui("internal.pro.nothingArchivedHint")}</span>
             </div>
           ) : (
             <div className={css.listaArquivadas}>

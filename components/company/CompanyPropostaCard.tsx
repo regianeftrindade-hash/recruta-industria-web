@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React from "react";
 import { DASH, dashInput } from "@/lib/dashboard-theme";
@@ -99,26 +100,26 @@ export default function CompanyPropostaCard({
         {`${p.cargo} · ${formatReaisDisplay(p.salario)}`}
       </p>
       <p style={{ margin: "0 0 2px", fontSize: 14, color: COR_PRETO }}>
-        <strong style={{ color: COR_PRETO }}>Turno:</strong> {turnoPropostaLabel(p.turno)}
+        <strong style={{ color: COR_PRETO }}>{exactUi("Turno:")}</strong> {turnoPropostaLabel(p.turno)}
       </p>
       {p.cidade?.trim() ? (
         <p style={{ margin: "0 0 2px", fontSize: 14, color: COR_PRETO }}>
-          <strong style={{ color: COR_PRETO }}>Cidade:</strong> {p.cidade}
+          <strong style={{ color: COR_PRETO }}>{exactUi("Cidade:")}</strong> {p.cidade}
         </p>
       ) : null}
       {p.beneficios?.trim() ? (
         <p style={{ margin: "0 0 6px", fontSize: 14, color: COR_PRETO, whiteSpace: "pre-wrap" }}>
-          <strong style={{ color: COR_PRETO }}>Benefícios:</strong> {p.beneficios}
+          <strong style={{ color: COR_PRETO }}>{exactUi("Benefícios:")}</strong> {p.beneficios}
         </p>
       ) : null}
       <p style={{ margin: "0 0 8px", fontSize: 14, ...textoDourado, fontWeight: 700 }}>
-        {STATUS_LABEL[p.status] || p.status}
+        {exactUi(STATUS_LABEL[p.status] || p.status)}
       </p>
       {(p.status === "SENT" || p.status === "MORE_INFO") && (
         <p style={{ margin: "0 0 8px", fontSize: 14, color: COR_PRETO, lineHeight: 1.45 }}>
           {p.status === "MORE_INFO"
-            ? "O profissional pediu mais informações. Responda na seção de Mensagens abaixo."
-            : "O agendamento fica disponível depois que o profissional confirmar interesse."}
+            ? exactUi("O profissional pediu mais informações. Responda na seção de Mensagens abaixo.")
+            : exactUi("O agendamento fica disponível depois que o profissional confirmar interesse.")}
         </p>
       )}
       {p.status === "MORE_INFO" && (
@@ -172,20 +173,20 @@ export default function CompanyPropostaCard({
             Comprovante de agendamento
           </p>
           <p style={{ margin: "0 0 4px", fontSize: 12, color: COR_PRETO }}>
-            <strong>Empresa:</strong> {p.companyName}
+            <strong>{exactUi("Empresa:")}</strong> {p.companyName}
           </p>
           <p style={{ margin: "0 0 4px", fontSize: 12, color: COR_PRETO }}>
-            <strong>Data:</strong> {comprovante.dataLabel}
+            <strong>{exactUi("Data:")}</strong> {comprovante.dataLabel}
           </p>
           <p style={{ margin: "0 0 4px", fontSize: 12, color: COR_PRETO }}>
-            <strong>Horário:</strong> {comprovante.horaLabel}
+            <strong>{exactUi("Horário:")}</strong> {comprovante.horaLabel}
           </p>
           <p style={{ margin: "0 0 4px", fontSize: 12, color: COR_PRETO }}>
-            <strong>Local:</strong> {comprovante.localLabel}
+            <strong>{exactUi("Local:")}</strong> {comprovante.localLabel}
           </p>
           {p.interview?.observacoes?.trim() ? (
             <p style={{ margin: 0, fontSize: 12, color: COR_PRETO, whiteSpace: "pre-wrap" }}>
-              <strong>Observações:</strong> {p.interview.observacoes}
+              <strong>{exactUi("Observações:")}</strong> {p.interview.observacoes}
             </p>
           ) : null}
         </div>
@@ -205,7 +206,7 @@ export default function CompanyPropostaCard({
             <div style={{ display: "grid", gap: 8 }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                 <div>
-                  <p style={rotulo}>Data</p>
+                  <p style={rotulo}>{exactUi("Data")}</p>
                   <input
                     type="date"
                     value={interviewForm.date}
@@ -214,7 +215,7 @@ export default function CompanyPropostaCard({
                   />
                 </div>
                 <div>
-                  <p style={rotulo}>Horário</p>
+                  <p style={rotulo}>{exactUi("Horário")}</p>
                   <input
                     type="time"
                     value={interviewForm.time}
@@ -224,7 +225,7 @@ export default function CompanyPropostaCard({
                 </div>
               </div>
               <div>
-                <p style={rotulo}>Modalidade</p>
+                <p style={rotulo}>{exactUi("Modalidade")}</p>
                 <select
                   value={interviewForm.locationType}
                   onChange={(e) =>
@@ -235,21 +236,21 @@ export default function CompanyPropostaCard({
                   }
                   style={dashInput}
                 >
-                  <option value="ONLINE">Online (Meet / Teams)</option>
-                  <option value="PRESENTIAL">Presencial</option>
+                  <option value="ONLINE">{exactUi("Online (Meet / Teams)")}</option>
+                  <option value="PRESENTIAL">{exactUi("Presencial")}</option>
                   <option value="PLATFORM" disabled={!videoEntrevistaLiberada}>
                     Pela plataforma (vídeo Recruta)
                   </option>
                 </select>
                 {!videoEntrevistaLiberada ? (
                   <p style={{ margin: "6px 0 0", fontSize: 12, color: COR_PRETO, lineHeight: 1.4 }}>
-                    {VIDEO_INTERVIEW_PAID_ONLY}
+                    {exactUi(VIDEO_INTERVIEW_PAID_ONLY)}
                   </p>
                 ) : null}
               </div>
               {interviewForm.locationType === "ONLINE" ? (
                 <div>
-                  <p style={rotulo}>Link (Google Meet ou Teams)</p>
+                  <p style={rotulo}>{exactUi("Link (Google Meet ou Teams)")}</p>
                   <input
                     value={interviewForm.meetingUrl}
                     placeholder="https://meet.google.com/..."
@@ -261,10 +262,10 @@ export default function CompanyPropostaCard({
                 </div>
               ) : interviewForm.locationType === "PRESENTIAL" ? (
                 <div>
-                  <p style={rotulo}>Endereço</p>
+                  <p style={rotulo}>{exactUi("Endereço")}</p>
                   <input
                     value={interviewForm.address}
-                    placeholder="Rua, número, cidade"
+                    placeholder={exactUi("Rua, número, cidade")}
                     onChange={(e) =>
                       onSetInterviewForm((f) => ({ ...f, address: e.target.value }))
                     }
@@ -277,11 +278,11 @@ export default function CompanyPropostaCard({
                 </p>
               )}
               <div>
-                <p style={rotulo}>Observações (opcional)</p>
+                <p style={rotulo}>{exactUi("Observações (opcional)")}</p>
                 <textarea
                   value={interviewForm.observacoes}
                   rows={3}
-                  placeholder="Ex.: trazer RG, entrar pelo portão 2..."
+                  placeholder={exactUi("Ex.: trazer RG, entrar pelo portão 2...")}
                   onChange={(e) =>
                     onSetInterviewForm((f) => ({ ...f, observacoes: e.target.value }))
                   }
@@ -295,7 +296,7 @@ export default function CompanyPropostaCard({
                   onClick={onAgendar}
                   style={{ ...botaoPerfil, padding: "8px 12px", fontSize: 12, flex: 1 }}
                 >
-                  {saving ? "Enviando..." : "Enviar convite"}
+                  {saving ? exactUi("Enviando...") : exactUi("Enviar convite")}
                 </button>
                 <button
                   type="button"

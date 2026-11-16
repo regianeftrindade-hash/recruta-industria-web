@@ -1,10 +1,12 @@
+import { resolveLocale, type SupportedLocale } from "@/lib/i18n/locales";
 import type { NotificationEvent, SafeNotificationPayload } from "@/lib/notifications/types";
 import { scrubNotificationText } from "@/lib/notifications/sanitize";
+import { extraTemplates } from "@/lib/notifications/templates/extra";
 
 export type MessageTemplate = {
   key: string;
   event: NotificationEvent;
-  locale: "pt-BR";
+  locale: SupportedLocale;
   /** Título curto (in-app / e-mail) */
   title: string;
   /** Corpo controlado — sem texto livre de empresas */
@@ -106,18 +108,109 @@ const TEMPLATES_PT_BR: MessageTemplate[] = [
   },
 ];
 
+const TEMPLATES_EN: MessageTemplate[] = [
+  {
+    key: "interview_invite_en",
+    event: "interview_invite",
+    locale: "en",
+    title: "Interview invitation",
+    body: (p, url) =>
+      `Recruta Indústria: ${p.companyName || "A company"} invited you to an interview${
+        p.scheduledAtLabel ? ` on ${p.scheduledAtLabel}` : ""
+      }. Open: ${url}`,
+  },
+  {
+    key: "interview_confirmed_en",
+    event: "interview_confirmed",
+    locale: "en",
+    title: "Interview confirmed",
+    body: (p, url) =>
+      `Recruta Indústria: interview with ${p.companyName || "the company"} confirmed${
+        p.scheduledAtLabel ? ` (${p.scheduledAtLabel})` : ""
+      }. Details: ${url}`,
+  },
+  {
+    key: "interview_rescheduled_en",
+    event: "interview_rescheduled",
+    locale: "en",
+    title: "Interview rescheduled",
+    body: (p, url) =>
+      `Recruta Indústria: new date and time with ${p.companyName || "the company"}${
+        p.scheduledAtLabel ? `: ${p.scheduledAtLabel}` : ""
+      }. See: ${url}`,
+  },
+  {
+    key: "interview_cancelled_en",
+    event: "interview_cancelled",
+    locale: "en",
+    title: "Interview cancelled",
+    body: (p, url) =>
+      `Recruta Indústria: the interview with ${p.companyName || "the company"} was cancelled. Follow up: ${url}`,
+  },
+  {
+    key: "interview_reminder_en",
+    event: "interview_reminder",
+    locale: "en",
+    title: "Interview reminder",
+    body: (p, url) =>
+      `Recruta Indústria: reminder — interview${
+        p.scheduledAtLabel ? ` on ${p.scheduledAtLabel}` : ""
+      }${p.companyName ? ` with ${p.companyName}` : ""}. Open: ${url}`,
+  },
+  {
+    key: "new_message_en",
+    event: "new_message",
+    locale: "en",
+    title: "New message",
+    body: (p, url) =>
+      `Recruta Indústria: new message${p.companyName ? ` from ${p.companyName}` : ""}. Read it in the dashboard: ${url}`,
+  },
+  {
+    key: "invite_accepted_en",
+    event: "invite_accepted",
+    locale: "en",
+    title: "Invitation accepted",
+    body: (p, url) =>
+      `Recruta Indústria: ${p.professionalName || "The professional"} accepted the invitation. Dashboard: ${url}`,
+  },
+  {
+    key: "invite_declined_en",
+    event: "invite_declined",
+    locale: "en",
+    title: "Invitation declined",
+    body: (p, url) =>
+      `Recruta Indústria: ${p.professionalName || "The professional"} declined the invitation. Dashboard: ${url}`,
+  },
+  {
+    key: "process_stage_changed_en",
+    event: "process_stage_changed",
+    locale: "en",
+    title: "Application update",
+    body: (p, url) =>
+      `Recruta Indústria: stage updated${p.stageLabel ? ` — ${p.stageLabel}` : ""}${
+        p.companyName ? ` (${p.companyName})` : ""
+      }. View: ${url}`,
+  },
+];
+
+const TEMPLATES = [...TEMPLATES_PT_BR, ...TEMPLATES_EN, ...extraTemplates];
+
 export function getTemplate(
   event: NotificationEvent,
-  locale: "pt-BR" = "pt-BR",
+  locale: SupportedLocale = "pt-BR",
 ): MessageTemplate | null {
-  return TEMPLATES_PT_BR.find((t) => t.event === event && t.locale === locale) || null;
+  return (
+    TEMPLATES.find((item) => item.event === event && item.locale === locale) ||
+    TEMPLATES.find((item) => item.event === event && item.locale === "pt-BR") ||
+    null
+  );
 }
 
 export function renderTemplate(
   event: NotificationEvent,
   payload: SafeNotificationPayload,
 ): { templateKey: string; title: string; bodyText: string; platformUrl: string } | null {
-  const locale = payload.locale || "pt-BR";
+  const locale = resolveLocale(payload.locale);
   const tpl = getTemplate(event, locale);
   if (!tpl) return null;
   const platformUrl = platformUrlFromPath(payload.platformPath);
@@ -146,5 +239,5 @@ export function renderTemplate(
 }
 
 export function listTemplateKeys(): string[] {
-  return TEMPLATES_PT_BR.map((t) => t.key);
+  return TEMPLATES.map((item) => item.key);
 }

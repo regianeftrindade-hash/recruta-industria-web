@@ -1,4 +1,6 @@
 "use client";
+import { formatUiDateTime } from "@/lib/i18n/format-ui";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useEffect, useRef, useState } from "react";
 import { DASH, dashCard, dashSectionTitle } from "@/lib/dashboard-theme";
@@ -116,7 +118,7 @@ export default function PlatformVideoCall({
               minute: "2-digit",
               timeZone: "America/Sao_Paulo",
             });
-        setProxima({ empresa: String(next.companyName || "Empresa"), quando });
+        setProxima({ empresa: String(next.companyName || exactUi("Empresa")), quando });
       })
       .catch(() => {});
     return () => {
@@ -240,7 +242,7 @@ export default function PlatformVideoCall({
             }}
             style={{ ...btnGold, padding: "8px 12px", fontSize: 12 }}
           >
-            {preparar ? "Fechar câmera" : "Preparar câmera"}
+            {preparar ? exactUi("Fechar câmera") : exactUi("Preparar câmera")}
           </button>
         </section>
       </div>
@@ -362,7 +364,7 @@ export default function PlatformVideoCall({
 
       {overlayPip && !minimized && (
         <p style={{ margin: "0 0 4px", fontSize: 9, fontWeight: 700, color: DASH.gold }}>
-          {call.status === "accepted" ? "Chamada" : statusLabel}
+          {call.status === "accepted" ? exactUi("Chamada") : statusLabel}
         </p>
       )}
       {error && !overlayPip && (
@@ -419,8 +421,8 @@ export default function PlatformVideoCall({
           }}
         >
           {role === "company"
-            ? "Clique em Chamar. A câmera só liga quando o profissional aceitar. Use Sobrepor para rolar a página com o vídeo fixo."
-            : "Quando a empresa ligar, use Aceitar ou Recusar. A outra pessoa vê seu vídeo depois do aceite."}
+            ? exactUi("Clique em Chamar. A câmera só liga quando o profissional aceitar. Use Sobrepor para rolar a página com o vídeo fixo.")
+            : exactUi("Quando a empresa ligar, use Aceitar ou Recusar. A outra pessoa vê seu vídeo depois do aceite.")}
         </p>
       )}
       </section>

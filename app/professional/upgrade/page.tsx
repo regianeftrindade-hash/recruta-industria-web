@@ -15,6 +15,7 @@ import React from 'react';
 // ...existing code...
 // ...existing code...
 import { useRouter } from 'next/navigation';
+import { t } from '@/lib/i18n/translate';
 
 function UpgradePageContent() {
   const router = useRouter();
@@ -41,8 +42,8 @@ function UpgradePageContent() {
         <div style={{ maxWidth: 520, backgroundColor: "#E8D5A3", border: "2px solid #8D6B1F", borderRadius: 15, padding: 32, textAlign: "center" }}>
           <p style={{ margin: "0 0 16px", lineHeight: 1.5 }}>
             {offering === null
-              ? "Carregando..."
-              : "O plano Premium não está aberto para novas assinaturas. O plano gratuito continua no painel."}
+              ? t("fix.upgrade.loading")
+              : t("fix.upgrade.closed")}
           </p>
           <button
             type="button"
@@ -58,7 +59,7 @@ function UpgradePageContent() {
               fontSize: "16px",
             }}
           >
-            ← Voltar
+            {t("fix.upgrade.back")}
           </button>
         </div>
       </div>
@@ -83,10 +84,10 @@ function UpgradePageContent() {
       }}>
         <div>
           <h1 style={{ margin: '0 0 5px 0', fontSize: '28px' }}>
-            Upgrade para Premium
+            {t("fix.upgrade.title")}
           </h1>
           <p style={{ margin: 0, fontSize: '14px', color: '#414141' }}>
-            Desbloqueia todos os recursos
+            {t("fix.upgrade.subtitle")}
           </p>
         </div>
       </div>
@@ -102,7 +103,7 @@ function UpgradePageContent() {
           textAlign: 'center'
         }}>
           <h2 style={{ color: '#C89B3C', marginBottom: '30px', fontSize: '32px' }}>
-            👑 Plano Premium
+            👑 {t("fix.upgrade.plan")}
           </h2>
 
           {/* CARD DE PREÇO */}
@@ -115,7 +116,7 @@ function UpgradePageContent() {
             marginBottom: '40px'
           }}>
             <p style={{ color: '#414141', fontSize: '16px', margin: '0 0 10px 0' }}>
-              Invista no seu futuro
+              {t("fix.upgrade.invest")}
             </p>
             <p style={{
               color: '#414141',
@@ -123,10 +124,10 @@ function UpgradePageContent() {
               fontWeight: 'bold',
               margin: '0 0 10px 0'
             }}>
-              R$ 19,90
+              {t("fix.upgrade.price")}
             </p>
             <p style={{ color: '#414141', fontSize: '14px', margin: 0 }}>
-              por mês
+              {t("fix.upgrade.perMonth")}
             </p>
           </div>
 
@@ -139,7 +140,7 @@ function UpgradePageContent() {
           }}>
             <div>
               <h3 style={{ color: '#C89B3C', marginBottom: '20px' }}>
-                ✓ Recursos Inclusos
+                ✓ {t("fix.upgrade.included")}
               </h3>
               <ul style={{
                 textAlign: 'left',
@@ -150,16 +151,16 @@ function UpgradePageContent() {
                 padding: 0,
                 margin: 0
               }}>
-                <li>✅ Perfil completo</li>
-                <li>✅ Todas as dicas visíveis</li>
-                <li>✅ Visualizar todas as empresas</li>
-                <li>✅ Suporte prioritário</li>
-                <li>✅ Prioridade em buscas</li>
+                <li>✅ {t("fix.upgrade.profile")}</li>
+                <li>✅ {t("fix.upgrade.tips")}</li>
+                <li>✅ {t("fix.upgrade.companies")}</li>
+                <li>✅ {t("fix.upgrade.support")}</li>
+                <li>✅ {t("fix.upgrade.priority")}</li>
               </ul>
             </div>
             <div>
               <h3 style={{ color: '#C89B3C', marginBottom: '20px' }}>
-                🎯 Vantagens
+                🎯 {t("fix.upgrade.advantages")}
               </h3>
               <ul style={{
                 textAlign: 'left',
@@ -170,11 +171,11 @@ function UpgradePageContent() {
                 padding: 0,
                 margin: 0
               }}>
-                <li>📈 Maior visibilidade</li>
-                <li>📊 Mais oportunidades</li>
-                <li>🚀 Destaque no sistema</li>
-                <li>💬 Suporte 24/7</li>
-                <li>🎁 Benefícios exclusivos</li>
+                <li>📈 {t("fix.upgrade.visibility")}</li>
+                <li>📊 {t("fix.upgrade.opportunities")}</li>
+                <li>🚀 {t("fix.upgrade.highlight")}</li>
+                <li>💬 {t("fix.upgrade.support247")}</li>
+                <li>🎁 {t("fix.upgrade.exclusive")}</li>
               </ul>
             </div>
           </div>
@@ -200,7 +201,7 @@ function UpgradePageContent() {
                 boxShadow: 'inset 0 1px 0 rgba(200, 155, 60, 0.45), inset 0 -2px 0 rgba(74, 50, 12, 0.42), 0 3px 0 #5a4512, 0 4px 10px rgba(0, 0, 0, 0.45)',
               }}
             >
-              ← Voltar
+              {t("fix.upgrade.back")}
             </button>
             <button
               onClick={() => router.push('/professional/pagamento')}
@@ -216,7 +217,7 @@ function UpgradePageContent() {
                 boxShadow: 'inset 0 1px 0 rgba(200, 155, 60, 0.45), inset 0 -2px 0 rgba(74, 50, 12, 0.42), 0 3px 0 #5a4512, 0 4px 10px rgba(0, 0, 0, 0.45)',
               }}
             >
-              💳 Upgrade Agora
+              💳 {t("fix.upgrade.now")}
             </button>
           </div>
 
@@ -226,7 +227,7 @@ function UpgradePageContent() {
             fontSize: '13px',
             fontStyle: 'italic'
           }}>
-            O Premium só é liberado depois que o pagamento for confirmado.
+            {t("fix.upgrade.notice")}
           </p>
         </div>
       </div>

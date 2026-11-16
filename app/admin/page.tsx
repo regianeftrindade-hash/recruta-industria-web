@@ -1,7 +1,11 @@
 'use client';
+import { localizeServerText } from "@/lib/i18n/server-text";
+import { formatUiDateTime, uiIntlLocale } from "@/lib/i18n/format-ui";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { t } from '@/lib/i18n/translate';
 import styles from './admin.module.css';
 
 type SeriesPoint = {
@@ -91,7 +95,7 @@ const PREVIEW_LIST_LIMIT = 4;
 function formatDate(iso: string | null): string {
   if (!iso) return '—';
   try {
-    return new Date(iso).toLocaleString('pt-BR', {
+    return formatUiDateTime(iso, {
       day: '2-digit',
       month: '2-digit',
       hour: '2-digit',
@@ -103,7 +107,7 @@ function formatDate(iso: string | null): string {
 }
 
 function formatClock(date: Date): string {
-  return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return date.toLocaleTimeString(uiIntlLocale(), { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
 function BarChart({
@@ -204,7 +208,7 @@ export default function AdminDashboardPage() {
       setInboxConfigured(inbox.configured === true);
       setMailbox(inbox.mailbox || null);
       setMessages(inbox.messages || []);
-      setInboxError(inbox.error || '');
+      setInboxError(localizeServerText(inbox.error) || '');
     } catch {
       /* silencioso no polling */
     }
@@ -265,12 +269,12 @@ export default function AdminDashboardPage() {
       <div className={styles.hero}>
         <div>
           <h1 className={styles.heroTitle}>
-            Centro de <span>comando</span>
+            {t('internal.admin.command')} <span>{t('internal.admin.commandWord')}</span>
           </h1>
           <p className={styles.heroMeta}>
-            Painel de visualização em tempo real — ações em Vagas, Empresas, Contato e Serviços.
-            {clockReady && lastUpdate ? ` · Última atualização ${formatClock(lastUpdate)}` : ''}
-            {clockReady && now ? ` · Agora ${formatClock(now)}` : ''}
+            {t('internal.admin.liveHint')}
+            {clockReady && lastUpdate ? ` · ${t('internal.admin.lastUpdate')} ${formatClock(lastUpdate)}` : ''}
+            {clockReady && now ? ` · ${t('internal.admin.now')} ${formatClock(now)}` : ''}
           </p>
         </div>
         <div className={styles.actions}>
@@ -279,10 +283,10 @@ export default function AdminDashboardPage() {
             className={`${styles.btnGhost} ${live ? styles.btnGhostActive : ''}`}
             onClick={() => setLive((v) => !v)}
           >
-            {live ? 'Ao vivo ligado' : 'Ao vivo pausado'}
+            {live ? t('internal.admin.liveOn') : t('internal.admin.liveOff')}
           </button>
           <button type="button" className={styles.btnGold} onClick={() => void refreshAll(false)}>
-            Atualizar agora
+            {t('internal.admin.refresh')}
           </button>
         </div>
       </div>
@@ -290,13 +294,13 @@ export default function AdminDashboardPage() {
       <section className={styles.panel} style={{ marginBottom: 20 }}>
         <div className={styles.panelHead}>
           <div>
-            <h2 className={styles.panelTitle}>Publicar vagas</h2>
+            <h2 className={styles.panelTitle}>{t('surface.admin.jobs')}</h2>
             <p className={styles.panelSub}>
-              Cadastre a vaga, publique e acompanhe as candidaturas recebidas.
+              {t('internal.admin.jobsLead')}
             </p>
           </div>
           <Link href="/admin/vagas" className={styles.btnGold}>
-            Abrir publicação de vagas
+            {t('internal.admin.openJobs')}
           </Link>
         </div>
       </section>
@@ -304,39 +308,39 @@ export default function AdminDashboardPage() {
       <section className={styles.panel} style={{ marginBottom: 20 }}>
         <div className={styles.panelHead}>
           <div>
-            <h2 className={styles.panelTitle}>CANDIDATURAS MANUAL</h2>
+            <h2 className={styles.panelTitle}>{t('internal.admin.manualTitle')}</h2>
             <p className={styles.panelSub}>
-              Quem se candidatou na vaga de envio manual, já com cadastro e currículo em PDF.
+              {t('internal.admin.manualLead')}
             </p>
           </div>
           <Link href="/admin/candidaturas-manual" className={styles.btnGold}>
-            Abrir candidaturas manuais
+            {t('internal.admin.openManual')}
           </Link>
         </div>
       </section>
 
-      {loading && !totals && <p className={styles.empty}>Carregando painel...</p>}
+      {loading && !totals && <p className={styles.empty}>{t('internal.admin.loading')}</p>}
       {error && <div className={styles.errorBox}>{error}</div>}
 
       <div className={styles.panelGrid}>
         <section className={styles.panel}>
           <div className={styles.panelHeadMail}>
             <div className={styles.panelHeadStart}>
-              <h2 className={styles.panelTitle}>Caixa de e-mail</h2>
+              <h2 className={styles.panelTitle}>{t('surface.admin.inbox')}</h2>
               <p className={styles.panelSub}>
                 {mailbox
-                  ? `Conta: ${mailbox}. A caixa completa está na aba Caixa de e-mail.`
-                  : 'Configure IMAP Hostinger no .env.local para ler a caixa'}
+                  ? `${t('internal.admin.mailAccount')} ${mailbox}. ${t('internal.admin.mailRest')}`
+                  : t('internal.admin.mailMissing')}
               </p>
             </div>
             <p
               className={`${styles.mailUnreadBadge} ${unreadMail === 0 ? styles.mailUnreadBadgeZero : ''}`}
             >
-              {unreadMail} Não Lida{unreadMail === 1 ? '' : 's'}
+              {unreadMail} {unreadMail === 1 ? t('internal.admin.unreadOne') : t('internal.admin.unreadMany')}
             </p>
             <div className={styles.panelHeadEnd}>
               <Link href="/admin/contato" className={styles.linkGold}>
-                Abrir caixa de e-mail
+                {t('internal.admin.openInbox')}
               </Link>
             </div>
           </div>
@@ -358,7 +362,7 @@ IMAP_PASS=sua-senha
           )}
 
           {!inboxError && messages.length === 0 && (
-            <p className={styles.empty}>Nenhuma mensagem recente na caixa.</p>
+            <p className={styles.empty}>{t('internal.admin.noRecentMail')}</p>
           )}
 
           {messages.length > 0 && (
@@ -382,16 +386,16 @@ IMAP_PASS=sua-senha
         <section className={styles.panel}>
           <div className={styles.panelHead}>
             <div>
-              <h2 className={styles.panelTitle}>Empresas pendentes</h2>
+              <h2 className={styles.panelTitle}>{t('internal.admin.pendingCompanies')}</h2>
               <p className={styles.panelSub}>
-                {companies.length} pendente{companies.length === 1 ? '' : 's'}
+                {companies.length} {companies.length === 1 ? t('internal.admin.pendingOne') : t('internal.admin.pendingMany')}
                 {companies.length > PREVIEW_LIST_LIMIT
-                  ? ` · mostrando ${PREVIEW_LIST_LIMIT}`
+                  ? ` · ${t('internal.admin.showing')} ${PREVIEW_LIST_LIMIT}`
                   : ''}
-                {' · só visualização'}
+                {` · ${t('internal.admin.viewOnly')}`}
               </p>
             </div>
-            <Link href="/admin/companies" className={styles.linkGold}>Abrir Empresas</Link>
+            <Link href="/admin/companies" className={styles.linkGold}>{t('internal.admin.openCompanies')}</Link>
           </div>
 
           <ul className={styles.companyListView}>
@@ -404,8 +408,8 @@ IMAP_PASS=sua-senha
                     className={`${styles.companyListRow} ${styles.companyListRowEmpty}`}
                   >
                     <div className={styles.companyListMain}>
-                      <span className={styles.companyListNameEmpty}>Slot livre</span>
-                      <span className={styles.companyListMeta}>Aguardando empresa pendente</span>
+                      <span className={styles.companyListNameEmpty}>{t('internal.admin.freeSlot')}</span>
+                      <span className={styles.companyListMeta}>{t('internal.admin.waitingCompany')}</span>
                     </div>
                     <div className={styles.companyListSide}>
                       <span className={styles.companyListMeta}>—</span>
@@ -417,7 +421,7 @@ IMAP_PASS=sua-senha
                 <li key={company.userId} className={styles.companyListRow}>
                   <div className={styles.companyListMain}>
                     <span className={styles.companyListName}>{company.razaoSocial}</span>
-                    <span className={styles.companyListMeta}>Em análise</span>
+                    <span className={styles.companyListMeta}>{t('internal.admin.inReview')}</span>
                     <span className={styles.companyListMeta}>
                       CNPJ {company.cnpj || '—'}
                       {company.responsavelNome ? ` · ${company.responsavelNome}` : ''}
@@ -439,35 +443,35 @@ IMAP_PASS=sua-senha
       {totals && (
         <>
           <section className={`${styles.panel} ${styles.dataCard}`}>
-            <h2 className={styles.sectionTag}>Site geral</h2>
+            <h2 className={styles.sectionTag}>{t('internal.admin.site')}</h2>
             <div className={styles.tableWrap}>
               <table className={styles.dataTable}>
                 <thead>
                   <tr>
-                    <th>Indicador</th>
-                    <th>Total</th>
-                    <th>Diário</th>
-                    <th>Semanal</th>
-                    <th>Mensal</th>
+                    <th>{t('internal.admin.indicator')}</th>
+                    <th>{t('internal.admin.total')}</th>
+                    <th>{t('internal.admin.daily')}</th>
+                    <th>{t('internal.admin.weekly')}</th>
+                    <th>{t('internal.admin.monthly')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td>Visitas no site</td>
+                    <td>{t('internal.admin.visits')}</td>
                     <td className={styles.dataValue}>{siteStats?.visits.total ?? totals.visits}</td>
                     <td className={styles.dataValue}>{siteStats?.visits.today ?? totals.visitsToday}</td>
                     <td className={styles.dataValue}>{siteStats?.visits.week ?? '—'}</td>
                     <td className={styles.dataValue}>{siteStats?.visits.month ?? '—'}</td>
                   </tr>
                   <tr>
-                    <td>Sessões únicas</td>
+                    <td>{t('internal.admin.sessions')}</td>
                     <td className={styles.dataValue}>{siteStats?.sessions.total ?? totals.uniqueSessions}</td>
                     <td className={styles.dataValue}>{siteStats?.sessions.today ?? '—'}</td>
                     <td className={styles.dataValue}>{siteStats?.sessions.week ?? '—'}</td>
                     <td className={styles.dataValue}>{siteStats?.sessions.month ?? '—'}</td>
                   </tr>
                   <tr>
-                    <td>Contas / logins Google</td>
+                    <td>{t('internal.admin.googleAccounts')}</td>
                     <td className={styles.dataValue}>{siteStats?.googleAccounts.total ?? 0}</td>
                     <td className={styles.dataValue}>{siteStats?.googleAccounts.today ?? 0}</td>
                     <td className={styles.dataValue}>{siteStats?.googleAccounts.week ?? 0}</td>
@@ -483,21 +487,21 @@ IMAP_PASS=sua-senha
           </section>
 
           <section className={`${styles.panel} ${styles.dataCard}`}>
-            <h2 className={styles.sectionTag}>Profissionais</h2>
+            <h2 className={styles.sectionTag}>{t('internal.admin.professionals')}</h2>
             <div className={styles.tableWrap}>
               <table className={styles.dataTable}>
                 <thead>
                   <tr>
-                    <th>Indicador</th>
-                    <th>Total</th>
-                    <th>Diário</th>
-                    <th>Semanal</th>
-                    <th>Mensal</th>
+                    <th>{t('internal.admin.indicator')}</th>
+                    <th>{t('internal.admin.total')}</th>
+                    <th>{t('internal.admin.daily')}</th>
+                    <th>{t('internal.admin.weekly')}</th>
+                    <th>{t('internal.admin.monthly')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td>Cadastros (contas)</td>
+                    <td>{t('internal.admin.signups')}</td>
                     <td className={styles.dataValue}>
                       {professionalsStats?.cadastros.total ?? totals.professionals}
                     </td>
@@ -506,16 +510,16 @@ IMAP_PASS=sua-senha
                     <td className={styles.dataValue}>{professionalsStats?.cadastros.month ?? '—'}</td>
                   </tr>
                   <tr>
-                    <td>Perfis completos</td>
+                    <td>{t('internal.admin.completeProfiles')}</td>
                     <td className={styles.dataValue}>{professionalsStats?.profilesComplete ?? '—'}</td>
-                    <td colSpan={3}>Cadastro com dados mínimos para vitrine</td>
+                    <td colSpan={3}>{t('internal.admin.showcaseMinimum')}</td>
                   </tr>
                   <tr>
-                    <td>Perfis ativos (visíveis)</td>
+                    <td>{t('internal.admin.activeProfiles')}</td>
                     <td className={styles.dataValue}>
                       {professionalsStats?.profilesActive ?? totals.profilesActive}
                     </td>
-                    <td colSpan={3}>Ativos e visíveis para empresas</td>
+                    <td colSpan={3}>{t('internal.admin.visibleToCompanies')}</td>
                   </tr>
                 </tbody>
               </table>
@@ -523,21 +527,21 @@ IMAP_PASS=sua-senha
           </section>
 
           <section className={`${styles.panel} ${styles.dataCard}`}>
-            <h2 className={styles.sectionTag}>Empresas</h2>
+            <h2 className={styles.sectionTag}>{t('internal.admin.companies')}</h2>
             <div className={styles.tableWrap}>
               <table className={styles.dataTable}>
                 <thead>
                   <tr>
-                    <th>Indicador</th>
-                    <th>Total</th>
-                    <th>Diário</th>
-                    <th>Semanal</th>
-                    <th>Mensal</th>
+                    <th>{t('internal.admin.indicator')}</th>
+                    <th>{t('internal.admin.total')}</th>
+                    <th>{t('internal.admin.daily')}</th>
+                    <th>{t('internal.admin.weekly')}</th>
+                    <th>{t('internal.admin.monthly')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td>Cadastros (contas)</td>
+                    <td>{t('internal.admin.signups')}</td>
                     <td className={styles.dataValue}>
                       {companiesStats?.cadastros.total ?? totals.companies}
                     </td>
@@ -546,21 +550,21 @@ IMAP_PASS=sua-senha
                     <td className={styles.dataValue}>{companiesStats?.cadastros.month ?? '—'}</td>
                   </tr>
                   <tr>
-                    <td>Cadastros completos</td>
+                    <td>{t('internal.admin.completeCompanies')}</td>
                     <td className={styles.dataValue}>{companiesStats?.profilesComplete ?? '—'}</td>
-                    <td colSpan={3}>CNPJ, responsável, telefone e endereço</td>
+                    <td colSpan={3}>{t('internal.admin.companyMinimum')}</td>
                   </tr>
                   <tr>
-                    <td>Empresas ativas (verificadas)</td>
+                    <td>{t('internal.admin.activeCompanies')}</td>
                     <td className={styles.dataValue}>{companiesStats?.profilesActive ?? '—'}</td>
-                    <td colSpan={3}>Verificação CNPJ aprovada</td>
+                    <td colSpan={3}>{t('internal.admin.cnpjApproved')}</td>
                   </tr>
                   <tr>
-                    <td>Pendentes CNPJ</td>
+                    <td>{exactUi("Pendentes CNPJ")}</td>
                     <td className={styles.dataValue}>
                       {companiesStats?.pendingCnpj ?? totals.companiesPending}
                     </td>
-                    <td colSpan={3}>Aguardando análise</td>
+                    <td colSpan={3}>{exactUi("Aguardando análise")}</td>
                   </tr>
                 </tbody>
               </table>
@@ -568,11 +572,11 @@ IMAP_PASS=sua-senha
           </section>
 
           <section className={`${styles.panel} ${styles.dataCard}`}>
-            <h2 className={styles.sectionTag}>Assinaturas e receita</h2>
+            <h2 className={styles.sectionTag}>{exactUi("Assinaturas e receita")}</h2>
             <div className={styles.revenueTotalBox}>
-              <span className={styles.revenueTotalLabel}>Total arrecadado com assinaturas</span>
+              <span className={styles.revenueTotalLabel}>{exactUi("Total arrecadado com assinaturas")}</span>
               <strong className={styles.revenueTotalValue}>
-                {plans?.totalCollectedLabel ?? 'R$ 0,00'}
+                {plans?.totalCollectedLabel ?? exactUi("R$ 0,00")}
               </strong>
               <span className={styles.revenueTotalHint}>
                 {plans?.collectedPayments ?? 0} pagamento{(plans?.collectedPayments ?? 0) === 1 ? '' : 's'} confirmado{(plans?.collectedPayments ?? 0) === 1 ? '' : 's'}
@@ -582,10 +586,10 @@ IMAP_PASS=sua-senha
               <table className={styles.dataTable}>
                 <thead>
                   <tr>
-                    <th>Plano</th>
-                    <th>Preço / mês</th>
-                    <th>Assinaturas</th>
-                    <th>Receita / mês</th>
+                    <th>{exactUi("Plano")}</th>
+                    <th>{exactUi("Preço / mês")}</th>
+                    <th>{exactUi("Assinaturas")}</th>
+                    <th>{exactUi("Receita / mês")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -598,13 +602,13 @@ IMAP_PASS=sua-senha
                     </tr>
                   ))}
                   <tr>
-                    <td>Empresas Free</td>
+                    <td>{exactUi("Empresas Free")}</td>
                     <td>—</td>
                     <td className={styles.dataValue}>{totals.freeCompanies}</td>
-                    <td>Sem plano pago ativo</td>
+                    <td>{exactUi("Sem plano pago ativo")}</td>
                   </tr>
                   <tr className={styles.dataRowHighlight}>
-                    <td>Receita mensal estimada</td>
+                    <td>{exactUi("Receita mensal estimada")}</td>
                     <td>—</td>
                     <td className={styles.dataValue}>{plans?.totalSubscriptions ?? 0}</td>
                     <td className={styles.dataValue}>{plans?.totalRevenueLabel ?? '—'}</td>
@@ -615,34 +619,34 @@ IMAP_PASS=sua-senha
           </section>
 
           <section className={`${styles.panel} ${styles.dataCard}`}>
-            <h2 className={styles.sectionTag}>Funil de recrutamento</h2>
+            <h2 className={styles.sectionTag}>{exactUi("Funil de recrutamento")}</h2>
             <div className={styles.tableWrap}>
               <table className={styles.dataTable}>
                 <thead>
                   <tr>
-                    <th>Etapa</th>
-                    <th>Quantidade</th>
+                    <th>{exactUi("Etapa")}</th>
+                    <th>{exactUi("Quantidade")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td>Contatados</td>
+                    <td>{exactUi("Contatados")}</td>
                     <td className={styles.dataValue}>{totals.contatados}</td>
                   </tr>
                   <tr>
-                    <td>Entrevistados</td>
+                    <td>{exactUi("Entrevistados")}</td>
                     <td className={styles.dataValue}>{totals.entrevistados}</td>
                   </tr>
                   <tr>
-                    <td>Testados</td>
+                    <td>{exactUi("Testados")}</td>
                     <td className={styles.dataValue}>{totals.testados ?? 0}</td>
                   </tr>
                   <tr>
-                    <td>Contratados</td>
+                    <td>{exactUi("Contratados")}</td>
                     <td className={styles.dataValue}>{totals.contratados}</td>
                   </tr>
                   <tr>
-                    <td>Não contratados</td>
+                    <td>{exactUi("Não contratados")}</td>
                     <td className={styles.dataValue}>{totals.naoContratados ?? 0}</td>
                   </tr>
                 </tbody>
@@ -651,11 +655,11 @@ IMAP_PASS=sua-senha
           </section>
 
           <section className={`${styles.panel} ${styles.dataCard}`}>
-            <h2 className={styles.sectionTag}>Tendência · 14 dias</h2>
+            <h2 className={styles.sectionTag}>{exactUi("Tendência · 14 dias")}</h2>
             <div className={styles.charts}>
-              <BarChart title="Visitas" series={series} dataKey="visits" color="#C89B3C" />
-              <BarChart title="Cadastros profissionais" series={series} dataKey="professionals" color="#4ade80" />
-              <BarChart title="Cadastros empresas" series={series} dataKey="companies" color="#60a5fa" />
+              <BarChart title={exactUi("Visitas")} series={series} dataKey="visits" color="#C89B3C" />
+              <BarChart title={exactUi("Cadastros profissionais")} series={series} dataKey="professionals" color="#4ade80" />
+              <BarChart title={exactUi("Cadastros empresas")} series={series} dataKey="companies" color="#60a5fa" />
             </div>
           </section>
         </>

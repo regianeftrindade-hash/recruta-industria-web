@@ -2,6 +2,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { t } from "@/lib/i18n/translate";
+import { localizeServerText } from "@/lib/i18n/server-text";
+import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
 import { useRouter } from "next/navigation";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import DashboardThemeToggle from "@/app/components/DashboardThemeToggle";
@@ -48,7 +51,7 @@ export default function TesteComportamentalPage() {
           }
         }
       } catch {
-        setErro("Não foi possível carregar o teste.");
+        setErro(t("fix.test.loadError"));
       } finally {
         setLoading(false);
       }
@@ -94,7 +97,7 @@ export default function TesteComportamentalPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        setErro(data.error || "Não foi possível enviar o teste.");
+        setErro(localizeServerText(data.error) || t("fix.test.sendError"));
         return;
       }
 
@@ -107,7 +110,7 @@ export default function TesteComportamentalPage() {
 
       router.push("/professional/dashboard");
     } catch {
-      setErro("Erro de conexão. Tente novamente.");
+      setErro(t("fix.test.network"));
     } finally {
       setEnviando(false);
     }
@@ -128,7 +131,7 @@ export default function TesteComportamentalPage() {
       <header style={{ ...dashHeader, padding: "14px 16px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
           <LogoRecruta size="xs" as="span" depth />
-          <span className="ri-dash-access-tag">Acesso Profissional</span>
+          <span className="ri-dash-access-tag">{t("internal.pro.access")}</span>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <DashboardThemeToggle />
@@ -137,22 +140,19 @@ export default function TesteComportamentalPage() {
             onClick={() => router.push("/professional/dashboard")}
             style={{ ...btnGold, padding: "8px 14px", fontSize: 12 }}
           >
-            Voltar
+            {t("fix.test.back")}
           </button>
         </div>
       </header>
 
       <main style={{ maxWidth: 720, margin: "0 auto", padding: "16px 14px 32px" }}>
         <section style={{ ...dashCard, padding: 18, marginBottom: 16, boxShadow: DASH.shadow }}>
-          <h1 style={{ ...dashTitleProf, margin: "0 0 8px", fontSize: 20 }}>Teste Comportamental Pessoal</h1>
+          <h1 style={{ ...dashTitleProf, margin: "0 0 8px", fontSize: 20 }}>{t("fix.test.title")}</h1>
           <p style={{ margin: "0 0 6px", fontSize: 13, fontWeight: 600, color: DASH.gold }}>
-            Como você age no dia a dia
+            {t("fix.test.lead")}
           </p>
           <p style={{ margin: 0, fontSize: 12, color: DASH.muted, lineHeight: 1.5 }}>
-            Leia cada frase sobre sua vida e marque de <strong>1 a 5</strong>, onde{" "}
-            <strong>1 = discordo plenamente</strong> e <strong>5 = concordo plenamente</strong>.
-            O resultado mostra seu perfil pessoal predominante. Este teste pode ser preenchido{" "}
-            <strong>apenas uma vez</strong>.
+            {t("fix.test.intro")}
           </p>
 
           <div
@@ -167,16 +167,16 @@ export default function TesteComportamentalPage() {
             }}
           >
             <span style={{ fontSize: 11, color: DASH.text, fontWeight: 600 }}>
-              1 — {ESCALA_EXTREMOS.min.rotulo}
+              1 — {t("fix.test.scale1")}
             </span>
             <span style={{ fontSize: 11, color: DASH.muted }}>···</span>
             <span style={{ fontSize: 11, color: DASH.text, fontWeight: 600, textAlign: "right" }}>
-              5 — {ESCALA_EXTREMOS.max.rotulo}
+              5 — {t("fix.test.scale5")}
             </span>
           </div>
 
           <p style={{ margin: "12px 0 0", fontSize: 11, color: DASH.muted }}>
-            Progresso: {respondidas}/{TOTAL} perguntas
+            {t("fix.test.progress").replace("{done}", String(respondidas)).replace("{total}", String(TOTAL))}
           </p>
           <div
             style={{
@@ -203,7 +203,7 @@ export default function TesteComportamentalPage() {
             <section key={pergunta.id} style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
               <p style={{ margin: "0 0 8px", fontSize: 13, lineHeight: 1.5, color: DASH.text }}>
                 <span style={{ color: DASH.gold, fontWeight: 800, marginRight: 6 }}>{pergunta.id}.</span>
-                {pergunta.texto}
+                {t(`fix.test.q${pergunta.id}` as MessageKey)}
               </p>
               <div
                 style={{
@@ -215,8 +215,8 @@ export default function TesteComportamentalPage() {
                   gap: 8,
                 }}
               >
-                <span>1 — Discordo plenamente</span>
-                <span style={{ textAlign: "right" }}>5 — Concordo plenamente</span>
+                <span>1 — {t("fix.test.scale1")}</span>
+                <span style={{ textAlign: "right" }}>5 — {t("fix.test.scale5")}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 6 }}>
                 {ESCALA_OPCOES.map((op) => {
@@ -226,9 +226,9 @@ export default function TesteComportamentalPage() {
                       key={op.valor}
                       type="button"
                       onClick={() => selecionar(pergunta.id, op.valor)}
-                      aria-label={`Pergunta ${pergunta.id}: ${op.rotulo}`}
+                      aria-label={`${pergunta.id}: ${t(`fix.test.scale${op.valor}` as MessageKey)}`}
                       aria-pressed={selecionado}
-                      title={op.rotulo}
+                      title={t(`fix.test.scale${op.valor}` as MessageKey)}
                       style={{
                         flex: 1,
                         display: "flex",
@@ -286,7 +286,7 @@ export default function TesteComportamentalPage() {
               cursor: enviando || !todasRespondidas ? "not-allowed" : "pointer",
             }}
           >
-            {enviando ? "Enviando..." : "Finalizar e ver resultado"}
+            {enviando ? t("fix.test.sending") : t("fix.test.finish")}
           </button>
         </div>
       </main>

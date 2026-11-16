@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React from "react";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
@@ -48,7 +49,7 @@ export default function CompanyTeamInviteForm({
       style={{ ...dashInnerBox, padding: 14, display: "grid", gap: 10, marginBottom: 12 }}
     >
       <p style={{ margin: 0, fontSize: 13, color: DASH.gold, fontWeight: 800 }}>
-        {replacingId ? "Trocar usuário" : "Adicionar novo usuário"}
+        {replacingId ? exactUi("Trocar usuário") : exactUi("Adicionar novo usuário")}
       </p>
       {replacingId ? (
         <p style={{ margin: 0, fontSize: 11, color: DASH.muted }}>
@@ -57,17 +58,17 @@ export default function CompanyTeamInviteForm({
         </p>
       ) : null}
       <label>
-        <span style={{ ...dashLabel, display: "block", marginBottom: 4 }}>Nome</span>
+        <span style={{ ...dashLabel, display: "block", marginBottom: 4 }}>{exactUi("Nome")}</span>
         <input
           type="text"
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
-          placeholder="Nome completo"
+          placeholder={exactUi("Nome completo")}
           style={dashInput}
         />
       </label>
       <label>
-        <span style={{ ...dashLabel, display: "block", marginBottom: 4 }}>E-mail</span>
+        <span style={{ ...dashLabel, display: "block", marginBottom: 4 }}>{exactUi("E-mail")}</span>
         <input
           type="email"
           required
@@ -78,10 +79,10 @@ export default function CompanyTeamInviteForm({
         />
       </label>
       <label>
-        <span style={{ ...dashLabel, display: "block", marginBottom: 4 }}>Função</span>
+        <span style={{ ...dashLabel, display: "block", marginBottom: 4 }}>{exactUi("Função")}</span>
         <select value={role} onChange={(e) => onRoleChange(e.target.value)} style={dashInput}>
           <option value="RH">RH</option>
-          <option value="RECRUITER">Recrutador</option>
+          <option value="RECRUITER">{exactUi("Recrutador")}</option>
           <option value="ADMIN">Admin</option>
         </select>
       </label>
@@ -100,10 +101,10 @@ export default function CompanyTeamInviteForm({
             style={{ ...btnGold, padding: "8px 12px", fontSize: 12 }}
           >
             {saving
-              ? "Salvando..."
+              ? exactUi("Salvando...")
               : replacingId
-                ? "Confirmar troca"
-                : "Gerar convite"}
+                ? exactUi("Confirmar troca")
+                : exactUi("Gerar convite")}
           </button>
           <button
             type="button"

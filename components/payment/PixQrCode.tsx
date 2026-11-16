@@ -1,4 +1,6 @@
 "use client";
+import { formatUiDateTime } from "@/lib/i18n/format-ui";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useState } from "react";
 import { goldButton3DStyle } from "@/lib/button-3d";
@@ -33,7 +35,7 @@ export function PixQrCode({ copyPasteKey, qrCodeDataUrl, expiresAt }: PixQrCodeP
       </p>
       <img
         src={imgSrc}
-        alt="QR Code Pix"
+        alt={exactUi("QR Code Pix")}
         width={280}
         height={280}
         style={{
@@ -58,7 +60,7 @@ export function PixQrCode({ copyPasteKey, qrCodeDataUrl, expiresAt }: PixQrCodeP
           fontSize: 12,
         }}
       >
-        {copied ? "Código copiado!" : "Copiar código Pix"}
+        {copied ? exactUi("Código copiado!") : exactUi("Copiar código Pix")}
       </button>
       <p
         style={{
@@ -76,7 +78,7 @@ export function PixQrCode({ copyPasteKey, qrCodeDataUrl, expiresAt }: PixQrCodeP
       </p>
       {expiresAt && (
         <p style={{ fontSize: 11, color: "var(--dash-text, #414141)", marginTop: 8 }}>
-          Válido até: {new Date(expiresAt).toLocaleString("pt-BR")}
+          {exactUi("Válido até")}: {formatUiDateTime(expiresAt)}
         </p>
       )}
     </div>

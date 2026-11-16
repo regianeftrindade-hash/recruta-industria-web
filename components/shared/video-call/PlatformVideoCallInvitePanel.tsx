@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import { DASH } from "@/lib/dashboard-theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
@@ -121,7 +122,7 @@ export default function PlatformVideoCallInvitePanel({
               opacity: addingParticipant || loadingRhMembers ? 0.7 : 1,
             }}
           >
-            {loadingRhMembers ? "Buscando…" : "Convide"}
+            {loadingRhMembers ? exactUi("Buscando…") : exactUi("Convide")}
           </button>
           {showRhMembers && (
             <div style={{ display: "grid", gap: 6, marginTop: 8 }}>
@@ -163,7 +164,7 @@ export default function PlatformVideoCallInvitePanel({
                           {member.department} · {member.email}
                         </span>
                       </span>
-                      <span style={{ color: DASH.gold, fontSize: 10 }}>Convidar</span>
+                      <span style={{ color: DASH.gold, fontSize: 10 }}>{exactUi("Convidar")}</span>
                     </button>
                   ))
               )}

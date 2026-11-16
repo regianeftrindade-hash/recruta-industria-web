@@ -6,6 +6,8 @@ import { paginarLista, paginasDaBarra } from "@/lib/jobs/paginate-list";
 import { comparePublicationDateDesc, jobApplicationDeadline } from "@/lib/jobs/public-job-display";
 import { VAGAS_COMPATIVEIS_ENABLED } from "@/lib/jobs/vagas-compativeis-flag";
 import JobFavoriteButton from "@/components/jobs/JobFavoriteButton";
+import { t } from "@/lib/i18n/translate";
+import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
 import styles from "./professional-job-search.module.css";
 
 type CompatibleJob = PublicJob & { reasons: string[] };
@@ -73,14 +75,37 @@ const FAIXAS_SALARIO: Array<{ id: string; label: string; minimo: string; maximo:
   { id: "combinar", label: "A combinar", minimo: "", maximo: "", negociavel: true },
 ];
 
+const CONTRATO: Record<string, MessageKey> = {
+  CLT: "surface.jobs.clt",
+  PJ: "surface.jobs.pj",
+  ESTAGIO: "surface.jobs.intern",
+  TEMPORARIO: "surface.jobs.temporary",
+  APRENDIZ: "surface.jobs.apprentice",
+  FREELANCER: "surface.jobs.freelancer",
+  OUTRO: "surface.jobs.other",
+};
+
+const MODALIDADE: Record<string, MessageKey> = {
+  HOME_OFFICE: "surface.jobs.remote",
+  PRESENCIAL: "surface.jobs.onSite",
+  HIBRIDO: "surface.jobs.hybrid",
+};
+
+const FAIXA_ROTULO: Record<string, MessageKey> = {
+  "1000-2000": "internal.pro.salary1000",
+  "2000-3000": "internal.pro.salary2000",
+  "3000-4000": "internal.pro.salary3000",
+  "4000-5000": "internal.pro.salary4000",
+  "acima-5000": "internal.pro.salaryAbove",
+  combinar: "surface.jobs.salaryAgree",
+};
+
 function contractOptionLabel(value: string, label: string): string {
-  if (value === "APRENDIZ") return "Jovem Aprendiz";
-  return label;
+  return CONTRATO[value] ? t(CONTRATO[value]) : label;
 }
 
 function modeOptionLabel(value: string, label: string): string {
-  if (value === "HOME_OFFICE") return "Home office / remoto";
-  return label;
+  return MODALIDADE[value] ? t(MODALIDADE[value]) : label;
 }
 
 function semAcento(value: string): string {
@@ -105,8 +130,8 @@ function Paginador({
   if (total <= 1) return null;
   return (
     <nav className={styles.pager} aria-label={rotulo}>
-      <button type="button" disabled={pagina <= 1} onClick={() => onIr(1)}>Primeira</button>
-      <button type="button" disabled={pagina <= 1} onClick={() => onIr(pagina - 1)}>Voltar</button>
+      <button type="button" disabled={pagina <= 1} onClick={() => onIr(1)}>{t("internal.pro.first")}</button>
+      <button type="button" disabled={pagina <= 1} onClick={() => onIr(pagina - 1)}>{t("internal.pro.back")}</button>
       {paginasDaBarra(pagina, total).map((numero) => (
         <button
           key={numero}
@@ -118,8 +143,8 @@ function Paginador({
           {numero}
         </button>
       ))}
-      <button type="button" disabled={pagina >= total} onClick={() => onIr(pagina + 1)}>Próxima</button>
-      <button type="button" disabled={pagina >= total} onClick={() => onIr(total)}>Última</button>
+      <button type="button" disabled={pagina >= total} onClick={() => onIr(pagina + 1)}>{t("surface.jobs.next")}</button>
+      <button type="button" disabled={pagina >= total} onClick={() => onIr(total)}>{t("internal.pro.last")}</button>
     </nav>
   );
 }
@@ -158,10 +183,10 @@ function CartaoVaga({
         {job.contractLabel ? <li>{job.contractLabel}</li> : null}
         {job.workModeLabel ? <li>{job.workModeLabel}</li> : null}
         {job.workplace ? <li>{job.workplace}</li> : null}
-        {jobApplicationDeadline(job) ? <li>Inscrições até {jobApplicationDeadline(job)}</li> : null}
+        {jobApplicationDeadline(job) ? <li>{t("surface.jobs.deadline")} {jobApplicationDeadline(job)}</li> : null}
       </ul>
       <div className={styles.cardActions}>
-        <a href={`/vagas/${job.id}`}>Ver vaga</a>
+        <a href={`/vagas/${job.id}`}>{t("internal.pro.seeJob")}</a>
         <JobFavoriteButton
           jobId={job.id}
           ativo={favorito}
@@ -179,9 +204,9 @@ function rotuloBusca(form: SearchState): string {
   if (form.estado) partes.push(form.estado);
   if (form.cidade) partes.push(form.cidade);
   const faixa = FAIXAS_SALARIO.find((item) => item.id === form.faixa);
-  if (faixa) partes.push(faixa.label);
-  if (form.periodo === "24h") partes.push("24 horas");
-  else if (form.periodo) partes.push(`${form.periodo} dias`);
+  if (faixa) partes.push(FAIXA_ROTULO[faixa.id] ? t(FAIXA_ROTULO[faixa.id]) : faixa.label);
+  if (form.periodo === "24h") partes.push(t("internal.pro.hours24"));
+  else if (form.periodo) partes.push(`${form.periodo} ${t("internal.pro.days")}`);
   const contrato = CONTRACT_TYPES.find((item) => item.value === form.contrato);
   if (contrato) partes.push(contractOptionLabel(contrato.value, contrato.label));
   const modo = WORK_MODES.find((item) => item.value === form.modalidade);
@@ -293,7 +318,7 @@ function ListaFlutuante({
           className={styles.arrow}
           data-combo-arrow=""
           data-open={aberto ? "true" : "false"}
-          aria-label={aberto ? "Fechar lista" : "Abrir lista"}
+          aria-label={aberto ? t("internal.pro.closeList") : t("internal.pro.openList")}
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => setAberto((atual) => !atual)}
         >
@@ -390,7 +415,7 @@ export default function ProfessionalJobSearch() {
       .then(({ ok, data }) => {
         if (!ativo) return;
         if (!ok) {
-          setErroFavoritos(typeof data?.error === "string" ? data.error : "Não foi possível carregar os favoritos.");
+          setErroFavoritos(typeof data?.error === "string" ? data.error : t("internal.pro.favoritesError"));
           return;
         }
         const jobs = Array.isArray(data?.jobs) ? data.jobs.filter(vagaPublica) : [];
@@ -399,7 +424,7 @@ export default function ProfessionalJobSearch() {
         setErroFavoritos("");
       })
       .catch(() => {
-        if (ativo) setErroFavoritos("Não foi possível carregar os favoritos.");
+        if (ativo) setErroFavoritos(t("internal.pro.favoritesError"));
       })
       .finally(() => {
         if (ativo) setFavoritosProntos(true);
@@ -432,7 +457,7 @@ export default function ProfessionalJobSearch() {
       const response = await fetch(`/api/vagas?${params.toString()}`, { credentials: "same-origin" });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setError(data.error || "Não foi possível buscar as vagas.");
+        setError(data.error || t("internal.pro.searchError"));
         setJobs([]);
         setCompatible([]);
         setMatchError("");
@@ -456,7 +481,7 @@ export default function ProfessionalJobSearch() {
         setCompatible([]);
         setJobs(found);
         if (!bloqueado) {
-          setMatchError("Não foi possível comparar as vagas com o seu perfil agora. A lista geral continua disponível.");
+          setMatchError(t("internal.pro.matchError"));
         }
         if (salvar) setBuscas(guardarBusca(next));
         return;
@@ -468,7 +493,7 @@ export default function ProfessionalJobSearch() {
       setJobs(found.filter((job) => !matchedIds.has(job.id)));
       if (salvar) setBuscas(guardarBusca(next));
     } catch {
-      setError("Não foi possível buscar as vagas.");
+      setError(t("internal.pro.searchError"));
       setJobs([]);
       setCompatible([]);
       setMatchError("");
@@ -519,12 +544,15 @@ export default function ProfessionalJobSearch() {
     label: `${estado.uf} — ${estado.nome}`,
   }));
   const opcoesCidade = cidades.map((cidade) => ({ id: cidade, label: cidade }));
-  const opcoesFaixa = FAIXAS_SALARIO.map((faixa) => ({ id: faixa.id, label: faixa.label }));
+  const opcoesFaixa = FAIXAS_SALARIO.map((faixa) => ({
+    id: faixa.id,
+    label: FAIXA_ROTULO[faixa.id] ? t(FAIXA_ROTULO[faixa.id]) : faixa.label,
+  }));
 
   return (
     <section className={styles.panel}>
-      <h2 className={styles.title}>Buscar vagas</h2>
-      <p className={styles.lead}>Todas as vagas publicadas no Recruta Indústria aparecem aqui, tanto as cadastradas pelo site quanto as das empresas. Use os filtros para ver só o que interessa. O nome de uma empresa confidencial não aparece.</p>
+      <h2 className={styles.title}>{t("surface.dash.pro.jobs")}</h2>
+      <p className={styles.lead}>{t("internal.pro.searchLead")}</p>
       <form
         className={styles.filters}
         onSubmit={(event) => {
@@ -533,63 +561,63 @@ export default function ProfessionalJobSearch() {
         }}
       >
         <label className={styles.fieldWide}>
-          Cargo ou palavra-chave
-          <input className={styles.control} value={form.q} onChange={(event) => update("q", event.target.value)} maxLength={80} placeholder="Cargo ou palavra-chave" />
+          {t("surface.jobs.keyword")}
+          <input className={styles.control} value={form.q} onChange={(event) => update("q", event.target.value)} maxLength={80} placeholder={t("surface.jobs.keyword")} />
         </label>
         <ListaFlutuante
-          label="Estado"
+          label={t("surface.jobs.state")}
           value={form.estado}
-          placeholder="UF"
+          placeholder={t("internal.pro.uf")}
           options={opcoesEstado}
-          vazio="Nenhum estado encontrado."
+          vazio={t("internal.pro.noState")}
           onChange={(uf) => setForm((current) => ({ ...current, estado: uf, cidade: "" }))}
         />
         <ListaFlutuante
-          label="Cidade"
+          label={t("surface.jobs.city")}
           value={form.cidade}
-          placeholder={form.estado ? "Cidade" : "Escolha o estado"}
+          placeholder={form.estado ? t("surface.jobs.city") : t("internal.pro.pickState")}
           options={opcoesCidade}
-          vazio={form.estado ? (carregandoCidades ? "Carregando cidades..." : "Nenhuma cidade encontrada.") : "Escolha o estado para ver as cidades."}
+          vazio={form.estado ? (carregandoCidades ? t("internal.pro.loadingCities") : t("internal.pro.noCity")) : t("internal.pro.pickStateCities")}
           onChange={(cidade) => update("cidade", cidade)}
         />
         <label>
-          Publicação
+          {t("surface.jobs.published")}
           <select className={styles.control} value={form.periodo} onChange={(event) => update("periodo", event.target.value)}>
-            <option value="">Qualquer data</option>
-            <option value="24h">Últimas 24 horas</option>
-            <option value="7">Últimos 7 dias</option>
-            <option value="15">Últimos 15 dias</option>
-            <option value="30">Últimos 30 dias</option>
+            <option value="">{t("surface.jobs.anyDate")}</option>
+            <option value="24h">{t("surface.jobs.last24")}</option>
+            <option value="7">{t("surface.jobs.last7")}</option>
+            <option value="15">{t("surface.jobs.last15")}</option>
+            <option value="30">{t("surface.jobs.last30")}</option>
           </select>
         </label>
         <ListaFlutuante
-          label="Salário"
+          label={t("surface.jobs.salary")}
           value={form.faixa}
-          placeholder="Faixa"
+          placeholder={t("internal.pro.range")}
           options={opcoesFaixa}
-          vazio="Nenhuma faixa encontrada."
+          vazio={t("internal.pro.noRange")}
           onChange={(faixa) => update("faixa", faixa)}
         />
         <label>
-          Contratação
+          {t("surface.jobs.contract")}
           <select className={styles.control} value={form.contrato} onChange={(event) => update("contrato", event.target.value)}>
-            <option value="">Todos</option>
+            <option value="">{t("internal.pro.allMasc")}</option>
             {CONTRACT_TYPES.map((option) => (
               <option key={option.value} value={option.value}>{contractOptionLabel(option.value, option.label)}</option>
             ))}
           </select>
         </label>
         <label>
-          Modalidade
+          {t("surface.jobs.mode")}
           <select className={styles.control} value={form.modalidade} onChange={(event) => update("modalidade", event.target.value)}>
-            <option value="">Todas</option>
+            <option value="">{t("surface.jobs.all")}</option>
             {WORK_MODES.map((option) => (
               <option key={option.value} value={option.value}>{modeOptionLabel(option.value, option.label)}</option>
             ))}
           </select>
         </label>
         <div className={styles.actions}>
-          <button type="submit">Buscar</button>
+          <button type="submit">{t("surface.jobs.search")}</button>
           <button
             type="button"
             className={styles.ghost}
@@ -598,14 +626,14 @@ export default function ProfessionalJobSearch() {
               void load(EMPTY);
             }}
           >
-            Limpar
+            {t("surface.jobs.clear")}
           </button>
         </div>
       </form>
 
       {buscas.length > 0 ? (
         <div className={styles.history}>
-          <p>Últimas buscas</p>
+          <p>{t("internal.pro.recentSearches")}</p>
           <div>
             {buscas.map((busca) => (
               <button
@@ -616,7 +644,7 @@ export default function ProfessionalJobSearch() {
                   void load(busca.form, true);
                 }}
               >
-                {busca.label}
+                {rotuloBusca(busca.form)}
               </button>
             ))}
           </div>
@@ -624,24 +652,24 @@ export default function ProfessionalJobSearch() {
       ) : null}
 
       {error ? <p className={styles.error}>{error}</p> : null}
-      {loading ? <p className={styles.lead}>Buscando vagas...</p> : null}
+      {loading ? <p className={styles.lead}>{t("internal.pro.searching")}</p> : null}
       {VAGAS_COMPATIVEIS_ENABLED && !loading && !error && matchError && isPremium !== true ? <p className={styles.error}>{matchError}</p> : null}
       {VAGAS_COMPATIVEIS_ENABLED && !loading && !error && isPremium === false ? (
-        <section className={styles.matches} aria-label="Vagas compatíveis com você">
-          <h3 className={styles.title}>Vagas compatíveis com você</h3>
+        <section className={styles.matches} aria-label={t("internal.pro.matches")}>
+          <h3 className={styles.title}>{t("internal.pro.matches")}</h3>
           <div className={styles.premium}>
-            <p>Esta lista fica disponível no plano Premium.</p>
-            <a href="/professional/pagamento">Assinar o plano Premium</a>
+            <p>{t("internal.pro.premiumList")}</p>
+            <a href="/professional/pagamento">{t("internal.pro.subscribePremium")}</a>
           </div>
         </section>
       ) : null}
       {VAGAS_COMPATIVEIS_ENABLED && !loading && !error && isPremium === true ? (
-        <section className={styles.matches} aria-label="Vagas compatíveis com você">
-          <h3 ref={compativeisRef} className={styles.title}>Vagas compatíveis com você</h3>
+        <section className={styles.matches} aria-label={t("internal.pro.matches")}>
+          <h3 ref={compativeisRef} className={styles.title}>{t("internal.pro.matches")}</h3>
           {matchError ? (
             <p className={styles.error}>{matchError}</p>
           ) : compatible.length === 0 ? (
-            <p className={styles.empty}>Ainda não encontramos vagas compatíveis. Atualize seu perfil ou ajuste os filtros para descobrir novas oportunidades.</p>
+            <p className={styles.empty}>{t("internal.pro.noMatches")}</p>
           ) : (
             <div className={styles.list}>
               {listaCompativel.itens.map((job) => (
@@ -656,7 +684,7 @@ export default function ProfessionalJobSearch() {
             </div>
           )}
           <Paginador
-            rotulo="Páginas das vagas compatíveis"
+            rotulo={t("internal.pro.matchPages")}
             pagina={listaCompativel.pagina}
             total={listaCompativel.totalPaginas}
             onIr={(numero) => irParaPagina(numero, "compativeis")}
@@ -665,12 +693,12 @@ export default function ProfessionalJobSearch() {
       ) : null}
 
       {!loading && !error ? (
-        <section className={styles.matches} aria-label="Favoritos">
-          <h3 className={styles.title}>Favoritos</h3>
-          {!favoritosProntos ? <p className={styles.lead}>Carregando favoritos...</p> : null}
+        <section className={styles.matches} aria-label={t("internal.pro.favorites")}>
+          <h3 className={styles.title}>{t("internal.pro.favorites")}</h3>
+          {!favoritosProntos ? <p className={styles.lead}>{t("internal.pro.loadingFavorites")}</p> : null}
           {favoritosProntos && erroFavoritos ? <p className={styles.error}>{erroFavoritos}</p> : null}
           {favoritosProntos && !erroFavoritos && vagasFavoritas.length === 0 ? (
-            <p className={styles.empty}>Nenhuma vaga favorita ainda. Use Favoritar para guardar uma vaga nesta lista.</p>
+            <p className={styles.empty}>{t("internal.pro.noFavorites")}</p>
           ) : null}
           {listaFavoritos.itens.length > 0 ? (
             <div className={styles.list}>
@@ -686,7 +714,7 @@ export default function ProfessionalJobSearch() {
           ) : null}
           {favoritosProntos ? (
             <Paginador
-              rotulo="Páginas dos favoritos"
+              rotulo={t("internal.pro.favoritePages")}
               pagina={listaFavoritos.pagina}
               total={listaFavoritos.totalPaginas}
               onIr={setPaginaFavoritos}
@@ -695,12 +723,12 @@ export default function ProfessionalJobSearch() {
         </section>
       ) : null}
 
-      {!loading && !error ? <h3 ref={listaRef} className={styles.title}>Todas as vagas</h3> : null}
+      {!loading && !error ? <h3 ref={listaRef} className={styles.title}>{t("internal.pro.allJobs")}</h3> : null}
       {!loading && !error && jobs.length === 0 ? (
         <p className={styles.empty}>
           {temFiltro(consulta)
-            ? (VAGAS_COMPATIVEIS_ENABLED ? "Nenhuma outra vaga encontrada com esses filtros." : "Nenhuma vaga encontrada com esses filtros.")
-            : (VAGAS_COMPATIVEIS_ENABLED ? "Nenhuma outra vaga publicada no momento." : "Nenhuma vaga publicada no momento.")}
+            ? (VAGAS_COMPATIVEIS_ENABLED ? t("internal.pro.noneOtherFiltered") : t("surface.jobs.noneFiltered"))
+            : (VAGAS_COMPATIVEIS_ENABLED ? t("internal.pro.noneOther") : t("internal.pro.nonePublished"))}
         </p>
       ) : null}
 
@@ -719,7 +747,7 @@ export default function ProfessionalJobSearch() {
 
       {!loading && !error ? (
         <Paginador
-          rotulo="Páginas de todas as vagas"
+          rotulo={t("internal.pro.allPages")}
           pagina={listaGeral.pagina}
           total={listaGeral.totalPaginas}
           onIr={(numero) => irParaPagina(numero, "geral")}

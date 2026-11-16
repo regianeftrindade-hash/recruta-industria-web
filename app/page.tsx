@@ -5,6 +5,7 @@ import { Dancing_Script } from "next/font/google";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import HomeAccessForm from "@/app/components/HomeAccessForm";
 import HomeAuthProvider from "@/app/components/HomeAuthProvider";
+import { t } from "@/lib/i18n/translate";
 import { FONT_STACK } from "@/lib/theme";
 import styles from "./home.module.css";
 
@@ -39,7 +40,7 @@ export default function Home() {
               ★
             </span>
             <p className={`${styles.heroTagline} ${taglineFont.className}`}>
-              A indústria evolui. O recrutamento também.
+              {t("surface.home.tagline")}
             </p>
             <span className={`${styles.heroTaglineStar} ${taglineFont.className}`} aria-hidden>
               ★
@@ -48,7 +49,7 @@ export default function Home() {
           </div>
         </header>
 
-        <section className={`${styles.actionCards} ${styles.proCardWrap}`} aria-label="Acesso profissional">
+        <section className={`${styles.actionCards} ${styles.proCardWrap}`} aria-label={t("surface.home.accessPro")}>
           <style>{`
             .${styles.homePageFlow} .${styles.hero}{margin-bottom:0!important}
             .${styles.homePageFlow} .${styles.actionCards}.${styles.proCardWrap}{flex:1 1 auto!important;justify-content:center!important;margin-top:0!important}
@@ -148,7 +149,7 @@ export default function Home() {
                 <div className={styles.cardImageWrap}>
                   <Image
                     src="/profissional-equipe.jpg"
-                    alt="Equipe de profissionais da indústria com capacete de proteção"
+                    alt={t("surface.home.photoAlt")}
                     fill
                     sizes="(max-width: 768px) 92vw, 380px"
                     quality={75}
@@ -161,18 +162,15 @@ export default function Home() {
               <div className={styles.cardSideBody}>
                 <div className={styles.proLeadBlock}>
                   <h2 className={styles.proLeadTitle}>
-                    Oportunidades de carreira feitas para quem é da indústria.
+                    {t("surface.home.headline")}
                   </h2>
                 </div>
                 <div className={styles.proCopy}>
                   <p>
-                    Encontre vagas do setor industrial, apresente suas qualificações e destaque sua
-                    experiência para empresas que buscam profissionais. No Recruta Indústria, você
-                    encontra um ambiente especializado, com oportunidades e conexões voltadas
-                    exclusivamente ao mercado industrial.
+                    {t("surface.home.body")}
                   </p>
                   <p className={styles.proCopyGold}>
-                    Cadastre-se gratuitamente, encontre vagas da sua área e dê o próximo passo na sua carreira!
+                    {t("surface.home.cta")}
                   </p>
                 </div>
               </div>
@@ -199,14 +197,14 @@ export default function Home() {
 
           <footer className={styles.footer} suppressHydrationWarning>
             <p className={styles.footerTrust}>
-              Dados protegidos com criptografia, controle de acesso e auditoria contínua.
+              {t("surface.home.trust")}
             </p>
             <p className={styles.footerCopy} suppressHydrationWarning>
-              © {new Date().getFullYear()} Recruta Indústria · Todos os direitos reservados
+              © {new Date().getFullYear()} Recruta Indústria · {t("surface.home.rights")}
             </p>
             <p className={styles.footerPrivacy}>
               <Link href="/termos/lgpd" className="footer-privacy-link">
-                Política de privacidade
+                {t("surface.home.privacy")}
               </Link>
             </p>
             <style>{`.footer-privacy-link{color:#414141!important;font-size:0.58rem!important;font-weight:400!important;letter-spacing:0.01em!important;text-decoration:none!important}.footer-privacy-link:hover{color:#414141!important;text-decoration:underline!important}`}</style>

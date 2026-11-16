@@ -1,4 +1,6 @@
 "use client";
+import { localizeServerText } from "@/lib/i18n/server-text";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useEffect, useMemo, useState } from "react";
 import { DASH, dashCard, dashSectionTitle } from "@/lib/dashboard-theme";
@@ -72,7 +74,7 @@ export default function PropostasEntrevistasEmpresa({
 
   const agendar = async (proposalId: string) => {
     if (!interviewForm.date || !interviewForm.time) {
-      setFeedback({ tone: "err", text: "Preencha data e horário." });
+      setFeedback({ tone: "err", text: exactUi("Preencha data e horário.") });
       return;
     }
     if (interviewForm.locationType === "PLATFORM" && !videoEntrevistaLiberada) {
@@ -97,7 +99,7 @@ export default function PropostasEntrevistasEmpresa({
       });
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao agendar" });
+        setFeedback({ tone: "err", text: localizeServerText(data.error) || exactUi("Erro ao agendar") });
         return;
       }
       setSchedulingId(null);
@@ -110,9 +112,9 @@ export default function PropostasEntrevistasEmpresa({
         observacoes: "",
       });
       onChanged();
-      setFeedback({ tone: "ok", text: "Convite de entrevista enviado ao profissional." });
+      setFeedback({ tone: "ok", text: exactUi("Convite de entrevista enviado ao profissional.") });
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao agendar entrevista" });
+      setFeedback({ tone: "err", text: exactUi("Erro ao agendar entrevista") });
     } finally {
       setSaving(false);
     }
@@ -169,7 +171,7 @@ export default function PropostasEntrevistasEmpresa({
   const excluir = async (id: string) => {
     if (
       !confirm(
-        "Excluir esta proposta? Ela some também para o profissional. Use isso se a empresa se arrependeu de enviar.",
+        exactUi("Excluir esta proposta? Ela some também para o profissional. Use isso se a empresa se arrependeu de enviar."),
       )
     ) {
       return;
@@ -183,13 +185,13 @@ export default function PropostasEntrevistasEmpresa({
       });
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao excluir" });
+        setFeedback({ tone: "err", text: localizeServerText(data.error) || exactUi("Erro ao excluir") });
         return;
       }
       onChanged();
-      setFeedback({ tone: "ok", text: "Proposta excluída." });
+      setFeedback({ tone: "ok", text: exactUi("Proposta excluída.") });
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao excluir" });
+      setFeedback({ tone: "err", text: exactUi("Erro ao excluir") });
     } finally {
       setBusyId(null);
     }
@@ -229,7 +231,7 @@ export default function PropostasEntrevistasEmpresa({
         );
         const cancelData = await cancelRes.json();
         if (!cancelRes.ok) {
-          setFeedback({ tone: "err", text: cancelData.error || "Erro ao cancelar entrevista" });
+          setFeedback({ tone: "err", text: localizeServerText(cancelData.error) || exactUi("Erro ao cancelar entrevista") });
           setBusyId(null);
           return;
         }
@@ -243,12 +245,12 @@ export default function PropostasEntrevistasEmpresa({
       });
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao atualizar" });
+        setFeedback({ tone: "err", text: localizeServerText(data.error) || exactUi("Erro ao atualizar") });
         return;
       }
       onChanged();
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao atualizar acompanhamento" });
+      setFeedback({ tone: "err", text: exactUi("Erro ao atualizar acompanhamento") });
     } finally {
       setBusyId(null);
     }
@@ -389,7 +391,7 @@ export default function PropostasEntrevistasEmpresa({
               Propostas ativas ({listas.propostas.length})
             </h4>
             {listas.propostas.length === 0 ? (
-              <p style={{ margin: 0, fontSize: 12, color: COR_PRETO }}>Nenhuma proposta ativa.</p>
+              <p style={{ margin: 0, fontSize: 12, color: COR_PRETO }}>{exactUi("Nenhuma proposta ativa.")}</p>
             ) : (
               <div style={{ display: "grid", gap: 12 }}>
                 {listas.propostas.map((p) => (
@@ -438,7 +440,7 @@ export default function PropostasEntrevistasEmpresa({
                         {p.cargo} · {formatReaisDisplay(p.salario)}
                       </p>
                       <p style={{ margin: "0 0 2px", fontSize: 14, ...textoDourado, fontWeight: 700 }}>
-                        {STATUS_LABEL[p.status] || p.status}
+                        {exactUi(STATUS_LABEL[p.status] || p.status)}
                       </p>
                       <p style={{ margin: "0 0 2px", fontSize: 14, color: COR_PRETO }}>
                         {comprovante.dataLabel} · {comprovante.horaLabel}
@@ -446,7 +448,7 @@ export default function PropostasEntrevistasEmpresa({
                       <p style={{ margin: "0 0 4px", fontSize: 14, color: COR_PRETO }}>{comprovante.localLabel}</p>
                       {p.interview.observacoes?.trim() ? (
                         <p style={{ margin: "0 0 4px", fontSize: 12, color: COR_PRETO, whiteSpace: "pre-wrap" }}>
-                          <strong>Observação:</strong> {p.interview.observacoes.trim()}
+                          <strong>{exactUi("Observação:")}</strong> {p.interview.observacoes.trim()}
                         </p>
                       ) : null}
                       {funilBotoes(p)}
@@ -463,22 +465,22 @@ export default function PropostasEntrevistasEmpresa({
               Arquivadas ({listas.arquivadas.length})
             </h4>
             {listas.arquivadas.length === 0 ? (
-              <p style={{ margin: 0, fontSize: 12, color: COR_PRETO }}>Nenhum item arquivado.</p>
+              <p style={{ margin: 0, fontSize: 12, color: COR_PRETO }}>{exactUi("Nenhum item arquivado.")}</p>
             ) : (
               <div style={{ display: "grid", gap: 10 }}>
                 {listas.arquivadas.map((p) => {
                   const t = trackingOf(p);
                   const motivo = t.contratado
-                    ? "Contratado"
+                    ? exactUi("Contratado")
                     : t.naoContratado
-                      ? "Não contratado"
+                      ? exactUi("Não contratado")
                       : t.entrevistaCancelada || p.status === "INTERVIEW_CANCELLED"
-                        ? "Entrevista cancelada"
+                        ? exactUi("Entrevista cancelada")
                         : p.status === "DECLINED"
-                          ? "Sem interesse"
+                          ? exactUi("Sem interesse")
                           : p.status === "INTERVIEW_DECLINED"
-                            ? "Entrevista recusada"
-                            : "Arquivada";
+                            ? exactUi("Entrevista recusada")
+                            : exactUi("Arquivada");
                   return (
                     <div key={p.id} style={cardBase}>
                       <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: COR_PRETO }}>

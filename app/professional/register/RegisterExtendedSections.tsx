@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/lib/i18n/translate";
 import React from "react";
 import styles from "./register.module.css";
 import RegisterCollapsibleSection from "@/components/ui/RegisterCollapsibleSection";
@@ -41,13 +42,13 @@ export default function RegisterExtendedSections({
     <>
       <RegisterCollapsibleSection
         emoji="⚙️"
-        title="Máquinas e equipamentos"
+        title={t("registration.ui.maquinas-e-equipamentos")}
         marcador="recomendado"
         defaultOpen={maquinasOpen}
         editar={edicao ? { aberto: edicao.aberto("maquinas"), onEditar: () => edicao.onEditar("maquinas") } : undefined}
       >
         <CheckboxGroup
-          legend="Equipamentos que você opera"
+          legend={t("registration.ui.equipamentos-que-voce-opera")}
           options={MAQUINAS_EQUIPAMENTOS}
           selected={formData.maquinasEquipamentos}
           onChange={(maquinasEquipamentos) => patch({ maquinasEquipamentos })}
@@ -56,13 +57,13 @@ export default function RegisterExtendedSections({
 
       <RegisterCollapsibleSection
         emoji="📋"
-        title="Qualidade e processos"
+        title={t("registration.ui.qualidade-e-processos")}
         marcador="recomendado"
         defaultOpen={qualidadeOpen}
         editar={edicao ? { aberto: edicao.aberto("qualidade"), onEditar: () => edicao.onEditar("qualidade") } : undefined}
       >
         <CheckboxGroup
-          legend="Conhecimentos em qualidade"
+          legend={t("registration.ui.conhecimentos-em-qualidade")}
           options={QUALIDADE_PROCESSOS}
           selected={formData.qualidadeProcessos}
           onChange={(qualidadeProcessos) => patch({ qualidadeProcessos })}
@@ -71,13 +72,13 @@ export default function RegisterExtendedSections({
 
       <RegisterCollapsibleSection
         emoji="💻"
-        title="Informática"
+        title={t("registration.ui.informatica")}
         marcador="recomendado"
         defaultOpen={infoOpen}
         editar={edicao ? { aberto: edicao.aberto("informatica"), onEditar: () => edicao.onEditar("informatica") } : undefined}
       >
         <CheckboxGroup
-          legend="Conhecimentos em informática"
+          legend={t("registration.ui.conhecimentos-em-informatica")}
           options={INFORMATICA_OPCOES}
           selected={formData.informatica}
           onChange={(informatica) => patch({ informatica })}

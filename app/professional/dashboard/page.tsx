@@ -10,6 +10,8 @@ import DashboardThemeToggle from "@/app/components/DashboardThemeToggle";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import InstallAppPrompt from "@/components/pwa/InstallAppPrompt";
 import "@/app/dashboard/dashboard-theme.css";
+import { getBoundLocale } from "@/lib/i18n/active-locale";
+import { t } from "@/lib/i18n/translate";
 import {
   DASH,
   DashboardThemeShell,
@@ -20,7 +22,6 @@ import {
 } from "@/lib/dashboard-theme";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 import { type ResultadoTesteComportamental } from "@/lib/teste-comportamental";
-import { AVISO_RETENCAO_INBOX } from "@/lib/profile/inbox-retention";
 import ProfessionalJobSearch from "@/components/professional/ProfessionalJobSearch";
 import CadastroProfissional from "@/app/professional/register/page";
 import ProfessionalOpportunityBoard from "@/components/professional/ProfessionalOpportunityBoard";
@@ -89,7 +90,7 @@ const btnExcluirStyle: React.CSSProperties = {
 };
 
 function formatarDataHora(iso: string): string {
-  return new Date(iso).toLocaleString("pt-BR", {
+  return new Date(iso).toLocaleString(getBoundLocale() === "en" ? "en" : "pt-BR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -99,11 +100,11 @@ function formatarDataHora(iso: string): string {
 }
 
 function formatarData(iso: string): string {
-  return new Date(iso).toLocaleDateString("pt-BR");
+  return new Date(iso).toLocaleDateString(getBoundLocale() === "en" ? "en" : "pt-BR");
 }
 
 function formatarDataHoraCurta(iso: string): string {
-  return new Date(iso).toLocaleString("pt-BR", {
+  return new Date(iso).toLocaleString(getBoundLocale() === "en" ? "en" : "pt-BR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -113,9 +114,9 @@ function formatarDataHoraCurta(iso: string): string {
 }
 
 function textoContagemVisualizacoesSemana(qtd: number): string {
-  if (qtd === 0) return "Nenhuma visualização esta semana";
-  if (qtd === 1) return "1 visualização esta semana";
-  return `${qtd} visualizações esta semana`;
+  if (qtd === 0) return t("internal.pro.noViewsWeek");
+  if (qtd === 1) return t("internal.pro.oneViewWeek");
+  return `${qtd} ${t("internal.pro.viewsWeek")}`;
 }
 
 export default function DashboardProfissional() {
@@ -235,7 +236,7 @@ export default function DashboardProfissional() {
           }
         }
       } catch {
-        setError("Não foi possível carregar o perfil.");
+        setError(t("internal.pro.loadProfileError"));
         setLoading(false);
       }
     };
@@ -340,7 +341,7 @@ export default function DashboardProfissional() {
       const path = caminhoFotoPerfil(String(uploadData.file?.path || ""))
         || caminhoFotoPerfil(String(uploadData.file?.url || ""));
       if (!path) {
-        alert("A foto foi enviada, mas não foi possível gravá-la no perfil.");
+        alert(t("internal.pro.photoUploadedUnsaved"));
         return;
       }
       const saveRes = await fetch("/api/professional/profile", {
@@ -353,7 +354,7 @@ export default function DashboardProfissional() {
         const err = await saveRes.json().catch(() => ({} as { error?: unknown }));
         alert(typeof err.error === "string" && err.error.trim()
           ? err.error
-          : "A foto foi enviada, mas não ficou salva no perfil.");
+          : t("internal.pro.photoNotSaved"));
         return;
       }
       setProfileData((prev) => (prev ? { ...prev, avatar: path, fotoPerfil: path } : prev));
@@ -362,9 +363,9 @@ export default function DashboardProfissional() {
         if (!base) return prev;
         return { ...base, formData: { ...base.formData, fotoPerfil: path } };
       });
-      alert("Foto salva com sucesso!");
+      alert(t("internal.pro.photoSaved"));
     } catch {
-      alert("Erro ao fazer upload da foto. Tente novamente.");
+      alert(t("internal.pro.photoUploadError"));
     } finally {
       e.target.value = "";
     }
@@ -386,7 +387,7 @@ export default function DashboardProfissional() {
     return (
       <DashboardThemeShell className="ri-dash-prof">
         <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <AmpulhetaLoading label="Carregando perfil..." size={42} color={DASH.gold} />
+          <AmpulhetaLoading label={t("internal.pro.loadingProfile")} size={42} color={DASH.gold} />
         </div>
       </DashboardThemeShell>
     );
@@ -420,7 +421,7 @@ export default function DashboardProfissional() {
   const nomeExibicao = (() => {
     const n = fd.nome ?? profileData.nome;
     if (n && String(n) !== "" && String(n) !== VAZIO) return String(n);
-    return profileData.email?.split("@")[0] || "Usuário";
+    return profileData.email?.split("@")[0] || t("internal.pro.userFallback");
   })();
 
   const toggleMensagemAberta = (id: string) => {
@@ -428,7 +429,7 @@ export default function DashboardProfissional() {
   };
 
   const handleExcluirMensagem = async (messageId: string) => {
-    if (!window.confirm("Excluir esta mensagem?")) return;
+    if (!window.confirm(t("internal.pro.confirmDeleteMessage"))) return;
     try {
       const res = await fetch(`/api/professional/messages?id=${encodeURIComponent(messageId)}`, {
         method: "DELETE",
@@ -439,7 +440,7 @@ export default function DashboardProfissional() {
       setInboxMessages(next);
       if (mensagemAbertaId === messageId) setMensagemAbertaId(null);
     } catch {
-      alert("Não foi possível excluir a mensagem.");
+      alert(t("internal.pro.deleteMessageError"));
     }
   };
 
@@ -456,7 +457,7 @@ export default function DashboardProfissional() {
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Não foi possível enviar a resposta.");
+        alert(data.error || t("internal.pro.replyError"));
         return;
       }
       const reply = data.message as InboxMessage;
@@ -469,14 +470,14 @@ export default function DashboardProfissional() {
       );
       setRespostaTexto((prev) => ({ ...prev, [messageId]: "" }));
     } catch {
-      alert("Erro de rede ao enviar a resposta.");
+      alert(t("internal.pro.replyNetwork"));
     } finally {
       setEnviandoRespostaId(null);
     }
   };
 
   const handleExcluirDica = async (tipId: string) => {
-    if (!window.confirm("Excluir esta dica?")) return;
+    if (!window.confirm(t("internal.pro.confirmDeleteTip"))) return;
     try {
       const res = await fetch(`/api/professional/tips/${tipId}`, {
         method: "DELETE",
@@ -485,7 +486,7 @@ export default function DashboardProfissional() {
       if (!res.ok) throw new Error("Falha ao excluir");
       setTips((prev) => prev.filter((tip) => tip.id !== tipId));
     } catch {
-      alert("Não foi possível excluir a dica.");
+      alert(t("internal.pro.deleteTipError"));
     }
   };
 
@@ -515,13 +516,13 @@ export default function DashboardProfissional() {
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
             <LogoRecruta size="xs" as="span" depth />
-            <span className="ri-dash-access-tag">Acesso Profissional</span>
+            <span className="ri-dash-access-tag">{t("internal.pro.access")}</span>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <DashboardThemeToggle />
             <InstallAppPrompt variant="inline" />
             <button type="button" onClick={handleLogout} style={{ ...btnGold, padding: "5px 12px", fontSize: 11 }}>
-              Sair
+              {t("internal.pro.logout")}
             </button>
           </div>
         </div>
@@ -529,7 +530,7 @@ export default function DashboardProfissional() {
         {/* Abas à direita — mesmo lugar do dashboard empresa */}
         <div
           role="tablist"
-          aria-label="Área de comunicação"
+          aria-label={t("surface.dash.pro.tabs")}
           style={{
             display: "flex",
             flexWrap: "wrap",
@@ -544,11 +545,11 @@ export default function DashboardProfissional() {
         >
           {(
             [
-              { id: "vagas" as const, label: "Buscar vagas", badge: 0 },
-              { id: "oportunidades" as const, label: "Oportunidades", badge: proposals.filter((p) => p.status === "SENT" || p.status === "MORE_INFO" || p.status === "INTERVIEW_PENDING").length },
-              { id: "dicas" as const, label: "Dicas", badge: tips.length },
-              { id: "mensagens" as const, label: "Mensagens", badge: inboxMessages.length },
-              { id: "perfil" as const, label: "Perfil", badge: 0 },
+              { id: "vagas" as const, label: t("surface.dash.pro.jobs"), badge: 0 },
+              { id: "oportunidades" as const, label: t("surface.dash.pro.opportunities"), badge: proposals.filter((p) => p.status === "SENT" || p.status === "MORE_INFO" || p.status === "INTERVIEW_PENDING").length },
+              { id: "dicas" as const, label: t("surface.dash.pro.tips"), badge: tips.length },
+              { id: "mensagens" as const, label: t("surface.dash.pro.messages"), badge: inboxMessages.length },
+              { id: "perfil" as const, label: t("surface.dash.pro.profile"), badge: 0 },
             ]
           ).map((tab) => {
             const ativo = abaDireita === tab.id;
@@ -617,17 +618,17 @@ export default function DashboardProfissional() {
           }}
         >
           <h2 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>
-            Sua conta está criada.
+            {t("internal.pro.accountCreated")}
           </h2>
           <p style={{ margin: "0 0 12px", fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>
-            Complete o cadastro para concorrer às vagas direto do site.
+            {t("internal.pro.completeHint")}
           </p>
           <button
             type="button"
             onClick={() => setAbaDireita("perfil")}
             style={{ ...btnGold, padding: "10px 16px", fontSize: 12 }}
           >
-            Completar cadastro
+            {t("internal.pro.complete")}
           </button>
         </section>
       )}
@@ -695,9 +696,9 @@ export default function DashboardProfissional() {
           }}
         >
           <section className="dash-card" style={{ ...dashCard, padding: "14px 14px 18px", overflow: "visible", boxShadow: DASH.shadow, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-            <div onClick={handleFotoClick} style={{ cursor: "pointer", flexShrink: 0 }} title="Clique para alterar a foto">
+            <div onClick={handleFotoClick} style={{ cursor: "pointer", flexShrink: 0 }} title={t("internal.pro.changePhoto")}>
               {fotoSrc ? (
-                <img src={fotoSrc} alt="Foto do profissional" style={avatarImageStyle(56)} decoding="async" />
+                <img src={fotoSrc} alt={t("internal.pro.photoAlt")} style={avatarImageStyle(56)} decoding="async" />
               ) : (
                 <div style={{ width: 56, height: 56, borderRadius: "50%", background: DASH.input, border: `2px solid #8D6B1F`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>👤</div>
               )}
@@ -717,7 +718,7 @@ export default function DashboardProfissional() {
                   letterSpacing: "0.04em",
                 }}
               >
-                CADASTRO {typeof profileData.profileCompletion === "number" ? profileData.profileCompletion : 0}%
+                {t("internal.pro.registration")} {typeof profileData.profileCompletion === "number" ? profileData.profileCompletion : 0}%
               </span>
             </div>
           </section>
@@ -725,39 +726,39 @@ export default function DashboardProfissional() {
 
           {abaDireita === "oportunidades" && (
             <>
-              <PlatformVideoCall role="professional" title="Chamada de vídeo" peerLabel="empresa" />
+              <PlatformVideoCall role="professional" title={t("internal.pro.videoCall")} peerLabel={t("internal.pro.company").toLowerCase()} />
               <ProfessionalOpportunityBoard proposals={proposals} onChanged={() => void reloadProposals()} />
               <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow, textAlign: "center" }}>
-                <h3 style={{ ...dashTitleProf, margin: "0 0 12px", fontSize: 14 }}>Quem visualizou meu perfil</h3>
+                <h3 style={{ ...dashTitleProf, margin: "0 0 12px", fontSize: 14 }}>{t("internal.pro.whoViewed")}</h3>
                 <p style={{ margin: "0 0 4px", fontSize: 28, fontWeight: 800, color: DASH.gold, lineHeight: 1.1 }}>{weekViewsCount}</p>
                 <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.muted }}>
-                  {weekViewsCount === 0 ? textoContagemVisualizacoesSemana(weekViewsCount) : "esta semana"}
+                  {weekViewsCount === 0 ? textoContagemVisualizacoesSemana(weekViewsCount) : t("internal.pro.thisWeek")}
                 </p>
                 <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
-                  Uma visita registra que a empresa abriu o perfil. Isso não significa interesse em contratação.
+                  {t("internal.pro.viewMeaning")}
                 </p>
                 {lastViewAt ? (
                   <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.text }}>
-                    Última visualização: <strong>{formatarData(lastViewAt)}</strong>
+                    {t("internal.pro.lastView")} <strong>{formatarData(lastViewAt)}</strong>
                     {!companyNamesHidden && lastViewCompany ? <> · <strong>{lastViewCompany}</strong></> : null}
                   </p>
                 ) : (
                   <p style={{ margin: "0 0 12px", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
-                    Ainda não há visita de empresa registrada neste perfil.
+                    {t("internal.pro.noVisit")}
                   </p>
                 )}
                 {companyNamesHidden && premiumOffering ? (
                   <p style={{ margin: 0, fontSize: 11, color: DASH.text, lineHeight: 1.45 }}>
-                    A lista com o nome das empresas é do plano Premium. A contagem da semana continua no plano gratuito.{" "}
-                    <a href="/professional/pagamento" style={{ color: DASH.gold, fontWeight: 700 }}>Conhecer o Premium</a>
+                    {t("internal.pro.premiumNames")}{" "}
+                    <a href="/professional/pagamento" style={{ color: DASH.gold, fontWeight: 700 }}>{t("internal.pro.seePremium")}</a>
                   </p>
                 ) : companyNamesHidden ? (
                   <p style={{ margin: 0, fontSize: 11, color: DASH.text, lineHeight: 1.45 }}>
-                    A contagem da semana continua no plano gratuito.
+                    {t("internal.pro.freeCount")}
                   </p>
                 ) : visitorViews.length > 0 ? (
                   <div style={{ textAlign: "left", marginTop: 8 }}>
-                    <p style={{ margin: "0 0 6px", fontSize: 10, fontWeight: 700, color: DASH.muted, textTransform: "uppercase" }}>Empresas identificadas</p>
+                    <p style={{ margin: "0 0 6px", fontSize: 10, fontWeight: 700, color: DASH.muted, textTransform: "uppercase" }}>{t("internal.pro.identifiedCompanies")}</p>
                     <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 240, overflowY: "auto" }}>
                       {visitorViews.filter((view) => view.companyName).map((view) => (
                         <div key={view.id} style={{ padding: "6px 8px", ...dashInnerBox, fontSize: 11 }}>
@@ -768,7 +769,7 @@ export default function DashboardProfissional() {
                     </div>
                     {visitorViews.some((view) => !view.companyName) ? (
                       <p style={{ margin: "8px 0 0", fontSize: 11, color: DASH.muted, lineHeight: 1.45 }}>
-                        Visitas sem identificação da empresa entram na contagem, mas o nome não é exibido.
+                        {t("internal.pro.unnamedVisits")}
                       </p>
                     ) : null}
                   </div>
@@ -781,10 +782,10 @@ export default function DashboardProfissional() {
           {abaDireita === "dicas" && (
           <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
             <h3 style={{ ...dashTitleProf, margin: "0 0 6px", fontSize: 14 }}>
-              Dicas recebidas ({tips.length})
+              {t("internal.pro.tipsTitle")} ({tips.length})
             </h3>
             <p style={{ margin: "0 0 12px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
-              {AVISO_RETENCAO_INBOX}
+              {t("internal.pro.retention")}
             </p>
             {tips.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: "calc(100vh - 220px)", overflowY: "auto" }}>
@@ -817,24 +818,24 @@ export default function DashboardProfissional() {
                         {tip.message}
                       </p>
                       <p style={{ margin: "2px 0 0", fontSize: 10, color: DASH.muted }}>
-                        {tip.isAnonymous ? "Dica anônima" : "Empresa"} · {formatarDataHoraCurta(tip.createdAt)}
+                        {tip.isAnonymous ? t("internal.pro.anonymousTip") : t("internal.pro.company")} · {formatarDataHoraCurta(tip.createdAt)}
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={() => void handleExcluirDica(tip.id)}
                       style={{ ...btnExcluirStyle, flexShrink: 0 }}
-                      title="Excluir dica"
+                      title={t("internal.pro.deleteTip")}
                     >
-                      Excluir
+                      {t("internal.pro.delete")}
                     </button>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="ri-dash-empty">
-                <strong>Nenhuma dica recebida</strong>
-                <span>Quando uma empresa deixar uma dica no seu perfil, ela aparece aqui.</span>
+                <strong>{t("internal.pro.noTips")}</strong>
+                <span>{t("internal.pro.noTipsHint")}</span>
               </div>
             )}
           </section>
@@ -843,16 +844,16 @@ export default function DashboardProfissional() {
           {abaDireita === "mensagens" && (
           <section className="dash-card" style={{ ...dashCard, padding: 12, boxShadow: DASH.shadow }}>
             <h3 style={{ ...dashTitleProf, margin: "0 0 6px", fontSize: 14 }}>
-              Mensagens ({inboxMessages.length})
+              {t("internal.pro.messagesTitle")} ({inboxMessages.length})
             </h3>
             <p style={{ margin: "0 0 10px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
-              {AVISO_RETENCAO_INBOX} Abra a mensagem para ler e responder à empresa.
+              {t("internal.pro.retention")} {t("internal.pro.openToReply")}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: "calc(100vh - 220px)", overflowY: "auto" }}>
               {inboxMessages.length === 0 ? (
                 <div className="ri-dash-empty">
-                  <strong>Nenhuma mensagem ainda</strong>
-                  <span>Quando uma empresa enviar mensagem, ela aparece aqui para você ler e responder.</span>
+                  <strong>{t("internal.pro.noMessages")}</strong>
+                  <span>{t("internal.pro.noMessagesHint")}</span>
                 </div>
               ) : (
                 inboxMessages.map((msg) => {
@@ -917,9 +918,9 @@ export default function DashboardProfissional() {
                           type="button"
                           onClick={() => handleExcluirMensagem(msg.id)}
                           style={{ ...btnExcluirStyle, flexShrink: 0 }}
-                          title="Excluir mensagem"
+                          title={t("internal.pro.deleteMessage")}
                         >
-                          Excluir
+                          {t("internal.pro.delete")}
                         </button>
                       </div>
                       {aberta && (
@@ -939,7 +940,7 @@ export default function DashboardProfissional() {
                                   }}
                                 >
                                   <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: DASH.muted }}>
-                                    Sua resposta · {formatarDataHoraCurta(r.createdAt)}
+                                    {t("internal.pro.yourReply")} · {formatarDataHoraCurta(r.createdAt)}
                                   </p>
                                   <p style={{ margin: "4px 0 0", fontSize: 12, lineHeight: 1.45, color: DASH.text }}>
                                     {r.body}
@@ -957,7 +958,7 @@ export default function DashboardProfissional() {
                               }
                               rows={3}
                               maxLength={1000}
-                              placeholder="Escreva sua resposta para a empresa..."
+                              placeholder={t("internal.pro.replyPlaceholder")}
                               style={{
                                 width: "100%",
                                 boxSizing: "border-box",
@@ -987,7 +988,7 @@ export default function DashboardProfissional() {
                                     : 1,
                               }}
                             >
-                              {enviandoRespostaId === msg.id ? "Enviando..." : "Responder"}
+                              {enviandoRespostaId === msg.id ? t("surface.jobs.sending") : t("internal.pro.reply")}
                             </button>
                           </div>
                         </div>

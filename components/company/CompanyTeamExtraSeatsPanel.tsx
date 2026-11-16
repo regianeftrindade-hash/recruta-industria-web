@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React from "react";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
@@ -130,7 +131,7 @@ export default function CompanyTeamExtraSeatsPanel({
                   <span style={{ display: "block", fontSize: 18, marginBottom: 4 }}>
                     {pack.emoji}
                   </span>
-                  <strong style={{ color: DASH.gold, fontSize: 12 }}>{pack.title}</strong>
+                  <strong style={{ color: DASH.gold, fontSize: 12 }}>{exactUi(pack.title)}</strong>
                   <span style={{ display: "block", fontSize: 14, fontWeight: 800, marginTop: 4 }}>
                     {pack.priceLabel}
                     <span style={{ fontSize: 11, fontWeight: 500, color: DASH.muted }}>
@@ -155,10 +156,10 @@ export default function CompanyTeamExtraSeatsPanel({
               }}
             >
               {buyingExtra
-                ? "Gerando Pix..."
+                ? exactUi("Gerando Pix...")
                 : selectedPack
                   ? `Comprar e adicionar (${selectedPack.priceLabel}/mês)`
-                  : "Comprar e adicionar usuário"}
+                  : exactUi("Comprar e adicionar usuário")}
             </button>
             <button
               type="button"

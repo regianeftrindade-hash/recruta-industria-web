@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import GoogleSignInButton from "@/app/components/GoogleSignInButton";
 import HomePasswordEye from "@/app/components/HomePasswordEye";
+import { t } from "@/lib/i18n/translate";
 import styles from "@/app/home.module.css";
 
 type HomeAccessRole = "company" | "professional";
@@ -39,7 +40,7 @@ export default function HomeAccessForm({
     setErrorMessage("");
 
     if (!email || !senha) {
-      setErrorMessage("Preencha e-mail e senha.");
+      setErrorMessage(t("surface.home.fillBoth"));
       return;
     }
 
@@ -54,13 +55,13 @@ export default function HomeAccessForm({
       });
 
       if (result?.error) {
-        setErrorMessage("E-mail ou senha inválidos.");
+        setErrorMessage(t("surface.home.badCredentials"));
         setLoading(false);
         return;
       }
 
       if (!result?.ok) {
-        setErrorMessage("Não foi possível entrar.");
+        setErrorMessage(t("surface.home.cannotEnter"));
         setLoading(false);
         return;
       }
@@ -79,20 +80,20 @@ export default function HomeAccessForm({
           router.push(dashboardPath);
           return;
         }
-        setErrorMessage("Esta conta não é de empresa.");
+        setErrorMessage(t("surface.home.notCompany"));
         setLoading(false);
         return;
       }
 
       if (userType === "company") {
-        setErrorMessage("Esta conta é de empresa.");
+        setErrorMessage(t("surface.home.isCompany"));
         setLoading(false);
         return;
       }
 
       router.push(dashboardPath);
     } catch {
-      setErrorMessage("Erro ao processar login.");
+      setErrorMessage(t("surface.home.loginError"));
       setLoading(false);
     }
   };
@@ -126,7 +127,7 @@ export default function HomeAccessForm({
   if (!isCompany) {
     return (
       <div className={`${styles.homeAccess} ${styles.homeAccessPro} ${styles.proLoginPanel}`}>
-        <h4 className={styles.proLoginTitle}>LOGIN</h4>
+        <h4 className={styles.proLoginTitle}>{t("surface.home.login")}</h4>
         <form onSubmit={handleSubmit} className={styles.proLoginForm} noValidate suppressHydrationWarning>
           <div className={styles.proLoginRow}>
             <input
@@ -134,11 +135,11 @@ export default function HomeAccessForm({
               type="email"
               name="professional-email"
               autoComplete="username"
-              placeholder="EMAIL"
+              placeholder={t("surface.home.email")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={styles.proLoginInputPill}
-              aria-label="E-mail"
+              aria-label={t("surface.home.emailLabel")}
               disabled={loading}
               suppressHydrationWarning
             />
@@ -149,28 +150,28 @@ export default function HomeAccessForm({
                   type={showPassword ? "text" : "password"}
                   name="professional-senha"
                   autoComplete="current-password"
-                  placeholder="SENHA"
+                  placeholder={t("surface.home.password")}
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
                   className={styles.proLoginInputPill}
-                  aria-label="Senha"
+                  aria-label={t("surface.home.passwordLabel")}
                   disabled={loading}
                   suppressHydrationWarning
                 />
                 {passwordEye}
               </div>
               <Link href={forgotHref} className={`${styles.homeForgotLink} home-forgot-btn`}>
-                Esqueci a senha
+                {t("surface.home.forgot")}
               </Link>
             </div>
             <div className={styles.proLoginGoogleIconOnly}>
               <GoogleSignInButton onClick={handleGoogle} disabled={loading} />
             </div>
             <button type="submit" className={styles.proLoginAcessarTag} disabled={loading}>
-              Acessar
+              {t("surface.home.enter")}
             </button>
             <Link href={registerHref} className={styles.proLoginRegisterTag}>
-              Cadastre-se
+              {t("surface.home.register")}
             </Link>
           </div>
 
@@ -191,16 +192,16 @@ export default function HomeAccessForm({
       >
         <form onSubmit={handleSubmit} className={styles.homeAccessForm} noValidate suppressHydrationWarning>
           <div className={styles.homeAccessFields}>
-            <span className={styles.empresaAccessTag}>Empresas</span>
+            <span className={styles.empresaAccessTag}>{t("surface.home.companies")}</span>
             <input
               type="email"
               name={`${role}-email`}
               autoComplete="username"
-              placeholder="E-mail"
+              placeholder={t("surface.home.emailLabel")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={styles.homeAccessInput}
-              aria-label="E-mail"
+              aria-label={t("surface.home.emailLabel")}
               disabled={loading}
               suppressHydrationWarning
             />
@@ -210,28 +211,28 @@ export default function HomeAccessForm({
                   type={showPassword ? "text" : "password"}
                   name={`${role}-senha`}
                   autoComplete="current-password"
-                  placeholder="Senha"
+                  placeholder={t("surface.home.passwordLabel")}
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
                   className={styles.homeAccessInput}
-                  aria-label="Senha"
+                  aria-label={t("surface.home.passwordLabel")}
                   disabled={loading}
                   suppressHydrationWarning
                 />
                 {passwordEye}
               </div>
               <Link href={forgotHref} className={`${styles.homeForgotLink} home-forgot-btn`}>
-                Esqueci a senha
+                {t("surface.home.forgot")}
               </Link>
             </div>
             <div className={styles.proLoginGoogleIconOnly}>
               <GoogleSignInButton onClick={handleGoogle} disabled={loading} />
             </div>
             <button type="submit" className={styles.cardCta} disabled={loading}>
-              Acessar
+              {t("surface.home.enter")}
             </button>
             <Link href={registerHref} className={styles.homeAccessRegister}>
-              Cadastre-se
+              {t("surface.home.register")}
             </Link>
           </div>
           {errorMessage ? (

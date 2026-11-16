@@ -1,4 +1,7 @@
 "use client";
+import { localizeServerText } from "@/lib/i18n/server-text";
+import { formatUiDateTime } from "@/lib/i18n/format-ui";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useState } from "react";
 import { botaoPerfil, textoAviso, textoDourado, textoPreto } from "@/lib/ui/perfil-empresa-cores";
@@ -32,7 +35,7 @@ export default function CompanyCandidateMessagesCard({
   const [feedback, setFeedback] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
 
   const handleExcluirMensagem = async (messageId: string) => {
-    if (!window.confirm("Excluir esta mensagem? Itens com mais de 1 mês também são apagados automaticamente.")) {
+    if (!window.confirm(exactUi("Excluir esta mensagem? Itens com mais de 1 mês também são apagados automaticamente."))) {
       return;
     }
     setFeedback(null);
@@ -43,13 +46,13 @@ export default function CompanyCandidateMessagesCard({
       );
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setFeedback({ tone: "err", text: data.error || "Não foi possível excluir a mensagem." });
+        setFeedback({ tone: "err", text: localizeServerText(data.error) || exactUi("Não foi possível excluir a mensagem.") });
         return;
       }
       onConversaChange(conversa.filter((m) => m.id !== messageId));
-      setFeedback({ tone: "ok", text: "Mensagem excluída." });
+      setFeedback({ tone: "ok", text: exactUi("Mensagem excluída.") });
     } catch {
-      setFeedback({ tone: "err", text: "Não foi possível excluir a mensagem." });
+      setFeedback({ tone: "err", text: exactUi("Não foi possível excluir a mensagem.") });
     }
   };
 
@@ -67,22 +70,22 @@ export default function CompanyCandidateMessagesCard({
       });
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao enviar mensagem" });
+        setFeedback({ tone: "err", text: localizeServerText(data.error) || exactUi("Erro ao enviar mensagem") });
         return;
       }
       const created = data.message as Partial<ConversaItem> | undefined;
       const nova: ConversaItem = {
         id: String(created?.id || `local-${Date.now()}`),
-        from: String(created?.from || "Você"),
+        from: String(created?.from || exactUi("Você")),
         body: String(created?.body || text),
         createdAt: String(created?.createdAt || new Date().toISOString()),
         senderRole: "COMPANY",
       };
       onConversaChange([...conversa, nova]);
       setMensagemTexto("");
-      setFeedback({ tone: "ok", text: "Mensagem enviada." });
+      setFeedback({ tone: "ok", text: exactUi("Mensagem enviada.") });
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao enviar mensagem" });
+      setFeedback({ tone: "err", text: exactUi("Erro ao enviar mensagem") });
     } finally {
       setEnviandoMensagem(false);
     }
@@ -92,7 +95,7 @@ export default function CompanyCandidateMessagesCard({
     <section id="empresa-mensagens-candidato" style={{ ...dashCard, padding: 18 }}>
       <h3 style={{ ...goldTitle, margin: "0 0 12px", fontSize: 16 }}>✉️ Mensagem para o candidato</h3>
       <p style={{ fontSize: 11, color: "#000", margin: "0 0 10px", lineHeight: 1.45 }}>
-        {AVISO_RETENCAO_INBOX}
+        {exactUi(AVISO_RETENCAO_INBOX)}
       </p>
       {bloqueado ? (
         <p style={{ fontSize: 13, color: "#000", margin: 0 }}>
@@ -152,7 +155,7 @@ export default function CompanyCandidateMessagesCard({
                         flexShrink: 0,
                         fontFamily: "inherit",
                       }}
-                      title="Excluir mensagem"
+                      title={exactUi("Excluir mensagem")}
                     >
                       Excluir
                     </button>
@@ -168,7 +171,7 @@ export default function CompanyCandidateMessagesCard({
                           textOverflow: "ellipsis",
                         }}
                       >
-                        {isProf ? m.from || "Profissional" : "Você"} · {quando}
+                        {isProf ? m.from || exactUi("Profissional") : exactUi("Você")} · {quando}
                       </p>
                       <p
                         style={{
@@ -194,7 +197,7 @@ export default function CompanyCandidateMessagesCard({
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {isProf ? "Recebida" : "Enviada"}
+                      {isProf ? exactUi("Recebida") : exactUi("Enviada")}
                     </span>
                   </div>
                 );
@@ -210,7 +213,7 @@ export default function CompanyCandidateMessagesCard({
             }}
             rows={4}
             maxLength={1000}
-            placeholder="Escreva sua mensagem para o profissional..."
+            placeholder={exactUi("Escreva sua mensagem para o profissional...")}
             style={{
               width: "100%",
               boxSizing: "border-box",
@@ -249,7 +252,7 @@ export default function CompanyCandidateMessagesCard({
               opacity: enviandoMensagem || !mensagemTexto.trim() ? 0.7 : 1,
             }}
           >
-            {enviandoMensagem ? "Enviando..." : "Enviar mensagem"}
+            {enviandoMensagem ? exactUi("Enviando...") : exactUi("Enviar mensagem")}
           </button>
         </>
       )}

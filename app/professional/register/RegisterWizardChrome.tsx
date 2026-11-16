@@ -1,12 +1,13 @@
 "use client";
 
+import { t } from "@/lib/i18n/translate";
 import styles from "./register.module.css";
 
 export const REGISTER_WIZARD_STEPS = [
-  { id: "essenciais", label: "Essenciais" },
-  { id: "carreira", label: "Carreira" },
-  { id: "diferenciais", label: "Diferenciais" },
-  { id: "finalizar", label: "Finalizar" },
+  { id: "essenciais", label: t("registration.ui.essenciais") },
+  { id: "carreira", label: t("registration.ui.carreira") },
+  { id: "diferenciais", label: t("registration.ui.diferenciais") },
+  { id: "finalizar", label: t("registration.ui.finalizar") },
 ] as const;
 
 type Props = {
@@ -33,7 +34,7 @@ export default function RegisterWizardChrome({ step, onStepChange, onContinue }:
 
   return (
     <div className={styles.wizardChrome}>
-      <ol className={styles.wizardSteps} aria-label="Etapas do cadastro">
+      <ol className={styles.wizardSteps} aria-label={t("registration.ui.etapas-do-cadastro")}>
         {REGISTER_WIZARD_STEPS.map((s, i) => {
           const active = i === step;
           const done = i < step;

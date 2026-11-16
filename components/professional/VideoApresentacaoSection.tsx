@@ -2,6 +2,8 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import SecureVideoPlayer from "@/components/shared/SecureVideoPlayer";
+import { t } from "@/lib/i18n/translate";
+import { localizeServerText } from "@/lib/i18n/server-text";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import {
   DASH,
@@ -152,7 +154,7 @@ export default function VideoApresentacaoSection({
     revokePreview();
 
     if (!navigator.mediaDevices?.getUserMedia) {
-      setPermissionError("Seu navegador não suporta gravação de vídeo. Use “Enviar vídeo existente”.");
+      setPermissionError(t("rest.video.unsupported"));
       return;
     }
 
@@ -169,7 +171,7 @@ export default function VideoApresentacaoSection({
       setMode("camera");
     } catch {
       setPermissionError(
-        "Não foi possível acessar câmera e microfone. Verifique as permissões do navegador e tente novamente.",
+        t("rest.video.permission"),
       );
       setMode("idle");
     }
@@ -234,18 +236,18 @@ export default function VideoApresentacaoSection({
 
   const saveBlob = async (blob: Blob, fileName: string) => {
     if (blob.size > VIDEO_APRESENTACAO_MAX_BYTES) {
-      setStatusMessage("Arquivo muito grande (máx. 25 MB).");
+      setStatusMessage(t("rest.video.tooBig"));
       return false;
     }
 
     const mime = resolveVideoMime({ name: fileName, type: blob.type });
     if (!mime) {
-      setStatusMessage("Formato não permitido. Use MP4, MOV ou WebM.");
+      setStatusMessage(t("rest.video.badFormat"));
       return false;
     }
 
     setSaving(true);
-    setStatusMessage("Enviando vídeo...");
+    setStatusMessage(t("rest.video.uploading"));
     try {
       const formData = new FormData();
       formData.append("file", new File([blob], fileName, { type: mime }));
@@ -264,17 +266,17 @@ export default function VideoApresentacaoSection({
         revokePreview();
         resetRecorderState();
         setMode("idle");
-        setStatusMessage("Vídeo salvo no seu perfil.");
+        setStatusMessage(t("rest.video.saved"));
         await refreshVideoStatus();
         return true;
       }
 
       if (postRes.status !== 413) {
-        setStatusMessage(postData.error || "Erro ao salvar vídeo.");
+        setStatusMessage(localizeServerText(postData.error) || t("rest.video.saveError"));
         return false;
       }
 
-      setStatusMessage("Tentando envio alternativo...");
+      setStatusMessage(t("rest.video.fallback"));
       const prepareRes = await fetch("/api/professional/video-apresentacao/prepare", {
         method: "POST",
         credentials: "include",
@@ -283,7 +285,7 @@ export default function VideoApresentacaoSection({
       });
       const prepareData = await prepareRes.json();
       if (!prepareRes.ok) {
-        setStatusMessage(prepareData.error || "Erro ao preparar upload.");
+        setStatusMessage(localizeServerText(prepareData.error) || t("rest.video.prepareError"));
         return false;
       }
 
@@ -298,7 +300,7 @@ export default function VideoApresentacaoSection({
 
       if (!uploadRes.ok) {
         setStatusMessage(
-          `Erro ao enviar o arquivo (${uploadRes.status}). Tente um vídeo MP4 menor.`,
+          t("fix.video.uploadFail").replace("{status}", String(uploadRes.status)),
         );
         return false;
       }
@@ -311,7 +313,7 @@ export default function VideoApresentacaoSection({
       });
       const completeData = await completeRes.json();
       if (!completeRes.ok) {
-        setStatusMessage(completeData.error || "Erro ao salvar vídeo.");
+        setStatusMessage(localizeServerText(completeData.error) || t("rest.video.saveError"));
         return false;
       }
 
@@ -321,11 +323,11 @@ export default function VideoApresentacaoSection({
       revokePreview();
       resetRecorderState();
       setMode("idle");
-      setStatusMessage("Vídeo salvo no seu perfil.");
+      setStatusMessage(t("rest.video.saved"));
       await refreshVideoStatus();
       return true;
     } catch {
-      setStatusMessage("Erro de rede ao salvar vídeo.");
+      setStatusMessage(t("rest.video.networkSave"));
       return false;
     } finally {
       setSaving(false);
@@ -337,7 +339,7 @@ export default function VideoApresentacaoSection({
 
     const previewDuration = previewVideoRef.current?.duration;
     if (!isVideoDurationAllowed(previewDuration)) {
-      setStatusMessage(`O vídeo deve ter no máximo ${VIDEO_APRESENTACAO_MAX_SECONDS} segundos.`);
+      setStatusMessage(t("fix.video.tooLong").replace("{seconds}", String(VIDEO_APRESENTACAO_MAX_SECONDS)));
       return;
     }
 
@@ -348,7 +350,7 @@ export default function VideoApresentacaoSection({
   const handlePreviewMetadata = (duration: number) => {
     if (!isVideoDurationAllowed(duration)) {
       setStatusMessage(
-        `O vídeo deve ter no máximo ${VIDEO_APRESENTACAO_MAX_SECONDS} segundos.`,
+        t("fix.video.tooLong").replace("{seconds}", String(VIDEO_APRESENTACAO_MAX_SECONDS)),
       );
       discardPreview();
     }
@@ -365,18 +367,18 @@ export default function VideoApresentacaoSection({
     const mime = resolveVideoMime(file);
 
     if (!mime) {
-      setStatusMessage("Formato não permitido. Use MP4, MOV ou WebM.");
+      setStatusMessage(t("rest.video.badFormat"));
       return;
     }
 
     if (file.size > VIDEO_APRESENTACAO_MAX_BYTES) {
-      setStatusMessage("Arquivo muito grande (máx. 25 MB).");
+      setStatusMessage(t("rest.video.tooBig"));
       return;
     }
 
     const duration = await readVideoDurationSeconds(file);
     if (!isVideoDurationAllowed(duration)) {
-      setStatusMessage(`O vídeo deve ter no máximo ${VIDEO_APRESENTACAO_MAX_SECONDS} segundos.`);
+      setStatusMessage(t("fix.video.tooLong").replace("{seconds}", String(VIDEO_APRESENTACAO_MAX_SECONDS)));
       return;
     }
 
@@ -389,13 +391,13 @@ export default function VideoApresentacaoSection({
 
     if (duration == null) {
       setStatusMessage(
-        "Prévia carregada. Confira a duração no player antes de salvar (máx. 30 segundos).",
+        t("rest.video.previewReady"),
       );
     }
   };
 
   const handleRemoveSaved = async () => {
-    if (!confirm("Remover o vídeo de apresentação do perfil?")) return;
+    if (!confirm(t("rest.video.confirmRemove"))) return;
     setSaving(true);
     try {
       const res = await fetch("/api/professional/video-apresentacao", {
@@ -404,14 +406,14 @@ export default function VideoApresentacaoSection({
       });
       if (!res.ok) {
         const data = await res.json();
-        setStatusMessage(data.error || "Erro ao remover vídeo.");
+        setStatusMessage(localizeServerText(data.error) || t("rest.video.removeError"));
         return;
       }
       setHasVideo(false);
       onVideoChange?.(false);
-      setStatusMessage("Vídeo removido.");
+      setStatusMessage(t("rest.video.removed"));
     } catch {
-      setStatusMessage("Erro de rede ao remover vídeo.");
+      setStatusMessage(t("rest.video.networkRemove"));
     } finally {
       setSaving(false);
     }
@@ -462,7 +464,7 @@ export default function VideoApresentacaoSection({
         <>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
             <h3 style={{ ...dashSectionTitle, margin: 0, fontSize: 14 }}>
-              Vídeo de apresentação
+              {t("fix.video.title")}
             </h3>
             {hasVideo && mode === "idle" && (
               <span
@@ -477,13 +479,12 @@ export default function VideoApresentacaoSection({
                   letterSpacing: "0.02em",
                 }}
               >
-                Vídeo anexado ao perfil
+                {t("rest.video.attached")}
               </span>
             )}
           </div>
           <p style={{ margin: "0 0 10px", fontSize: 11, color: DASH.muted, lineHeight: 1.5 }}>
-            Grave um vídeo curto de até 30 segundos para mostrar sua experiência, postura profissional e
-            disponibilidade para empresas.
+            {t("rest.video.intro")}
           </p>
           <p
             style={{
@@ -495,15 +496,14 @@ export default function VideoApresentacaoSection({
               ...dashInnerBox,
             }}
           >
-            <strong>Aviso:</strong> Seja objetivo. Fale seu nome, área de experiência, principais
-            habilidades e disponibilidade.
+            <strong>{t("rest.video.warning")}</strong> {t("rest.video.warningBody")}
           </p>
         </>
       )}
 
       {compact && (
         <p style={{ margin: "0 0 8px", fontSize: 11, color: "var(--dash-text, #414141)", lineHeight: 1.45, textAlign: "right" }}>
-          Vídeo curto de até 30 segundos (MP4, MOV ou WebM).
+          {t("rest.video.compact")}
         </p>
       )}
 
@@ -548,10 +548,10 @@ export default function VideoApresentacaoSection({
                 </span>
                 <div>
                   <p style={{ margin: 0, fontSize: 12, color: DASH.text, fontWeight: 700 }}>
-                    Seu vídeo está salvo
+                    {t("rest.video.savedTitle")}
                   </p>
                   <p style={{ margin: "2px 0 0", fontSize: 10, color: DASH.muted, lineHeight: 1.4 }}>
-                    Empresas com perfil desbloqueado poderão assistir à sua apresentação.
+                    {t("rest.video.savedHint")}
                   </p>
                 </div>
               </div>
@@ -560,14 +560,14 @@ export default function VideoApresentacaoSection({
           )}
           <div style={btnRowStyle}>
             <button type="button" onClick={() => void openCamera()} style={compact ? btnCompactGold : btnSecondary}>
-              Gravar vídeo agora
+              {t("rest.video.record")}
             </button>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               style={btnSecondary}
             >
-              Enviar vídeo existente
+              {t("rest.video.uploadExisting")}
             </button>
             <button
               type="button"
@@ -575,7 +575,7 @@ export default function VideoApresentacaoSection({
               disabled={saving}
               style={{ ...btnSecondary, borderColor: "#a44", color: "#f88" }}
             >
-              Remover vídeo
+              {t("rest.video.remove")}
             </button>
           </div>
         </div>
@@ -586,10 +586,10 @@ export default function VideoApresentacaoSection({
           {compact && <div style={previewPlaceholderStyle} aria-hidden>🎬</div>}
           <div style={btnRowStyle}>
             <button type="button" onClick={() => void openCamera()} style={compact ? btnCompactGold : { ...btnGold, padding: "10px 14px", fontSize: 12 }}>
-              Gravar vídeo agora
+              {t("rest.video.record")}
             </button>
             <button type="button" onClick={() => fileInputRef.current?.click()} style={btnSecondary}>
-              Enviar vídeo existente
+              {t("rest.video.uploadExisting")}
             </button>
           </div>
         </div>
@@ -641,7 +641,7 @@ export default function VideoApresentacaoSection({
           <div style={btnRowStyle}>
             {mode === "camera" && (
               <button type="button" onClick={startRecording} style={{ ...btnGold, padding: "8px 14px", fontSize: 12 }}>
-                Iniciar gravação
+                {t("fix.video.start")}
               </button>
             )}
             {mode === "recording" && (
@@ -667,7 +667,7 @@ export default function VideoApresentacaoSection({
       {mode === "preview" && previewUrl && (
         <div style={{ marginBottom: 12 }}>
           <p style={{ margin: "0 0 8px", fontSize: 10, color: DASH.muted, fontWeight: 700 }}>
-            Prévia do vídeo
+            {t("fix.video.preview")}
           </p>
           <video
             ref={previewVideoRef}
@@ -683,7 +683,7 @@ export default function VideoApresentacaoSection({
             }}
             onError={() => {
               setStatusMessage(
-                "Não foi possível reproduzir este vídeo no navegador. Tente MP4 (H.264) ou grave pelo botão “Gravar vídeo agora”.",
+                t("rest.video.playError"),
               );
             }}
             style={{
@@ -703,7 +703,7 @@ export default function VideoApresentacaoSection({
               onClick={() => previewVideoRef.current?.play()}
               style={btnSecondary}
             >
-              Assistir prévia
+              {t("fix.video.watch")}
             </button>
             <button
               type="button"
@@ -711,7 +711,7 @@ export default function VideoApresentacaoSection({
               disabled={saving}
               style={{ ...btnGold, padding: "8px 14px", fontSize: 12, opacity: saving ? 0.7 : 1 }}
             >
-              {saving ? "Salvando..." : "Salvar"}
+              {saving ? t("surface.reset.saving") : t("rest.video.save")}
             </button>
             <button type="button" onClick={discardPreview} disabled={saving} style={btnSecondary}>
               Descartar

@@ -1,4 +1,6 @@
 "use client";
+import { formatUiDate, uiIntlLocale } from "@/lib/i18n/format-ui";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React from "react";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
@@ -16,6 +18,8 @@ import {
   type CompanyDashboardActiveTab,
 } from "@/components/company/CompanyDashboardTabContext";
 import FotoPerfilAvatar from "@/components/shared/FotoPerfilAvatar";
+import { t } from "@/lib/i18n/translate";
+import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
 
 export type CompanyDashboardTabId =
   | "vagas"
@@ -53,17 +57,18 @@ const BASE = "/company/dashboard-empresa";
 export const COMPANY_DASH_TABS: Array<{
   id: CompanyDashboardTabId | "inicio";
   label: string;
+  labelKey: MessageKey;
   href: string;
 }> = [
-  { id: "vagas", label: "Publicar vagas", href: BASE },
-  { id: "inicio", label: "Caça Talentos", href: `${BASE}?tab=inicio` },
-  { id: "entrevistas", label: "Entrevistas", href: `${BASE}/entrevistas` },
-  { id: "equipe", label: "Equipe", href: `${BASE}/equipe` },
-  { id: "banco", label: "Banco", href: `${BASE}/banco` },
-  { id: "alertas", label: "Alertas", href: `${BASE}/alertas` },
-  { id: "contato", label: "Contato Recruta", href: `${BASE}/contato` },
-  { id: "perfil", label: "Perfil", href: `${BASE}?tab=perfil` },
-  { id: "meu-plano", label: "Meu Plano", href: `${BASE}/meu-plano` },
+  { id: "vagas", label: "Publicar vagas", labelKey: "surface.dash.company.jobs", href: BASE },
+  { id: "inicio", label: "Caça Talentos", labelKey: "surface.dash.company.search", href: `${BASE}?tab=inicio` },
+  { id: "entrevistas", label: "Entrevistas", labelKey: "surface.dash.company.interviews", href: `${BASE}/entrevistas` },
+  { id: "equipe", label: "Equipe", labelKey: "surface.dash.company.team", href: `${BASE}/equipe` },
+  { id: "banco", label: "Banco", labelKey: "surface.dash.company.bank", href: `${BASE}/banco` },
+  { id: "alertas", label: "Alertas", labelKey: "surface.dash.company.alerts", href: `${BASE}/alertas` },
+  { id: "contato", label: "Contato Recruta", labelKey: "surface.dash.company.contact", href: `${BASE}/contato` },
+  { id: "perfil", label: "Perfil", labelKey: "surface.dash.company.profile", href: `${BASE}?tab=perfil` },
+  { id: "meu-plano", label: "Meu Plano", labelKey: "surface.dash.company.plan", href: `${BASE}/meu-plano` },
 ];
 
 function UpgradeNote({ texto }: { texto: string }) {
@@ -87,7 +92,7 @@ export function CompanyDashboardNav({
 
   return (
     <nav
-      aria-label="Páginas do dashboard"
+      aria-label={t("fix.aria.dashboardPages")}
       style={{
         display: "flex",
         flexWrap: "wrap",
@@ -137,7 +142,7 @@ export function CompanyDashboardNav({
               fontFamily: "inherit",
             }}
           >
-            <span>{tab.label}</span>
+            <span>{t(tab.labelKey)}</span>
             {typeof badge === "number" && badge > 0 ? (
               <span
                 style={{
@@ -212,13 +217,16 @@ export default function CompanyDashboardTabPanel({
   }
   const cargosOrdenados = [...porCargo.keys()].sort((a, b) => a.localeCompare(b, "pt-BR"));
 
-  const titulo = COMPANY_DASH_TABS.find((t) => t.id === tab)?.label || "";
+  const titulo = (() => {
+    const atual = COMPANY_DASH_TABS.find((item) => item.id === tab);
+    return atual ? t(atual.labelKey) : "";
+  })();
 
   let conteudo: React.ReactNode = null;
 
   if (tab === "banco") {
     conteudo = !canUseTalentBank ? (
-      <UpgradeNote texto="Banco de talentos disponível a partir do plano Premium." />
+      <UpgradeNote texto={exactUi("Banco de talentos disponível a partir do plano Premium.")} />
     ) : (
       <div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginBottom: 14 }}>
@@ -230,7 +238,7 @@ export default function CompanyDashboardTabPanel({
               key={l.id}
               type="button"
               onClick={() => onOpenList(l)}
-              title="Abrir os perfis desta lista na vitrine"
+              title={exactUi("Abrir os perfis desta lista na vitrine")}
               style={{
                 background: "transparent",
                 border: `2px solid #8D6B1F`,
@@ -268,7 +276,7 @@ export default function CompanyDashboardTabPanel({
                       key={p.id}
                       type="button"
                       onClick={() => onOpenProfile(p.id)}
-                      title="Abrir perfil"
+                      title={exactUi("Abrir perfil")}
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -343,8 +351,8 @@ export default function CompanyDashboardTabPanel({
                   }}
                 >
                   {ev.interviewStatus === "CONFIRMED"
-                    ? "✓ Confirmada pelo profissional"
-                    : "Aguardando confirmação"}{" "}
+                    ? exactUi("✓ Confirmada pelo profissional")
+                    : exactUi("Aguardando confirmação")}{" "}
                   · clique para abrir o perfil
                 </p>
               </button>
@@ -354,7 +362,7 @@ export default function CompanyDashboardTabPanel({
       );
   } else if (tab === "alertas") {
     conteudo = !canUseAlerts ? (
-      <UpgradeNote texto="Alertas de vagas disponíveis a partir do plano Premium." />
+      <UpgradeNote texto={exactUi("Alertas de vagas disponíveis a partir do plano Premium.")} />
     ) : (
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
@@ -366,7 +374,7 @@ export default function CompanyDashboardTabPanel({
           </button>
         </div>
         {alerts.length === 0 ? (
-          <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Nenhum alerta configurado.</p>
+          <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{exactUi("Nenhum alerta configurado.")}</p>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
             {alerts.map((a) => (
@@ -406,7 +414,7 @@ export default function CompanyDashboardTabPanel({
                       >
                         <FotoPerfilAvatar value={m.avatar} size={28} />
                         <span style={{ flex: 1, minWidth: 0 }}>
-                        <strong>{m.nome || "Profissional"}</strong>
+                        <strong>{m.nome || exactUi("Profissional")}</strong>
                         <span style={{ color: DASH.muted }}> · {m.cargo || ""}</span>
                         <span style={{ float: "right", color: DASH.gold, fontWeight: 700 }}>🎯 {m.score}%</span>
                         </span>

@@ -7,6 +7,7 @@ declare module "next-auth" {
       email?: string;
       userType?: string;
       isAdmin?: boolean;
+      locale?: string;
     } & DefaultSession["user"];
   }
 
@@ -23,6 +24,7 @@ declare module "next-auth/jwt" {
     email?: string;
     userType?: string;
     isAdmin?: boolean;
+    locale?: string;
     provider?: string;
   }
 }

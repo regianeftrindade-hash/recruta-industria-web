@@ -1,7 +1,8 @@
+import { t } from "@/lib/i18n/translate";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Cadastro empresa",
+  title: t("registration.ui.cadastro-empresa"),
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

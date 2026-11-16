@@ -5,6 +5,8 @@ import { DASH, dashCard, dashSectionTitle } from "@/lib/dashboard-theme";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
 import { formatInterviewComprovante } from "@/lib/company/job-proposals-shared";
+import { t } from "@/lib/i18n/translate";
+import { localizeServerText } from "@/lib/i18n/server-text";
 
 type Props = {
   proposals: JobProposalDTO[];
@@ -64,16 +66,16 @@ export default function ProfessionalInterviewsPanel({ proposals, onChanged }: Pr
       });
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao responder entrevista" });
+        setFeedback({ tone: "err", text: localizeServerText(data.error) || t("fix.interview.respondError") });
         return;
       }
       onChanged();
       setFeedback({
         tone: "ok",
-        text: action === "CONFIRM" ? "Entrevista confirmada." : "Entrevista recusada.",
+        text: action === "CONFIRM" ? t("fix.interview.confirmed") : t("fix.interview.declined"),
       });
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao responder entrevista" });
+      setFeedback({ tone: "err", text: t("fix.interview.respondError") });
     } finally {
       setBusyId(null);
     }
@@ -90,7 +92,7 @@ export default function ProfessionalInterviewsPanel({ proposals, onChanged }: Pr
       const body: Record<string, unknown> = { [campo]: !atual };
       if (campo === "entrevistaCancelada" && !atual) {
         const justification = window.prompt(
-          "Justificativa do cancelamento da entrevista (opcional):",
+          t("fix.interview.cancelPrompt"),
           "",
         );
         if (justification === null) {
@@ -107,12 +109,12 @@ export default function ProfessionalInterviewsPanel({ proposals, onChanged }: Pr
       });
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao atualizar" });
+        setFeedback({ tone: "err", text: localizeServerText(data.error) || t("fix.interview.updateError") });
         return;
       }
       onChanged();
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao atualizar histórico" });
+      setFeedback({ tone: "err", text: t("fix.interview.historyError") });
     } finally {
       setBusyId(null);
     }
@@ -148,10 +150,10 @@ export default function ProfessionalInterviewsPanel({ proposals, onChanged }: Pr
   return (
     <section style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
       <h3 style={{ ...dashSectionTitle, margin: "0 0 6px", fontSize: 14 }}>
-        Entrevistas agendadas ({entrevistas.length})
+        {t("fix.interview.title").replace("{count}", String(entrevistas.length))}
       </h3>
       <p style={{ margin: "0 0 10px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
-        Use Contatado / Teste / Contratado no fim da linha para o histórico.
+        {t("fix.interview.hint")}
       </p>
 
       {feedback && (
@@ -170,15 +172,15 @@ export default function ProfessionalInterviewsPanel({ proposals, onChanged }: Pr
 
       {entrevistas.length === 0 ? (
         <div className="ri-dash-empty">
-          <strong>Nenhuma entrevista agendada</strong>
-          <span>Quando uma empresa marcar entrevista após o seu interesse, ela aparece aqui.</span>
+          <strong>{t("fix.interview.empty")}</strong>
+          <span>{t("fix.interview.emptyHint")}</span>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {entrevistas.map((p) => {
             if (!p.interview) return null;
             const busy = busyId === p.id;
-            const t = p.tracking || {
+            const track = p.tracking || {
               contatado: false,
               entrevistado: false,
               emTeste: false,
@@ -245,7 +247,7 @@ export default function ProfessionalInterviewsPanel({ proposals, onChanged }: Pr
                         onClick={() => void responderEntrevista(p.id, "CONFIRM")}
                         style={{ ...btnGold, padding: "5px 8px", fontSize: 10, whiteSpace: "nowrap" }}
                       >
-                        Confirmar
+                        {t("fix.interview.confirm")}
                       </button>
                       <button
                         type="button"
@@ -253,43 +255,43 @@ export default function ProfessionalInterviewsPanel({ proposals, onChanged }: Pr
                         onClick={() => void responderEntrevista(p.id, "DECLINE")}
                         style={{ ...btnGhost, color: "#e57373" }}
                       >
-                        Recusar
+                        {t("fix.proposal.decline")}
                       </button>
                     </>
                   )}
                   <button
                     type="button"
                     disabled={busy}
-                    onClick={() => void toggleFunil(p.id, "contatado", t.contatado)}
-                    style={chip(t.contatado)}
+                    onClick={() => void toggleFunil(p.id, "contatado", track.contatado)}
+                    style={chip(track.contatado)}
                   >
-                    {t.contatado ? "✓ " : ""}Contatado
+                    {track.contatado ? "✓ " : ""}{t("fix.interview.contacted")}
                   </button>
                   <button
                     type="button"
                     disabled={busy}
-                    onClick={() => void toggleFunil(p.id, "emTeste", t.emTeste)}
-                    style={chip(t.emTeste)}
+                    onClick={() => void toggleFunil(p.id, "emTeste", track.emTeste)}
+                    style={chip(track.emTeste)}
                   >
-                    {t.emTeste ? "✓ " : ""}Teste
+                    {track.emTeste ? "✓ " : ""}{t("fix.interview.test")}
                   </button>
                   <button
                     type="button"
                     disabled={busy}
                     onClick={() =>
-                      void toggleFunil(p.id, "entrevistaCancelada", t.entrevistaCancelada)
+                      void toggleFunil(p.id, "entrevistaCancelada", track.entrevistaCancelada)
                     }
-                    style={chip(t.entrevistaCancelada)}
+                    style={chip(track.entrevistaCancelada)}
                   >
-                    {t.entrevistaCancelada ? "✓ " : ""}Entrevista cancelada
+                    {track.entrevistaCancelada ? "✓ " : ""}{t("fix.interview.cancelled")}
                   </button>
                   <button
                     type="button"
                     disabled={busy}
-                    onClick={() => void toggleFunil(p.id, "contratado", t.contratado)}
-                    style={chip(t.contratado)}
+                    onClick={() => void toggleFunil(p.id, "contratado", track.contratado)}
+                    style={chip(track.contratado)}
                   >
-                    {t.contratado ? "✓ " : ""}Contratado
+                    {track.contratado ? "✓ " : ""}{t("fix.interview.hired")}
                   </button>
                 </div>
               </article>

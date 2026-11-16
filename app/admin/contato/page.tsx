@@ -1,8 +1,12 @@
 'use client';
+import { localizeServerText } from "@/lib/i18n/server-text";
+import { uiIntlLocale } from "@/lib/i18n/format-ui";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { Suspense, useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import styles from '../admin.module.css';
+import { formatInTimeZone } from '@/lib/datetime/format-in-zone';
 
 type InboxMessage = {
   id: string;
@@ -22,13 +26,12 @@ type InboxMessageDetail = InboxMessage & {
 function formatDate(iso: string | null): string {
   if (!iso) return '—';
   try {
-    return new Date(iso).toLocaleString('pt-BR', {
+    return formatInTimeZone(iso, uiIntlLocale(), 'America/Sao_Paulo', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: 'America/Sao_Paulo',
     });
   } catch {
     return '—';
@@ -76,7 +79,7 @@ function CaixaEmailPage() {
       setInboxConfigured(inbox.configured === true);
       setMailbox(inbox.mailbox || null);
       setMessages(inbox.messages || []);
-      setInboxError(inbox.error || '');
+      setInboxError(localizeServerText(inbox.error) || '');
     } catch {
       setInboxError('Erro ao carregar a caixa de e-mail.');
     } finally {
@@ -126,7 +129,7 @@ function CaixaEmailPage() {
       const res = await fetch(`/api/admin/inbox?uid=${uid}&todas=1`, { credentials: 'include' });
       const data = await res.json();
       if (!res.ok || !data.message) {
-        setMessageError(data.error || 'Não foi possível abrir a mensagem.');
+        setMessageError(localizeServerText(data.error) || exactUi("Não foi possível abrir a mensagem."));
         return;
       }
       const message = data.message as InboxMessageDetail;
@@ -145,7 +148,7 @@ function CaixaEmailPage() {
         );
       }
     } catch {
-      setMessageError('Erro ao carregar a mensagem.');
+      setMessageError(exactUi("Erro ao carregar a mensagem."));
     } finally {
       setMessageLoading(false);
     }
@@ -186,7 +189,7 @@ function CaixaEmailPage() {
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(data.error || 'Não foi possível enviar o e-mail.');
+      throw new Error(localizeServerText(data.error) || exactUi("Não foi possível enviar o e-mail."));
     }
     return data as { to?: string; attached?: boolean };
   }
@@ -201,14 +204,14 @@ function CaixaEmailPage() {
       setFiles([]);
       setAttachResume(false);
     } catch (sendError) {
-      setStatus(sendError instanceof Error ? sendError.message : 'Erro de rede ao enviar o e-mail.');
+      setStatus(sendError instanceof Error ? sendError.message : exactUi("Erro de rede ao enviar o e-mail."));
     } finally {
       setBusy(false);
     }
   };
 
   const removeMessage = async (uid: number) => {
-    if (!window.confirm('Excluir este e-mail da caixa? Não dá para desfazer.')) return;
+    if (!window.confirm(exactUi("Excluir este e-mail da caixa? Não dá para desfazer."))) return;
     setBusy(true);
     setStatus('');
     try {
@@ -220,7 +223,7 @@ function CaixaEmailPage() {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setStatus(data.error || 'Não foi possível excluir o e-mail.');
+        setStatus(localizeServerText(data.error) || exactUi("Não foi possível excluir o e-mail."));
         return;
       }
       setMessages((prev) => prev.filter((msg) => Number(msg.uid ?? msg.id) !== uid));
@@ -230,7 +233,7 @@ function CaixaEmailPage() {
         setReplyText('');
         setReplyFiles([]);
       }
-      setStatus('E-mail excluído.');
+      setStatus(exactUi("E-mail excluído."));
     } catch {
       setStatus('Erro de rede ao excluir o e-mail.');
     } finally {
@@ -254,7 +257,7 @@ function CaixaEmailPage() {
       setReplyText('');
       setReplyFiles([]);
     } catch (sendError) {
-      setStatus(sendError instanceof Error ? sendError.message : 'Erro de rede ao enviar a resposta.');
+      setStatus(sendError instanceof Error ? sendError.message : exactUi("Erro de rede ao enviar a resposta."));
     } finally {
       setBusy(false);
     }
@@ -279,7 +282,7 @@ function CaixaEmailPage() {
     <div className={styles.main}>
       <div className={styles.hero}>
         <div>
-          <h1 className={styles.heroTitle}>CAIXA DE E-MAIL</h1>
+          <h1 className={styles.heroTitle}>{exactUi("CAIXA DE E-MAIL")}</h1>
           <p className={styles.heroMeta}>
             Leia, responda e envie por aqui.
             {mailbox ? ` Caixa: ${mailbox}.` : ''}
@@ -298,10 +301,10 @@ function CaixaEmailPage() {
       </div>
 
       {!smtpConfigured ? (
-        <div className={styles.warnBox}>O envio por e-mail não está configurado neste servidor.</div>
+        <div className={styles.warnBox}>{exactUi("O envio por e-mail não está configurado neste servidor.")}</div>
       ) : null}
 
-      {loading && <p className={styles.empty}>Carregando caixa de e-mail…</p>}
+      {loading && <p className={styles.empty}>{exactUi("Carregando caixa de e-mail…")}</p>}
 
       {inboxError && (
         <div className={styles.warnBox}>
@@ -323,7 +326,7 @@ IMAP_PASS=sua-senha`}
           <section className={`${styles.panel} ${styles.caixaPane}`}>
             <div className={styles.panelHead}>
               <div>
-                <h2 className={styles.panelTitle}>Entrada</h2>
+                <h2 className={styles.panelTitle}>{exactUi("Entrada")}</h2>
                 <p className={styles.panelSub}>
                   {messages.length} mensagem{messages.length === 1 ? '' : 's'} recente{messages.length === 1 ? '' : 's'}
                 </p>
@@ -332,7 +335,7 @@ IMAP_PASS=sua-senha`}
             {status && !composing && !selectedMessage ? <p className={styles.replyStatus}>{status}</p> : null}
 
             {messages.length === 0 ? (
-              <p className={styles.empty}>A caixa não tem mensagens recentes.</p>
+              <p className={styles.empty}>{exactUi("A caixa não tem mensagens recentes.")}</p>
             ) : (
               <div className={`${styles.mailList} ${styles.mailListTall}`}>
                 {messages.map((msg) => {
@@ -368,8 +371,8 @@ IMAP_PASS=sua-senha`}
           <section className={`${styles.panel} ${styles.caixaPane}`}>
             {composing ? (
               <div className={`${styles.replyBox} ${styles.caixaCompose}`}>
-                <h2 className={styles.replyTitle}>Enviar e-mail</h2>
-                <label className={styles.replyLabel} htmlFor="caixa-para">Para</label>
+                <h2 className={styles.replyTitle}>{exactUi("Enviar e-mail")}</h2>
+                <label className={styles.replyLabel} htmlFor="caixa-para">{exactUi("Para")}</label>
                 <input
                   id="caixa-para"
                   className={styles.replyInput}
@@ -379,23 +382,23 @@ IMAP_PASS=sua-senha`}
                   autoComplete="email"
                   inputMode="email"
                 />
-                <label className={styles.replyLabel} htmlFor="caixa-assunto">Assunto</label>
+                <label className={styles.replyLabel} htmlFor="caixa-assunto">{exactUi("Assunto")}</label>
                 <input
                   id="caixa-assunto"
                   className={styles.replyInput}
                   value={subject}
                   onChange={(event) => setSubject(event.target.value)}
-                  placeholder="Assunto"
+                  placeholder={exactUi("Assunto")}
                   maxLength={180}
                 />
-                <label className={styles.replyLabel} htmlFor="caixa-mensagem">Mensagem</label>
+                <label className={styles.replyLabel} htmlFor="caixa-mensagem">{exactUi("Mensagem")}</label>
                 <textarea
                   id="caixa-mensagem"
                   className={styles.replyTextarea}
                   rows={10}
                   value={text}
                   onChange={(event) => setText(event.target.value)}
-                  placeholder="Escreva a mensagem"
+                  placeholder={exactUi("Escreva a mensagem")}
                   maxLength={8000}
                 />
                 <label className={styles.replyLabel} htmlFor="caixa-anexo">
@@ -427,7 +430,7 @@ IMAP_PASS=sua-senha`}
                     ))}
                   </ul>
                 ) : (
-                  <p className={styles.panelSub}>PDF, DOCX, JPG ou PNG. Até 4 arquivos, 8 MB cada.</p>
+                  <p className={styles.panelSub}>{exactUi("PDF, DOCX, JPG ou PNG. Até 4 arquivos, 8 MB cada.")}</p>
                 )}
                 {vaga && candidatura ? (
                   <label className={styles.replyLabel}>
@@ -441,7 +444,7 @@ IMAP_PASS=sua-senha`}
                 ) : null}
                 <div className={styles.replyActions}>
                   <button type="button" className={styles.btnGold} disabled={busy} onClick={() => void sendNew()}>
-                    {busy ? 'Enviando…' : 'Enviar'}
+                    {busy ? 'Enviando…' : exactUi("Enviar")}
                   </button>
                   {status ? <span className={styles.replyStatus}>{status}</span> : null}
                 </div>
@@ -450,9 +453,9 @@ IMAP_PASS=sua-senha`}
               <div className={styles.caixaRead}>
                 <div className={styles.panelHead}>
                   <div>
-                    <h2 className={styles.panelTitle}>Mensagem</h2>
+                    <h2 className={styles.panelTitle}>{exactUi("Mensagem")}</h2>
                     <p className={styles.panelSub}>
-                      {selectedMessage ? 'Leitura e resposta' : 'Selecione um e-mail à esquerda ou escreva um novo'}
+                      {selectedMessage ? exactUi("Leitura e resposta") : exactUi("Selecione um e-mail à esquerda ou escreva um novo")}
                     </p>
                   </div>
                   {selectedMessage && selectedUid ? (
@@ -467,10 +470,10 @@ IMAP_PASS=sua-senha`}
                   ) : null}
                 </div>
 
-                {messageLoading && <p className={styles.mailDetailLoading}>Abrindo mensagem…</p>}
+                {messageLoading && <p className={styles.mailDetailLoading}>{exactUi("Abrindo mensagem…")}</p>}
                 {messageError && <p className={styles.mailDetailError}>{messageError}</p>}
                 {!messageLoading && !selectedMessage && !messageError && (
-                  <p className={styles.empty}>Nenhuma mensagem selecionada.</p>
+                  <p className={styles.empty}>{exactUi("Nenhuma mensagem selecionada.")}</p>
                 )}
 
                 {selectedMessage && !messageLoading && (
@@ -493,8 +496,8 @@ IMAP_PASS=sua-senha`}
                     </div>
 
                     <div className={styles.caixaReply}>
-                      <h3 className={styles.replyTitle}>Responder</h3>
-                      <label className={styles.replyLabel} htmlFor="reply-to">Para</label>
+                      <h3 className={styles.replyTitle}>{exactUi("Responder")}</h3>
+                      <label className={styles.replyLabel} htmlFor="reply-to">{exactUi("Para")}</label>
                       <input
                         id="reply-to"
                         className={styles.replyInput}
@@ -503,14 +506,14 @@ IMAP_PASS=sua-senha`}
                         placeholder="destinatario@email.com"
                         autoComplete="email"
                       />
-                      <label className={styles.replyLabel} htmlFor="reply-text">Mensagem</label>
+                      <label className={styles.replyLabel} htmlFor="reply-text">{exactUi("Mensagem")}</label>
                       <textarea
                         id="reply-text"
                         className={styles.replyTextarea}
                         rows={6}
                         value={replyText}
                         onChange={(event) => setReplyText(event.target.value)}
-                        placeholder="Escreva a resposta…"
+                        placeholder={exactUi("Escreva a resposta…")}
                       />
                       <label className={styles.replyLabel} htmlFor="reply-anexo">
                         Anexos
@@ -541,11 +544,11 @@ IMAP_PASS=sua-senha`}
                           ))}
                         </ul>
                       ) : (
-                        <p className={styles.panelSub}>PDF, DOCX, JPG ou PNG. Até 4 arquivos, 8 MB cada.</p>
+                        <p className={styles.panelSub}>{exactUi("PDF, DOCX, JPG ou PNG. Até 4 arquivos, 8 MB cada.")}</p>
                       )}
                       <div className={styles.replyActions}>
                         <button type="button" className={styles.btnGold} disabled={busy} onClick={() => void sendReply()}>
-                          {busy ? 'Enviando…' : 'Enviar resposta'}
+                          {busy ? 'Enviando…' : exactUi("Enviar resposta")}
                         </button>
                         {status ? <span className={styles.replyStatus}>{status}</span> : null}
                       </div>
@@ -563,7 +566,7 @@ IMAP_PASS=sua-senha`}
 
 export default function AdminContatoPage() {
   return (
-    <Suspense fallback={<div className={styles.main}><p className={styles.empty}>Abrindo a caixa de e-mail…</p></div>}>
+    <Suspense fallback={<div className={styles.main}><p className={styles.empty}>{exactUi("Abrindo a caixa de e-mail…")}</p></div>}>
       <CaixaEmailPage />
     </Suspense>
   );

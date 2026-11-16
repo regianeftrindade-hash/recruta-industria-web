@@ -1,3 +1,5 @@
+import { formatMoney } from '@/lib/money/format-money';
+import { uiIntlLocale } from '@/lib/i18n/format-ui';
 import { PAYMENT_CONFIG } from '@/lib/payment-config';
 
 export type BillingPeriod = 'monthly' | 'annual';
@@ -40,10 +42,7 @@ export function getPlanPriceCentavos(
 }
 
 export function formatPriceBRL(centavos: number): string {
-  return (centavos / 100).toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  });
+  return formatMoney(centavos, 'BRL', uiIntlLocale());
 }
 
 export function formatPlanPriceLabel(

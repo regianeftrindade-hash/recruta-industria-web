@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React from "react";
 import type { FormEditPayload } from "@/lib/professional-profile-map";
@@ -330,7 +331,7 @@ export default function CompanyCandidateProfileDetails({
                   {info.emoji} Perfil predominante: {info.titulo}
                 </p>
                 <div>
-                  <p style={{ ...labelStyle, marginBottom: 4 }}>Visão do recrutador</p>
+                  <p style={{ ...labelStyle, marginBottom: 4 }}>{exactUi("Visão do recrutador")}</p>
                   <p style={{ ...valueStyle, fontSize: 13 }}>{info.visaoRecrutador}</p>
                 </div>
               </div>

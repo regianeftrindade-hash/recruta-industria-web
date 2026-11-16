@@ -1,4 +1,7 @@
 "use client";
+import { localizeServerText } from "@/lib/i18n/server-text";
+import { formatUiDateTime } from "@/lib/i18n/format-ui";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useCallback, useEffect, useState } from "react";
 import { botaoPerfil, textoAviso, textoDourado } from "@/lib/ui/perfil-empresa-cores";
@@ -52,20 +55,20 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setFeedbackMsg(data.error || "Não foi possível enviar o feedback.");
+        setFeedbackMsg(localizeServerText(data.error) || exactUi("Não foi possível enviar o feedback."));
         return;
       }
       if (Array.isArray(data.feedbacks)) setFeedbacks(data.feedbacks);
       setFeedbackText("");
     } catch {
-      setFeedbackMsg("Erro de rede ao enviar o feedback.");
+      setFeedbackMsg(exactUi("Erro de rede ao enviar o feedback."));
     } finally {
       setSendingFeedback(false);
     }
   };
 
   const handleExcluirFeedback = async (feedbackId: string) => {
-    if (!window.confirm("Excluir este feedback?")) return;
+    if (!window.confirm(exactUi("Excluir este feedback?"))) return;
     setDeletingFeedbackId(feedbackId);
     setFeedbackMsg("");
     try {
@@ -77,12 +80,12 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setFeedbackMsg(data.error || "Não foi possível excluir o feedback.");
+        setFeedbackMsg(localizeServerText(data.error) || exactUi("Não foi possível excluir o feedback."));
         return;
       }
       if (Array.isArray(data.feedbacks)) setFeedbacks(data.feedbacks);
     } catch {
-      setFeedbackMsg("Erro de rede ao excluir o feedback.");
+      setFeedbackMsg(exactUi("Erro de rede ao excluir o feedback."));
     } finally {
       setDeletingFeedbackId(null);
     }
@@ -110,7 +113,7 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
           onChange={(e) => setFeedbackText(e.target.value)}
           rows={3}
           maxLength={1000}
-          placeholder="Escreva seu feedback sobre o candidato..."
+          placeholder={exactUi("Escreva seu feedback sobre o candidato...")}
           style={{
             width: "100%",
             boxSizing: "border-box",
@@ -138,7 +141,7 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
             opacity: sendingFeedback || !feedbackText.trim() ? 0.7 : 1,
           }}
         >
-          {sendingFeedback ? "Enviando..." : "Enviar feedback"}
+          {sendingFeedback ? exactUi("Enviando...") : exactUi("Enviar feedback")}
         </button>
       </div>
 
@@ -179,7 +182,7 @@ export default function CompanyCandidateFeedbackCard({ profileId }: { profileId:
                     fontFamily: "inherit",
                     opacity: deletingFeedbackId === fb.id ? 0.7 : 1,
                   }}
-                  title="Excluir meu feedback"
+                  title={exactUi("Excluir meu feedback")}
                 >
                   Excluir
                 </button>

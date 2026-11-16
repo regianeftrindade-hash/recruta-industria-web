@@ -1,4 +1,5 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useEffect, useRef, useState } from "react";
 
@@ -43,14 +44,14 @@ export default function SecureVideoPlayer({ src, className, style }: Props) {
 
         if (contentType.includes("application/json")) {
           const data = await res.json();
-          throw new Error((data as { error?: string }).error || "Vídeo indisponível.");
+          throw new Error((data as { error?: string }).error || exactUi("Vídeo indisponível."));
         }
 
         const blob = await res.blob();
         if (cancelled) return;
 
         if (!blob.size) {
-          throw new Error("O arquivo de vídeo está vazio.");
+          throw new Error(exactUi("O arquivo de vídeo está vazio."));
         }
 
         const typedBlob = blob.type.startsWith("video/")
@@ -65,7 +66,7 @@ export default function SecureVideoPlayer({ src, className, style }: Props) {
       } catch (err) {
         if (!cancelled) {
           setError(
-            err instanceof Error ? err.message : "Não foi possível carregar o vídeo.",
+            err instanceof Error ? err.message : exactUi("Não foi possível carregar o vídeo."),
           );
         }
       } finally {

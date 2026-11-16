@@ -1,3 +1,4 @@
+import { exactUi } from "@/lib/i18n/exact-ui";
 import { getExternalServices } from '@/lib/admin/external-services';
 import styles from '../admin.module.css';
 
@@ -8,7 +9,7 @@ export default function AdminServicosPage() {
     <div className={styles.main}>
       <div className={styles.hero}>
         <div>
-          <h1 className={styles.heroTitle}>Serviços</h1>
+          <h1 className={styles.heroTitle}>{exactUi("Serviços")}</h1>
           <p className={styles.heroMeta}>
             Atalhos para Supabase, Vercel, GitHub, Google Console e Bancos. Cada console abre em nova aba
             (com a sessão do navegador, não precisa logar de novo).
@@ -20,7 +21,7 @@ export default function AdminServicosPage() {
         {services.map((service) => (
           <section key={service.slug} className={`${styles.panel} ${styles.servicoCard}`}>
             <span className={styles.sectionTag}>{service.label}</span>
-            <p className={styles.servicoDesc}>{service.description}</p>
+            <p className={styles.servicoDesc}>{exactUi(service.description)}</p>
             <div className={styles.servicoActions}>
               <a
                 href={service.url}
@@ -33,9 +34,9 @@ export default function AdminServicosPage() {
             </div>
             <ul className={styles.servicoLinks}>
               {service.links.map((item) => (
-                <li key={item.label}>
+                <li key={exactUi(item.label)}>
                   <a href={item.url} target="_blank" rel="noreferrer" className={styles.linkGold}>
-                    {item.label}
+                    {exactUi(item.label)}
                   </a>
                 </li>
               ))}

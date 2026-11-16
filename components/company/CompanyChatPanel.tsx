@@ -1,9 +1,11 @@
 "use client";
+import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React from "react";
 import { useRouter } from "next/navigation";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
 import { DASH, dashInnerBox } from "@/lib/dashboard-theme";
+import { t } from "@/lib/i18n/translate";
 
 type RhMember = {
   id: string;
@@ -126,7 +128,7 @@ export function CompanyChatPanel() {
       {shares.length > 0 ? (
         <div style={{ ...dashInnerBox, padding: 14, display: "grid", gap: 8 }}>
           <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: DASH.gold }}>
-            Perfis compartilhados com você
+            {t("rest.chat.shared")}
           </p>
           {shares.slice(0, 8).map((share) => (
             <button
@@ -157,7 +159,7 @@ export function CompanyChatPanel() {
                 </span>
               </span>
               <span style={{ fontSize: 11, color: DASH.gold }}>
-                {share.readAt ? "Abrir" : "Novo"}
+                {share.readAt ? exactUi("Abrir") : "Novo"}
               </span>
             </button>
           ))}
@@ -175,7 +177,7 @@ export function CompanyChatPanel() {
         {showMembers && (
           <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
             {loadingMembers ? (
-              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Buscando pessoas do RH...</p>
+              <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{t("rest.chat.loadingPeople")}</p>
             ) : members.length === 0 ? (
               <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
                 Nenhuma outra pessoa na mesma assinatura. Cadastre usuários na seção Equipe RH abaixo.
@@ -211,7 +213,7 @@ export function CompanyChatPanel() {
                       </span>
                     </span>
                     <span style={{ fontSize: 11, color: invited ? DASH.muted : DASH.gold }}>
-                      {invited ? "Convidado" : "Convidar"}
+                      {invited ? t("rest.chat.invited") : t("rest.chat.invite")}
                     </span>
                   </button>
                 );
@@ -235,7 +237,7 @@ export function CompanyChatPanel() {
       >
         <div style={{ flex: 1, display: "grid", alignContent: "start", gap: 8 }}>
           {loadingMessages ? (
-            <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>Carregando conversa...</p>
+            <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{t("rest.chat.loading")}</p>
           ) : messages.length === 0 ? (
             <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>
               Nenhuma mensagem ainda. Convide alguém do RH ou envie a primeira mensagem.
@@ -256,7 +258,7 @@ export function CompanyChatPanel() {
                   }}
                 >
                   <p style={{ margin: "0 0 3px", fontSize: 10, color: DASH.gold, fontWeight: 800 }}>
-                    {mine ? "Você" : msg.authorName}
+                    {mine ? t("rest.chat.you") : msg.authorName}
                   </p>
                   <p style={{ margin: 0, fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>{msg.body}</p>
                 </div>
@@ -272,7 +274,7 @@ export function CompanyChatPanel() {
             onKeyDown={(e) => {
               if (e.key === "Enter") void sendMessage();
             }}
-            placeholder="Digite uma mensagem..."
+            placeholder={t("rest.chat.placeholder")}
             style={{
               flex: 1,
               minWidth: 0,
@@ -285,7 +287,7 @@ export function CompanyChatPanel() {
             }}
           />
           <button type="button" onClick={() => void sendMessage()} style={{ ...btnGold, padding: "8px 14px", fontSize: 12 }}>
-            Enviar
+            {t("rest.chat.send")}
           </button>
         </div>
       </div>
