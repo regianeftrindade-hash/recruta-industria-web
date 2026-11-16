@@ -266,6 +266,21 @@ html[lang="hi"] select {
   line-height: 1.45;
 }
 
+:focus-visible {
+  outline: 2px solid #8D6B1F;
+  outline-offset: 2px;
+}
+
+button,
+a,
+label,
+p,
+h1,
+h2,
+h3 {
+  overflow-wrap: break-word;
+}
+
 html[dir="rtl"] input[type="email"],
 html[dir="rtl"] input[type="tel"],
 html[dir="rtl"] input[type="url"],
