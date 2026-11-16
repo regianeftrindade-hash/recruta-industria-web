@@ -1,3 +1,6 @@
+import { bindLocale } from "@/lib/i18n/active-locale";
+import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
+import { t } from "@/lib/i18n/translate";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import {
@@ -12,7 +15,9 @@ import {
 } from "@/lib/security";
 import { hashPassword } from "@/lib/security.server";
 import { validatePasswordStrength } from "@/lib/password-strength";
-import { formatCPF, isValidCPF, isValidPhoneBR } from "@/lib/security";
+import { formatCPF } from "@/lib/security";
+import { registrationDocumentError, registrationPhoneError } from "@/lib/identity/registration-documents";
+import { resolveNewRegistrationCountry } from "@/lib/identity/registration-region";
 import { logAudit as logSecurityAudit } from "@/lib/security-audit";
 import {
   corporateEmailError,
@@ -27,6 +32,7 @@ import { saveCompanyExtraData } from "@/lib/company-storage";
  */
 export async function POST(request: NextRequest) {
   try {
+    bindLocale(await resolveInterfaceLocale());
     const ip =
       request.headers.get("x-forwarded-for") ||
       request.headers.get("x-real-ip") ||
@@ -50,7 +56,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Muitas tentativas de cadastro. Aguarde 15 minutos e tente novamente.",
+            t("registration.ui.muitas-tentativas-de-cadastro-aguarde-15-minutos-e-tente-novamen"),
           statusCode: 429,
           retryAfter: 900,
         },
@@ -67,14 +73,19 @@ export async function POST(request: NextRequest) {
     const confirmPassword = String(body.confirmPassword || "");
     const cpfLimpo = String(body.cpf || "").replace(/\D/g, "");
     const telefone = String(body.telefone || body.phone || "").trim();
+    const region = resolveNewRegistrationCountry(body.countryCode);
+    if (!region.ok) {
+      incrementRegisterAttempts(ip);
+      return NextResponse.json({ error: region.error }, { status: 400 });
+    }
 
     if (!nome || nome.length < 2) {
       incrementRegisterAttempts(ip);
       return NextResponse.json(
         {
           error: isCompany
-            ? "Informe a razão social ou nome da empresa."
-            : "Informe seu nome completo.",
+            ? t("registration.ui.informe-a-razao-social-ou-nome-da-empresa")
+            : t("registration.simple.nameRequired"),
         },
         { status: 400 },
       );
@@ -82,20 +93,19 @@ export async function POST(request: NextRequest) {
 
     if (!email || !isValidEmail(email)) {
       incrementRegisterAttempts(ip);
-      return NextResponse.json({ error: "E-mail inválido." }, { status: 400 });
+      return NextResponse.json({ error: t("registration.ui.e-mail-invalido") }, { status: 400 });
     }
 
     if (!isCompany) {
-      if (!isValidCPF(cpfLimpo)) {
+      const cpfErro = registrationDocumentError(cpfLimpo, "CPF", "BR", t("registration.simple.cpfInvalid"));
+      if (cpfErro) {
         incrementRegisterAttempts(ip);
-        return NextResponse.json({ error: "CPF inválido." }, { status: 400 });
+        return NextResponse.json({ error: cpfErro }, { status: 400 });
       }
-      if (!isValidPhoneBR(telefone)) {
+      const telefoneErro = registrationPhoneError(telefone, "BR", t("registration.simple.phoneInvalid"));
+      if (telefoneErro) {
         incrementRegisterAttempts(ip);
-        return NextResponse.json(
-          { error: "Telefone inválido. Informe DDD + número." },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: telefoneErro }, { status: 400 });
       }
       const cpfFormatado = formatCPF(cpfLimpo);
       const cpfEmUso = await prisma.profile.findFirst({
@@ -105,7 +115,7 @@ export async function POST(request: NextRequest) {
       if (cpfEmUso) {
         incrementRegisterAttempts(ip);
         return NextResponse.json(
-          { error: "Este CPF já está cadastrado. Entre com a conta ou recupere a senha." },
+          { error: t("registration.ui.este-cpf-ja-esta-cadastrado-entre-com-a-conta-ou-recupere-a-senh") },
           { status: 409 },
         );
       }
@@ -130,14 +140,14 @@ export async function POST(request: NextRequest) {
     if (!password || !confirmPassword) {
       incrementRegisterAttempts(ip);
       return NextResponse.json(
-        { error: "Senha e confirmação são obrigatórias." },
+        { error: t("registration.ui.senha-e-confirmacao-sao-obrigatorias") },
         { status: 400 },
       );
     }
 
     if (password !== confirmPassword) {
       incrementRegisterAttempts(ip);
-      return NextResponse.json({ error: "Senhas não conferem." }, { status: 400 });
+      return NextResponse.json({ error: t("registration.simple.passwordMismatch") }, { status: 400 });
     }
 
     const passwordStrength = validatePasswordStrength(password);
@@ -145,7 +155,7 @@ export async function POST(request: NextRequest) {
       incrementRegisterAttempts(ip);
       return NextResponse.json(
         {
-          error: "Senha não atende aos requisitos de segurança.",
+          error: t("registration.simple.passwordWeak"),
           feedback: passwordStrength.feedback,
         },
         { status: 400 },
@@ -159,10 +169,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: contaOAuth
-            ? "Este e-mail já foi usado no login com Google. Entre com Google e complete o cadastro no painel."
+            ? t("registration.ui.este-e-mail-ja-foi-usado-no-login-com-google-entre-com-google-e-")
             : isCompany
-              ? "Este e-mail pessoal já está cadastrado. Use outro e-mail de login ou entre com essa conta."
-              : "Este e-mail já está cadastrado. Faça login ou recupere a senha.",
+              ? t("registration.ui.este-e-mail-pessoal-ja-esta-cadastrado-use-outro-e-mail-de-login")
+              : t("registration.ui.este-e-mail-ja-esta-cadastrado-faca-login-ou-recupere-a-senha"),
           code: contaOAuth ? "OAUTH_ACCOUNT_EXISTS" : "EMAIL_ALREADY_REGISTERED",
         },
         { status: 409 },
@@ -180,6 +190,7 @@ export async function POST(request: NextRequest) {
             name: nome,
             role,
             passwordHash,
+            ...region.region,
           },
         })
       : await prisma.$transaction(async (tx) => {
@@ -189,11 +200,13 @@ export async function POST(request: NextRequest) {
               name: nome,
               role,
               passwordHash,
+              ...region.region,
             },
           });
           await tx.profile.create({
             data: {
               userId: created.id,
+              ...region.region,
               title: "Profissional",
               location: "Não informado",
               email,
@@ -211,7 +224,7 @@ export async function POST(request: NextRequest) {
             },
           });
           await tx.professional.create({
-            data: { userId: created.id, title: "Profissional" },
+            data: { userId: created.id, title: "Profissional", ...region.region },
           });
           return created;
         });
@@ -221,6 +234,7 @@ export async function POST(request: NextRequest) {
         data: {
           userId: user.id,
           name: nome,
+          ...region.region,
         },
       });
 
@@ -252,7 +266,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("[register-simple]", error);
     return NextResponse.json(
-      { error: "Não foi possível criar a conta. Tente novamente." },
+      { error: t("registration.ui.nao-foi-possivel-criar-a-conta-tente-novamente") },
       { status: 500 },
     );
   }

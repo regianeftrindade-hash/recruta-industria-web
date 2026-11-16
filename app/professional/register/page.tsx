@@ -26,6 +26,9 @@ import { safeJobReturnPath } from '@/lib/jobs/public-job-link';
 import styles from './register.module.css';
 import PasswordStrengthMeter from '../../components/PasswordStrengthMeter';
 import { isValidEmail, sanitizeInput } from '../../../lib/security';
+import { t } from '@/lib/i18n/translate';
+import { rotuloOpcao } from '@/lib/i18n/option-label';
+import RegistrationCountryField from '@/components/identity/RegistrationCountryField';
 import {
   buildFormEditForLoad,
 } from '../../../lib/professional-profile-map';
@@ -50,6 +53,7 @@ import PageLoader from '@/app/components/PageLoader';
 import {
   calculateProfileCompletion,
   PREFIRO_NAO_INFORMAR,
+  ESCOLARIDADES_OPCOES,
   CNH_CATEGORIAS,
   CURSOS_INDUSTRIAIS_SUGERIDOS,
   IDIOMAS_OPCOES,
@@ -198,7 +202,7 @@ function lerImagemComoDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ''));
-    reader.onerror = () => reject(new Error('Não foi possível ler a imagem.'));
+    reader.onerror = () => reject(new Error(t("registration.ui.nao-foi-possivel-ler-a-imagem")));
     reader.readAsDataURL(file);
   });
 }
@@ -208,7 +212,7 @@ function parseJsonSafe(res: Response): Promise<Record<string, unknown>> {
     try {
       return JSON.parse(text) as Record<string, unknown>;
     } catch {
-      throw new Error('Resposta inválida do servidor. Atualize a página e tente novamente.');
+      throw new Error(t("registration.ui.resposta-invalida-do-servidor-atualize-a-pagina-e-tente-novament"));
     }
   });
 }
@@ -217,21 +221,21 @@ function LegendaPreenchimento({ avisoSalvar = false }: { avisoSalvar?: boolean }
   return (
     <div>
       <div className={styles.legendaPreenchimentoCard}>
-        <h3 className={styles.legendaPreenchimentoTitulo}>PREENCHIMENTO</h3>
+        <h3 className={styles.legendaPreenchimentoTitulo}>{t("registration.ui.preenchimento")}</h3>
         <div className={styles.legendaPreenchimentoLista}>
           <div className={styles.legendaPreenchimentoItem}>
             <span className={`${styles.legendaBolinha} ${styles.legendaBolinhaVermelha}`} aria-hidden />
-            <span>Preenchimento obrigatório</span>
+            <span>{t("registration.ui.preenchimento-obrigatorio")}</span>
           </div>
           <div className={styles.legendaPreenchimentoItem}>
             <span className={`${styles.legendaBolinha} ${styles.legendaBolinhaAmarela}`} aria-hidden />
-            <span>Preenchimento recomendado</span>
+            <span>{t("registration.ui.preenchimento-recomendado")}</span>
           </div>
         </div>
       </div>
       {avisoSalvar ? (
         <p className={styles.avisoSalvarTag}>
-          Seus dados foram carregados. Altere o que precisar e clique em salvar.
+          {t("registration.ui.dados-carregados-salvar")}
         </p>
       ) : null}
     </div>
@@ -267,7 +271,7 @@ function CampoFotoPerfil({
         try {
           await onFileSelect(file);
         } catch (err) {
-          setErro(err instanceof Error ? err.message : 'Não foi possível usar esta foto.');
+          setErro(err instanceof Error ? err.message : t("registration.ui.nao-foi-possivel-usar-esta-foto"));
         }
       }}
     />
@@ -275,19 +279,19 @@ function CampoFotoPerfil({
 
   return (
     <div className={`${styles.fotoCampo} ${centered ? styles.fotoCampoCentro : ''}`}>
-      <TextoMarcador marcador="recomendado">Foto de perfil</TextoMarcador>
+      <TextoMarcador marcador="recomendado">{t("registration.ui.foto-de-perfil")}</TextoMarcador>
       {temFoto && (
         <div className={styles.fotoComAnexo}>
           <img
             src={fotoSrc}
-            alt="Foto de perfil"
+            alt={t("registration.ui.foto-de-perfil")}
             className={styles.avatarPreview}
             decoding="async"
           />
           <div className={styles.fotoAnexoLinha}>
-            <span className={styles.anexoTextoInline}>✓ Foto de perfil anexada</span>
+            <span className={styles.anexoTextoInline}>{t("registration.ui.foto-de-perfil-anexada")}</span>
             <label className={`${styles.anexoBtn} ${styles.fotoLabelBtn}`}>
-              Trocar foto
+              {t("registration.ui.trocar-foto")}
               {inputFoto}
             </label>
           </div>
@@ -298,7 +302,7 @@ function CampoFotoPerfil({
         <div className={centered ? styles.fotoComAnexo : undefined}>
           <div className={centered ? styles.fotoAnexoLinha : styles.anexoBtnRow}>
             <label className={`${styles.anexoBtn} ${styles.fotoLabelBtn}`}>
-              Selecionar foto
+              {t("registration.ui.selecionar-foto")}
               {inputFoto}
             </label>
           </div>
@@ -321,12 +325,12 @@ function AnexoCurriculoAutomatico({
   const [erro, setErro] = useState('');
 
   return (
-    <section className={styles.anexoCurriculoCard} aria-label="Anexar currículo">
+    <section className={styles.anexoCurriculoCard} aria-label={t("registration.ui.anexar-curriculo")}>
       <p className={styles.anexoCurriculoAviso}>
-        Anexe um PDF ou DOCX. O cadastro será preenchido automaticamente.
+        {t("registration.ui.anexe-pdf")}
       </p>
       <label className={`${styles.anexoBtn} ${styles.fotoLabelBtn}`}>
-        {busy ? 'Lendo currículo...' : nome ? 'Trocar currículo' : 'Anexar PDF ou DOCX'}
+        {busy ? t("registration.ui.lendo-curriculo") : nome ? t("registration.ui.trocar-curriculo") : t("registration.ui.anexar-pdf-ou-docx")}
         <input
           className={styles.fotoInput}
           type="file"
@@ -345,7 +349,7 @@ function AnexoCurriculoAutomatico({
               setAviso(mensagem);
             } catch (err) {
               if (err instanceof CurriculoAnexadoSemLeituraError) setNome(file.name);
-              setErro(err instanceof Error ? err.message : 'Não foi possível ler o currículo.');
+              setErro(err instanceof Error ? err.message : t("registration.ui.nao-foi-possivel-ler-o-curriculo"));
             } finally {
               setBusy(false);
             }
@@ -365,8 +369,8 @@ function CampoArquivoAnexo({
   accept,
   value,
   onFileSelect,
-  textoBotaoVazio = 'Selecionar arquivo',
-  textoBotaoInline = 'Anexar',
+  textoBotaoVazio = t("registration.ui.selecionar-arquivo"),
+  textoBotaoInline = t("registration.ui.anexar"),
   formatosAceitos,
   comCard = false,
   somenteLabelEBotao = false,
@@ -400,7 +404,7 @@ function CampoArquivoAnexo({
     <div className={`${styles.anexoCampo} ${comCard ? styles.anexoCard : ''}`}>
       {label ? <span className={styles.label}>{label}</span> : null}
       {formatosAceitos ? (
-        <p className={styles.anexoFormatosHint}>Somente {formatosAceitos}</p>
+        <p className={styles.anexoFormatosHint}>{t("registration.ui.somente-formatos").replace("{formatos}", formatosAceitos)}</p>
       ) : null}
       {layoutInline ? (
         <div className={styles.anexoCampoInline}>
@@ -411,7 +415,7 @@ function CampoArquivoAnexo({
                 {nomeExibido}
               </span>
             ) : (
-              <span className={styles.anexoCampoPlaceholder}>Nenhum arquivo anexado</span>
+              <span className={styles.anexoCampoPlaceholder}>{t("registration.ui.nenhum-arquivo-anexado")}</span>
             )}
           </div>
           <button
@@ -419,7 +423,7 @@ function CampoArquivoAnexo({
             className={styles.anexoCampoBtn}
             onClick={() => inputRef.current?.click()}
           >
-            {anexado ? 'Trocar' : textoBotaoInline}
+            {anexado ? t("registration.ui.trocar") : textoBotaoInline}
           </button>
         </div>
       ) : anexado ? (
@@ -432,13 +436,13 @@ function CampoArquivoAnexo({
               rel="noopener noreferrer"
               className={styles.anexoBtn}
             >
-              Download
+              {t("registration.ui.download")}
             </a>
           </div>
         ) : (
         <div className={styles.anexoBox}>
           <p className={styles.anexoTexto}>
-            {noServidor ? '✓ Arquivo anexado:' : '⚠ Rascunho local (será enviado ao salvar):'}{' '}
+            {noServidor ? t("registration.ui.arquivo-anexado") : t("registration.ui.rascunho-local-sera-enviado-ao-salvar")}{' '}
             <strong>{nomeArquivoAnexado(value!)}</strong>
           </p>
           <div className={styles.anexoActions}>
@@ -450,11 +454,11 @@ function CampoArquivoAnexo({
                 rel="noopener noreferrer"
                 className={styles.anexoBtn}
               >
-                Download
+                {t("registration.ui.download")}
               </a>
             )}
             <button type="button" className={styles.anexoBtn} onClick={() => inputRef.current?.click()}>
-              Trocar arquivo
+              {t("registration.ui.trocar-arquivo")}
             </button>
           </div>
         </div>
@@ -511,7 +515,7 @@ function BlocoCadastro({
             onClick={onEditar}
             disabled={aberto}
           >
-            {aberto ? "Editando" : "Editar"}
+            {aberto ? t("registration.ui.editando") : t("registration.ui.editar")}
           </button>
         ) : null}
       </div>
@@ -560,6 +564,7 @@ export default function CadastroProfissional({
   });
   const [camposObrigatoriosFaltando, setCamposObrigatoriosFaltando] = useState<CampoObrigatorioFalta[]>([]);
   const { fg, blocoErro, termoErro } = useCampoObrigatorioErro(camposObrigatoriosFaltando);
+  const [pais, setPais] = useState('BR');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [emailRepetido, setEmailRepetido] = useState('');
@@ -588,12 +593,12 @@ export default function CadastroProfissional({
 
   const [formData, setFormData] = useState({
     nome: '', dataNascimento: '', idade: '', sexoBiologico: '', identidadeGenero: '', orientacaoSexual: '', estadoCivil: '', religiao: '', antecedentes: '',
-    possuiFilhos: 'Não', quantidadeFilhos: '', faixaEtariaFilhos: [] as string[],
-    email: '', telefone: '', telefone2: '', whatsapp: 'Não',
+    possuiFilhos: t("registration.ui.nao"), quantidadeFilhos: '', faixaEtariaFilhos: [] as string[],
+    email: '', telefone: '', telefone2: '', whatsapp: t("registration.ui.nao"),
     estado: '', cidade: '', disponibilidadeMudanca: '',
     escolaridade: '', cursoFormacao: '', instituicaoFormacao: '', anoConclusaoFormacao: '', documentoFormacao: null as string | null, possuiCertificadoFormacao: false, cursosCertificacoes: '',
     situacaoProfissional: '', areaInteresse: '', cargoDesejado: '', nivelOperacional: '', areaNivel: '', detalheNivel: '', turnoDisponivel: '', disponibilidadeInicio: '',
-    trabalhouIndustria: 'Não', tempoExperiencia: '', experiencias: '',
+    trabalhouIndustria: t("registration.ui.nao"), tempoExperiencia: '', experiencias: '',
     recolocacao: '', pretensaoSalarial: '',
     maquinasEquipamentos: [] as string[], qualidadeProcessos: [] as string[],
     informatica: [] as string[], possuiCNH: '', categoriaCNH: '',
@@ -837,7 +842,7 @@ export default function CadastroProfissional({
 
     fetch('/api/professional/profile', { credentials: 'include' })
       .then((res) => {
-        if (!res.ok) throw new Error('Não foi possível carregar o perfil');
+        if (!res.ok) throw new Error(t("registration.ui.nao-foi-possivel-carregar-o-perfil"));
         return res.json();
       })
       .then((data) => {
@@ -850,7 +855,7 @@ export default function CadastroProfissional({
           setFormData((prev) => ({
             ...prev,
             email: data.email || prev.email,
-            nome: data.nome && data.nome !== 'Usuário' ? data.nome : prev.nome,
+            nome: data.nome && data.nome !== t("registration.ui.usuario") ? data.nome : prev.nome,
           }));
         }
 
@@ -866,7 +871,7 @@ export default function CadastroProfissional({
       .catch((err) => {
         console.error('Erro ao carregar perfil para edição:', err);
         if (!incorporado) {
-          alert('Não foi possível carregar seus dados. Tente novamente pelo painel.');
+          alert(t("registration.ui.nao-foi-possivel-carregar-seus-dados-tente-novamente-pelo-painel"));
           router.push('/professional/dashboard');
         }
       })
@@ -1018,7 +1023,7 @@ export default function CadastroProfissional({
           email: session.user?.email || prev.email,
           nome: String(prev.nome || '').trim()
             ? prev.nome
-            : (data?.nome && data.nome !== 'Usuário'
+            : (data?.nome && data.nome !== t("registration.ui.usuario")
                 ? data.nome
                 : session.user?.name || prev.nome),
         }));
@@ -1102,7 +1107,7 @@ export default function CadastroProfissional({
       }, [])
       .reverse()
       .join('');
-    const salarioFormatado = 'R$ ' + inteiroFormatado + ',' + centavos;
+    const salarioFormatado = t("registration.ui.r") + inteiroFormatado + ',' + centavos;
     setPretensaoSalarial(salarioFormatado);
     setFormData((prev) => ({ ...prev, pretensaoSalarial: salarioFormatado }));
   };
@@ -1281,7 +1286,7 @@ export default function CadastroProfissional({
     const uploaded = await fetch("/api/upload", { method: "POST", body, credentials: "include" });
     const uploadData = await uploaded.json().catch(() => ({}));
     if (!uploaded.ok || !uploadData?.file?.path) {
-      return uploadData?.error || "Não foi possível enviar o currículo. A conta foi mantida e o arquivo não foi salvo.";
+      return uploadData?.error || t("registration.ui.nao-foi-possivel-enviar-o-curriculo-a-conta-foi-mantida-e-o-arqu");
     }
     const saved = await fetch("/api/professional/curriculo", {
       method: "POST",
@@ -1291,7 +1296,7 @@ export default function CadastroProfissional({
     });
     const savedData = await saved.json().catch(() => ({}));
     if (!saved.ok) {
-      return savedData?.error || "Não foi possível associar o currículo ao perfil. Tente de novo em Meu currículo.";
+      return savedData?.error || t("registration.ui.nao-foi-possivel-associar-o-curriculo-ao-perfil-tente-de-novo-em");
     }
     pendingResumeRef.current = null;
     setFormData((prev) => ({ ...prev, curriculo: String(uploadData.file.path) }));
@@ -1343,10 +1348,10 @@ export default function CadastroProfissional({
   async function importarCurriculoArquivo(file: File): Promise<string> {
     const nome = file.name.toLowerCase();
     if (!nome.endsWith('.pdf') && !nome.endsWith('.docx')) {
-      throw new Error('Envie um arquivo PDF ou DOCX.');
+      throw new Error(t("registration.ui.envie-um-arquivo-pdf-ou-docx"));
     }
-    if (!file.size) throw new Error('O arquivo está vazio.');
-    if (file.size > 8 * 1024 * 1024) throw new Error('Arquivo muito grande (máx. 8MB).');
+    if (!file.size) throw new Error(t("registration.ui.o-arquivo-esta-vazio"));
+    if (file.size > 8 * 1024 * 1024) throw new Error(t("registration.ui.arquivo-muito-grande-max-8mb"));
 
     const arquivoAnterior = pendingResumeRef.current;
     pendingResumeRef.current = file;
@@ -1410,14 +1415,14 @@ export default function CadastroProfissional({
     }
 
     const avisoMantidos = patch.preservados.length
-      ? ` Estes campos já estavam preenchidos e foram mantidos: ${patch.preservados.join(', ')}.`
-      : '';
+      ? t("registration.ui.curriculo-mantidos").replace("{lista}", patch.preservados.join(", "))
+      : "";
 
     if (!patch.filledLabels.length) {
       if (patch.preservados.length) {
-        return `O currículo foi lido.${avisoMantidos} Revise os campos antes de concluir.`;
+        return `${t("registration.ui.curriculo-lido")}${avisoMantidos} ${t("registration.ui.revise-campos")}`;
       }
-      return 'Arquivo anexado. Não encontramos dados para preencher. Complete o cadastro e, no fim da página, geramos o PDF gratuito.';
+      return t("registration.ui.arquivo-anexado-nao-encontramos-dados-para-preencher-complete-o-");
     }
 
     const etiquetas = patch.filledLabels.join(' ');
@@ -1474,12 +1479,17 @@ export default function CadastroProfissional({
     const formEmail = formData.email.toLowerCase().trim();
     const sessaoAtiva = emailsConferem(sessionEmail, formEmail);
 
+    if (!isEditMode && !sessaoAtiva && pais !== 'BR') {
+      setFormFeedback({ tone: 'error', message: t('registration.country.unavailable') });
+      return;
+    }
+
     const faltando = validarCamposObrigatoriosCadastro(montarInputValidacao());
 
     if (faltando.length > 0) {
       setCamposObrigatoriosFaltando(faltando);
       if (!formData.email || !isValidEmail(formData.email)) {
-        setEmailError('Email é obrigatório e deve ser válido');
+        setEmailError(t("registration.ui.email-e-obrigatorio-e-deve-ser-valido"));
       }
       requestAnimationFrame(() => {
         focarCampoCadastro(faltando[0]?.id);
@@ -1496,7 +1506,7 @@ export default function CadastroProfissional({
     if (exibirCamposSenha) {
       const repetido = emailRepetido.toLowerCase().trim();
       if (!repetido || repetido !== formEmail) {
-        setEmailError('Repita o mesmo e-mail informado no cadastro.');
+        setEmailError(t("registration.ui.repita-o-mesmo-e-mail-informado-no-cadastro"));
         requestAnimationFrame(() => {
           document.getElementById('emailRepetido')?.focus();
         });
@@ -1506,7 +1516,9 @@ export default function CadastroProfissional({
 
     if (sessionEmail && formEmail && !sessaoAtiva) {
       alert(
-        `Você está logado como ${sessionEmail}, mas o cadastro é para ${formEmail}. Saia da conta atual e tente novamente.`,
+        t("registration.ui.logado-outro-email")
+          .replace("{sessionEmail}", sessionEmail)
+          .replace("{formEmail}", formEmail),
       );
       return;
     }
@@ -1577,7 +1589,7 @@ export default function CadastroProfissional({
         if (profileRes.status === 401) {
           setFormFeedback({
             tone: 'error',
-            message: 'Sessão expirada. Entre com Google novamente e complete o cadastro.',
+            message: t("registration.ui.sessao-expirada-entre-com-google-novamente-e-complete-o-cadastro"),
           });
           router.push('/login?tipo=profissional');
           return;
@@ -1585,7 +1597,7 @@ export default function CadastroProfissional({
 
         if (!profileRes.ok) {
           const detail = String(profileData.details || '').trim();
-          const base = String(profileData.error || 'Erro ao salvar perfil');
+          const base = String(profileData.error || t("registration.ui.erro-ao-salvar-perfil"));
           throw new Error(detail ? `${base}: ${detail}` : base);
         }
 
@@ -1615,12 +1627,12 @@ export default function CadastroProfissional({
 
         setFormFeedback({
           tone: 'error',
-          message: 'Erro ao salvar perfil: ' + (profileData.error || 'Desconhecido'),
+          message: t("registration.ui.erro-ao-salvar-perfil-2") + (profileData.error || t("registration.ui.desconhecido")),
         });
       };
 
       if (isEditMode) {
-        await finalizarPerfil('Cadastro atualizado com sucesso!');
+        await finalizarPerfil(t("registration.ui.cadastro-atualizado-com-sucesso-2"));
         return;
       }
 
@@ -1648,6 +1660,7 @@ export default function CadastroProfissional({
         body: JSON.stringify({
           ...dadosParaSalvar,
           email: formData.email,
+          countryCode: pais,
           password,
           confirmPassword,
           userType: 'professional',
@@ -1663,7 +1676,7 @@ export default function CadastroProfissional({
       if (!data.success) {
         if (
           res.status === 409 ||
-          data.error === 'Email já cadastrado' ||
+          data.error === t("registration.ui.email-ja-cadastrado") ||
           data.code === 'OAUTH_ACCOUNT_EXISTS'
         ) {
           const retryPerfil = await fetch('/api/professional/profile', {
@@ -1680,7 +1693,7 @@ export default function CadastroProfissional({
           if (data.code === 'OAUTH_ACCOUNT_EXISTS') {
             setFormFeedback({
               tone: 'error',
-              message: String(data.error || 'Conta Google já cadastrada. Faça login para continuar.'),
+              message: String(data.error || t("registration.ui.conta-google-ja-cadastrada-faca-login-para-continuar")),
             });
             router.push('/login?tipo=profissional');
             return;
@@ -1688,7 +1701,7 @@ export default function CadastroProfissional({
           await finalizarPerfil();
           return;
         }
-        throw new Error(String(data.error || 'Erro ao registrar'));
+        throw new Error(String(data.error || t("registration.ui.erro-ao-registrar")));
       }
 
       if (data.completedExisting) {
@@ -1740,7 +1753,7 @@ export default function CadastroProfissional({
         setFormFeedback({
           tone: 'success',
           message:
-            'Cadastro realizado. Não foi possível entrar automaticamente — use o login com o mesmo e-mail e senha.',
+            t("registration.ui.cadastro-realizado-nao-foi-possivel-entrar-automaticamente-use-o"),
         });
         return;
       }
@@ -1754,14 +1767,14 @@ export default function CadastroProfissional({
       setFormFeedback({
         tone: 'success',
         message:
-          'Cadastro realizado com sucesso. Entre com seu e-mail e senha para acessar o painel.',
+          t("registration.ui.cadastro-realizado-com-sucesso-entre-com-seu-e-mail-e-senha-para"),
       });
 
     } catch (err: any) {
       console.error('Erro no registro:', err);
       setFormFeedback({
         tone: 'error',
-        message: err.message || 'Erro ao conectar ao servidor',
+        message: err.message || t("registration.ui.erro-ao-conectar-ao-servidor"),
       });
     } finally {
       setSubmitting(false);
@@ -1773,10 +1786,10 @@ export default function CadastroProfissional({
     (isEditMode && !profileLoaded) ||
     (sessionStatus === 'authenticated' && checkingRegistration);
   const mensagemCarregamento = !profileLoaded
-    ? 'Carregando seus dados...'
+    ? t("registration.ui.carregando-seus-dados")
     : checkingRegistration
-      ? 'Verificando cadastro...'
-      : 'Carregando...';
+      ? t("registration.ui.verificando-cadastro")
+      : t("registration.ui.carregando");
 
   if (paginaCarregando || (!isEditMode && contaJaCompleta)) {
     const destinoContaPronta = safeJobReturnPath(searchParams.get('redirect'));
@@ -1784,7 +1797,7 @@ export default function CadastroProfissional({
       <PageLoader
         message={
           contaJaCompleta
-            ? (destinoContaPronta ? 'Voltando para a vaga...' : 'Abrindo o painel...')
+            ? (destinoContaPronta ? t("registration.ui.voltando-para-a-vaga") : t("registration.ui.abrindo-o-painel"))
             : mensagemCarregamento
         }
       />
@@ -1794,7 +1807,7 @@ export default function CadastroProfissional({
   return (
     <div className={`${styles.container} ${styles.containerIncorporado} ri-readable`}>
       <AuthAtmosphere intensity="strong" />
-      {submitting && !isEditMode && <PageLoader message="Salvando cadastro..." mode="overlay" />}
+      {submitting && !isEditMode && <PageLoader message={t("registration.ui.salvando-cadastro")} mode="overlay" />}
       <div className={styles.card} role="main" aria-labelledby={incorporado ? undefined : "register-title"}>
         {incorporado ? (
           <div className={styles.completionSticky}>
@@ -1807,7 +1820,7 @@ export default function CadastroProfissional({
         </div>
         {!incorporado ? (
         <h1 id="register-title" className={styles.title}>
-          {isEditMode ? 'Atualizar cadastro' : 'Complete seu perfil'}
+          {isEditMode ? t("registration.ui.atualizar-cadastro") : t("registration.ui.complete-seu-perfil")}
         </h1>
         ) : null}
         {formFeedback && (
@@ -1820,7 +1833,7 @@ export default function CadastroProfissional({
           >
             {formFeedback.message}{' '}
             {formFeedback.tone === 'success' && !isEditMode && (
-              <a href="/login?tipo=profissional">Ir para o login</a>
+              <a href="/login?tipo=profissional">{t("registration.ui.ir-para-o-login")}</a>
             )}
           </div>
         )}
@@ -1832,8 +1845,8 @@ export default function CadastroProfissional({
         ) : null}
         {!isEditMode && (
           <p className={styles.formHint}>
-            A lista completa do perfil. Role a página para ver todos os campos.
-            Os marcados como <strong>obrigatório</strong> são necessários para concluir.
+            {t("registration.ui.lista-completa")}{" "}
+            {t("registration.ui.os-marcados-como")} <strong>{t("registration.ui.obrigatorio")}</strong> {t("registration.ui.sao-necessarios")}
           </p>
         )}
 
@@ -1850,7 +1863,7 @@ export default function CadastroProfissional({
         {useWizard && camposObrigatoriosFaltando.length > 0 && wizardStep < lastWizardStep && (
           <div id="aviso-obrigatorios" className={styles.avisoObrigatoriosCard} role="alert" aria-live="polite">
             <p className={styles.avisoObrigatoriosTitulo}>
-              Complete os obrigatórios desta etapa para continuar:
+              {t("registration.ui.complete-obrigatorios-etapa")}
             </p>
             <ul className={styles.avisoObrigatoriosLista}>
               {camposObrigatoriosFaltando.map((campo) => (
@@ -1868,12 +1881,12 @@ export default function CadastroProfissional({
             value={formData.fotoPerfil}
             onFileSelect={async (file) => {
               if (!arquivoFotoPermitido(file)) {
-                throw new Error('Use uma foto JPG, PNG, WEBP ou GIF.');
+                throw new Error(t("registration.ui.use-uma-foto-jpg-png-webp-ou-gif"));
               }
               const foto = arquivoFotoComTipo(file);
               const previewUrl = await lerImagemComoDataUrl(foto);
               if (!previewUrl.startsWith('data:image')) {
-                throw new Error('Não foi possível ler a imagem.');
+                throw new Error(t("registration.ui.nao-foi-possivel-ler-a-imagem"));
               }
               setFormData((prev) => ({ ...prev, fotoPerfil: previewUrl }));
 
@@ -1885,12 +1898,12 @@ export default function CadastroProfissional({
               if (!res.ok || !data.success) {
                 throw new Error(typeof data.error === 'string' && data.error.trim()
                   ? data.error
-                  : 'Não foi possível enviar a foto. A prévia ficou só nesta tela.');
+                  : t("registration.ui.nao-foi-possivel-enviar-a-foto-a-previa-ficou-so-nesta-tela"));
               }
               const path = caminhoFotoPerfil(String(data.file?.path || ''))
                 || caminhoFotoPerfil(String(data.file?.url || ''));
               if (!path) {
-                throw new Error('A foto foi enviada, mas não foi possível gravá-la no perfil.');
+                throw new Error(t("registration.ui.a-foto-foi-enviada-mas-nao-foi-possivel-grava-la-no-perfil"));
               }
               setFormData((prev) => ({ ...prev, fotoPerfil: path }));
               if (isEditMode) {
@@ -1904,7 +1917,7 @@ export default function CadastroProfissional({
                   const err = await saveRes.json().catch(() => ({} as { error?: unknown }));
                   throw new Error(typeof err.error === 'string' && err.error.trim()
                     ? err.error
-                    : 'A foto foi enviada, mas não ficou salva no perfil.');
+                    : t("registration.ui.a-foto-foi-enviada-mas-nao-ficou-salva-no-perfil"));
                 }
               }
             }}
@@ -1918,11 +1931,25 @@ export default function CadastroProfissional({
 
           {showWizardStep(0) && (
           <>
-          <BlocoCadastro {...propsBloco("dados-pessoais", "🏭", "Dados pessoais")}>
+          <BlocoCadastro {...propsBloco("dados-pessoais", "🏭", t("registration.ui.dados-pessoais"))}>
+
+            <div className={styles.fieldsRow}>
+              <div className={styles.fieldGroup}>
+                <RegistrationCountryField
+                  id="pais"
+                  value={pais}
+                  onChange={setPais}
+                  disabled={isEditMode || sessionStatus === 'authenticated'}
+                  labelClassName={styles.label}
+                  selectClassName={styles.input}
+                  hintClassName={styles.formHint}
+                />
+              </div>
+            </div>
             
             <div className={styles.fieldsRow}>
               <div className={fg('nome')}>
-                <LabelMarcador htmlFor="nome" marcador="obrigatorio">Nome completo</LabelMarcador>
+                <LabelMarcador htmlFor="nome" marcador="obrigatorio">{t("registration.simple.fullName")}</LabelMarcador>
                 <input
                   id="nome"
                   type="text"
@@ -1935,7 +1962,7 @@ export default function CadastroProfissional({
 
               <div className={fg('dataNascimento')}>
                 <LabelMarcador htmlFor="dataNascimento" marcador="obrigatorio" className={styles.labelComHint}>
-                  Nascimento <span className={styles.labelHint}>(DD/MM/AAAA)</span>
+                  {t("registration.ui.nascimento")} <span className={styles.labelHint}>{t("registration.ui.dd-mm-aaaa")}</span>
                 </LabelMarcador>
                 <input
                   id="dataNascimento"
@@ -1994,7 +2021,7 @@ export default function CadastroProfissional({
               </div>
 
               <div className={styles.fieldGroup}>
-                <label className={styles.label} htmlFor="idade">Idade</label>
+                <label className={styles.label} htmlFor="idade">{t("registration.ui.idade")}</label>
                 <input
                   id="idade"
                   type="text"
@@ -2009,7 +2036,7 @@ export default function CadastroProfissional({
               </div>
 
               <div className={fg('sexoBiologico')}>
-                <LabelMarcador htmlFor="sexoBiologico" marcador="recomendado">Sexo biológico</LabelMarcador>
+                <LabelMarcador htmlFor="sexoBiologico" marcador="recomendado">{t("registration.ui.sexo-biologico")}</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="sexoBiologico"
@@ -2017,17 +2044,17 @@ export default function CadastroProfissional({
                     value={formData.sexoBiologico}
                     onChange={e => setFormData((prev) => ({ ...prev, sexoBiologico: e.target.value }))}
                   >
-                    <option value="">Selecione</option>
-                    <option>Masculino</option>
-                    <option>Feminino</option>
-                    <option>Outro</option>
-                    <option>{PREFIRO_NAO_INFORMAR}</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
+                    <option>{t("registration.ui.masculino")}</option>
+                    <option>{t("registration.ui.feminino")}</option>
+                    <option>{t("registration.ui.outro")}</option>
+                    <option value={PREFIRO_NAO_INFORMAR}>{rotuloOpcao(PREFIRO_NAO_INFORMAR)}</option>
                   </select>
                 </div>
               </div>
 
               <div className={styles.fieldGroup}>
-                <label className={styles.label} htmlFor="identidadeGenero">Identidade de gênero</label>
+                <label className={styles.label} htmlFor="identidadeGenero">{t("registration.ui.identidade-de-genero")}</label>
                 <div className={styles.selectWrap}>
                   <select
                     id="identidadeGenero"
@@ -2035,18 +2062,18 @@ export default function CadastroProfissional({
                     value={formData.identidadeGenero}
                     onChange={e => setFormData((prev) => ({ ...prev, identidadeGenero: e.target.value }))}
                   >
-                    <option value="">Selecione</option>
-                    <option>Cisgênero</option>
-                    <option>Transgênero</option>
-                    <option>Não-binário</option>
-                    <option>Outro</option>
-                    <option>{PREFIRO_NAO_INFORMAR}</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
+                    <option>{t("registration.ui.cisgenero")}</option>
+                    <option>{t("registration.ui.transgenero")}</option>
+                    <option>{t("registration.ui.nao-binario")}</option>
+                    <option>{t("registration.ui.outro")}</option>
+                    <option value={PREFIRO_NAO_INFORMAR}>{rotuloOpcao(PREFIRO_NAO_INFORMAR)}</option>
                   </select>
                 </div>
               </div>
 
               <div className={styles.fieldGroup}>
-                <label className={styles.label} htmlFor="orientacaoSexual">Orientação sexual</label>
+                <label className={styles.label} htmlFor="orientacaoSexual">{t("registration.ui.orientacao-sexual")}</label>
                 <div className={styles.selectWrap}>
                   <select
                     id="orientacaoSexual"
@@ -2054,18 +2081,18 @@ export default function CadastroProfissional({
                     value={formData.orientacaoSexual}
                     onChange={e => setFormData((prev) => ({ ...prev, orientacaoSexual: e.target.value }))}
                   >
-                    <option value="">Selecione</option>
-                    <option>Heterossexual</option>
-                    <option>Homossexual</option>
-                    <option>Bissexual</option>
-                    <option>Outro</option>
-                    <option>{PREFIRO_NAO_INFORMAR}</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
+                    <option>{t("registration.ui.heterossexual")}</option>
+                    <option>{t("registration.ui.homossexual")}</option>
+                    <option>{t("registration.ui.bissexual")}</option>
+                    <option>{t("registration.ui.outro")}</option>
+                    <option value={PREFIRO_NAO_INFORMAR}>{rotuloOpcao(PREFIRO_NAO_INFORMAR)}</option>
                   </select>
                 </div>
               </div>
 
               <div className={fg('estadoCivil')}>
-                <LabelMarcador htmlFor="estadoCivil" marcador="recomendado">Estado civil</LabelMarcador>
+                <LabelMarcador htmlFor="estadoCivil" marcador="recomendado">{t("registration.ui.estado-civil")}</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="estadoCivil"
@@ -2073,18 +2100,18 @@ export default function CadastroProfissional({
                     value={formData.estadoCivil}
                     onChange={e => setFormData((prev) => ({ ...prev, estadoCivil: e.target.value }))}
                   >
-                    <option value="">Selecione</option>
-                    <option>Solteiro</option>
-                    <option>Casado</option>
-                    <option>Divorciado</option>
-                    <option>Viúvo</option>
-                    <option>{PREFIRO_NAO_INFORMAR}</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
+                    <option>{t("registration.ui.solteiro")}</option>
+                    <option>{t("registration.ui.casado")}</option>
+                    <option>{t("registration.ui.divorciado")}</option>
+                    <option>{t("registration.ui.viuvo")}</option>
+                    <option value={PREFIRO_NAO_INFORMAR}>{rotuloOpcao(PREFIRO_NAO_INFORMAR)}</option>
                   </select>
                 </div>
               </div>
 
               <div className={styles.fieldGroup}>
-                <label className={styles.label} htmlFor="religiao">Religião</label>
+                <label className={styles.label} htmlFor="religiao">{t("registration.ui.religiao")}</label>
                 <div className={styles.selectWrap}>
                   <select
                     id="religiao"
@@ -2092,19 +2119,19 @@ export default function CadastroProfissional({
                     value={formData.religiao}
                     onChange={e => setFormData((prev) => ({ ...prev, religiao: e.target.value }))}
                   >
-                    <option value="">Selecione</option>
-                    <option>Católico</option>
-                    <option>Protestante</option>
-                    <option>Espírita</option>
-                    <option>Ateu</option>
-                    <option>Outro</option>
-                    <option>{PREFIRO_NAO_INFORMAR}</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
+                    <option>{t("registration.ui.catolico")}</option>
+                    <option>{t("registration.ui.protestante")}</option>
+                    <option>{t("registration.ui.espirita")}</option>
+                    <option>{t("registration.ui.ateu")}</option>
+                    <option>{t("registration.ui.outro")}</option>
+                    <option value={PREFIRO_NAO_INFORMAR}>{rotuloOpcao(PREFIRO_NAO_INFORMAR)}</option>
                   </select>
                 </div>
               </div>
 
               <div className={fg('possuiCNH')}>
-                <LabelMarcador htmlFor="possuiCNH" marcador="recomendado">Possui CNH?</LabelMarcador>
+                <LabelMarcador htmlFor="possuiCNH" marcador="recomendado">{t("registration.ui.possui-cnh")}</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="possuiCNH"
@@ -2113,21 +2140,21 @@ export default function CadastroProfissional({
                     onChange={(e) => setFormData((prev) => ({
                       ...prev,
                       possuiCNH: e.target.value,
-                      categoriaCNH: e.target.value === 'Não' ? '' : prev.categoriaCNH,
-                      cnhDocumento: e.target.value === 'Não' ? null : prev.cnhDocumento,
+                      categoriaCNH: e.target.value === t("registration.ui.nao") ? '' : prev.categoriaCNH,
+                      cnhDocumento: e.target.value === t("registration.ui.nao") ? null : prev.cnhDocumento,
                     }))}
                   >
-                    <option value="">Selecione</option>
-                    <option value="Sim">Sim</option>
-                    <option value="Não">Não</option>
-                    <option value={PREFIRO_NAO_INFORMAR}>{PREFIRO_NAO_INFORMAR}</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
+                    <option value="Sim">{t("registration.ui.sim")}</option>
+                    <option value={t("registration.ui.nao")}>{t("registration.ui.nao")}</option>
+                    <option value={PREFIRO_NAO_INFORMAR}>{rotuloOpcao(PREFIRO_NAO_INFORMAR)}</option>
                   </select>
                 </div>
               </div>
 
               {formData.possuiCNH === 'Sim' && (
                 <div className={fg('categoriaCNH')}>
-                  <LabelMarcador htmlFor="categoriaCNH" marcador="recomendado">Categoria da CNH</LabelMarcador>
+                  <LabelMarcador htmlFor="categoriaCNH" marcador="recomendado">{t("registration.ui.categoria-da-cnh")}</LabelMarcador>
                   <div className={styles.selectWrap}>
                     <select
                       id="categoriaCNH"
@@ -2135,7 +2162,7 @@ export default function CadastroProfissional({
                       value={formData.categoriaCNH}
                       onChange={(e) => setFormData((prev) => ({ ...prev, categoriaCNH: e.target.value }))}
                     >
-                      <option value="">Selecione</option>
+                      <option value="">{t("registration.ui.selecione")}</option>
                       {CNH_CATEGORIAS.map((c) => (
                         <option key={c} value={c}>{c}</option>
                       ))}
@@ -2145,7 +2172,7 @@ export default function CadastroProfissional({
               )}
 
               <div className={fg('antecedentes')}>
-                <LabelMarcador htmlFor="antecedentes" marcador="recomendado">Antecedentes criminais</LabelMarcador>
+                <LabelMarcador htmlFor="antecedentes" marcador="recomendado">{t("registration.ui.antecedentes-criminais")}</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="antecedentes"
@@ -2153,10 +2180,10 @@ export default function CadastroProfissional({
                     value={formData.antecedentes}
                     onChange={e => setFormData((prev) => ({ ...prev, antecedentes: e.target.value }))}
                   >
-                    <option value="">Selecione</option>
-                    <option value="Não">Não</option>
-                    <option value="Sim">Sim</option>
-                    <option value={PREFIRO_NAO_INFORMAR}>{PREFIRO_NAO_INFORMAR}</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
+                    <option value={t("registration.ui.nao")}>{t("registration.ui.nao")}</option>
+                    <option value="Sim">{t("registration.ui.sim")}</option>
+                    <option value={PREFIRO_NAO_INFORMAR}>{rotuloOpcao(PREFIRO_NAO_INFORMAR)}</option>
                   </select>
                 </div>
               </div>
@@ -2167,10 +2194,10 @@ export default function CadastroProfissional({
                 <div className={`${styles.fieldGroup} ${styles.fieldWide}`}>
                   <CampoArquivoAnexo
                     id="cnhDocumento"
-                    label="Certificado da CNH (opcional)"
+                    label={t("registration.ui.certificado-da-cnh-opcional")}
                     accept=".pdf,.jpg,.jpeg,.png"
                     value={formData.cnhDocumento}
-                    textoBotaoVazio="Selecionar certificado da CNH"
+                    textoBotaoVazio={t("registration.ui.selecionar-certificado-da-cnh")}
                     onFileSelect={async (file) => {
                       const url = await uploadFile(file, 'cnh-documentos');
                       if (url) setFormData((prev) => ({ ...prev, cnhDocumento: url }));
@@ -2183,11 +2210,11 @@ export default function CadastroProfissional({
             <div className={`${styles.fieldGroup} ${styles.fieldWide}`}>
               <CertificadoCursoUpload
                 curso={{
-                  nome: 'Atestado de antecedentes',
+                  nome: t("registration.ui.atestado-de-antecedentes"),
                   possuiCertificado: formData.possuiAtestadoAntecedentes || Boolean(formData.atestado),
                   certificadoUrl: formData.atestado ?? undefined,
                 }}
-                checkboxLabel="Anexo de antecedentes criminais (Opcional)"
+                checkboxLabel={t("registration.ui.anexo-de-antecedentes-criminais-opcional")}
                 uploadType="documents"
                 onChange={(patch) => {
                   setFormData((prev) => ({
@@ -2208,18 +2235,18 @@ export default function CadastroProfissional({
 
             <RegisterCollapsibleSection
               emoji="👨‍👩‍👧‍👦"
-              title="Filhos"
+              title={t("registration.ui.filhos")}
               marcador="recomendado"
               defaultOpen={formData.possuiFilhos === 'Sim'}
             >
               <div className={styles.fieldsRow}>
                 <div className={styles.fieldGroup}>
-                  <label className={styles.label} htmlFor="possuiFilhos">Possui filhos?</label>
+                  <label className={styles.label} htmlFor="possuiFilhos">{t("registration.ui.possui-filhos")}</label>
                   <div className={styles.selectWrap}>
                     <select id="possuiFilhos" className={styles.select} value={formData.possuiFilhos} onChange={e => setFormData((prev) => ({ ...prev, possuiFilhos: e.target.value }))}>
-                      <option value="">Selecione</option>
-                      <option>Não</option>
-                      <option>Sim</option>
+                      <option value="">{t("registration.ui.selecione")}</option>
+                      <option>{t("registration.ui.nao")}</option>
+                      <option>{t("registration.ui.sim")}</option>
                     </select>
                   </div>
                 </div>
@@ -2227,7 +2254,7 @@ export default function CadastroProfissional({
                 {formData.possuiFilhos === 'Sim' && (
                   <>
                     <div className={styles.fieldGroup}>
-                      <label className={styles.label} htmlFor="quantidadeFilhos">Quantidade de filhos</label>
+                      <label className={styles.label} htmlFor="quantidadeFilhos">{t("registration.ui.quantidade-de-filhos")}</label>
                       <div className={styles.selectWrap}>
                         <select
                           id="quantidadeFilhos"
@@ -2235,7 +2262,7 @@ export default function CadastroProfissional({
                           value={formData.quantidadeFilhos}
                           onChange={e => setFormData((prev) => ({ ...prev, quantidadeFilhos: e.target.value }))}
                         >
-                          <option value="">Selecione</option>
+                          <option value="">{t("registration.ui.selecione")}</option>
                           <option>1</option>
                           <option>2</option>
                           <option>3</option>
@@ -2245,10 +2272,10 @@ export default function CadastroProfissional({
                     </div>
 
                     <div className={`${styles.fieldGroup} ${styles.fieldSpan2}`}>
-                      <span className={styles.label}>Faixa etária dos filhos</span>
+                      <span className={styles.label}>{t("registration.ui.faixa-etaria-dos-filhos")}</span>
                       <div className={styles.tagFieldBox}>
                         <div className={styles.tagList}>
-                          {['Menos de 1', '1 a 3', '3 a 5', '5 a 7', '7 a 9', '9 a 12', 'Acima de 12'].map((faixa) => {
+                          {[t("registration.ui.menos-de-1"), t("registration.ui.1-a-3"), t("registration.ui.3-a-5"), t("registration.ui.5-a-7"), t("registration.ui.7-a-9"), t("registration.ui.9-a-12"), t("registration.ui.acima-de-12")].map((faixa) => {
                             const selected = formData.faixaEtariaFilhos.includes(faixa);
                             return (
                               <button
@@ -2278,11 +2305,11 @@ export default function CadastroProfissional({
             </RegisterCollapsibleSection>
           </BlocoCadastro>
 
-          <BlocoCadastro {...propsBloco("contato", "📞", "Contato")}>
+          <BlocoCadastro {...propsBloco("contato", "📞", t("registration.ui.contato"))}>
 
             <div className={styles.fieldsRow}>
               <div className={fg('email')}>
-                <LabelMarcador htmlFor="email" marcador="obrigatorio">E-mail</LabelMarcador>
+                <LabelMarcador htmlFor="email" marcador="obrigatorio">{t("registration.simple.email")}</LabelMarcador>
                 <input
                   id="email"
                   type="email"
@@ -2295,7 +2322,7 @@ export default function CadastroProfissional({
                     const email = e.target.value;
                     setFormData((prev) => ({ ...prev, email }));
                     if (email && !isValidEmail(email)) {
-                      setEmailError('Email inválido');
+                      setEmailError(t("registration.ui.email-invalido"));
                     } else {
                       setEmailError('');
                     }
@@ -2304,16 +2331,16 @@ export default function CadastroProfissional({
                     borderColor: emailError ? '#dc3545' : undefined,
                     opacity: cadastroComGoogle ? 0.9 : 1,
                   }}
-                  title={cadastroComGoogle ? 'E-mail da conta já criada' : undefined}
+                  title={cadastroComGoogle ? t("registration.ui.e-mail-da-conta-ja-criada") : undefined}
                 />
               </div>
               <div className={fg('telefone')}>
-                <LabelMarcador htmlFor="telefone" marcador="obrigatorio">Telefone / WhatsApp (DDD)</LabelMarcador>
+                <LabelMarcador htmlFor="telefone" marcador="obrigatorio">{t("registration.ui.telefone-whatsapp-ddd")}</LabelMarcador>
                 <input
                   id="telefone"
                   type="tel"
                   className={styles.input}
-                  placeholder="(XX) XXXXX-XXXX"
+                  placeholder={t("registration.ui.xx-xxxxx-xxxx")}
                   value={telefone}
                   onChange={(e) => {
                     const value = e.target.value;
@@ -2336,7 +2363,7 @@ export default function CadastroProfissional({
                 />
               </div>
               <div className={fg('whatsapp')}>
-                <LabelMarcador htmlFor="whatsapp" marcador="obrigatorio">Este número é WhatsApp?</LabelMarcador>
+                <LabelMarcador htmlFor="whatsapp" marcador="obrigatorio">{t("registration.ui.este-numero-e-whatsapp")}</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="whatsapp"
@@ -2344,18 +2371,18 @@ export default function CadastroProfissional({
                     value={formData.whatsapp}
                     onChange={e => setFormData((prev) => ({ ...prev, whatsapp: e.target.value }))}
                   >
-                    <option value="Não">Não</option>
-                    <option value="Sim">Sim</option>
+                    <option value={t("registration.ui.nao")}>{t("registration.ui.nao")}</option>
+                    <option value="Sim">{t("registration.ui.sim")}</option>
                   </select>
                 </div>
               </div>
               <div className={styles.fieldGroup}>
-                <label className={styles.label} htmlFor="telefone2">Telefone alternativo (DDD)</label>
+                <label className={styles.label} htmlFor="telefone2">{t("registration.ui.telefone-alternativo-ddd")}</label>
                 <input
                   id="telefone2"
                   type="tel"
                   className={styles.input}
-                  placeholder="(XX) XXXXX-XXXX"
+                  placeholder={t("registration.ui.xx-xxxxx-xxxx")}
                   value={telefone2}
                   onChange={(e) => {
                     const value = e.target.value;
@@ -2386,18 +2413,17 @@ export default function CadastroProfissional({
 
             {cadastroComGoogle && (
               <p style={{ color: '#414141', fontSize: 13, margin: '0 0 12px' }}>
-                Sua conta já está criada. Nome e e-mail permanecem preenchidos — complete o restante do perfil
-                para as empresas te encontrarem.
+                {t("registration.ui.conta-google-criada")}
               </p>
             )}
 
           </BlocoCadastro>
 
-          <BlocoCadastro {...propsBloco("localizacao", "📍", "Localização")}>
+          <BlocoCadastro {...propsBloco("localizacao", "📍", t("registration.ui.localizacao"))}>
 
             <div className={styles.fieldsRow}>
               <div className={fg('estado')}>
-                <LabelMarcador htmlFor="estado" marcador="obrigatorio">Estado (UF)</LabelMarcador>
+                <LabelMarcador htmlFor="estado" marcador="obrigatorio">{t("registration.ui.estado-uf")}</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="estado"
@@ -2409,13 +2435,13 @@ export default function CadastroProfissional({
                       setFormData((prev) => ({ ...prev, estado: e.target.value, cidade: '' }));
                     }}
                   >
-                    <option value="">Selecione</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
                     {listaEstados.map(uf => <option key={uf} value={uf}>{uf}</option>)}
                   </select>
                 </div>
               </div>
               <div className={fg('cidade')}>
-                <LabelMarcador htmlFor="cidade" marcador="obrigatorio">Cidade</LabelMarcador>
+                <LabelMarcador htmlFor="cidade" marcador="obrigatorio">{t("registration.ui.cidade")}</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="cidade"
@@ -2424,13 +2450,13 @@ export default function CadastroProfissional({
                     value={formData.cidade}
                     onChange={e => setFormData((prev) => ({ ...prev, cidade: e.target.value }))}
                   >
-                    <option value="">Escolha a cidade</option>
+                    <option value="">{t("registration.ui.escolha-a-cidade")}</option>
                     {cidades.map((c, i) => <option key={i} value={c}>{c}</option>)}
                   </select>
                 </div>
               </div>
               <div className={fg('disponibilidadeMudanca')}>
-                <LabelMarcador htmlFor="disponibilidadeMudanca" marcador="recomendado">Disponibilidade para mudança</LabelMarcador>
+                <LabelMarcador htmlFor="disponibilidadeMudanca" marcador="recomendado">{t("registration.ui.disponibilidade-para-mudanca")}</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="disponibilidadeMudanca"
@@ -2438,15 +2464,15 @@ export default function CadastroProfissional({
                     value={formData.disponibilidadeMudanca}
                     onChange={e => setFormData((prev) => ({ ...prev, disponibilidadeMudanca: e.target.value }))}
                   >
-                    <option value="">Selecione</option>
-                    <option value="Sim">Sim</option>
-                    <option value="Não">Não</option>
-                    <option value="Dependendo da oportunidade">Dependendo da oportunidade</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
+                    <option value="Sim">{t("registration.ui.sim")}</option>
+                    <option value={t("registration.ui.nao")}>{t("registration.ui.nao")}</option>
+                    <option value={t("registration.ui.dependendo-da-oportunidade")}>{t("registration.ui.dependendo-da-oportunidade")}</option>
                   </select>
                 </div>
               </div>
               <div className={fg('aceitaViagens')}>
-                <LabelMarcador htmlFor="aceitaViagens" marcador="recomendado">Disponibilidade para viagens</LabelMarcador>
+                <LabelMarcador htmlFor="aceitaViagens" marcador="recomendado">{t("registration.ui.disponibilidade-para-viagens")}</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="aceitaViagens"
@@ -2454,11 +2480,11 @@ export default function CadastroProfissional({
                     value={formData.aceitaViagens}
                     onChange={e => setFormData((prev) => ({ ...prev, aceitaViagens: e.target.value }))}
                   >
-                    <option value="">Selecione</option>
-                    <option value="Sim">Sim</option>
-                    <option value="Não">Não</option>
-                    <option value="Dependendo">Dependendo</option>
-                    <option value={PREFIRO_NAO_INFORMAR}>{PREFIRO_NAO_INFORMAR}</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
+                    <option value="Sim">{t("registration.ui.sim")}</option>
+                    <option value={t("registration.ui.nao")}>{t("registration.ui.nao")}</option>
+                    <option value="Dependendo">{t("registration.ui.dependendo")}</option>
+                    <option value={PREFIRO_NAO_INFORMAR}>{rotuloOpcao(PREFIRO_NAO_INFORMAR)}</option>
                   </select>
                 </div>
               </div>
@@ -2469,14 +2495,14 @@ export default function CadastroProfissional({
 
           {showWizardStep(1) && (
           <>
-          <BlocoCadastro {...propsBloco("formacao", "🎓", "Formação")}>
+          <BlocoCadastro {...propsBloco("formacao", "🎓", t("registration.ui.formacao"))}>
 
             <div className={styles.formSubCards}>
               <div className={styles.formSubCard}>
-                <TextoMarcador>Escolaridade</TextoMarcador>
+                <TextoMarcador>{t("registration.ui.escolaridade")}</TextoMarcador>
                 <div className={styles.fieldsRow}>
                   <div className={fg('escolaridade')}>
-                    <LabelMarcador htmlFor="escolaridade" marcador="obrigatorio">Nível</LabelMarcador>
+                    <LabelMarcador htmlFor="escolaridade" marcador="obrigatorio">{t("registration.ui.nivel")}</LabelMarcador>
                     <div className={styles.selectWrap}>
                       <select
                         id="escolaridade"
@@ -2485,48 +2511,42 @@ export default function CadastroProfissional({
                         value={formData.escolaridade}
                         onChange={e => setFormData((prev) => ({ ...prev, escolaridade: e.target.value }))}
                       >
-                        <option value="">Selecione</option>
-                        <option>Fundamental incompleto</option>
-                        <option>Fundamental completo</option>
-                        <option>Médio incompleto</option>
-                        <option>Médio completo</option>
-                        <option>Técnico</option>
-                        <option>Superior incompleto</option>
-                        <option>Superior completo</option>
-                        <option>Pós-graduação</option>
-                        <option>MBA</option>
+                        <option value="">{t("registration.ui.selecione")}</option>
+                        {ESCOLARIDADES_OPCOES.map((nivel) => (
+                          <option key={nivel} value={nivel}>{rotuloOpcao(nivel)}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
                   <div className={fg('cursoFormacao')}>
-                    <LabelMarcador htmlFor="cursoFormacao" marcador="recomendado">Curso</LabelMarcador>
+                    <LabelMarcador htmlFor="cursoFormacao" marcador="recomendado">{t("registration.ui.curso")}</LabelMarcador>
                     <input
                       id="cursoFormacao"
                       type="text"
                       className={styles.input}
-                      placeholder="Ex.: 2º Ano / Medicina"
+                      placeholder={t("registration.ui.ex-2-ano-medicina")}
                       value={formData.cursoFormacao}
                       onChange={e => setFormData((prev) => ({ ...prev, cursoFormacao: e.target.value }))}
                     />
                   </div>
                   <div className={styles.fieldGroup}>
-                    <LabelMarcador htmlFor="instituicaoFormacao" marcador="recomendado">Instituição</LabelMarcador>
+                    <LabelMarcador htmlFor="instituicaoFormacao" marcador="recomendado">{t("registration.ui.instituicao")}</LabelMarcador>
                     <input
                       id="instituicaoFormacao"
                       type="text"
                       className={styles.input}
-                      placeholder="Ex.: SENAI, UFPR"
+                      placeholder={t("registration.ui.ex-senai-ufpr")}
                       value={formData.instituicaoFormacao}
                       onChange={e => setFormData((prev) => ({ ...prev, instituicaoFormacao: e.target.value }))}
                     />
                   </div>
                   <div className={fg('anoConclusaoFormacao')}>
-                    <LabelMarcador htmlFor="anoConclusaoFormacao" marcador="recomendado">Ano de conclusão</LabelMarcador>
+                    <LabelMarcador htmlFor="anoConclusaoFormacao" marcador="recomendado">{t("registration.ui.ano-de-conclusao")}</LabelMarcador>
                     <input
                       id="anoConclusaoFormacao"
                       type="number"
                       className={styles.input}
-                      placeholder="Ex.: 2020"
+                      placeholder={t("registration.ui.ex-2020")}
                       min={1950}
                       max={new Date().getFullYear() + 5}
                       value={formData.anoConclusaoFormacao}
@@ -2540,7 +2560,7 @@ export default function CadastroProfissional({
                     possuiCertificado: formData.possuiCertificadoFormacao || Boolean(formData.documentoFormacao),
                     certificadoUrl: formData.documentoFormacao ?? undefined,
                   }}
-                  checkboxLabel="Anexar histórico / Declaração / Certificado (Opcional)"
+                  checkboxLabel={t("registration.ui.anexar-historico-declaracao-certificado-opcional")}
                   uploadType="documentos-formacao"
                   onChange={(patch) => {
                     setFormData((prev) => ({
@@ -2560,13 +2580,13 @@ export default function CadastroProfissional({
               </div>
 
               <div className={styles.formSubCard}>
-                <TextoMarcador marcador="recomendado">Cursos</TextoMarcador>
+                <TextoMarcador marcador="recomendado">{t("registration.ui.cursos")}</TextoMarcador>
                 <p style={{ margin: 0, fontSize: 11, color: 'var(--dash-text, #414141)', lineHeight: 1.45 }}>
-                  Preencha os cursos que você concluiu. O upload do certificado é opcional.
+                  {t("registration.ui.preencha-cursos")}
                 </p>
                 <datalist id="cursosIndustriaisSugeridos">
                   {CURSOS_INDUSTRIAIS_SUGERIDOS.map((c) => (
-                    <option key={c} value={c} />
+                    <option key={c} value={c}>{rotuloOpcao(c)}</option>
                   ))}
                 </datalist>
                 {cursos.map((curso, index) => {
@@ -2582,38 +2602,38 @@ export default function CadastroProfissional({
                   <div key={index} className={styles.cursoItem}>
                     <div className={styles.fieldsRow}>
                       <div className={styles.fieldGroup}>
-                        <label className={styles.label}>Nome do curso</label>
+                        <label className={styles.label}>{t("registration.ui.nome-do-curso")}</label>
                         <input
                           type="text"
                           className={styles.input}
-                          placeholder="Ex.: NR-11, Metrologia..."
+                          placeholder={t("registration.ui.ex-nr-11-metrologia")}
                           list="cursosIndustriaisSugeridos"
                           value={curso.nome}
                           onChange={(e) => atualizar({ nome: e.target.value })}
                         />
                       </div>
                       <div className={styles.fieldGroup}>
-                        <label className={styles.label}>Instituição</label>
+                        <label className={styles.label}>{t("registration.ui.instituicao")}</label>
                         <input
                           type="text"
                           className={styles.input}
-                          placeholder="Ex.: SENAI"
+                          placeholder={t("registration.ui.ex-senai")}
                           value={curso.instituicao ?? ''}
                           onChange={(e) => atualizar({ instituicao: e.target.value })}
                         />
                       </div>
                       <div className={styles.fieldGroup}>
-                        <label className={styles.label}>Carga horária</label>
+                        <label className={styles.label}>{t("registration.ui.carga-horaria")}</label>
                         <input
                           type="text"
                           className={styles.input}
-                          placeholder="Ex.: 40h"
+                          placeholder={t("registration.ui.ex-40h")}
                           value={curso.cargaHoraria ?? ''}
                           onChange={(e) => atualizar({ cargaHoraria: e.target.value })}
                         />
                       </div>
                       <div className={styles.fieldGroup}>
-                        <label className={styles.label}>Conclusão</label>
+                        <label className={styles.label}>{t("registration.ui.conclusao")}</label>
                         <input
                           type="date"
                           className={styles.input}
@@ -2634,7 +2654,7 @@ export default function CadastroProfissional({
                                 cursosCertificacoes: novos.map((c) => c.nome).filter((n) => n.trim()).join(', '),
                               }));
                             }}
-                            aria-label="Remover curso"
+                            aria-label={t("registration.ui.remover-curso")}
                           >
                             ✕ Remover curso
                           </button>
@@ -2643,7 +2663,7 @@ export default function CadastroProfissional({
                     </div>
                     <CertificadoCursoUpload
                       curso={curso}
-                      checkboxLabel="Anexar certificado (Opcional)"
+                      checkboxLabel={t("registration.ui.anexar-certificado-opcional")}
                       onChange={(patch) => atualizar(patch)}
                     />
                   </div>
@@ -2655,13 +2675,13 @@ export default function CadastroProfissional({
                     className={styles.addBtnSmall}
                     onClick={() => setCursos([...cursos, { nome: '', possuiCertificado: false }])}
                   >
-                    + Adicionar outro curso
+                    {t("registration.ui.adicionar-outro-curso")}
                   </button>
                 </div>
               </div>
 
               <div className={styles.formSubCard}>
-                <TextoMarcador marcador="recomendado">Certificações</TextoMarcador>
+                <TextoMarcador marcador="recomendado">{t("registration.ui.certificacoes")}</TextoMarcador>
                 {certificacoes.map((cert, index) => {
                   const atualizar = (patch: Partial<CertificacaoDetalhada>) => {
                     setCertificacoes((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
@@ -2670,27 +2690,27 @@ export default function CadastroProfissional({
                     <div key={index} className={styles.cursoItem}>
                       <div className={styles.fieldsRow}>
                         <div className={styles.fieldGroup}>
-                          <label className={styles.label}>Nome da certificação</label>
+                          <label className={styles.label}>{t("registration.ui.nome-da-certificacao")}</label>
                           <input
                             type="text"
                             className={styles.input}
-                            placeholder="Ex.: ISO 9001 Lead Auditor"
+                            placeholder={t("registration.ui.ex-iso-9001-lead-auditor")}
                             value={cert.nome}
                             onChange={(e) => atualizar({ nome: e.target.value })}
                           />
                         </div>
                         <div className={styles.fieldGroup}>
-                          <label className={styles.label}>Emissor</label>
+                          <label className={styles.label}>{t("registration.ui.emissor")}</label>
                           <input
                             type="text"
                             className={styles.input}
-                            placeholder="Ex.: Bureau Veritas"
+                            placeholder={t("registration.ui.ex-bureau-veritas")}
                             value={cert.emissor ?? ''}
                             onChange={(e) => atualizar({ emissor: e.target.value })}
                           />
                         </div>
                         <div className={styles.fieldGroup}>
-                          <label className={styles.label}>Validade</label>
+                          <label className={styles.label}>{t("registration.ui.validade")}</label>
                           <input
                             type="date"
                             className={styles.input}
@@ -2704,9 +2724,9 @@ export default function CadastroProfissional({
                               type="button"
                               className={styles.addBtnSmall}
                               onClick={() => setCertificacoes(certificacoes.filter((_, i) => i !== index))}
-                              aria-label="Remover certificação"
+                              aria-label={t("registration.ui.remover-certificacao")}
                             >
-                              ✕ Remover certificação
+                              {t("registration.ui.remover-certificacao-botao")}
                             </button>
                           </div>
                         )}
@@ -2719,7 +2739,7 @@ export default function CadastroProfissional({
                           certificadoUrl: cert.certificadoUrl,
                           verificado: cert.verificado,
                         }}
-                        checkboxLabel="Anexar certificado (Opcional)"
+                        checkboxLabel={t("registration.ui.anexar-certificado-opcional")}
                         uploadType="certificacoes"
                         onChange={(patch) =>
                           atualizar({
@@ -2741,13 +2761,13 @@ export default function CadastroProfissional({
                     className={styles.addBtnSmall}
                     onClick={() => setCertificacoes([...certificacoes, { nome: '' }])}
                   >
-                    + Adicionar certificação
+                    {t("registration.ui.adicionar-certificacao")}
                   </button>
                 </div>
               </div>
 
               <div className={styles.formSubCard}>
-                <TextoMarcador marcador="recomendado">Idiomas</TextoMarcador>
+                <TextoMarcador marcador="recomendado">{t("registration.ui.idiomas")}</TextoMarcador>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {idiomas.map((idioma, index) => (
                 <div key={index}>
@@ -2766,9 +2786,9 @@ export default function CadastroProfissional({
                             setIdiomas(novosIdiomas);
                           }}
                         >
-                          <option value="">Selecione o idioma</option>
+                          <option value="">{t("registration.ui.selecione-o-idioma")}</option>
                           {IDIOMAS_OPCOES.map((opcao) => (
-                            <option key={opcao} value={opcao}>{opcao}</option>
+                            <option key={opcao} value={opcao}>{rotuloOpcao(opcao)}</option>
                           ))}
                         </select>
                       </div>
@@ -2778,7 +2798,7 @@ export default function CadastroProfissional({
                         <input
                           type="text"
                           className={styles.input}
-                          placeholder="Digite o idioma"
+                          placeholder={t("registration.ui.digite-o-idioma")}
                           value={idioma.custom ?? ''}
                           onChange={(e) => {
                             const novosIdiomas = [...idiomas];
@@ -2795,7 +2815,7 @@ export default function CadastroProfissional({
                         type="button"
                         className={styles.addBtnSmall}
                         onClick={() => setIdiomas(idiomas.filter((_, i) => i !== index))}
-                        aria-label="Remover idioma"
+                        aria-label={t("registration.ui.remover-idioma")}
                       >
                         ✕ Remover idioma
                       </button>
@@ -2809,7 +2829,7 @@ export default function CadastroProfissional({
                       className={styles.addBtnSmall}
                       onClick={() => setIdiomas([...idiomas, { selecionado: '' }])}
                     >
-                      + Adicionar idioma
+                      {t("registration.ui.adicionar-idioma")}
                     </button>
                   </div>
                 </div>
@@ -2817,11 +2837,11 @@ export default function CadastroProfissional({
             </div>
           </BlocoCadastro>
 
-          <BlocoCadastro {...propsBloco("perfil-profissional", "💼", "Perfil profissional")}>
+          <BlocoCadastro {...propsBloco("perfil-profissional", "💼", t("registration.ui.perfil-profissional"))}>
 
             <div className={styles.fieldsRow}>
               <div className={fg('situacaoProfissional')}>
-                <LabelMarcador htmlFor="situacaoProfissional" marcador="obrigatorio">Situação profissional atual</LabelMarcador>
+                <LabelMarcador htmlFor="situacaoProfissional" marcador="obrigatorio">{t("registration.ui.situacao-profissional-atual")}</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="situacaoProfissional"
@@ -2830,17 +2850,17 @@ export default function CadastroProfissional({
                     value={formData.situacaoProfissional}
                     onChange={(e) => setFormData((prev) => ({ ...prev, situacaoProfissional: e.target.value }))}
                   >
-                    <option value="">Selecione</option>
-                    <option value="Empregado">Empregado</option>
-                    <option value="Desempregado">Desempregado</option>
-                    <option value="Primeiro emprego">Primeiro emprego</option>
-                    <option value="Jovem Aprendiz (16 a 18)">Jovem Aprendiz (16 a 18)</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
+                    <option value="Empregado">{t("registration.ui.empregado")}</option>
+                    <option value="Desempregado">{t("registration.ui.desempregado")}</option>
+                    <option value={t("registration.ui.primeiro-emprego")}>{t("registration.ui.primeiro-emprego")}</option>
+                    <option value={t("registration.ui.jovem-aprendiz-16-a-18")}>{t("registration.ui.jovem-aprendiz-16-a-18")}</option>
                   </select>
                 </div>
               </div>
 
               <div className={fg('areaInteresse')}>
-                <LabelMarcador htmlFor="areaInteresse" marcador="recomendado">Área de interesse</LabelMarcador>
+                <LabelMarcador htmlFor="areaInteresse" marcador="recomendado">{t("registration.ui.area-de-interesse")}</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="areaInteresse"
@@ -2848,65 +2868,65 @@ export default function CadastroProfissional({
                     value={formData.areaInteresse}
                     onChange={(e) => setFormData((prev) => ({ ...prev, areaInteresse: e.target.value }))}
                   >
-                    <option value="">Selecione</option>
-                    <option>Automotivo</option>
-                    <option>Aviação</option>
-                    <option>Celulose e Papel</option>
-                    <option>Cerâmica</option>
-                    <option>Construção Civil</option>
-                    <option>Defesa e Segurança</option>
-                    <option>Eletricidade</option>
-                    <option>Eletrônica</option>
-                    <option>Energia</option>
-                    <option>Engenharia</option>
-                    <option>Farmacêutica</option>
-                    <option>Ferramentas</option>
-                    <option>Fiação e Tecelagem</option>
-                    <option>Fundição</option>
-                    <option>Gás Industrial</option>
-                    <option>Indústria Alimentícia</option>
-                    <option>Indústria Beverages</option>
-                    <option>Indústria Cosmética</option>
-                    <option>Indústria de Embalagem</option>
-                    <option>Indústria de Máquinas</option>
-                    <option>Indústria de Plástico</option>
-                    <option>Indústria de Química</option>
-                    <option>Indústria de Vestuário</option>
-                    <option>Indústria Gráfica</option>
-                    <option>Indústria Metal-Mecânica</option>
-                    <option>Indústria Têxtil</option>
-                    <option>Infraestrutura</option>
-                    <option>Instalações Elétricas</option>
-                    <option>Laminação</option>
-                    <option>Logística Industrial</option>
-                    <option>Louças e Vidros</option>
-                    <option>Madeira e Móveis</option>
-                    <option>Manutenção Industrial</option>
-                    <option>Mármore e Granito</option>
-                    <option>Materiais de Construção</option>
-                    <option>Materiais Elétricos</option>
-                    <option>Mecânica de Precisão</option>
-                    <option>Mecânica Industrial</option>
-                    <option>Metalurgia</option>
-                    <option>Mineração</option>
-                    <option>Petroquímica</option>
-                    <option>Plástico</option>
-                    <option>Pneumática e Hidráulica</option>
-                    <option>Produtos Químicos</option>
-                    <option>Refinaria</option>
-                    <option>Siderurgia</option>
-                    <option>Solda e Estruturas Metálicas</option>
-                    <option>Tratamento de Água</option>
-                    <option>Tratamento de Resíduos</option>
-                    <option>Tubo e Conexões</option>
-                    <option>Usina Hidrelétrica</option>
-                    <option>Usina Termelétrica</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
+                    <option>{t("registration.ui.automotivo")}</option>
+                    <option>{t("registration.ui.aviacao")}</option>
+                    <option>{t("registration.ui.celulose-e-papel")}</option>
+                    <option>{t("registration.ui.ceramica")}</option>
+                    <option>{t("registration.ui.construcao-civil")}</option>
+                    <option>{t("registration.ui.defesa-e-seguranca")}</option>
+                    <option>{t("registration.ui.eletricidade")}</option>
+                    <option>{t("registration.ui.eletronica")}</option>
+                    <option>{t("registration.ui.energia")}</option>
+                    <option>{t("registration.ui.engenharia")}</option>
+                    <option>{t("registration.ui.farmaceutica")}</option>
+                    <option>{t("registration.ui.ferramentas")}</option>
+                    <option>{t("registration.ui.fiacao-e-tecelagem")}</option>
+                    <option>{t("registration.ui.fundicao")}</option>
+                    <option>{t("registration.ui.gas-industrial")}</option>
+                    <option>{t("registration.ui.industria-alimenticia")}</option>
+                    <option>{t("registration.ui.industria-beverages")}</option>
+                    <option>{t("registration.ui.industria-cosmetica")}</option>
+                    <option>{t("registration.ui.industria-de-embalagem")}</option>
+                    <option>{t("registration.ui.industria-de-maquinas")}</option>
+                    <option>{t("registration.ui.industria-de-plastico")}</option>
+                    <option>{t("registration.ui.industria-de-quimica")}</option>
+                    <option>{t("registration.ui.industria-de-vestuario")}</option>
+                    <option>{t("registration.ui.industria-grafica")}</option>
+                    <option>{t("registration.ui.industria-metal-mecanica")}</option>
+                    <option>{t("registration.ui.industria-textil")}</option>
+                    <option>{t("registration.ui.infraestrutura")}</option>
+                    <option>{t("registration.ui.instalacoes-eletricas")}</option>
+                    <option>{t("registration.ui.laminacao")}</option>
+                    <option>{t("registration.ui.logistica-industrial")}</option>
+                    <option>{t("registration.ui.loucas-e-vidros")}</option>
+                    <option>{t("registration.ui.madeira-e-moveis")}</option>
+                    <option>{t("registration.ui.manutencao-industrial")}</option>
+                    <option>{t("registration.ui.marmore-e-granito")}</option>
+                    <option>{t("registration.ui.materiais-de-construcao")}</option>
+                    <option>{t("registration.ui.materiais-eletricos")}</option>
+                    <option>{t("registration.ui.mecanica-de-precisao")}</option>
+                    <option>{t("registration.ui.mecanica-industrial")}</option>
+                    <option>{t("registration.ui.metalurgia")}</option>
+                    <option>{t("registration.ui.mineracao")}</option>
+                    <option>{t("registration.ui.petroquimica")}</option>
+                    <option>{t("registration.ui.plastico")}</option>
+                    <option>{t("registration.ui.pneumatica-e-hidraulica")}</option>
+                    <option>{t("registration.ui.produtos-quimicos")}</option>
+                    <option>{t("registration.ui.refinaria")}</option>
+                    <option>{t("registration.ui.siderurgia")}</option>
+                    <option>{t("registration.ui.solda-e-estruturas-metalicas")}</option>
+                    <option>{t("registration.ui.tratamento-de-agua")}</option>
+                    <option>{t("registration.ui.tratamento-de-residuos")}</option>
+                    <option>{t("registration.ui.tubo-e-conexoes")}</option>
+                    <option>{t("registration.ui.usina-hidreletrica")}</option>
+                    <option>{t("registration.ui.usina-termeletrica")}</option>
                   </select>
                 </div>
               </div>
 
               <div className={fg('nivelOperacional')}>
-                <LabelMarcador htmlFor="nivelOperacional" marcador="recomendado">Nível operacional</LabelMarcador>
+                <LabelMarcador htmlFor="nivelOperacional" marcador="recomendado">{t("registration.ui.nivel-operacional")}</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="nivelOperacional"
@@ -2919,9 +2939,9 @@ export default function CadastroProfissional({
                       detalheNivel: '',
                     }))}
                   >
-                    <option value="">Selecione</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
                     {NIVEIS_OPERACIONAIS.map((nivel) => (
-                      <option key={nivel} value={nivel}>{nivel}</option>
+                      <option key={nivel} value={nivel}>{rotuloOpcao(nivel)}</option>
                     ))}
                   </select>
                 </div>
@@ -2929,7 +2949,7 @@ export default function CadastroProfissional({
 
               {formData.nivelOperacional && (
                 <div className={fg('areaNivel')}>
-                  <LabelMarcador htmlFor="areaNivel" marcador="recomendado">Área Operacional</LabelMarcador>
+                  <LabelMarcador htmlFor="areaNivel" marcador="recomendado">{t("registration.ui.area-operacional")}</LabelMarcador>
                   <div className={styles.selectWrap}>
                     <select
                       id="areaNivel"
@@ -2937,9 +2957,9 @@ export default function CadastroProfissional({
                       value={formData.areaNivel}
                       onChange={(e) => setFormData((prev) => ({ ...prev, areaNivel: e.target.value }))}
                     >
-                      <option value="">Selecione</option>
+                      <option value="">{t("registration.ui.selecione")}</option>
                       {AREAS_COMPLEMENTO_NIVEL.map((area) => (
-                        <option key={area} value={area}>{area}</option>
+                        <option key={area} value={area}>{rotuloOpcao(area)}</option>
                       ))}
                     </select>
                   </div>
@@ -2947,20 +2967,20 @@ export default function CadastroProfissional({
               )}
 
               <div className={fg('cargoDesejado')}>
-                <LabelMarcador htmlFor="cargoDesejado" marcador="obrigatorio">Cargo desejado</LabelMarcador>
+                <LabelMarcador htmlFor="cargoDesejado" marcador="obrigatorio">{t("registration.ui.cargo-desejado")}</LabelMarcador>
                 <input
                   id="cargoDesejado"
                   type="text"
                   required
                   className={styles.input}
-                  placeholder="Ex.: Operador de CNC, Inspetor de Qualidade"
+                  placeholder={t("registration.ui.ex-operador-de-cnc-inspetor-de-qualidade")}
                   value={formData.cargoDesejado}
                   onChange={(e) => setFormData((prev) => ({ ...prev, cargoDesejado: e.target.value }))}
                 />
               </div>
 
               <div className={fg('turnoDisponivel')}>
-                <LabelMarcador htmlFor="turnoDisponivel" marcador="recomendado">Turno disponível</LabelMarcador>
+                <LabelMarcador htmlFor="turnoDisponivel" marcador="recomendado">{t("registration.ui.turno-disponivel")}</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="turnoDisponivel"
@@ -2968,16 +2988,16 @@ export default function CadastroProfissional({
                     value={formData.turnoDisponivel}
                     onChange={(e) => setFormData((prev) => ({ ...prev, turnoDisponivel: e.target.value }))}
                   >
-                    <option value="">Selecione</option>
-                    <option value="1º Turno">Primeiro</option>
-                    <option value="2º Turno">Segundo</option>
-                    <option value="3º Turno">Terceiro</option>
-                    <option value="Integral">Integral</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
+                    <option value={t("registration.ui.1-turno")}>{t("registration.ui.primeiro")}</option>
+                    <option value={t("registration.ui.2-turno")}>{t("registration.ui.segundo")}</option>
+                    <option value={t("registration.ui.3-turno")}>{t("registration.ui.terceiro")}</option>
+                    <option value="Integral">{t("registration.ui.integral")}</option>
                   </select>
                 </div>
               </div>
               <div className={fg('disponibilidadeInicio')}>
-                <LabelMarcador htmlFor="disponibilidadeInicio" marcador="recomendado">Disponibilidade para início</LabelMarcador>
+                <LabelMarcador htmlFor="disponibilidadeInicio" marcador="recomendado">{t("registration.ui.disponibilidade-para-inicio")}</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="disponibilidadeInicio"
@@ -2985,21 +3005,21 @@ export default function CadastroProfissional({
                     value={formData.disponibilidadeInicio}
                     onChange={(e) => setFormData((prev) => ({ ...prev, disponibilidadeInicio: e.target.value }))}
                   >
-                    <option value="">Selecione</option>
-                    <option value="Imediata">Imediata</option>
-                    <option value="15 dias">15 dias</option>
-                    <option value="30 dias">30 dias</option>
-                    <option value="2 meses">2 meses</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
+                    <option value="Imediata">{t("registration.ui.imediata")}</option>
+                    <option value={t("registration.ui.15-dias")}>{t("registration.ui.15-dias")}</option>
+                    <option value={t("registration.ui.30-dias")}>{t("registration.ui.30-dias")}</option>
+                    <option value={t("registration.ui.2-meses")}>{t("registration.ui.2-meses")}</option>
                   </select>
                 </div>
               </div>
               <div className={fg('pretensaoSalarial')}>
-                <LabelMarcador htmlFor="pretensaoSalarial" marcador="obrigatorio">Pretensão salarial</LabelMarcador>
+                <LabelMarcador htmlFor="pretensaoSalarial" marcador="obrigatorio">{t("registration.ui.pretensao-salarial")}</LabelMarcador>
                 <input
                   id="pretensaoSalarial"
                   type="text"
                   className={styles.input}
-                  placeholder="Ex: R$ 2.500,00"
+                  placeholder={t("registration.ui.ex-r-2-500-00")}
                   value={pretensaoSalarial}
                   onChange={(e) => formatSalario(e.target.value)}
                 />
@@ -3007,11 +3027,11 @@ export default function CadastroProfissional({
             </div>
           </BlocoCadastro>
 
-          <BlocoCadastro {...propsBloco("experiencia", "💼", "Experiência na indústria")}>
+          <BlocoCadastro {...propsBloco("experiencia", "💼", t("registration.ui.experiencia-na-industria"))}>
 
             <div className={styles.fieldsRow}>
               <div className={fg('trabalhouIndustria')}>
-                <LabelMarcador htmlFor="trabalhouIndustria" marcador="recomendado">Trabalhou na indústria?</LabelMarcador>
+                <LabelMarcador htmlFor="trabalhouIndustria" marcador="recomendado">{t("registration.ui.trabalhou-na-industria")}</LabelMarcador>
                 <div className={styles.selectWrap}>
                   <select
                     id="trabalhouIndustria"
@@ -3019,18 +3039,18 @@ export default function CadastroProfissional({
                     value={formData.trabalhouIndustria}
                     onChange={(e) => setFormData((prev) => ({ ...prev, trabalhouIndustria: e.target.value }))}
                   >
-                    <option value="">Selecione</option>
-                    <option value="Não">Não</option>
-                    <option value="Primeiro emprego">Primeiro emprego</option>
-                    <option value="Jovem aprendiz">Jovem aprendiz</option>
-                    <option value="Sim">Sim</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
+                    <option value={t("registration.ui.nao")}>{t("registration.ui.nao")}</option>
+                    <option value={t("registration.ui.primeiro-emprego")}>{t("registration.ui.primeiro-emprego")}</option>
+                    <option value={t("registration.ui.jovem-aprendiz")}>{t("registration.ui.jovem-aprendiz")}</option>
+                    <option value="Sim">{t("registration.ui.sim")}</option>
                   </select>
                 </div>
               </div>
 
             {formData.trabalhouIndustria === 'Sim' && (
               <div className={styles.fieldGroup}>
-                <label className={styles.label} htmlFor="tempoExperiencia">Tempo total de experiência</label>
+                <label className={styles.label} htmlFor="tempoExperiencia">{t("registration.ui.tempo-total-de-experiencia")}</label>
                 <div className={styles.selectWrap}>
                   <select
                     id="tempoExperiencia"
@@ -3038,12 +3058,12 @@ export default function CadastroProfissional({
                     value={formData.tempoExperiencia}
                     onChange={(e) => setFormData((prev) => ({ ...prev, tempoExperiencia: e.target.value }))}
                   >
-                    <option value="">Selecione</option>
-                    <option value="Menos de 1 ano">Menos de 1 ano</option>
-                    <option value="1-2 anos">1-2 anos</option>
-                    <option value="3-5 anos">3-5 anos</option>
-                    <option value="6-10 anos">6-10 anos</option>
-                    <option value="Mais de 10 anos">Mais de 10 anos</option>
+                    <option value="">{t("registration.ui.selecione")}</option>
+                    <option value={t("registration.ui.menos-de-1-ano")}>{t("registration.ui.menos-de-1-ano")}</option>
+                    <option value={t("registration.ui.1-2-anos")}>{t("registration.ui.1-2-anos")}</option>
+                    <option value={t("registration.ui.3-5-anos")}>{t("registration.ui.3-5-anos")}</option>
+                    <option value={t("registration.ui.6-10-anos")}>{t("registration.ui.6-10-anos")}</option>
+                    <option value={t("registration.ui.mais-de-10-anos")}>{t("registration.ui.mais-de-10-anos")}</option>
                   </select>
                 </div>
               </div>
@@ -3051,9 +3071,9 @@ export default function CadastroProfissional({
             </div>
 
             <>
-                <TextoMarcador>Experiências profissionais</TextoMarcador>
+                <TextoMarcador>{t("registration.ui.experiencias-profissionais")}</TextoMarcador>
                 <p style={{ margin: '0 0 10px', fontSize: 12, color: 'var(--dash-text, #414141)', lineHeight: 1.45 }}>
-                  Opcional. Se quiser, informe empresa, cargo e o mês/ano de início. Deixe o fim em branco se ainda trabalha lá.
+                  {t("registration.ui.opcional-experiencia")}
                 </p>
                 <div className={blocoErro('experiencias')} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                   {empresas.map((empresa, index) => (
@@ -3065,12 +3085,12 @@ export default function CadastroProfissional({
                       <p style={{ margin: '0 0 10px', fontWeight: 'bold', color: '#C89B3C' }}>Empresa {index + 1}</p>
                       <div className={styles.fieldsRow}>
                         <div className={index === 0 ? fg('experiencias') : styles.fieldGroup}>
-                          <LabelMarcador>Nome da empresa</LabelMarcador>
+                          <LabelMarcador>{t("registration.ui.nome-da-empresa")}</LabelMarcador>
                           <input
                             id={index === 0 ? 'experiencias' : undefined}
                             type="text"
                             className={styles.input}
-                            placeholder="Nome da empresa"
+                            placeholder={t("registration.ui.nome-da-empresa")}
                             value={empresa.nome}
                             onChange={(e) => {
                               const novasEmpresas = [...empresas];
@@ -3087,11 +3107,11 @@ export default function CadastroProfissional({
                           />
                         </div>
                         <div className={index === 0 ? fg('experiencias') : styles.fieldGroup}>
-                          <LabelMarcador>Cargo</LabelMarcador>
+                          <LabelMarcador>{t("registration.ui.cargo")}</LabelMarcador>
                           <input
                             type="text"
                             className={styles.input}
-                            placeholder="Ex: Eletricista, Soldador"
+                            placeholder={t("registration.ui.ex-eletricista-soldador")}
                             value={empresa.cargo}
                             onChange={(e) => {
                               const novasEmpresas = [...empresas];
@@ -3101,7 +3121,7 @@ export default function CadastroProfissional({
                           />
                         </div>
                         <div className={styles.fieldGroup}>
-                          <label className={styles.label}>Segmento</label>
+                          <label className={styles.label}>{t("registration.ui.segmento")}</label>
                           <div className={styles.selectWrap}>
                             <select
                               className={styles.select}
@@ -3112,15 +3132,15 @@ export default function CadastroProfissional({
                                 setEmpresas(novasEmpresas);
                               }}
                             >
-                              <option value="">Selecione o segmento</option>
+                              <option value="">{t("registration.ui.selecione-o-segmento")}</option>
                               {SEGMENTOS_INDUSTRIA.map((seg) => (
-                                <option key={seg} value={seg}>{seg}</option>
+                                <option key={seg} value={seg}>{rotuloOpcao(seg)}</option>
                               ))}
                             </select>
                           </div>
                         </div>
                         <div className={styles.fieldGroup}>
-                          <LabelMarcador>Início (Mês/Ano)</LabelMarcador>
+                          <LabelMarcador>{t("registration.ui.inicio-mes-ano")}</LabelMarcador>
                           <input
                             type="month"
                             className={styles.input}
@@ -3133,7 +3153,7 @@ export default function CadastroProfissional({
                           />
                         </div>
                         <div className={styles.fieldGroup}>
-                          <LabelMarcador marcador="recomendado">Fim (Mês/Ano)</LabelMarcador>
+                          <LabelMarcador marcador="recomendado">{t("registration.ui.fim-mes-ano")}</LabelMarcador>
                           <input
                             type="month"
                             className={styles.input}
@@ -3147,11 +3167,11 @@ export default function CadastroProfissional({
                         </div>
                       </div>
                       <div className={`${styles.fieldGroup} ${styles.fieldWide}`}>
-                        <label className={styles.label}>Descreva</label>
+                        <label className={styles.label}>{t("registration.ui.descreva")}</label>
                         <textarea
                           className={`${styles.input} ${styles.textarea}`}
                           rows={3}
-                          placeholder="Descreva suas atividades, responsabilidades e conquistas nesta empresa..."
+                          placeholder={t("registration.ui.descreva-suas-atividades-responsabilidades-e-conquistas-nesta-em")}
                           value={empresa.descricao}
                           onChange={(e) => {
                             const novasEmpresas = [...empresas];
@@ -3183,7 +3203,7 @@ export default function CadastroProfissional({
                       className={styles.addBtnSmall}
                       onClick={() => setEmpresas([...empresas, { nome: '', cargo: '', segmento: '', dataInicio: '', dataFim: '', descricao: '' }])}
                     >
-                      + Adicionar outra empresa
+                      {t("registration.ui.adicionar-outra-empresa")}
                     </button>
                   </div>
                 </div>
@@ -3200,25 +3220,25 @@ export default function CadastroProfissional({
             edicao={isEditMode ? { aberto: (id) => Boolean(blocosAbertos[id]), onEditar: abrirBloco } : null}
           />
 
-          <BlocoCadastro {...propsBloco("apresentacao", "✍️", "Apresentação profissional")}>
+          <BlocoCadastro {...propsBloco("apresentacao", "✍️", t("registration.ui.apresentacao-profissional"))}>
             
             <div className={`${styles.fieldGroup} ${styles.fieldWide}`}>
               <LabelMarcador htmlFor="mensagemEmpresas" marcador="recomendado">
                 Mensagem para as empresas{' '}
-                <span className={styles.labelHint}>( Aproveite pois essa é a sua oportunidade de impressionar que visualizar seu perfil.</span>
+                <span className={styles.labelHint}>{t("registration.ui.aproveite-pois-essa-e-a-sua-oportunidade-de-impressionar-que-vis")}</span>
               </LabelMarcador>
               <textarea
               id="mensagemEmpresas"
               className={`${styles.input} ${styles.textarea}`}
               rows={4}
-              placeholder="Conte um pouco sobre você, seus objetivos profissionais ou qualquer informação que gostaria que as empresas soubessem..."
+              placeholder={t("registration.ui.conte-um-pouco-sobre-voce-seus-objetivos-profissionais-ou-qualqu")}
               value={formData.mensagemEmpresas}
               onChange={e => setFormData((prev) => ({ ...prev, mensagemEmpresas: e.target.value }))}
             ></textarea>
             </div>
 
             <div className={styles.formSubCard}>
-              <p className={styles.sobreMimSubtitulo}>Sobre mim</p>
+              <p className={styles.sobreMimSubtitulo}>{t("registration.ui.sobre-mim")}</p>
               <RegisterSobreMimFields value={sobreMim} onChange={atualizarSobreMim} />
             </div>
           </BlocoCadastro>
@@ -3227,7 +3247,7 @@ export default function CadastroProfissional({
 
           {showWizardStep(3) && (
           <>
-          <BlocoCadastro {...propsBloco("video", "🎬", "Vídeo de apresentação")}>
+          <BlocoCadastro {...propsBloco("video", "🎬", t("registration.ui.video-de-apresentacao"))}>
             <div className={styles.formSubCard}>
               <VideoApresentacaoCadastro />
             </div>
@@ -3237,7 +3257,7 @@ export default function CadastroProfissional({
             <ResumeToolkit
               variant={isEditMode ? 'profile' : 'register'}
               focus={isEditMode ? 'full' : 'generate'}
-              notice="Não tem um currículo para anexar? Não tem problema. Geramos seu currículo em PDF gratuito com os dados preenchidos neste cadastro."
+              notice={t("registration.ui.nao-tem-um-curriculo-para-anexar-nao-tem-problema-geramos-seu-cu")}
               authenticated={Boolean(session?.user?.email)}
               getLocalDraft={montarRascunhoCurriculo}
               onDraftApplied={aplicarRascunhoCurriculo}
@@ -3249,13 +3269,13 @@ export default function CadastroProfissional({
           )}
 
           {exibirCamposSenha ? (
-            <BlocoCadastro {...propsBloco("conta", "🔐", "Sua conta")}>
+            <BlocoCadastro {...propsBloco("conta", "🔐", t("registration.ui.sua-conta-2"))}>
               <p className={styles.formHint}>
-                Repita seu e-mail e crie uma senha. Com isso você já tem um perfil no Recruta.
+                {t("registration.ui.repita-email-senha")}
               </p>
               <div className={styles.contaLinha}>
                 <div className={fg('email')}>
-                  <label className={styles.label} htmlFor="emailRepetido">Repita seu e-mail *</label>
+                  <label className={styles.label} htmlFor="emailRepetido">{t("registration.ui.repita-seu-e-mail")}</label>
                   <input
                     id="emailRepetido"
                     type="email"
@@ -3267,7 +3287,7 @@ export default function CadastroProfissional({
                   />
                 </div>
                 <div className={fg('password')}>
-                  <label className={styles.label} htmlFor="password">Senha *</label>
+                  <label className={styles.label} htmlFor="password">{t("registration.ui.senha-2")}</label>
                   <input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
@@ -3281,7 +3301,7 @@ export default function CadastroProfissional({
                   <PasswordStrengthMeter password={password} />
                 </div>
                 <div className={fg('confirmPassword')}>
-                  <label className={styles.label} htmlFor="confirmPassword">Confirmação de senha *</label>
+                  <label className={styles.label} htmlFor="confirmPassword">{t("registration.ui.confirmacao-de-senha")}</label>
                   <input
                     id="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
@@ -3311,13 +3331,13 @@ export default function CadastroProfissional({
             </BlocoCadastro>
           ) : null}
 
-          <BlocoCadastro {...propsBloco("termos", "📋", "Termos")}>
+          <BlocoCadastro {...propsBloco("termos", "📋", t("registration.ui.termos"))}>
 
             <div className={styles.formSubCard}>
               <RegisterTermoItem
                 id="termoAutorizacaoDados"
                 slug="autorizacao-dados"
-                titulo="Termo de Autorização de Uso de Dados"
+                titulo={t("registration.ui.termo-de-autorizacao-de-uso-de-dados")}
                 checked={formData.autorizoDados}
                 onChange={(checked) => setFormData((prev) => ({ ...prev, autorizoDados: checked }))}
                 className={termoErro('autorizoDados')}
@@ -3326,7 +3346,7 @@ export default function CadastroProfissional({
               <RegisterTermoItem
                 id="termoDeclaracaoVeracidade"
                 slug="declaracao-veracidade"
-                titulo="Termo de Declaração de Veracidade"
+                titulo={t("registration.ui.termo-de-declaracao-de-veracidade")}
                 checked={formData.declaroVerdadeiro}
                 onChange={(checked) => setFormData((prev) => ({ ...prev, declaroVerdadeiro: checked }))}
                 className={termoErro('declaroVerdadeiro')}
@@ -3335,7 +3355,7 @@ export default function CadastroProfissional({
               <RegisterTermoItem
                 id="termoLgpd"
                 slug="lgpd"
-                titulo="Termo LGPD — Tratamento de Dados Pessoais"
+                titulo={t("registration.ui.termo-lgpd-tratamento-de-dados-pessoais")}
                 checked={formData.aceitoLGPD}
                 onChange={(checked) => setFormData((prev) => ({ ...prev, aceitoLGPD: checked }))}
                 className={termoErro('aceitoLGPD')}
@@ -3348,7 +3368,7 @@ export default function CadastroProfissional({
           {camposObrigatoriosFaltando.length > 0 && (!useWizard || wizardStep === lastWizardStep) && (
             <div id={useWizard ? 'aviso-obrigatorios-final' : 'aviso-obrigatorios'} className={styles.avisoObrigatoriosCard} role="alert" aria-live="polite">
               <p className={styles.avisoObrigatoriosTitulo}>
-                Preencha todos os campos obrigatórios antes de salvar:
+                {t("registration.ui.preencha-obrigatorios-salvar")}
               </p>
               <ul className={styles.avisoObrigatoriosLista}>
                 {camposObrigatoriosFaltando.map((campo) => (
@@ -3366,14 +3386,14 @@ export default function CadastroProfissional({
                 disabled={wizardStep <= 0}
                 onClick={() => irWizard(wizardStep - 1)}
               >
-                Voltar
+                {t("registration.ui.voltar")}
               </button>
               <button
                 type="button"
                 className={styles.wizardNavBtnPrimary}
                 onClick={() => irWizard(wizardStep + 1)}
               >
-                Continuar
+                {t("registration.ui.continuar")}
               </button>
             </div>
           )}
@@ -3385,10 +3405,10 @@ export default function CadastroProfissional({
                 className={styles.wizardNavBtn}
                 onClick={() => irWizard(wizardStep - 1)}
               >
-                Voltar
+                {t("registration.ui.voltar")}
               </button>
               <button type="submit" className={styles.submitBtn}>
-                Finalizar meu cadastro
+                {t("registration.ui.finalizar-meu-cadastro")}
               </button>
             </div>
           )}
@@ -3397,8 +3417,8 @@ export default function CadastroProfissional({
           <div className={styles.submitBtnRow}>
             <button type="submit" className={styles.submitBtn} disabled={submitting}>
               {isEditMode
-                ? (salvoNoBotao ? 'Alterações salvas' : submitting ? 'Salvando...' : 'Salvar alterações')
-                : 'Finalizar meu cadastro'}
+                ? (salvoNoBotao ? t("registration.ui.alteracoes-salvas") : submitting ? t("registration.ui.salvando") : t("registration.ui.salvar-alteracoes"))
+                : t("registration.ui.finalizar-meu-cadastro")}
             </button>
           </div>
           )}

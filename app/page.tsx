@@ -5,7 +5,9 @@ import { Dancing_Script } from "next/font/google";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import HomeAccessForm from "@/app/components/HomeAccessForm";
 import HomeAuthProvider from "@/app/components/HomeAuthProvider";
+import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
 import { t } from "@/lib/i18n/translate";
+import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
 import { FONT_STACK } from "@/lib/theme";
 import styles from "./home.module.css";
 
@@ -17,7 +19,9 @@ const taglineFont = Dancing_Script({
   adjustFontFallback: true,
 });
 
-export default function Home() {
+export default async function Home() {
+  const locale = await resolveInterfaceLocale();
+  const text = (key: MessageKey) => t(key, locale);
   return (
     <main className={`${styles.homePage} ${styles.homePageFlow}`} style={{ fontFamily: FONT_STACK }}>
       <div className={styles.atmosphere} aria-hidden />
@@ -40,7 +44,7 @@ export default function Home() {
               ★
             </span>
             <p className={`${styles.heroTagline} ${taglineFont.className}`}>
-              {t("surface.home.tagline")}
+              {text("surface.home.tagline")}
             </p>
             <span className={`${styles.heroTaglineStar} ${taglineFont.className}`} aria-hidden>
               ★
@@ -49,7 +53,7 @@ export default function Home() {
           </div>
         </header>
 
-        <section className={`${styles.actionCards} ${styles.proCardWrap}`} aria-label={t("surface.home.accessPro")}>
+        <section className={`${styles.actionCards} ${styles.proCardWrap}`} aria-label={text("surface.home.accessPro")}>
           <style>{`
             .${styles.homePageFlow} .${styles.hero}{margin-bottom:0!important}
             .${styles.homePageFlow} .${styles.actionCards}.${styles.proCardWrap}{flex:1 1 auto!important;justify-content:center!important;margin-top:0!important}
@@ -149,7 +153,7 @@ export default function Home() {
                 <div className={styles.cardImageWrap}>
                   <Image
                     src="/profissional-equipe.jpg"
-                    alt={t("surface.home.photoAlt")}
+                    alt={text("surface.home.photoAlt")}
                     fill
                     sizes="(max-width: 768px) 92vw, 380px"
                     quality={75}
@@ -162,15 +166,15 @@ export default function Home() {
               <div className={styles.cardSideBody}>
                 <div className={styles.proLeadBlock}>
                   <h2 className={styles.proLeadTitle}>
-                    {t("surface.home.headline")}
+                    {text("surface.home.headline")}
                   </h2>
                 </div>
                 <div className={styles.proCopy}>
                   <p>
-                    {t("surface.home.body")}
+                    {text("surface.home.body")}
                   </p>
                   <p className={styles.proCopyGold}>
-                    {t("surface.home.cta")}
+                    {text("surface.home.cta")}
                   </p>
                 </div>
               </div>
@@ -197,14 +201,14 @@ export default function Home() {
 
           <footer className={styles.footer} suppressHydrationWarning>
             <p className={styles.footerTrust}>
-              {t("surface.home.trust")}
+              {text("surface.home.trust")}
             </p>
             <p className={styles.footerCopy} suppressHydrationWarning>
-              © {new Date().getFullYear()} Recruta Indústria · {t("surface.home.rights")}
+              © {new Date().getFullYear()} Recruta Indústria · {text("surface.home.rights")}
             </p>
             <p className={styles.footerPrivacy}>
               <Link href="/termos/lgpd" className="footer-privacy-link">
-                {t("surface.home.privacy")}
+                {text("surface.home.privacy")}
               </Link>
             </p>
             <style>{`.footer-privacy-link{color:#414141!important;font-size:0.58rem!important;font-weight:400!important;letter-spacing:0.01em!important;text-decoration:none!important}.footer-privacy-link:hover{color:#414141!important;text-decoration:underline!important}`}</style>

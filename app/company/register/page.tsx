@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { isValidCPF } from '@/lib/security';
+import { t } from '@/lib/i18n/translate';
+import RegistrationCountryField from '@/components/identity/RegistrationCountryField';
 import PageLoader from '@/app/components/PageLoader';
 import { READABLE_TEXT_STYLE } from '@/lib/theme';
 import styles from '@/app/professional/register/register.module.css';
@@ -19,10 +21,10 @@ import { useCompanyDashboardTabOptional } from '@/components/company/CompanyDash
 
 const twoCols = { '--fields-per-row': '2' } as React.CSSProperties;
 
-function rotuloVerificacao(status: string): 'Em análise' | 'Aprovado' | 'Reprovado' {
-  if (status === 'VERIFIED') return 'Aprovado';
-  if (status === 'REJECTED') return 'Reprovado';
-  return 'Em análise';
+function rotuloVerificacao(status: string): string {
+  if (status === 'VERIFIED') return t("registration.ui.aprovado");
+  if (status === 'REJECTED') return t("registration.ui.reprovado");
+  return t("registration.ui.em-analise");
 }
 
 function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean }) {
@@ -41,6 +43,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
     endereco: '',
   });
 
+  const [pais, setPais] = useState('BR');
   const [telefoneValue, setTelefoneValue] = useState('');
 
   const [cnpjValue, setCnpjValue] = useState('');
@@ -111,7 +114,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
     if (verificado && emailFromUrl) {
       setEmailVerificado(true);
       setEmailEnviado(true);
-      setEmailMensagem('E-mail corporativo confirmado com sucesso. Você pode continuar o cadastro.');
+      setEmailMensagem(t("registration.ui.e-mail-corporativo-confirmado-com-sucesso-voce-pode-continuar-o-"));
       setEmailErro('');
     }
   }, [searchParams]);
@@ -125,7 +128,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
         .then((data) => {
           if (data?.verified) {
             setEmailVerificado(true);
-            setEmailMensagem('E-mail corporativo confirmado com sucesso. Você pode continuar o cadastro.');
+            setEmailMensagem(t("registration.ui.e-mail-corporativo-confirmado-com-sucesso-voce-pode-continuar-o-"));
             setEmailErro('');
           }
         })
@@ -215,13 +218,13 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
           if (userData.emailCorporativoVerificado) {
             setEmailVerificado(true);
             setEmailEnviado(true);
-            setEmailMensagem('E-mail corporativo já confirmado.');
+            setEmailMensagem(t("registration.ui.e-mail-corporativo-ja-confirmado"));
           }
         }
 
         if (userData?.cartaoCnpjUrl) {
           setCartaoCnpjUrl(String(userData.cartaoCnpjUrl));
-          setCartaoCnpjNome('Cartão CNPJ enviado');
+          setCartaoCnpjNome(t("registration.ui.cartao-cnpj-enviado"));
         }
 
         if (userData?.logoUrl) {
@@ -328,7 +331,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
   const handleEnviarConfirmacaoEmail = async () => {
     const email = emailCorporativo.trim();
     if (!email) {
-      setEmailErro('Informe o e-mail corporativo da empresa.');
+      setEmailErro(t("registration.ui.informe-o-e-mail-corporativo-da-empresa"));
       return;
     }
 
@@ -345,24 +348,24 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setEmailErro(data?.error || 'Não foi possível enviar o e-mail de confirmação.');
+        setEmailErro(data?.error || t("registration.ui.nao-foi-possivel-enviar-o-e-mail-de-confirmacao"));
         return;
       }
 
       if (data?.verified) {
         setEmailVerificado(true);
         setEmailEnviado(true);
-        setEmailMensagem(data?.message || 'E-mail corporativo já confirmado.');
+        setEmailMensagem(data?.message || t("registration.ui.e-mail-corporativo-ja-confirmado"));
         return;
       }
 
       setEmailEnviado(true);
       setEmailMensagem(
         data?.message
-        || `Enviamos um e-mail de confirmação para ${email}. Acesse o link no e-mail para continuar o cadastro.`,
+        || t("registration.ui.enviamos-confirmacao").replace("{email}", email),
       );
     } catch {
-      setEmailErro('Erro de rede ao enviar o e-mail de confirmação.');
+      setEmailErro(t("registration.ui.erro-de-rede-ao-enviar-o-e-mail-de-confirmacao"));
     } finally {
       setEnviandoEmail(false);
     }
@@ -384,14 +387,14 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok || !data?.file?.url) {
-        setErrorMessage(data?.error || 'Erro ao enviar o cartão CNPJ.');
+        setErrorMessage(data?.error || t("registration.ui.erro-ao-enviar-o-cartao-cnpj"));
         return;
       }
 
       setCartaoCnpjUrl(data.file.url);
       setCartaoCnpjNome(data.file.name || file.name);
     } catch {
-      setErrorMessage('Erro de rede ao enviar o cartão CNPJ.');
+      setErrorMessage(t("registration.ui.erro-de-rede-ao-enviar-o-cartao-cnpj"));
     } finally {
       setEnviandoCartao(false);
       e.target.value = '';
@@ -410,7 +413,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok || !data?.file?.url) {
-      setErrorMessage(data?.error || 'Erro ao enviar a imagem.');
+      setErrorMessage(data?.error || t("registration.ui.erro-ao-enviar-a-imagem"));
       return null;
     }
 
@@ -442,7 +445,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      setErrorMessage('Envie uma imagem (JPG, PNG, WEBP ou GIF).');
+      setErrorMessage(t("registration.ui.envie-uma-imagem-jpg-png-webp-ou-gif"));
       e.target.value = '';
       return;
     }
@@ -456,7 +459,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
         await persistBrandImages(url, fotoResponsavelUrl);
       }
     } catch {
-      setErrorMessage('Erro de rede ao enviar o logotipo.');
+      setErrorMessage(t("registration.ui.erro-de-rede-ao-enviar-o-logotipo"));
     } finally {
       setEnviandoLogo(false);
       e.target.value = '';
@@ -467,7 +470,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      setErrorMessage('Envie uma imagem (JPG, PNG, WEBP ou GIF).');
+      setErrorMessage(t("registration.ui.envie-uma-imagem-jpg-png-webp-ou-gif"));
       e.target.value = '';
       return;
     }
@@ -481,7 +484,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
         await persistBrandImages(logoUrl, url);
       }
     } catch {
-      setErrorMessage('Erro de rede ao enviar a foto do responsável.');
+      setErrorMessage(t("registration.ui.erro-de-rede-ao-enviar-a-foto-do-responsavel"));
     } finally {
       setEnviandoFoto(false);
       e.target.value = '';
@@ -497,7 +500,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
     const limpo = formatado.replace(/\D/g, '');
     if (limpo.length === 11) {
       if (!isValidCPF(limpo)) {
-        setCpfError('CPF inválido');
+        setCpfError(t("registration.ui.cpf-invalido"));
         return;
       }
 
@@ -512,10 +515,10 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
             setCpfValidado(true);
             setCpfError('');
           } else {
-            setCpfError(data.message || 'CPF inválido');
+            setCpfError(data.message || t("registration.ui.cpf-invalido"));
           }
         })
-        .catch(() => setCpfError('Erro ao validar CPF'));
+        .catch(() => setCpfError(t("registration.ui.erro-ao-validar-cpf")));
     }
   };
 
@@ -533,6 +536,11 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
     setErrorMessage('');
     setSuccessMessage('');
 
+    if (!usuarioLogado && !isEditMode && pais !== 'BR') {
+      setErrorMessage(t('registration.country.unavailable'));
+      return;
+    }
+
     const cnpjLimpo = cnpjValue.replace(/\D/g, '');
     const cpfLimpo = cpfValue.replace(/\D/g, '');
     const emailLoginFinal = (emailLogin || formData.email).trim();
@@ -547,17 +555,17 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
 
     if (!usuarioLogado) {
       if (!emailLoginFinal) {
-        setErrorMessage('Informe o e-mail pessoal de login.');
+        setErrorMessage(t("registration.ui.informe-o-e-mail-pessoal-de-login"));
         return;
       }
       if (!emailCorpFinal) {
-        setErrorMessage('Informe o e-mail corporativo da empresa.');
+        setErrorMessage(t("registration.ui.informe-o-e-mail-corporativo-da-empresa"));
         return;
       }
     }
 
     if (!isEditMode && (!termos.autorizoDados || !termos.declaroVerdadeiro || !termos.aceitoLGPD)) {
-      setErrorMessage('Aceite os três termos no final do cadastro para continuar.');
+      setErrorMessage(t("registration.ui.aceite-os-tres-termos-no-final-do-cadastro-para-continuar"));
       return;
     }
 
@@ -617,20 +625,20 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
         const data = await res.json().catch(() => ({}));
 
         if (!res.ok) {
-          setErrorMessage(data?.error || 'Erro ao finalizar cadastro.');
+          setErrorMessage(data?.error || t("registration.ui.erro-ao-finalizar-cadastro"));
           setLoading(false);
           return;
         }
 
         if (isEditMode) {
-          setSuccessMessage('Alterações salvas');
+          setSuccessMessage(t("registration.ui.alteracoes-salvas"));
           setSalvoNoBotao(true);
           setEditandoEmpresa(false);
           setEditandoResponsavel(false);
           setLoading(false);
           return;
         }
-        setSuccessMessage('Cadastro salvo.');
+        setSuccessMessage(t("registration.ui.cadastro-salvo"));
         router.push('/company/boas-vindas');
         return;
       }
@@ -640,6 +648,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userType: 'company',
+          countryCode: pais,
           email: emailLoginFinal,
           emailCorporativo: emailCorpFinal,
           password: formData.password,
@@ -660,12 +669,12 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
 
       if (!res.ok) {
         const detail = data?.feedback?.length ? ` ${data.feedback.join(' ')}` : '';
-        setErrorMessage((data?.error || 'Erro ao finalizar cadastro.') + detail);
+        setErrorMessage((data?.error || t("registration.ui.erro-ao-finalizar-cadastro")) + detail);
         setLoading(false);
         return;
       }
 
-      setSuccessMessage('Cadastro salvo. Enviamos um e-mail para confirmar o endereço corporativo.');
+      setSuccessMessage(t("registration.ui.cadastro-salvo-enviamos-um-e-mail-para-confirmar-o-endereco-corp"));
       void fetch('/api/company/send-corporate-email-confirmation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -674,7 +683,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
       router.push('/company/boas-vindas');
     } catch (err) {
       console.error('Erro no cadastro empresa:', err);
-      setErrorMessage('Erro de rede ao finalizar cadastro. Tente novamente.');
+      setErrorMessage(t("registration.ui.erro-de-rede-ao-finalizar-cadastro-tente-novamente"));
       setLoading(false);
     }
   };
@@ -687,7 +696,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
   ) {
     return (
       <PageLoader
-        message={checkingRegistration ? 'Verificando cadastro...' : 'Carregando...'}
+        message={checkingRegistration ? t("registration.ui.verificando-cadastro") : t("registration.ui.carregando")}
       />
     );
   }
@@ -697,13 +706,13 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
       <div style={{ position: 'relative', minHeight: '100vh', backgroundColor: '#F3E6C8', padding: '40px 20px', color: '#414141', overflow: 'hidden', ...READABLE_TEXT_STYLE }} className="ri-readable">
         <AuthAtmosphere intensity="strong" />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '560px', margin: '0 auto', background: '#E8D5A3', padding: '40px', borderRadius: '16px', border: '1px solid rgba(200,155,60,0.7)', boxShadow: '0 16px 40px rgba(0,0,0,0.5)', textAlign: 'center' }}>
-          <h1 style={{ color: '#C89B3C', marginTop: 0 }}>Conta profissional detectada</h1>
+          <h1 style={{ color: '#C89B3C', marginTop: 0 }}>{t("registration.ui.conta-profissional-detectada")}</h1>
           <p style={{ lineHeight: 1.6 }}>
-            O e-mail <strong>{session.user.email}</strong> já está cadastrado como <strong>profissional</strong>
+            {t("registration.ui.o-email")} <strong>{session.user.email}</strong> {t("registration.ui.ja-esta-cadastrado-como")} <strong>{t("registration.ui.profissional")}</strong>
             {session.user.name ? ` (${session.user.name})` : ''}.
           </p>
           <p style={{ lineHeight: 1.6, color: 'var(--dash-text, #414141)' }}>
-            Para acessar como empresa, saia e entre com outro e-mail Google ou crie uma conta empresa com e-mail diferente.
+            {t("registration.ui.para-acessar-como-empresa")}
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 24 }}>
             <button
@@ -711,14 +720,14 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
               onClick={() => router.push('/professional/dashboard')}
               style={{ padding: '12px', background: 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)', color: '#000', border: 'none', borderRadius: 8, fontWeight: 'bold', cursor: 'pointer' }}
             >
-              Ir ao painel profissional
+              {t("registration.ui.ir-ao-painel-profissional")}
             </button>
             <button
               type="button"
               onClick={() => { window.location.href = '/api/auth/logout'; }}
               style={{ padding: '12px', background: 'transparent', color: '#414141', border: '2px solid #8D6B1F', borderRadius: 8, fontWeight: 'bold', cursor: 'pointer' }}
             >
-              Sair e usar outro e-mail
+              {t("registration.ui.sair-e-usar-outro-email")}
             </button>
           </div>
         </div>
@@ -727,7 +736,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
   }
 
   if (!isEditMode && contaJaCompleta) {
-    const emailLogado = session?.user?.email || 'sua conta';
+    const emailLogado = session?.user?.email || t("registration.ui.sua-conta");
     return (
       <div className={`${styles.container} ri-readable`}>
         <AuthAtmosphere intensity="strong" />
@@ -736,16 +745,15 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
             <LogoRecruta size="sm" as="div" depth />
           </div>
           <h1 id="register-title" className={styles.title}>
-            Você já tem cadastro
+            {t("registration.ui.voce-ja-tem-cadastro")}
           </h1>
           <p className={styles.formHint}>
-            Você já está logado neste site como <strong>{emailLogado}</strong>.
-            Para entrar no painel use o botão abaixo. Se quiser cadastrar outra
-            empresa, saia primeiro.
+            {t("registration.ui.voce-ja-esta-logado")} <strong>{emailLogado}</strong>.{" "}
+            {t("registration.ui.para-entrar-no-painel")}
           </p>
           <div className={styles.alreadyRegisteredActions}>
             <Link href="/company/dashboard-empresa" className={styles.submitBtn}>
-              Ir ao painel
+              {t("registration.ui.ir-ao-painel")}
             </Link>
             <button
               type="button"
@@ -754,10 +762,10 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                 void signOut({ callbackUrl: '/company/register' });
               }}
             >
-              Sair e criar outro cadastro
+              {t("registration.ui.sair-e-criar-outro-cadastro")}
             </button>
             <Link href="/" className={styles.secondaryLinkBtn}>
-              Voltar à página inicial
+              {t("registration.ui.voltar-a-pagina-inicial")}
             </Link>
           </div>
         </div>
@@ -766,9 +774,9 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
   }
 
   const rotuloStatus = rotuloVerificacao(statusVerificacao);
-  const corStatus = rotuloStatus === 'Aprovado'
+  const corStatus = rotuloStatus === t("registration.ui.aprovado")
     ? { background: '#1a3d1a', color: '#9ae6b4' }
-    : rotuloStatus === 'Reprovado'
+    : rotuloStatus === t("registration.ui.reprovado")
       ? { background: '#3d1a1a', color: '#f87171' }
       : { background: '#E8C56A', color: '#24180a' };
   const empresaTravada = isEditMode && !editandoEmpresa;
@@ -777,13 +785,13 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
   return (
     <div className={`${styles.container} ${styles.containerIncorporado} ri-readable`}>
       {incorporado ? null : <AuthAtmosphere intensity="strong" />}
-      {loading && !isEditMode && <PageLoader message="Enviando cadastro..." mode="overlay" />}
+      {loading && !isEditMode && <PageLoader message={t("registration.ui.enviando-cadastro")} mode="overlay" />}
       <div className={styles.card} style={{ maxWidth: 1100 }}>
         {isEditMode ? (
           <>
             <div className={layout.topoPerfil}>
               <button type="button" className={styles.anexoBtn} onClick={voltarAoPainel}>
-                Voltar
+                {t("registration.ui.voltar")}
               </button>
               <div className={layout.topoPerfilAcoes}>
                 <span
@@ -795,9 +803,9 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                 <DeleteAccountControl variant="compact" />
               </div>
             </div>
-            {rotuloStatus === 'Reprovado' && motivoReprovacao.trim() ? (
+            {rotuloStatus === t("registration.ui.reprovado") && motivoReprovacao.trim() ? (
               <p style={{ margin: '0 0 12px', fontSize: 13, color: '#3d1a1a', lineHeight: 1.45, textAlign: 'right' }}>
-                <strong>Justificativa: </strong>
+                <strong>{t("registration.ui.justificativa")} </strong>
                 {motivoReprovacao.trim()}
               </p>
             ) : null}
@@ -809,7 +817,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
           </div>
         )}
         {isEditMode ? null : (
-          <h1 className={styles.title}>CADASTRO EMPRESA</h1>
+          <h1 className={styles.title}>{t("registration.ui.cadastro-empresa-2")}</h1>
         )}
 
         {isTestBypass && (
@@ -822,21 +830,21 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
             textAlign: 'center',
           }}>
             <p style={{ margin: '0 0 10px', color: '#414141', fontSize: 13, lineHeight: 1.45 }}>
-              Conta de teste <strong>paizaonacozinha</strong>: preenchimento opcional.
+              {t("registration.ui.conta-de-teste")} <strong>{t("registration.ui.paizaonacozinha")}</strong>{t("registration.ui.preenchimento-opcional")}
             </p>
             <button
               type="button"
               className={styles.anexoBtn}
               onClick={() => router.push('/company/dashboard-empresa')}
             >
-              Ir ao painel sem preencher
+              {t("registration.ui.ir-ao-painel-sem-preencher")}
             </button>
           </div>
         )}
 
         {usuarioLogado && !isEditMode && (
           <p style={{ color: '#414141', fontSize: 13, textAlign: 'center', marginBottom: 16 }}>
-            Você entrou com Google. Complete os dados da empresa abaixo — não é necessário criar senha.
+            {t("registration.ui.voce-entrou-com-google")}
           </p>
         )}
 
@@ -845,17 +853,17 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
             <div className={`${styles.logoCircle}${logoUrl ? ` ${styles.logoCircleFilled}` : ''}`}>
               {logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={logoUrl} alt="Logotipo da empresa" />
+                <img src={logoUrl} alt={t("registration.ui.logotipo-da-empresa")} />
               ) : (
-                <span className={styles.circlePlaceholder}>Logo<br />empresa</span>
+                <span className={styles.circlePlaceholder}>{t("registration.ui.logo")}<br />{t("registration.ui.empresa")}</span>
               )}
             </div>
             <div className={styles.fotoCircle}>
               {fotoResponsavelUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={fotoResponsavelUrl} alt="Foto do responsável" />
+                <img src={fotoResponsavelUrl} alt={t("registration.ui.foto-do-responsavel")} />
               ) : (
-                <span className={styles.circlePlaceholder}>Foto</span>
+                <span className={styles.circlePlaceholder}>{t("registration.ui.foto")}</span>
               )}
             </div>
           </div>
@@ -881,7 +889,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
               onClick={() => logoInputRef.current?.click()}
               disabled={enviandoLogo}
             >
-              {enviandoLogo ? 'Enviando...' : logoUrl ? 'Trocar logotipo' : 'Enviar logotipo'}
+              {enviandoLogo ? t("registration.ui.enviando") : logoUrl ? t("registration.ui.trocar-logotipo") : t("registration.ui.enviar-logotipo")}
             </button>
             <button
               type="button"
@@ -889,11 +897,11 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
               onClick={() => fotoInputRef.current?.click()}
               disabled={enviandoFoto}
             >
-              {enviandoFoto ? 'Enviando...' : fotoResponsavelUrl ? 'Trocar foto' : 'Foto do responsável'}
+              {enviandoFoto ? t("registration.ui.enviando") : fotoResponsavelUrl ? t("registration.ui.trocar-foto") : t("registration.ui.foto-do-responsavel")}
             </button>
           </div>
           <p className={styles.brandHint}>
-            Opcional: logotipo da empresa (círculo maior) e foto da pessoa responsável (círculo menor entrando no logo).
+            {t("registration.ui.opcional-logotipo")}
           </p>
         </div>
 
@@ -911,7 +919,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
 
           <section className={styles.sectionCard}>
             <div className={styles.sectionHead}>
-              <RegisterSectionHeader emoji="🏭" title="Dados da empresa" />
+              <RegisterSectionHeader emoji="🏭" title={t("registration.ui.dados-da-empresa")} />
               {isEditMode ? (
                 <button
                   type="button"
@@ -925,22 +933,33 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                     event.currentTarget.form?.requestSubmit();
                   }}
                 >
-                  {editandoEmpresa ? (loading ? 'Salvando...' : 'Salvar') : 'Editar'}
+                  {editandoEmpresa ? (loading ? t("registration.ui.salvando") : t("registration.ui.salvar")) : t("registration.ui.editar")}
                 </button>
               ) : null}
             </div>
             <div inert={empresaTravada ? true : undefined} className={empresaTravada ? styles.cadastroTravado : undefined}>
+              <div className={layout.linhaCheia}>
+                <RegistrationCountryField
+                  id="empresa-pais"
+                  value={pais}
+                  onChange={setPais}
+                  disabled={usuarioLogado || isEditMode}
+                  labelClassName={styles.label}
+                  selectClassName={styles.input}
+                  hintClassName={styles.formHint}
+                />
+              </div>
               <div className={layout.linhaTripla}>
                 <div>
-                  <label className={styles.label}>CNPJ</label>
-                  <input id="empresa-cnpj" type="text" className={styles.input} placeholder="00.000.000/0000-00" value={cnpjValue} onChange={handleCnpjChange} />
+                  <label className={styles.label}>{t("registration.ui.cnpj")}</label>
+                  <input id="empresa-cnpj" type="text" className={styles.input} placeholder="00.000.000/0000-00" value={cnpjValue} onChange={handleCnpjChange} disabled={!usuarioLogado && !isEditMode && pais !== 'BR'} />
                 </div>
                 <div>
-                  <label className={styles.label}>RAZÃO SOCIAL</label>
+                  <label className={styles.label}>{t("registration.ui.razao-social")}</label>
                   <input id="empresa-razao" type="text" className={styles.input} value={formData.nome} onChange={(e) => setFormData({ ...formData, nome: e.target.value })} />
                 </div>
                 <div>
-                  <label className={styles.label}>TELEFONE (DDD)</label>
+                  <label className={styles.label}>{t("registration.ui.telefone-ddd")}</label>
                   <input
                     id="empresa-telefone"
                     type="tel"
@@ -949,30 +968,31 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                     value={telefoneValue}
                     onChange={(e) => setTelefoneValue(formatarTelefone(e.target.value))}
                     required={false}
+                    disabled={!usuarioLogado && !isEditMode && pais !== 'BR'}
                   />
                 </div>
               </div>
               <div className={layout.linhaCheia}>
-                <label className={styles.label}>ENDEREÇO</label>
+                <label className={styles.label}>{t("registration.ui.endereco")}</label>
                 <input
                   id="empresa-endereco"
                   type="text"
                   className={styles.input}
-                  placeholder="Rua, número, bairro, cidade — UF"
+                  placeholder={t("registration.ui.rua-numero-bairro-cidade-uf")}
                   value={formData.endereco}
                   onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
                 />
               </div>
               <p className={layout.avisoDesbloqueio}>
-                O e-mail corporativo e o cartão CNPJ são necessários para desbloquear os perfis dos profissionais e o cadastro de vagas. Sem a confirmação do e-mail pelo link e sem o cartão CNPJ analisado, a empresa entra no painel, mas não vê os contatos dos profissionais nem publica vagas. Envie os dois para liberar a busca de perfis e a abertura de vagas.
+                {t("registration.ui.aviso-desbloqueio")}
               </p>
               <div className={layout.linhaDupla}>
                 <div>
                   <label className={styles.label}>
                     {emailVerificado ? (
-                      <span aria-label="E-mail verificado" style={{ color: "#1b7a32", marginRight: 6 }}>✓</span>
+                      <span aria-label={t("registration.ui.e-mail-verificado")} style={{ color: "#1b7a32", marginRight: 6 }}>✓</span>
                     ) : null}
-                    E-MAIL CORPORATIVO
+                    {t("registration.ui.email-corporativo-label")}
                   </label>
                   <div className={styles.anexoCampoInline}>
                     <div className={styles.anexoCampoInput}>
@@ -1010,12 +1030,12 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                       }}
                     >
                       {enviandoEmail
-                        ? 'Enviando...'
+                        ? t("registration.ui.enviando")
                         : emailVerificado
-                          ? 'Confirmado'
+                          ? t("registration.ui.confirmado")
                           : emailEnviado
-                            ? 'Reenviar'
-                            : 'Confirmar'}
+                            ? t("registration.ui.reenviar")
+                            : t("registration.ui.confirmar")}
                     </button>
                   </div>
                   {emailMensagem && (
@@ -1026,13 +1046,13 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                   {emailErro && <small style={{ color: '#dc3545', display: 'block', marginTop: 8 }}>{emailErro}</small>}
                 </div>
                 <div>
-                  <label className={styles.label}>CARTÃO CNPJ</label>
+                  <label className={styles.label}>{t("registration.ui.cartao-cnpj")}</label>
                   <div className={styles.anexoCampoInline}>
                     <div className={styles.anexoCampoInput}>
                       {cartaoCnpjNome ? (
                         <span className={styles.anexoCampoNome}>{cartaoCnpjNome}</span>
                       ) : (
-                        <span className={styles.anexoCampoPlaceholder}>Nenhum arquivo selecionado</span>
+                        <span className={styles.anexoCampoPlaceholder}>{t("registration.ui.nenhum-arquivo-selecionado")}</span>
                       )}
                     </div>
                     <button
@@ -1041,7 +1061,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                       onClick={() => cartaoInputRef.current?.click()}
                       disabled={enviandoCartao || empresaTravada}
                     >
-                      {enviandoCartao ? 'Enviando...' : cartaoCnpjUrl ? 'Trocar' : 'Selecionar'}
+                      {enviandoCartao ? t("registration.ui.enviando") : cartaoCnpjUrl ? t("registration.ui.trocar") : t("registration.ui.selecionar")}
                     </button>
                   </div>
                   <input
@@ -1054,7 +1074,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                   {cartaoCnpjUrl && !enviandoCartao && (
                     <small style={{ color: '#C89B3C', display: 'block', marginTop: 6 }}>
                       ✓ Arquivo enviado{' '}
-                      <a href={cartaoCnpjUrl} target="_blank" rel="noreferrer" style={{ color: '#414141' }}>ver arquivo</a>
+                      <a href={cartaoCnpjUrl} target="_blank" rel="noreferrer" style={{ color: '#414141' }}>{t("registration.ui.ver-arquivo")}</a>
                     </small>
                   )}
                 </div>
@@ -1064,7 +1084,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
 
           <section className={styles.sectionCard}>
             <div className={styles.sectionHead}>
-              <RegisterSectionHeader emoji="👤" title="Dados do responsável" />
+              <RegisterSectionHeader emoji="👤" title={t("registration.ui.dados-do-responsavel")} />
               {isEditMode ? (
                 <button
                   type="button"
@@ -1078,25 +1098,25 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                     event.currentTarget.form?.requestSubmit();
                   }}
                 >
-                  {editandoResponsavel ? (loading ? 'Salvando...' : 'Salvar') : 'Editar'}
+                  {editandoResponsavel ? (loading ? t("registration.ui.salvando") : t("registration.ui.salvar")) : t("registration.ui.editar")}
                 </button>
               ) : null}
             </div>
             <div inert={responsavelTravado ? true : undefined} className={responsavelTravado ? styles.cadastroTravado : undefined}>
               <div className={layout.linhaResponsavel}>
                 <div>
-                  <label className={styles.label}>NOME DO RESPONSÁVEL</label>
+                  <label className={styles.label}>{t("registration.ui.nome-do-responsavel")}</label>
                   <input
                     id="empresa-responsavel"
                     type="text"
                     className={styles.input}
-                    placeholder="Pessoa que utiliza a plataforma"
+                    placeholder={t("registration.ui.pessoa-que-utiliza-a-plataforma")}
                     value={formData.responsavelNome}
                     onChange={(e) => setFormData({ ...formData, responsavelNome: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className={styles.label}>CPF DO RESPONSÁVEL</label>
+                  <label className={styles.label}>{t("registration.ui.cpf-do-responsavel")}</label>
                   <input
                     id="empresa-cpf"
                     type="text"
@@ -1104,13 +1124,14 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                     placeholder="000.000.000-00"
                     value={cpfValue}
                     onChange={handleCpfChange}
+                    disabled={!usuarioLogado && !isEditMode && pais !== 'BR'}
                     style={{ borderColor: cpfError ? '#dc3545' : cpfValidado ? '#C89B3C' : undefined }}
                   />
                   {cpfError && <small style={{ color: '#dc3545' }}>{cpfError}</small>}
-                  {cpfValidado && !cpfError && <small style={{ color: '#C89B3C' }}>✓ CPF válido</small>}
+                  {cpfValidado && !cpfError && <small style={{ color: '#C89B3C' }}>{t("registration.ui.cpf-valido")}</small>}
                 </div>
                 <div>
-                  <label className={styles.label}>E-MAIL DE LOGIN</label>
+                  <label className={styles.label}>{t("registration.ui.e-mail-de-login")}</label>
                   {usuarioLogado ? (
                     <input id="empresa-email-login" type="email" className={styles.input} value={emailLogin || formData.email} style={{ opacity: 0.75 }} readOnly disabled />
                   ) : (
@@ -1135,18 +1156,18 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
           {!usuarioLogado && !isEditMode ? (
             <section className={styles.sectionCard}>
               <div className={styles.sectionHead}>
-                <RegisterSectionHeader emoji="🔐" title="Senha de acesso" />
+                <RegisterSectionHeader emoji="🔐" title={t("registration.ui.senha-de-acesso")} />
               </div>
               <div className={styles.fieldsRow} style={twoCols}>
                 <div>
-                  <label className={styles.label}>SENHA</label>
+                  <label className={styles.label}>{t("registration.ui.senha")}</label>
                   <input id="empresa-senha" type="password" className={styles.input} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
                   {!isTestBypass && (
-                    <small style={{ color: '#414141' }}>Mínimo 8 caracteres, com letras maiúsculas, minúsculas, números e símbolo.</small>
+                    <small style={{ color: '#414141' }}>{t("registration.ui.minimo-8-caracteres-com-letras-maiusculas-minusculas-numeros-e-s")}</small>
                   )}
                 </div>
                 <div>
-                  <label className={styles.label}>CONFIRMAR SENHA</label>
+                  <label className={styles.label}>{t("registration.ui.confirmar-senha")}</label>
                   <input id="empresa-senha-confirma" type="password" className={styles.input} value={formData.confirmPassword} onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} />
                 </div>
               </div>
@@ -1156,27 +1177,27 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
           <div className={layout.rodapeCadastro}>
             <section className={styles.sectionCard}>
               <div className={styles.sectionHead}>
-                <RegisterSectionHeader emoji="📋" title="Termos" />
+                <RegisterSectionHeader emoji="📋" title={t("registration.ui.termos")} />
               </div>
               <div className={styles.formSubCard}>
                 <RegisterTermoItem
                   id="empresa-termo-dados"
                   slug="autorizacao-dados"
-                  titulo="Termo de Autorização de Uso de Dados"
+                  titulo={t("registration.ui.termo-de-autorizacao-de-uso-de-dados")}
                   checked={termos.autorizoDados}
                   onChange={(checked) => setTermos((prev) => ({ ...prev, autorizoDados: checked }))}
                 />
                 <RegisterTermoItem
                   id="empresa-termo-veracidade"
                   slug="declaracao-veracidade"
-                  titulo="Termo de Declaração de Veracidade"
+                  titulo={t("registration.ui.termo-de-declaracao-de-veracidade")}
                   checked={termos.declaroVerdadeiro}
                   onChange={(checked) => setTermos((prev) => ({ ...prev, declaroVerdadeiro: checked }))}
                 />
                 <RegisterTermoItem
                   id="empresa-termo-lgpd"
                   slug="lgpd"
-                  titulo="Termo LGPD — Tratamento de Dados Pessoais"
+                  titulo={t("registration.ui.termo-lgpd-tratamento-de-dados-pessoais")}
                   checked={termos.aceitoLGPD}
                   onChange={(checked) => setTermos((prev) => ({ ...prev, aceitoLGPD: checked }))}
                 />
@@ -1190,21 +1211,21 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
                       disabled={loading}
                       style={{ cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
                     >
-                      {loading ? 'Salvando...' : 'FINALIZAR CADASTRO'}
+                      {loading ? t("registration.ui.salvando") : t("registration.ui.finalizar-cadastro")}
                     </button>
                   </div>
                   <div className={styles.anexoBtnRow}>
                     <Link href="/login?tipo=empresa" style={{ fontSize: '13px', color: '#414141', textDecoration: 'underline' }}>
-                      Já tem conta? Entrar
+                      {t("registration.ui.ja-tem-conta")}
                     </Link>
                   </div>
                 </>
               )}
             </section>
             <div className={layout.porqueVerificacao}>
-              <p className={layout.porqueTitulo}>Por que pedimos essas verificações</p>
+              <p className={layout.porqueTitulo}>{t("registration.ui.por-que-pedimos-essas-verificacoes")}</p>
               <p className={layout.porqueTexto}>
-                A verificação existe para proteger candidatos e empresas. Golpistas podem usar o nome de uma empresa real, sem autorização, para publicar vagas falsas e aplicar golpes. O e-mail corporativo confirma que a conta fala em nome da empresa. O cartão CNPJ permite conferir se a empresa existe e se os dados do cadastro batem com o documento. Só depois dessa checagem o Recruta Indústria desbloqueia os perfis dos profissionais e o cadastro de vagas, reduzindo fraude e o uso indevido do nome da empresa.
+                {t("registration.ui.porque-verificacao")}
               </p>
             </div>
           </div>
@@ -1215,7 +1236,7 @@ function CadastroEmpresaContent({ incorporado = false }: { incorporado?: boolean
 }
 export default function CadastroEmpresa({ incorporado = false }: { incorporado?: boolean } = {}) {
   return (
-    <Suspense fallback={<PageLoader message="Carregando..." />}>
+    <Suspense fallback={<PageLoader message={t("registration.ui.carregando")} />}>
       <CadastroEmpresaContent incorporado={incorporado} />
     </Suspense>
   );

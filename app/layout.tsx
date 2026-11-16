@@ -1,10 +1,8 @@
 import React from "react";
 import type { Metadata, Viewport } from "next";
-import { cookies } from "next/headers";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth.config";
 import { bindLocale } from "@/lib/i18n/active-locale";
-import { DEFAULT_LOCALE, htmlLang, resolveLocale, textDirection, type SupportedLocale } from "@/lib/i18n/locales";
+import { htmlLang, textDirection, type SupportedLocale } from "@/lib/i18n/locales";
+import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
 import { Geist, Geist_Mono, Oswald } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegister from "@/components/app-shell/ServiceWorkerRegister";
@@ -135,16 +133,7 @@ export const viewport: Viewport = {
 };
 
 async function resolveUiLocale(): Promise<SupportedLocale> {
-  const jar = await cookies();
-  const fromCookie = jar.get("ri-locale")?.value;
-  if (fromCookie) return resolveLocale(fromCookie);
-  try {
-    const session = await getServerSession(authOptions);
-    if (session?.user?.locale) return resolveLocale(session.user.locale);
-  } catch {
-    /* conta sem sessão continua em pt-BR */
-  }
-  return DEFAULT_LOCALE;
+  return resolveInterfaceLocale();
 }
 
 export default async function RootLayout({
@@ -192,7 +181,7 @@ export default async function RootLayout({
           <InstallPromptProvider>
             <SiteVisitTracker />
             {children}
-            <SiteEmailFooter />
+            <SiteEmailFooter locale={locale} />
           </InstallPromptProvider>
         </Providers>
       </body>

@@ -16,6 +16,7 @@ import {
   temFiltroDeVaga,
 } from "@/lib/jobs/public-vagas-filtros";
 import { caminhoDeVolta, hrefComVolta } from "@/lib/jobs/job-return-path";
+import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
 import { t } from "@/lib/i18n/translate";
 import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
 import styles from "./vagas.module.css";
@@ -61,6 +62,8 @@ export default async function VagasPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const locale = await resolveInterfaceLocale();
+  const text = (key: MessageKey) => t(key, locale);
   const params = achatarSearchParams(await searchParams);
   const paginaPedida = Math.max(1, Number(params.pagina) || 1);
   let jobs: Awaited<ReturnType<typeof searchPublicJobs>> = [];
@@ -70,7 +73,7 @@ export default async function VagasPage({
     jobs = await searchPublicJobs(parseJobSearch(aplicarFaixaSalarial(params)));
   } catch (loadError) {
     console.error("Erro ao listar vagas públicas:", loadError);
-    error = t("surface.jobs.loadError");
+    error = text("surface.jobs.loadError");
   }
 
   const lista = paginarLista(jobs, paginaPedida, VAGAS_POR_PAGINA_PUBLICA);
@@ -80,79 +83,79 @@ export default async function VagasPage({
   return (
     <main className={styles.page}>
       <div className={styles.top}>
-        <Link href="/" className={styles.brandLink} aria-label={t("surface.jobs.home")}>
+        <Link href="/" className={styles.brandLink} aria-label={text("surface.jobs.home")}>
           <LogoRecruta size="sm" as="div" />
         </Link>
       </div>
-      <h1 className={styles.heading}>{t("surface.jobs.title")}</h1>
-      <p className={styles.lead}>{t("surface.jobs.lead")}</p>
+      <h1 className={styles.heading}>{text("surface.jobs.title")}</h1>
+      <p className={styles.lead}>{text("surface.jobs.lead")}</p>
 
       <form className={styles.filters} method="get" action="/vagas">
         <label className={styles.fieldWide}>
-          {t("surface.jobs.keyword")}
-          <input className={styles.control} name="q" defaultValue={valor(params, "q")} maxLength={80} placeholder={t("surface.jobs.keyword")} />
+          {text("surface.jobs.keyword")}
+          <input className={styles.control} name="q" defaultValue={valor(params, "q")} maxLength={80} placeholder={text("surface.jobs.keyword")} />
         </label>
         <label>
-          {t("surface.jobs.state")}
+          {text("surface.jobs.state")}
           <select className={styles.control} name="estado" defaultValue={valor(params, "estado")}>
-            <option value="">{t("surface.jobs.allStates")}</option>
+            <option value="">{text("surface.jobs.allStates")}</option>
             {UFS_BRASIL.map((estado) => (
               <option key={estado.uf} value={estado.uf}>{estado.uf} — {estado.nome}</option>
             ))}
           </select>
         </label>
         <label>
-          {t("surface.jobs.city")}
-          <input className={styles.control} name="cidade" defaultValue={valor(params, "cidade")} maxLength={80} placeholder={t("surface.jobs.city")} />
+          {text("surface.jobs.city")}
+          <input className={styles.control} name="cidade" defaultValue={valor(params, "cidade")} maxLength={80} placeholder={text("surface.jobs.city")} />
         </label>
         <label>
-          {t("surface.jobs.published")}
+          {text("surface.jobs.published")}
           <select className={styles.control} name="periodo" defaultValue={valor(params, "periodo")}>
-            <option value="">{t("surface.jobs.anyDate")}</option>
-            <option value="24h">{t("surface.jobs.last24")}</option>
-            <option value="7">{t("surface.jobs.last7")}</option>
-            <option value="15">{t("surface.jobs.last15")}</option>
-            <option value="30">{t("surface.jobs.last30")}</option>
+            <option value="">{text("surface.jobs.anyDate")}</option>
+            <option value="24h">{text("surface.jobs.last24")}</option>
+            <option value="7">{text("surface.jobs.last7")}</option>
+            <option value="15">{text("surface.jobs.last15")}</option>
+            <option value="30">{text("surface.jobs.last30")}</option>
           </select>
         </label>
         <label>
-          {t("surface.jobs.salary")}
+          {text("surface.jobs.salary")}
           <select className={styles.control} name="faixa" defaultValue={valor(params, "faixa")}>
-            <option value="">{t("surface.jobs.anySalary")}</option>
+            <option value="">{text("surface.jobs.anySalary")}</option>
             {FAIXAS_SALARIO_VAGA.map((faixa) => (
-              <option key={faixa.id} value={faixa.id}>{t(FAIXA[faixa.id] || "surface.jobs.anySalary")}</option>
+              <option key={faixa.id} value={faixa.id}>{text(FAIXA[faixa.id] || "surface.jobs.anySalary")}</option>
             ))}
           </select>
         </label>
         <label>
-          {t("surface.jobs.contract")}
+          {text("surface.jobs.contract")}
           <select className={styles.control} name="contrato" defaultValue={valor(params, "contrato")}>
-            <option value="">{t("surface.jobs.all")}</option>
+            <option value="">{text("surface.jobs.all")}</option>
             {CONTRACT_TYPES.map((option) => (
-              <option key={option.value} value={option.value}>{t(CONTRATO[option.value])}</option>
+              <option key={option.value} value={option.value}>{text(CONTRATO[option.value])}</option>
             ))}
           </select>
         </label>
         <label>
-          {t("surface.jobs.mode")}
+          {text("surface.jobs.mode")}
           <select className={styles.control} name="modalidade" defaultValue={valor(params, "modalidade")}>
-            <option value="">{t("surface.jobs.all")}</option>
+            <option value="">{text("surface.jobs.all")}</option>
             {WORK_MODES.map((option) => (
-              <option key={option.value} value={option.value}>{t(MODALIDADE[option.value])}</option>
+              <option key={option.value} value={option.value}>{text(MODALIDADE[option.value])}</option>
             ))}
           </select>
         </label>
         {volta ? <input type="hidden" name="voltar" value={volta} /> : null}
         <div className={styles.actions}>
-          <button type="submit">{t("surface.jobs.search")}</button>
-          {comFiltro ? <Link href={hrefComVolta("/vagas", volta)} className={styles.clearLink}>{t("surface.jobs.clear")}</Link> : null}
+          <button type="submit">{text("surface.jobs.search")}</button>
+          {comFiltro ? <Link href={hrefComVolta("/vagas", volta)} className={styles.clearLink}>{text("surface.jobs.clear")}</Link> : null}
         </div>
       </form>
 
       {error ? <p className={styles.error}>{error}</p> : null}
       {!error && jobs.length === 0 ? (
         <p className={styles.empty}>
-          {comFiltro ? t("surface.jobs.noneFiltered") : t("surface.jobs.none")}
+          {comFiltro ? text("surface.jobs.noneFiltered") : text("surface.jobs.none")}
         </p>
       ) : null}
       <div className={styles.list}>
@@ -166,15 +169,15 @@ export default async function VagasPage({
               {job.contractLabel ? <li>{job.contractLabel}</li> : null}
               {job.workModeLabel ? <li>{job.workModeLabel}</li> : null}
               {job.workplace ? <li>{job.workplace}</li> : null}
-              {jobApplicationDeadline(job) ? <li>{t("surface.jobs.deadline")} {jobApplicationDeadline(job)}</li> : null}
+              {jobApplicationDeadline(job) ? <li>{text("surface.jobs.deadline")} {jobApplicationDeadline(job)}</li> : null}
             </ul>
           </Link>
         ))}
       </div>
       {!error && lista.totalPaginas > 1 ? (
-        <nav className={styles.pager} aria-label={t("surface.jobs.pages")}>
+        <nav className={styles.pager} aria-label={text("surface.jobs.pages")}>
           {lista.pagina > 1 ? (
-            <Link href={hrefComVolta(hrefListaVagas(params, lista.pagina - 1), volta)}>{t("surface.jobs.prev")}</Link>
+            <Link href={hrefComVolta(hrefListaVagas(params, lista.pagina - 1), volta)}>{text("surface.jobs.prev")}</Link>
           ) : null}
           {paginasDaBarra(lista.pagina, lista.totalPaginas).map((numero) => (
             <Link
@@ -186,7 +189,7 @@ export default async function VagasPage({
             </Link>
           ))}
           {lista.pagina < lista.totalPaginas ? (
-            <Link href={hrefComVolta(hrefListaVagas(params, lista.pagina + 1), volta)}>{t("surface.jobs.next")}</Link>
+            <Link href={hrefComVolta(hrefListaVagas(params, lista.pagina + 1), volta)}>{text("surface.jobs.next")}</Link>
           ) : null}
         </nav>
       ) : null}

@@ -47,23 +47,63 @@ export async function ensureNotificationPreferenceTable(): Promise<void> {
   prefTableReady = true;
 }
 
-async function resolveExistingPhone(userId: string): Promise<string | null> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      role: true,
-      profile: { select: { phone: true, whatsapp: true } },
-      company: { select: { telefone: true } },
-    },
-  });
+type PhoneOwner = {
+  role: string;
+  profile: { phone: string | null; whatsapp: string | null; countryCode?: string | null } | null;
+  company: { telefone: string | null; countryCode?: string | null } | null;
+};
+
+/** Só a ausência da coluna countryCode cai no Brasil. Outros erros continuam visíveis. */
+export function isMissingCountryColumnError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const record = error as { code?: unknown; message?: unknown; meta?: { column?: unknown } };
+  const code = String(record.code || "");
+  const message = String(record.message || "");
+  const column = String(record.meta?.column || "");
+  if (column === "countryCode") return true;
+  if (code === "P2022" && /countryCode/i.test(message + column)) return true;
+  if (code === "42703" && /countryCode/i.test(message)) return true;
+  return /countryCode/i.test(message) && /does not exist|não existe|unknown field|unknown arg/i.test(message);
+}
+
+function phoneFromOwner(user: PhoneOwner | null, assumeBrazil: boolean): string | null {
   if (!user) return null;
   if (user.role === "COMPANY") {
-    return normalizePhoneE164(user.company?.telefone);
+    const countryCode = assumeBrazil ? "BR" : user.company?.countryCode || "BR";
+    return normalizePhoneE164(user.company?.telefone, countryCode);
   }
+  const countryCode = assumeBrazil ? "BR" : user.profile?.countryCode || "BR";
   return (
-    normalizePhoneE164(user.profile?.whatsapp) ||
-    normalizePhoneE164(user.profile?.phone)
+    normalizePhoneE164(user.profile?.whatsapp, countryCode) ||
+    normalizePhoneE164(user.profile?.phone, countryCode)
   );
+}
+
+async function readPhoneOwner(userId: string, withCountry: boolean): Promise<PhoneOwner | null> {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: withCountry
+      ? {
+          role: true,
+          profile: { select: { phone: true, whatsapp: true, countryCode: true } },
+          company: { select: { telefone: true, countryCode: true } },
+        }
+      : {
+          role: true,
+          profile: { select: { phone: true, whatsapp: true } },
+          company: { select: { telefone: true } },
+        },
+  });
+}
+
+async function resolveExistingPhone(userId: string): Promise<string | null> {
+  try {
+    return phoneFromOwner(await readPhoneOwner(userId, true), false);
+  } catch (error) {
+    if (!isMissingCountryColumnError(error)) throw error;
+    console.error("[notifications] Coluna countryCode ausente. O telefone segue como Brasil.", error);
+    return phoneFromOwner(await readPhoneOwner(userId, false), true);
+  }
 }
 
 type PrefRow = {

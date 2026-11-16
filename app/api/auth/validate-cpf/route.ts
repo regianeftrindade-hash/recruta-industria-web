@@ -1,15 +1,19 @@
+import { bindLocale } from '@/lib/i18n/active-locale'
+import { resolveInterfaceLocale } from '@/lib/i18n/resolve-interface-locale'
+import { t } from '@/lib/i18n/translate'
 import { NextRequest, NextResponse } from 'next/server'
-import { isValidCPF } from '@/lib/security'
+import { registrationDocumentError } from '@/lib/identity/registration-documents'
 import { prisma } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
+    bindLocale(await resolveInterfaceLocale())
     const body = await request.json()
     const { cpf } = body
 
     if (!cpf) {
       return NextResponse.json(
-        { error: 'CPF é obrigatório' },
+        { error: t("registration.ui.cpf-obrigatorio") },
         { status: 400 }
       )
     }
@@ -17,11 +21,12 @@ export async function POST(request: NextRequest) {
     const cpfLimpo = cpf.replace(/\D/g, '')
 
     // Validar formato do CPF
-    if (!isValidCPF(cpfLimpo)) {
+    const cpfErro = registrationDocumentError(cpfLimpo, 'CPF', 'BR', t("registration.ui.cpf-formato-incorreto"))
+    if (cpfErro) {
       return NextResponse.json(
         { 
           valid: false,
-          message: 'CPF inválido - formato incorreto',
+          message: cpfErro,
           exists: false
         },
         { status: 200 }
@@ -32,7 +37,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         valid: true,
-        message: 'CPF válido',
+        message: t("registration.ui.cpf-valido-simples"),
         exists: false
       },
       { status: 200 }
@@ -42,7 +47,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         valid: false,
-        message: 'Erro ao validar CPF',
+        message: t("registration.ui.erro-ao-validar-cpf"),
         error: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }

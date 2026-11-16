@@ -1,8 +1,13 @@
+import { bindLocale } from '@/lib/i18n/active-locale'
+import { resolveInterfaceLocale } from '@/lib/i18n/resolve-interface-locale'
+import { t } from '@/lib/i18n/translate';
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth.config'
 import { prisma } from '@/lib/db'
-import { isValidCNPJ, isValidCPF, formatCPF, isValidPhoneBR } from '@/lib/security'
+import { formatCPF } from '@/lib/security'
+import { registrationDocumentError, registrationPhoneError } from '@/lib/identity/registration-documents'
+import { existingRegistrationCountryChangeError } from '@/lib/identity/registration-region'
 import {
   corporateEmailError,
   getAppBaseUrl,
@@ -19,10 +24,11 @@ import { ensureCompanyTestBypassReady, matchesCompanyTestBypass } from '@/lib/co
 
 export async function POST(request: NextRequest) {
   try {
+    bindLocale(await resolveInterfaceLocale())
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user?.email) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+      return NextResponse.json({ error: t("registration.ui.nao-autenticado") }, { status: 401 })
     }
 
     const data = await request.json()
@@ -47,7 +53,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!user) {
-      return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
+      return NextResponse.json({ error: t("registration.ui.usuario-nao-encontrado") }, { status: 404 })
     }
 
     const { resolveCompanyActor } = await import('@/lib/company/company-team')
@@ -56,7 +62,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            'Você faz parte da equipe desta empresa. Somente o administrador principal pode alterar o cadastro.',
+            t("registration.ui.voce-faz-parte-da-equipe-desta-empresa-somente-o-administrador-p"),
         },
         { status: 403 },
       )
@@ -69,33 +75,44 @@ export async function POST(request: NextRequest) {
         userName: user.name || responsavelNome,
       }) || (await ensureCompanyTestBypassReady(user.id))
 
+    const countryCode = user.company?.countryCode || user.countryCode || 'BR'
+    const paisErro = existingRegistrationCountryChangeError(countryCode, data.countryCode)
+    if (paisErro) {
+      return NextResponse.json({ error: paisErro }, { status: 400 })
+    }
+
     if (!isTestBypass) {
       if (!nome) {
-        return NextResponse.json({ error: 'Informe a razão social da empresa.' }, { status: 400 })
+        return NextResponse.json({ error: t("registration.ui.informe-a-razao-social-da-empresa") }, { status: 400 })
       }
 
       if (!responsavelNome) {
-        return NextResponse.json({ error: 'Informe o nome da pessoa responsável.' }, { status: 400 })
+        return NextResponse.json({ error: t("registration.ui.informe-o-nome-da-pessoa-responsavel") }, { status: 400 })
       }
 
       if (!cnpjLimpo || cnpjLimpo.length !== 14) {
-        return NextResponse.json({ error: 'Informe um CNPJ válido (14 dígitos).' }, { status: 400 })
+        return NextResponse.json({ error: t("registration.ui.informe-um-cnpj-valido-14-digitos") }, { status: 400 })
       }
 
-      if (!isValidCNPJ(cnpjLimpo)) {
-        return NextResponse.json({ error: 'CNPJ inválido.' }, { status: 400 })
+      const cnpjErro = registrationDocumentError(cnpjLimpo, 'CNPJ', countryCode, t("registration.ui.cnpj-invalido-2"))
+      if (cnpjErro) {
+        return NextResponse.json({ error: cnpjErro }, { status: 400 })
       }
 
       if (!cpfLimpo || cpfLimpo.length !== 11) {
-        return NextResponse.json({ error: 'Informe um CPF válido (11 dígitos).' }, { status: 400 })
+        return NextResponse.json({ error: t("registration.ui.informe-um-cpf-valido-11-digitos") }, { status: 400 })
       }
 
-      if (!isValidCPF(cpfLimpo)) {
-        return NextResponse.json({ error: 'CPF inválido.' }, { status: 400 })
+      const cpfErro = registrationDocumentError(cpfLimpo, 'CPF', countryCode, t("registration.simple.cpfInvalid"))
+      if (cpfErro) {
+        return NextResponse.json({ error: cpfErro }, { status: 400 })
       }
 
-      if (telefone && !isValidPhoneBR(telefone)) {
-        return NextResponse.json({ error: 'Informe um telefone válido com DDD.' }, { status: 400 })
+      const telefoneErro = telefone
+        ? registrationPhoneError(telefone, countryCode, t("registration.ui.informe-um-telefone-valido-com-ddd"))
+        : null
+      if (telefoneErro) {
+        return NextResponse.json({ error: telefoneErro }, { status: 400 })
       }
     }
 
@@ -109,14 +126,14 @@ export async function POST(request: NextRequest) {
     if (cnpjLimpo) {
       const cnpjEmUso = await findCompanyByCnpj(cnpjLimpo, user.id)
       if (cnpjEmUso) {
-        return NextResponse.json({ error: 'CNPJ já cadastrado em outra conta.' }, { status: 409 })
+        return NextResponse.json({ error: t("registration.ui.cnpj-ja-cadastrado-em-outra-conta") }, { status: 409 })
       }
     }
 
     if (cpfLimpo) {
       const cpfEmUso = await findCompanyByResponsavelCpf(cpfLimpo, user.id)
       if (cpfEmUso) {
-        return NextResponse.json({ error: 'CPF do responsável já cadastrado em outra conta.' }, { status: 409 })
+        return NextResponse.json({ error: t("registration.ui.cpf-do-responsavel-ja-cadastrado-em-outra-conta") }, { status: 409 })
       }
     }
 
@@ -182,9 +199,9 @@ export async function POST(request: NextRequest) {
         const { token, cooldownActive, alreadyVerified } = await createCorporateEmailConfirmation(emailCorporativo)
         if (!alreadyVerified && !cooldownActive) {
           const confirmUrl = `${getAppBaseUrl()}/api/company/confirm-corporate-email?token=${token}`
-          const subject = 'Confirme seu e-mail corporativo — Recruta Indústria'
-          const text = `Confirme seu e-mail corporativo no Recruta Indústria: ${confirmUrl}`
-          const html = `<p>Confirme seu e-mail corporativo para seguirmos com a análise da empresa.</p><p><a href="${confirmUrl}">Confirmar e-mail</a></p>`
+          const subject = t("registration.ui.confirme-seu-e-mail-corporativo-recruta-industria")
+          const text = t("registration.ui.confirme-email-texto").replace("{url}", confirmUrl)
+          const html = `<p>${t("registration.ui.confirme-seu-e-mail-corporativo-para-seguirmos-com-a-analise-da-")}</p><p><a href="${confirmUrl}">${t("registration.ui.confirmar-e-mail")}</a></p>`
           if (isEmailConfigured()) {
             await sendEmail({ to: emailCorporativo, subject, html, text })
           } else if (process.env.NODE_ENV === 'development') {
@@ -198,7 +215,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Cadastro atualizado com sucesso',
+      message: t("registration.ui.cadastro-atualizado-com-sucesso"),
       testBypass: isTestBypass,
       user: {
         id: updatedUser.id,
@@ -223,7 +240,7 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Erro ao atualizar cadastro:', error)
-    const message = error instanceof Error ? error.message : 'Erro desconhecido'
-    return NextResponse.json({ error: 'Erro ao atualizar cadastro', detail: message }, { status: 500 })
+    const message = error instanceof Error ? error.message : t("registration.ui.erro-desconhecido")
+    return NextResponse.json({ error: t("registration.ui.erro-ao-atualizar-cadastro"), detail: message }, { status: 500 })
   }
 }

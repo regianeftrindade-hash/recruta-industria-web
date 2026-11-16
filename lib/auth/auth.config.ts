@@ -178,7 +178,7 @@ export const authOptions: NextAuthOptions = {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { email: normalizedEmail },
-            select: { id: true, name: true, role: true },
+            select: { id: true, name: true, role: true, locale: true },
           });
 
           if (dbUser) {
@@ -192,6 +192,7 @@ export const authOptions: NextAuthOptions = {
               token.name = dbUser.name;
             }
             token.isAdmin = isAdminUser(normalizedEmail, dbUser.role);
+            token.locale = dbUser.locale || 'pt-BR';
           } else if (!token.userType) {
             token.userType = 'PROFESSIONAL';
           }
@@ -212,6 +213,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.userType = token.userType;
         session.user.isAdmin = token.isAdmin === true;
+        session.user.locale = typeof token.locale === 'string' ? token.locale : 'pt-BR';
         if (token.name) {
           session.user.name = token.name as string;
         }

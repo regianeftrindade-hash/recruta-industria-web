@@ -20,6 +20,14 @@ model User {
   lastLogin     DateTime?
   /// Último heartbeat (presença online no sistema)
   lastSeenAt    DateTime?
+  /// País ISO 3166-1 alpha-2. Padrão Brasil.
+  countryCode   String   @default("BR")
+  /// Idioma da interface (BCP 47).
+  locale        String   @default("pt-BR")
+  /// Moeda ISO 4217 deste registro. Não é lida pelo pagamento.
+  currency      String   @default("BRL")
+  /// Fuso IANA. Padrão de Brasília.
+  timeZone      String   @default("America/Sao_Paulo")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -106,6 +114,14 @@ model Company {
   gatewaySubscriptionId String?
   /// Usuários RH extras comprados acima do limite do plano
   extraSeats      Int      @default(0)
+  /// País ISO 3166-1 alpha-2. Padrão Brasil.
+  countryCode     String   @default("BR")
+  /// Idioma da interface (BCP 47).
+  locale          String   @default("pt-BR")
+  /// Moeda ISO 4217 deste registro. Não é lida pelo pagamento.
+  currency        String   @default("BRL")
+  /// Fuso IANA. Padrão de Brasília.
+  timeZone        String   @default("America/Sao_Paulo")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -208,6 +224,14 @@ model Professional {
   id        String   @id @default(cuid())
   userId    String   @unique
   title     String?
+  /// País ISO 3166-1 alpha-2. Padrão Brasil.
+  countryCode String @default("BR")
+  /// Idioma da interface (BCP 47).
+  locale      String @default("pt-BR")
+  /// Moeda ISO 4217 deste registro. Não é lida pelo pagamento.
+  currency    String @default("BRL")
+  /// Fuso IANA. Padrão de Brasília.
+  timeZone    String @default("America/Sao_Paulo")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -346,6 +370,15 @@ model Profile {
   billingMode           String    @default("one_time")
   autoRenew             Boolean   @default(false)
   gatewaySubscriptionId String?
+
+  /// País ISO 3166-1 alpha-2. Padrão Brasil. Não substitui cidade nem UF.
+  countryCode           String    @default("BR")
+  /// Idioma da interface (BCP 47). Não substitui a lista de idiomas do currículo.
+  locale                String    @default("pt-BR")
+  /// Moeda ISO 4217 deste registro. Não é lida pelo pagamento.
+  currency              String    @default("BRL")
+  /// Fuso IANA. Padrão de Brasília.
+  timeZone              String    @default("America/Sao_Paulo")
 
   // Timestamps
   createdAt       DateTime @default(now())
@@ -993,6 +1026,14 @@ model JobPosting {
   createdByUserId          String?
   publishedAt              DateTime?
   closedAt                 DateTime?
+  /// País ISO 3166-1 alpha-2. Padrão Brasil. Não substitui workplace.
+  countryCode              String    @default("BR")
+  /// Idioma da interface (BCP 47).
+  locale                   String    @default("pt-BR")
+  /// Moeda ISO 4217 deste registro. Não altera salaryCents nem o pagamento.
+  currency                 String    @default("BRL")
+  /// Fuso IANA. Padrão de Brasília.
+  timeZone                 String    @default("America/Sao_Paulo")
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
 

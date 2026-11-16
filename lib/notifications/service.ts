@@ -3,6 +3,7 @@
  * Enfileira de forma assíncrona (não deixa a página lenta).
  */
 
+import { resolveLocale, type SupportedLocale } from "@/lib/i18n/locales";
 import { NOTIFICATION_DEFAULT_CHANNELS, NOTIFICATION_RETRY } from "@/lib/notifications/config";
 import { getProviderForChannel } from "@/lib/notifications/providers";
 import {
@@ -142,9 +143,23 @@ export function notifyAsync(input: NotificationJobInput): void {
   });
 }
 
+async function recipientLocale(userId: string): Promise<SupportedLocale> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { locale: true },
+    });
+    return resolveLocale(user?.locale);
+  } catch {
+    return "pt-BR";
+  }
+}
+
 export async function notify(input: NotificationJobInput): Promise<{ queued: number; skipped: number }> {
+  const locale = await recipientLocale(input.userId);
   const rendered = renderTemplate(input.event, {
     ...input.payload,
+    locale,
     // força path limpo
     platformPath: input.payload.platformPath.split("?")[0] || "/login",
   });

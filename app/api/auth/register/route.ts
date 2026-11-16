@@ -1,21 +1,16 @@
+import { bindLocale } from '@/lib/i18n/active-locale'
+import { resolveInterfaceLocale } from '@/lib/i18n/resolve-interface-locale'
+import { t } from '@/lib/i18n/translate';
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth.config'
 import { prisma } from '@/lib/db'
+import { isValidEmail, checkRegisterRateLimit, incrementRegisterAttempts, resetRegisterAttempts, resetFailedAttempts, logAudit, isIPBlocked, blockIP, getBlockedIPTimeRemaining } from '@/lib/security'
+import { registrationDocumentError, registrationPhoneError } from '@/lib/identity/registration-documents'
 import {
-  isValidEmail,
-  isValidCPF,
-  isValidCNPJ,
-  isValidPhoneBR,
-  checkRegisterRateLimit,
-  incrementRegisterAttempts,
-  resetRegisterAttempts,
-  resetFailedAttempts,
-  logAudit,
-  isIPBlocked,
-  blockIP,
-  getBlockedIPTimeRemaining,
-} from '@/lib/security'
+  existingRegistrationCountryChangeError,
+  resolveNewRegistrationCountry,
+} from '@/lib/identity/registration-region'
 import { hashPassword } from '@/lib/security.server'
 import { validatePasswordStrength } from '@/lib/password-strength'
 import { logAudit as logSecurityAudit } from '@/lib/security-audit'
@@ -55,6 +50,7 @@ async function completarPerfilProfissionalExistente(
 
 export async function POST(request: NextRequest) {
   try {
+    bindLocale(await resolveInterfaceLocale())
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
 
@@ -77,7 +73,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            'Acesso bloqueado temporariamente. Você fez muitas tentativas de cadastro. Por favor, aguarde 15 minutos antes de tentar novamente.',
+            t("registration.ui.acesso-bloqueado-temporariamente-voce-fez-muitas-tentativas-de-c"),
           statusCode: 429,
           retryAfter: 900,
         },
@@ -112,14 +108,14 @@ export async function POST(request: NextRequest) {
     if (!email || !userType) {
       incrementRegisterAttempts(ip)
       return NextResponse.json(
-        { error: 'Email e tipo de usuário são obrigatórios' },
+        { error: t("registration.ui.email-e-tipo-de-usuario-sao-obrigatorios") },
         { status: 400 },
       )
     }
 
     if (!isValidEmail(email)) {
       incrementRegisterAttempts(ip)
-      return NextResponse.json({ error: 'Email inválido' }, { status: 400 })
+      return NextResponse.json({ error: t("registration.ui.email-invalido") }, { status: 400 })
     }
 
     const normalizedEmail = email.toLowerCase().trim()
@@ -127,11 +123,11 @@ export async function POST(request: NextRequest) {
     if (password || confirmPassword) {
       if (!password) {
         incrementRegisterAttempts(ip)
-        return NextResponse.json({ error: 'Senha é obrigatória' }, { status: 400 })
+        return NextResponse.json({ error: t("registration.ui.senha-e-obrigatoria") }, { status: 400 })
       }
       if (!confirmPassword) {
         incrementRegisterAttempts(ip)
-        return NextResponse.json({ error: 'Confirmação de senha é obrigatória' }, { status: 400 })
+        return NextResponse.json({ error: t("registration.ui.confirmacao-de-senha-e-obrigatoria") }, { status: 400 })
       }
 
       const passwordStrength = validatePasswordStrength(password)
@@ -139,7 +135,7 @@ export async function POST(request: NextRequest) {
         incrementRegisterAttempts(ip)
         return NextResponse.json(
           {
-            error: 'Senha não atende aos requisitos de segurança',
+            error: t("registration.ui.senha-nao-atende-aos-requisitos-de-seguranca"),
             feedback: passwordStrength.feedback,
             score: passwordStrength.score,
           },
@@ -149,7 +145,7 @@ export async function POST(request: NextRequest) {
 
       if (password !== confirmPassword) {
         incrementRegisterAttempts(ip)
-        return NextResponse.json({ error: 'Senhas não conferem' }, { status: 400 })
+        return NextResponse.json({ error: t("registration.ui.senhas-nao-conferem") }, { status: 400 })
       }
     }
 
@@ -165,11 +161,26 @@ export async function POST(request: NextRequest) {
       const contaOAuth = !existingUser.passwordHash
 
       if (isProfessional && isSameUser) {
+        const paisErro = existingRegistrationCountryChangeError(
+          existingUser.countryCode,
+          body.countryCode,
+        )
+        if (paisErro) {
+          incrementRegisterAttempts(ip)
+          return NextResponse.json({ error: paisErro }, { status: 400 })
+        }
+
         if (cpf) {
           const cpfLimpo = String(cpf).replace(/\D/g, '')
-          if (!isValidCPF(cpfLimpo)) {
+          const cpfErro = registrationDocumentError(
+            cpfLimpo,
+            'CPF',
+            existingUser.countryCode,
+            t("registration.ui.cpf-invalido"),
+          )
+          if (cpfErro) {
             incrementRegisterAttempts(ip)
-            return NextResponse.json({ error: 'CPF inválido' }, { status: 400 })
+            return NextResponse.json({ error: cpfErro }, { status: 400 })
           }
         }
 
@@ -202,7 +213,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             error:
-              'Este e-mail já foi usado no login com Google. Entre com Google novamente e finalize o cadastro.',
+              t("registration.ui.este-e-mail-ja-foi-usado-no-login-com-google-entre-com-google-no"),
             code: 'OAUTH_ACCOUNT_EXISTS',
           },
           { status: 409 },
@@ -214,27 +225,35 @@ export async function POST(request: NextRequest) {
         {
           error:
             userType === 'company'
-              ? 'Este e-mail pessoal já é login no site. Use outro e-mail de login ou entre com essa conta.'
-              : 'Email já cadastrado',
+              ? t("registration.ui.este-e-mail-pessoal-ja-e-login-no-site-use-outro-e-mail-de-login")
+              : t("registration.ui.email-ja-cadastrado"),
           code: 'EMAIL_ALREADY_REGISTERED',
         },
         { status: 409 },
       )
     }
 
+    const region = resolveNewRegistrationCountry(body.countryCode)
+    if (!region.ok) {
+      incrementRegisterAttempts(ip)
+      return NextResponse.json({ error: region.error }, { status: 400 })
+    }
+
     if (userType === 'professional' && cpf) {
       const cpfLimpo = cpf.replace(/\D/g, '')
-      if (!isValidCPF(cpfLimpo)) {
+      const cpfErro = registrationDocumentError(cpfLimpo, 'CPF', 'BR', t("registration.ui.cpf-invalido"))
+      if (cpfErro) {
         incrementRegisterAttempts(ip)
-        return NextResponse.json({ error: 'CPF inválido' }, { status: 400 })
+        return NextResponse.json({ error: cpfErro }, { status: 400 })
       }
     }
 
     if (userType === 'company' && cnpj) {
       const cnpjLimpo = cnpj.replace(/\D/g, '')
-      if (!isValidCNPJ(cnpjLimpo)) {
+      const cnpjErro = registrationDocumentError(cnpjLimpo, 'CNPJ', 'BR', t("registration.ui.cnpj-invalido"))
+      if (cnpjErro) {
         incrementRegisterAttempts(ip)
-        return NextResponse.json({ error: 'CNPJ inválido' }, { status: 400 })
+        return NextResponse.json({ error: cnpjErro }, { status: 400 })
       }
     }
 
@@ -242,21 +261,25 @@ export async function POST(request: NextRequest) {
       const cpfResp = String(responsavelCpf || '').replace(/\D/g, '')
       if (!responsavelNome?.trim()) {
         incrementRegisterAttempts(ip)
-        return NextResponse.json({ error: 'Nome do responsável é obrigatório' }, { status: 400 })
+        return NextResponse.json({ error: t("registration.ui.nome-do-responsavel-e-obrigatorio") }, { status: 400 })
       }
-      if (!cpfResp || !isValidCPF(cpfResp)) {
+      const cpfRespErro = registrationDocumentError(cpfResp, 'CPF', 'BR', t("registration.ui.cpf-do-responsavel-invalido"))
+      if (cpfRespErro) {
         incrementRegisterAttempts(ip)
-        return NextResponse.json({ error: 'CPF do responsável inválido' }, { status: 400 })
+        return NextResponse.json({ error: cpfRespErro }, { status: 400 })
       }
       const cpfEmUso = await findCompanyByResponsavelCpf(cpfResp)
       if (cpfEmUso) {
         incrementRegisterAttempts(ip)
-        return NextResponse.json({ error: 'CPF do responsável já cadastrado' }, { status: 409 })
+        return NextResponse.json({ error: t("registration.ui.cpf-do-responsavel-ja-cadastrado") }, { status: 409 })
       }
       const telefoneEmpresa = String(telefone || '').trim()
-      if (telefoneEmpresa && !isValidPhoneBR(telefoneEmpresa)) {
+      const telefoneErro = telefoneEmpresa
+        ? registrationPhoneError(telefoneEmpresa, 'BR', t("registration.simple.phoneInvalid"))
+        : null
+      if (telefoneErro) {
         incrementRegisterAttempts(ip)
-        return NextResponse.json({ error: 'Telefone inválido. Informe DDD + número.' }, { status: 400 })
+        return NextResponse.json({ error: telefoneErro }, { status: 400 })
       }
       const emailsEmpresa = resolveCompanyRegistrationEmails({
         loginEmail: normalizedEmail,
@@ -264,7 +287,7 @@ export async function POST(request: NextRequest) {
       })
       if (!emailsEmpresa.emailCorporativo) {
         incrementRegisterAttempts(ip)
-        return NextResponse.json({ error: 'Informe o e-mail corporativo da empresa.' }, { status: 400 })
+        return NextResponse.json({ error: t("registration.ui.informe-o-e-mail-corporativo-da-empresa") }, { status: 400 })
       }
       const emailValidationError = corporateEmailError(emailsEmpresa.emailCorporativo)
       if (emailValidationError) {
@@ -284,6 +307,7 @@ export async function POST(request: NextRequest) {
             : nomeProfissional || normalizedEmail.split('@')[0],
         role: userType.toUpperCase() as 'COMPANY' | 'PROFESSIONAL',
         passwordHash: hashedPassword,
+        ...region.region,
       },
     })
 
@@ -294,6 +318,7 @@ export async function POST(request: NextRequest) {
         data: {
           userId: user.id,
           name: name || normalizedEmail.split('@')[0],
+          ...region.region,
         },
       })
       const { emailCorporativo } = resolveCompanyRegistrationEmails({
@@ -344,6 +369,7 @@ export async function POST(request: NextRequest) {
         await prisma.profile.create({
           data: {
             userId: user.id,
+            ...region.region,
             ...profileFields,
           },
         })
@@ -393,7 +419,7 @@ export async function POST(request: NextRequest) {
     const errorMessage =
       error instanceof Error
         ? error.message
-        : 'Erro ao registrar usuário. Tente novamente ou contate o suporte se o problema persistir.'
+        : t("registration.ui.erro-ao-registrar-usuario-tente-novamente-ou-contate-o-suporte-s")
     return NextResponse.json({ error: errorMessage }, { status: 500 })
   }
 }

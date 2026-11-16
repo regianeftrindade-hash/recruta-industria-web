@@ -32,10 +32,18 @@ export function pickSafeMetadata(
   return out;
 }
 
-/** Normaliza telefone BR para E.164 aproximado (só dígitos com 55). Não valida operadora. */
-export function normalizePhoneE164(raw: string | null | undefined): string | null {
+/** Normaliza telefone. Brasil continua com DDD ou +55. Outro país só aceita número já iniciado por +. */
+export function normalizePhoneE164(
+  raw: string | null | undefined,
+  countryCode = "BR",
+): string | null {
   const digits = String(raw || "").replace(/\D/g, "");
   if (!digits) return null;
+  if (countryCode.trim().toUpperCase() !== "BR") {
+    const informed = String(raw || "").trim().startsWith("+");
+    if (!informed || digits.length < 8 || digits.length > 15) return null;
+    return digits;
+  }
   if (digits.length < 10 || digits.length > 13) return null;
   if (digits.startsWith("55")) return digits;
   if (digits.length === 10 || digits.length === 11) return `55${digits}`;

@@ -1,8 +1,10 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import LanguageSwitch from "@/components/i18n/LanguageSwitch";
+import type { SupportedLocale } from "@/lib/i18n/locales";
 
-export default function SiteEmailFooter() {
+export default function SiteEmailFooter({ locale }: { locale: SupportedLocale }) {
   const pathname = usePathname();
   if (pathname === "/") return null;
 
@@ -25,6 +27,7 @@ export default function SiteEmailFooter() {
       >
         contato@recrutaindustria.com
       </a>
+      <LanguageSwitch current={locale} />
     </footer>
   );
 }

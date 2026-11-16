@@ -11,6 +11,8 @@ import loginStyles from "@/app/login/login.module.css";
 import { validatePasswordStrength } from "@/lib/password-strength";
 import { safeJobReturnPath } from "@/lib/jobs/public-job-link";
 import { isValidCPF, isValidPhoneBR } from "@/lib/security";
+import { t } from "@/lib/i18n/translate";
+import RegistrationCountryField from "@/components/identity/RegistrationCountryField";
 
 const SIMPLE_STORAGE_KEY = "dadosCadastroSimples";
 
@@ -56,6 +58,7 @@ function IconeOlho({ aberto }: { aberto: boolean }) {
 
 export default function CadastroRapidoProfissionalPage() {
   const router = useRouter();
+  const [pais, setPais] = useState("BR");
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
@@ -75,30 +78,34 @@ export default function CadastroRapidoProfissionalPage() {
     const emailTrim = email.toLowerCase().trim();
     const cpfLimpo = cpf.replace(/\D/g, "");
 
+    if (pais !== "BR") {
+      setErrorMessage(t("registration.country.unavailable"));
+      return;
+    }
     if (nomeTrim.length < 2) {
-      setErrorMessage("Informe seu nome completo.");
+      setErrorMessage(t("registration.simple.nameRequired"));
       return;
     }
     if (!isValidCPF(cpfLimpo)) {
-      setErrorMessage("CPF inválido.");
+      setErrorMessage(t("registration.simple.cpfInvalid"));
       return;
     }
     if (!emailTrim.includes("@")) {
-      setErrorMessage("Informe um e-mail válido.");
+      setErrorMessage(t("registration.simple.emailInvalid"));
       return;
     }
     if (!isValidPhoneBR(telefone)) {
-      setErrorMessage("Telefone inválido. Informe DDD + número.");
+      setErrorMessage(t("registration.simple.phoneInvalid"));
       return;
     }
     if (password !== confirmPassword) {
-      setErrorMessage("Senhas não conferem.");
+      setErrorMessage(t("registration.simple.passwordMismatch"));
       return;
     }
     const strength = validatePasswordStrength(password);
     if (!strength.isStrong) {
       setErrorMessage(
-        strength.feedback?.[0] || "Senha não atende aos requisitos de segurança.",
+        strength.feedback?.[0] || t("registration.simple.passwordWeak"),
       );
       return;
     }
@@ -110,6 +117,7 @@ export default function CadastroRapidoProfissionalPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: nomeTrim,
+          countryCode: pais,
           cpf: cpfLimpo,
           email: emailTrim,
           telefone,
@@ -120,7 +128,7 @@ export default function CadastroRapidoProfissionalPage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setErrorMessage(data.error || "Não foi possível criar a conta.");
+        setErrorMessage(data.error || t("registration.simple.createFailed"));
         setLoading(false);
         return;
       }
@@ -149,7 +157,7 @@ export default function CadastroRapidoProfissionalPage() {
 
       if (sign?.error) {
         setErrorMessage(
-          "Conta criada, mas o login automático falhou. Entre com seu e-mail e senha.",
+          t("registration.simple.autoLoginFailed"),
         );
         setLoading(false);
         const back = safeJobReturnPath(new URLSearchParams(window.location.search).get("redirect"));
@@ -162,7 +170,7 @@ export default function CadastroRapidoProfissionalPage() {
       const back = safeJobReturnPath(new URLSearchParams(window.location.search).get("redirect"));
       router.replace(back ?? "/professional/dashboard");
     } catch {
-      setErrorMessage("Erro ao criar conta. Tente novamente.");
+      setErrorMessage(t("registration.simple.networkError"));
       setLoading(false);
     }
   };
@@ -171,7 +179,7 @@ export default function CadastroRapidoProfissionalPage() {
     <div className={loginStyles.page}>
       <div className={loginStyles.atmosphere} aria-hidden />
       <div className={loginStyles.atmosphereGlow} aria-hidden />
-      {loading && <PageLoader message="Criando sua conta..." mode="overlay" />}
+      {loading && <PageLoader message={t("registration.simple.loading")} mode="overlay" />}
 
       <div className={loginStyles.authShell}>
         <ProfessionalVitrinePitch />
@@ -182,7 +190,7 @@ export default function CadastroRapidoProfissionalPage() {
               <LogoRecruta size="sm" as="h1" depth />
             </div>
             <p className={loginStyles.subtitle}>
-              <span className={loginStyles.accessTag}>Cadastro rápido</span>
+              <span className={loginStyles.accessTag}>{t("registration.simple.accessTag")}</span>
             </p>
           </div>
 
@@ -194,8 +202,19 @@ export default function CadastroRapidoProfissionalPage() {
             ) : null}
 
             <div className={loginStyles.fieldGroup}>
+              <RegistrationCountryField
+                id="cadastro-pais"
+                value={pais}
+                onChange={setPais}
+                labelClassName={loginStyles.fieldLabel}
+                selectClassName={loginStyles.input}
+                hintClassName={loginStyles.error}
+              />
+            </div>
+
+            <div className={loginStyles.fieldGroup}>
               <label className={loginStyles.fieldLabel} htmlFor="cadastro-nome">
-                Nome completo
+                {t("registration.simple.fullName")}
               </label>
               <input
                 id="cadastro-nome"
@@ -211,7 +230,7 @@ export default function CadastroRapidoProfissionalPage() {
 
             <div className={loginStyles.fieldGroup}>
               <label className={loginStyles.fieldLabel} htmlFor="cadastro-cpf">
-                CPF
+                {t("registration.simple.cpf")}
               </label>
               <input
                 id="cadastro-cpf"
@@ -219,16 +238,17 @@ export default function CadastroRapidoProfissionalPage() {
                 type="text"
                 inputMode="numeric"
                 autoComplete="off"
-                placeholder="000.000.000-00"
+                placeholder={t("registration.simple.cpfPlaceholder")}
                 value={cpf}
                 onChange={(e) => setCpf(mascaraCpf(e.target.value))}
-                required
+                required={pais === "BR"}
+                disabled={pais !== "BR"}
               />
             </div>
 
             <div className={loginStyles.fieldGroup}>
               <label className={loginStyles.fieldLabel} htmlFor="cadastro-email">
-                E-mail
+                {t("registration.simple.email")}
               </label>
               <input
                 id="cadastro-email"
@@ -243,23 +263,24 @@ export default function CadastroRapidoProfissionalPage() {
 
             <div className={loginStyles.fieldGroup}>
               <label className={loginStyles.fieldLabel} htmlFor="cadastro-telefone">
-                Telefone
+                {t("registration.simple.phone")}
               </label>
               <input
                 id="cadastro-telefone"
                 className={loginStyles.input}
                 type="tel"
                 autoComplete="tel"
-                placeholder="(00) 00000-0000"
+                placeholder={t("registration.simple.phonePlaceholder")}
                 value={telefone}
                 onChange={(e) => setTelefone(mascaraTelefone(e.target.value))}
-                required
+                required={pais === "BR"}
+                disabled={pais !== "BR"}
               />
             </div>
 
             <div className={loginStyles.fieldGroup}>
               <label className={loginStyles.fieldLabel} htmlFor="cadastro-senha">
-                Senha
+                {t("registration.simple.password")}
               </label>
               <div className={loginStyles.passwordField}>
                 <input
@@ -276,8 +297,8 @@ export default function CadastroRapidoProfissionalPage() {
                   type="button"
                   className={loginStyles.passwordEyeBtn}
                   onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                  title={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  aria-label={showPassword ? t("registration.simple.hidePassword") : t("registration.simple.showPassword")}
+                  title={showPassword ? t("registration.simple.hidePassword") : t("registration.simple.showPassword")}
                 >
                   <IconeOlho aberto={showPassword} />
                 </button>
@@ -286,7 +307,7 @@ export default function CadastroRapidoProfissionalPage() {
 
             <div className={loginStyles.fieldGroup}>
               <label className={loginStyles.fieldLabel} htmlFor="cadastro-confirma">
-                Confirmar senha
+                {t("registration.simple.confirmPassword")}
               </label>
               <div className={loginStyles.passwordField}>
                 <input
@@ -303,8 +324,8 @@ export default function CadastroRapidoProfissionalPage() {
                   type="button"
                   className={loginStyles.passwordEyeBtn}
                   onClick={() => setShowConfirmPassword((v) => !v)}
-                  aria-label={showConfirmPassword ? "Ocultar confirmação" : "Mostrar confirmação"}
-                  title={showConfirmPassword ? "Ocultar confirmação" : "Mostrar confirmação"}
+                  aria-label={showConfirmPassword ? t("registration.simple.hideConfirm") : t("registration.simple.showConfirm")}
+                  title={showConfirmPassword ? t("registration.simple.hideConfirm") : t("registration.simple.showConfirm")}
                 >
                   <IconeOlho aberto={showConfirmPassword} />
                 </button>
@@ -312,13 +333,13 @@ export default function CadastroRapidoProfissionalPage() {
             </div>
 
             <button type="submit" className={loginStyles.btnPrimary} disabled={loading}>
-              Criar conta
+              {t("registration.simple.submit")}
             </button>
           </form>
 
           <div className={loginStyles.footer}>
             <Link href="/" className={loginStyles.footerLink}>
-              ← Voltar para a página inicial
+              {t("registration.simple.backHome")}
             </Link>
           </div>
         </div>

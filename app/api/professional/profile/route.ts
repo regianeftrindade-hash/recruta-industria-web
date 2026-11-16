@@ -45,6 +45,10 @@ function toUser(row: {
     passwordHash: null,
     lastLogin: null,
     lastSeenAt: null,
+    countryCode: "BR",
+    locale: "pt-BR",
+    currency: "BRL",
+    timeZone: "America/Sao_Paulo",
     createdAt: new Date(0),
     updatedAt: new Date(0),
   };

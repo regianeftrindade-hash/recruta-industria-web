@@ -12,7 +12,9 @@ import JobFavoriteButton from "@/components/jobs/JobFavoriteButton";
 import JobPanelLink from "../JobPanelLink";
 import JobShareButton from "../JobShareButton";
 import JobText from "../JobText";
+import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
 import { t } from "@/lib/i18n/translate";
+import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
 import styles from "../vagas.module.css";
 
 export const dynamic = "force-dynamic";
@@ -100,6 +102,8 @@ function jobPostingJsonLd(job: {
 }
 
 export default async function VagaPage({ params, searchParams }: Props) {
+  const locale = await resolveInterfaceLocale();
+  const text = (key: MessageKey) => t(key, locale);
   const { id } = await params;
   const query = await searchParams;
 
@@ -118,14 +122,14 @@ export default async function VagaPage({ params, searchParams }: Props) {
   return (
     <main className={styles.page}>
       <div className={styles.top}>
-        <Link href="/" className={styles.brandLink} aria-label={t("surface.jobs.home")}>
+        <Link href="/" className={styles.brandLink} aria-label={text("surface.jobs.home")}>
           <LogoRecruta size="sm" as="div" />
         </Link>
         <div className={styles.topActions}>
           <JobBackButton />
           <JobPanelLink />
           <Link href="/vagas" className={styles.backLink}>
-            {t("surface.jobs.allJobs")}
+            {text("surface.jobs.allJobs")}
           </Link>
         </div>
       </div>
@@ -133,7 +137,7 @@ export default async function VagaPage({ params, searchParams }: Props) {
       {view.availability === "unavailable" ? (
         <article className={styles.article}>
           <h1 className={styles.title}>{view.title}</h1>
-          <p className={styles.error}>{t("surface.jobs.unavailable")}</p>
+          <p className={styles.error}>{text("surface.jobs.unavailable")}</p>
         </article>
       ) : (
         <article className={styles.article}>
@@ -150,25 +154,25 @@ export default async function VagaPage({ params, searchParams }: Props) {
             </div>
           </div>
           <div className={styles.facts}>
-            <Fact label={t("surface.jobs.publishedOn")} value={view.job.publicationDate} />
-            <Fact label={t("surface.jobs.salary")} value={view.job.salaryLabel} />
-            <Fact label={t("surface.jobs.contract")} value={view.job.contractLabel} />
-            <Fact label={t("surface.jobs.mode")} value={view.job.workModeLabel} />
-            <Fact label={t("surface.jobs.workplace")} value={view.job.workplace} />
+            <Fact label={text("surface.jobs.publishedOn")} value={view.job.publicationDate} />
+            <Fact label={text("surface.jobs.salary")} value={view.job.salaryLabel} />
+            <Fact label={text("surface.jobs.contract")} value={view.job.contractLabel} />
+            <Fact label={text("surface.jobs.mode")} value={view.job.workModeLabel} />
+            <Fact label={text("surface.jobs.workplace")} value={view.job.workplace} />
             <Fact
-              label={t("surface.jobs.applyUntil")}
-              value={jobApplicationDeadline(view.job) ? `${t("surface.jobs.until")} ${jobApplicationDeadline(view.job)}` : null}
+              label={text("surface.jobs.applyUntil")}
+              value={jobApplicationDeadline(view.job) ? `${text("surface.jobs.until")} ${jobApplicationDeadline(view.job)}` : null}
             />
           </div>
 
           <section className={styles.section}>
-            <h2>{t("surface.jobs.descriptionHeading")}</h2>
+            <h2>{text("surface.jobs.descriptionHeading")}</h2>
             <JobText text={view.job.description} />
           </section>
 
           {textWithoutJobSource(view.job.observations) ? (
             <section className={styles.section}>
-              <h2>{t("surface.jobs.notes")}</h2>
+              <h2>{text("surface.jobs.notes")}</h2>
               <JobText text={textWithoutJobSource(view.job.observations) ?? ""} />
             </section>
           ) : null}
