@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { profileExportDecision, profileExportFileSlug } from "@/lib/company/profile-export-access";
 import { renderProfileExportHtml } from "@/lib/company/profile-export-html";
 import { SUPPORTED_LOCALES, htmlLang } from "@/lib/i18n/locales";
 
@@ -47,6 +48,14 @@ describe("exportação do perfil", () => {
     const html = renderProfileExportHtml(profile, "sv");
     expect(html).toContain(`lang="${htmlLang("pt-BR")}"`);
     expect(html).toContain("Cargo desejado");
+  });
+
+  it("exige desbloqueio e não coloca o nome cru no arquivo", () => {
+    expect(profileExportDecision({ canExportProfiles: true, hasActiveUnlock: false })).toBe("locked");
+    expect(profileExportDecision({ canExportProfiles: false, hasActiveUnlock: true })).toBe("plan");
+    expect(profileExportDecision({ canExportProfiles: true, hasActiveUnlock: true })).toBe("ok");
+    expect(profileExportFileSlug('Ana "Souza"\r\n../perfil')).toBe("Ana-Souza-perfil");
+    expect(profileExportFileSlug("   ")).toBe("perfil");
   });
 
   it("escreve o html nos 12 idiomas sem apagar o nome", () => {

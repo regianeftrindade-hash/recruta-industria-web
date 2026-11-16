@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db'
 import { getCompanyPlanContext } from '@/lib/company-plan'
 import { parseProfileIndustrial } from '@/lib/profile-industrial'
 import { renderProfileExportHtml } from '@/lib/company/profile-export-html'
+import { profileExportDecision, profileExportFileSlug } from '@/lib/company/profile-export-access'
 import { resolveInterfaceLocale } from '@/lib/i18n/resolve-interface-locale'
 import { resolveLocale } from '@/lib/i18n/locales'
 
@@ -26,7 +27,7 @@ export async function GET(
     }
 
     const planContext = await getCompanyPlanContext(user.id)
-    if (!planContext.features.canExportProfiles) {
+    if (profileExportDecision({ canExportProfiles: planContext.features.canExportProfiles, hasActiveUnlock: true }) === 'plan') {
       return NextResponse.json({ error: 'Exportação disponível a partir do plano Premium.' }, { status: 403 })
     }
 
@@ -43,13 +44,20 @@ export async function GET(
     const unlocked = await prisma.accessRecord.findFirst({
       where: {
         profileId,
-        companyUserId: user.id,
+        companyUserId: planContext.ownerUserId,
         status: 'ACTIVE',
         expiresAt: { gt: new Date() },
       },
     })
 
-    if (!unlocked && !planContext.features.canViewContacts) {
+    const decision = profileExportDecision({
+      canExportProfiles: planContext.features.canExportProfiles,
+      hasActiveUnlock: Boolean(unlocked),
+    })
+    if (decision === 'plan') {
+      return NextResponse.json({ error: 'Exportação disponível a partir do plano Premium.' }, { status: 403 })
+    }
+    if (decision === 'locked') {
       return NextResponse.json({ error: 'Desbloqueie o perfil para exportar.' }, { status: 403 })
     }
 
@@ -89,7 +97,7 @@ export async function GET(
     return new NextResponse(html, {
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
-        'Content-Disposition': `attachment; filename="perfil-${nome.replace(/\s+/g, '-').toLowerCase()}.html"`,
+        'Content-Disposition': `attachment; filename="perfil-${profileExportFileSlug(nome)}.html"`,
       },
     })
   } catch (error) {
