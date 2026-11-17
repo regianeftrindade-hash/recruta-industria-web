@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, resolveLocale, type SupportedLocale } from "@/lib/i18n/locales";
+import { DEFAULT_LOCALE, matchSupportedLocale, type SupportedLocale } from "@/lib/i18n/locales";
 
 export type InterfaceLocaleInput = {
   authenticated: boolean;
@@ -8,15 +8,15 @@ export type InterfaceLocaleInput = {
 };
 
 /**
- * Conta autenticada vence o cookie.
- * Visitante usa o cookie ri-locale.
- * Falha ao ler a conta, cookie inválido ou ausência de preferência caem em pt-BR.
+ * Conta autenticada com idioma válido vence o cookie.
+ * Cookie válido permanece se a conta falhar ou vier com código inválido.
+ * Visitante sem cookie cai em pt-BR.
  */
 export function selectInterfaceLocale(input: InterfaceLocaleInput): SupportedLocale {
-  if (input.accountReadFailed) return DEFAULT_LOCALE;
-  if (input.authenticated) return resolveLocale(input.accountLocale);
-  if (typeof input.cookieLocale === "string" && input.cookieLocale.trim()) {
-    return resolveLocale(input.cookieLocale);
+  const cookie = matchSupportedLocale(input.cookieLocale);
+  if (input.accountReadFailed) return cookie ?? DEFAULT_LOCALE;
+  if (input.authenticated) {
+    return matchSupportedLocale(input.accountLocale) ?? cookie ?? DEFAULT_LOCALE;
   }
-  return DEFAULT_LOCALE;
+  return cookie ?? DEFAULT_LOCALE;
 }

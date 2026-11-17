@@ -38,6 +38,13 @@ export function isSupportedLocale(value: string): value is SupportedLocale {
   return (SUPPORTED_LOCALES as readonly string[]).includes(value);
 }
 
+/** Único reconhecimento de código. `pt_BR`, `en-US` e `zh-Hans` entram na lista oficial. */
+export function matchSupportedLocale(input?: string | null): SupportedLocale | null {
+  const canonical = canonicalizeLocale(input);
+  if (!canonical || !isSupportedLocale(canonical)) return null;
+  return canonical;
+}
+
 /** Normaliza `pt_BR`, `en-US` e vazio. Não escolhe um idioma fora da lista. */
 export function canonicalizeLocale(input?: string | null): string | null {
   if (typeof input !== "string") return null;
@@ -60,8 +67,7 @@ export function canonicalizeLocale(input?: string | null): string | null {
 
 /** Idioma suportado, ou pt-BR quando o pedido não tem catálogo. */
 export function resolveLocale(input?: string | null): SupportedLocale {
-  const canonical = canonicalizeLocale(input);
-  return canonical && isSupportedLocale(canonical) ? canonical : DEFAULT_LOCALE;
+  return matchSupportedLocale(input) ?? DEFAULT_LOCALE;
 }
 
 export function htmlLang(locale: SupportedLocale): string {

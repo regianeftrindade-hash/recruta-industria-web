@@ -29,17 +29,22 @@ describe("idioma da interface", () => {
     })).toBe("pt-BR");
   });
 
-  it("não deixa um cookie antigo substituir a conta quando a leitura falha", () => {
+  it("não deixa falha ou código inválido apagar um cookie válido", () => {
     expect(selectInterfaceLocale({
       authenticated: true,
       accountReadFailed: true,
       cookieLocale: "en",
-    })).toBe("pt-BR");
+    })).toBe("en");
     expect(selectInterfaceLocale({
       authenticated: true,
       accountLocale: "nao-existe",
       cookieLocale: "es",
-    })).toBe("pt-BR");
+    })).toBe("es");
+    expect(selectInterfaceLocale({
+      authenticated: true,
+      accountLocale: "en",
+      cookieLocale: "sv",
+    })).toBe("en");
   });
 
   it("traduz home e vagas com o locale explícito da página", () => {
@@ -78,6 +83,9 @@ describe("cookie e seletor de idioma", () => {
 
     const rejected = await requestLocaleChange("en", async () => new Response("no", { status: 500 }));
     expect(rejected).toEqual({ ok: false, reason: "rejected" });
+
+    const invalid = await requestLocaleChange("sv", async () => new Response("no", { status: 400 }));
+    expect(invalid).toEqual({ ok: false, reason: "invalid" });
 
     const saved = await requestLocaleChange("en", async () => new Response("{}", { status: 200 }));
     expect(saved).toEqual({ ok: true });

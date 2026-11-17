@@ -1,4 +1,4 @@
-import { canonicalizeLocale, isSupportedLocale, type SupportedLocale } from "@/lib/i18n/locales";
+import { matchSupportedLocale, type SupportedLocale } from "@/lib/i18n/locales";
 
 const BLOCKED_FIELDS = ["countryCode", "currency", "timeZone", "cpf", "cnpj", "phone"] as const;
 
@@ -7,9 +7,7 @@ export type LocalePreferenceResult =
   | { ok: false; error: "invalid" | "region" };
 
 function requestedLocale(value: string): SupportedLocale | null {
-  const canonical = canonicalizeLocale(value);
-  if (!canonical || !isSupportedLocale(canonical)) return null;
-  return canonical;
+  return matchSupportedLocale(value);
 }
 
 /** Aceita só o idioma. País, moeda, fuso e documentos não entram neste pedido. */
@@ -21,4 +19,18 @@ export function parseLocalePreference(body: unknown): LocalePreferenceResult {
   const locale = requestedLocale(record.locale);
   if (!locale) return { ok: false, error: "invalid" };
   return { ok: true, locale };
+}
+
+/**
+ * O corpo JSON é a fonte principal.
+ * A query só entra quando o corpo não trouxe `locale` (corpo vazio depois do proxy).
+ */
+export function readLocaleChoice(body: unknown, queryLocale?: string | null): LocalePreferenceResult {
+  if (body && typeof body === "object" && "locale" in body) {
+    return parseLocalePreference(body);
+  }
+  if (typeof queryLocale === "string" && queryLocale.trim()) {
+    return parseLocalePreference({ locale: queryLocale });
+  }
+  return parseLocalePreference(body);
 }
