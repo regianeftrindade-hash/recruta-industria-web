@@ -472,11 +472,14 @@ export function getBlockedIPTimeRemaining(ip: string): number {
   return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
 }
 
-// Validação de telefone brasileiro
+// Validação de telefone brasileiro. Aceita DDD e o mesmo número com +55.
 export function isValidPhoneBR(phone: string): boolean {
-  const cleaned = phone.replace(/\D/g, '');
+  const cleaned = phone.replace(/\D/g, "");
+  const national = cleaned.startsWith("55") && (cleaned.length === 12 || cleaned.length === 13)
+    ? cleaned.slice(2)
+    : cleaned;
   // Aceita: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX
-  return /^(\d{2})9?\d{8}$/.test(cleaned);
+  return /^(\d{2})9?\d{8}$/.test(national);
 }
 
 // Gerar código 2FA (criptograficamente seguro)
