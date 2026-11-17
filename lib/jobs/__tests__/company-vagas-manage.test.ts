@@ -1,33 +1,7 @@
-import { existsSync, readFileSync } from "node:fs";
-import path from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
+import { assertIsolatedTestDatabase, isIsolatedTestDatabaseReady } from "@/lib/infra/test-database";
 
-function loadEnvFile(filename: string) {
-  const file = path.resolve(process.cwd(), filename);
-  if (!existsSync(file)) return;
-  const text = readFileSync(file, "utf8");
-  for (const rawLine of text.split(/\r?\n/)) {
-    const line = rawLine.trim();
-    if (!line || line.startsWith("#")) continue;
-    const eq = line.indexOf("=");
-    if (eq <= 0) continue;
-    const key = line.slice(0, eq).trim();
-    if (process.env[key] !== undefined) continue;
-    let value = line.slice(eq + 1).trim();
-    if (
-      (value.startsWith('"') && value.endsWith('"'))
-      || (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-    process.env[key] = value;
-  }
-}
-
-loadEnvFile(".env");
-loadEnvFile(".env.local");
-
-const canRun = Boolean(process.env.DATABASE_URL);
+const canRun = isIsolatedTestDatabaseReady();
 
 describe.skipIf(!canRun)("gestão de vagas da empresa", () => {
   const stamp = Date.now();
@@ -39,6 +13,7 @@ describe.skipIf(!canRun)("gestão de vagas da empresa", () => {
 
   afterAll(async () => {
     if (!canRun) return;
+    assertIsolatedTestDatabase();
     const { prisma } = await import("@/lib/infra/db");
     const users = await prisma.user.findMany({
       where: { email: { startsWith: "company-vagas-", endsWith: "@example.invalid" } },
@@ -73,6 +48,7 @@ describe.skipIf(!canRun)("gestão de vagas da empresa", () => {
   }, 30000);
 
   it("grava, pausa, reativa, muda a etapa e impede exclusão com candidatura", async () => {
+    assertIsolatedTestDatabase();
     const { prisma } = await import("@/lib/infra/db");
     const db = await import("@/lib/jobs/job-posting-db");
 

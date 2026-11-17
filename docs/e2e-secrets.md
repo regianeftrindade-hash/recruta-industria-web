@@ -2,6 +2,8 @@
 
 Os jobs **E2E empresa logada** e **E2E profissional logado** no CI **sempre entram na fila**. Sem secrets, o Playwright faz **skip** (CI verde). Com secrets, os testes logados rodam de verdade.
 
+Estes testes de navegador falam com o site. Eles não gravam pelo Prisma. Os testes Vitest que gravam vaga e candidatura usam outro banco, local e isolado: [banco-de-testes.md](./banco-de-testes.md). Não aponte `TEST_DATABASE_URL` para produção.
+
 **Importante:** não use `if: secrets.*` no workflow — o GitHub rejeita o arquivo e o CI fica vermelho sem rodar nada.
 
 **Nunca** coloque e-mail/senha reais no repositório, em PRs ou em logs.

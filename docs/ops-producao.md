@@ -2,6 +2,8 @@
 
 Runbook curto para Vercel + banco + Sentry. Ordem importa.
 
+Os testes Vitest não usam o banco deste runbook. Gravação de teste exige PostgreSQL local isolado: [banco-de-testes.md](./banco-de-testes.md). Não rode `npm test` com `DATABASE_URL` de produção no lugar de `TEST_DATABASE_URL`.
+
 ## 1. Schema no banco (obrigatório antes do DDL desligado)
 
 No ambiente com `DATABASE_URL` / `DIRECT_URL` de **produção**:
