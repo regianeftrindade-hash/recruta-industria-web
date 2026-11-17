@@ -30,22 +30,15 @@ export default function LanguageSwitch({ current }: { current: SupportedLocale }
   }
 
   return (
-    <label style={{ display: "inline-flex", alignItems: "center", gap: 8, marginLeft: 12, fontSize: "0.78rem", color: "#414141" }}>
+    <label className="ri-locale-switch">
       <span>{t("locale.switchLabel")}</span>
       <select
+        data-locale-switch=""
         aria-label={t("locale.switchLabel")}
         aria-invalid={error ? true : undefined}
         value={current}
         onChange={(event) => {
           void choose(event.target.value as SupportedLocale);
-        }}
-        style={{
-          border: "1px solid #8D6B1F",
-          background: "#F3E6C8",
-          color: "#414141",
-          borderRadius: 6,
-          padding: "2px 8px",
-          fontSize: "0.78rem",
         }}
       >
         {options.map((option) => (

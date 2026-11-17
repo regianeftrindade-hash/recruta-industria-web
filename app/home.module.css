@@ -123,6 +123,14 @@
   padding: 0 4px;
 }
 
+.localeSlot {
+  position: absolute;
+  z-index: 6;
+  top: 6px;
+  inset-inline-start: 10px;
+  max-width: min(280px, 46vw);
+}
+
 .empresaEntry {
   width: 100%;
   display: flex;
@@ -960,6 +968,25 @@
   .heroTagline {
     white-space: normal;
     font-size: 1.2rem;
+  }
+
+  .homePage.homePageFlow .localeSlot,
+  .localeSlot {
+    position: relative;
+    top: auto;
+    inset-inline-start: auto;
+    align-self: stretch;
+    max-width: none;
+    margin-bottom: 4px;
+  }
+
+  .localeSlot :global(.ri-locale-switch) {
+    width: 100%;
+  }
+
+  .localeSlot :global(.ri-locale-switch) select {
+    flex: 1 1 12rem;
+    min-width: 0;
   }
 
   .empresaEntry {

@@ -5,6 +5,7 @@ import { Dancing_Script } from "next/font/google";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import HomeAccessForm from "@/app/components/HomeAccessForm";
 import HomeAuthProvider from "@/app/components/HomeAuthProvider";
+import LanguageSwitch from "@/components/i18n/LanguageSwitch";
 import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
 import { t } from "@/lib/i18n/translate";
 import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
@@ -29,6 +30,9 @@ export default async function Home() {
 
       <HomeAuthProvider>
       <div className={styles.homeShell}>
+        <div className={styles.localeSlot}>
+          <LanguageSwitch current={locale} />
+        </div>
         <div className={styles.empresaEntry}>
           <HomeAccessForm role="company" registerHref="/company/cadastro" compact />
         </div>

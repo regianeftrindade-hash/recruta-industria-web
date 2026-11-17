@@ -13,6 +13,7 @@ import { InstallPromptProvider } from "@/components/pwa/InstallPromptProvider";
 import GoogleAdsLoader from "@/components/analytics/GoogleAdsLoader";
 import Providers from "./providers";
 import SiteEmailFooter from "@/components/shared/SiteEmailFooter";
+import SiteLocaleBar from "@/components/i18n/SiteLocaleBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -181,8 +182,9 @@ export default async function RootLayout({
         <Providers locale={locale}>
           <InstallPromptProvider>
             <SiteVisitTracker />
+            <SiteLocaleBar locale={locale} />
             {children}
-            <SiteEmailFooter locale={locale} />
+            <SiteEmailFooter />
           </InstallPromptProvider>
         </Providers>
       </body>

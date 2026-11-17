@@ -19,6 +19,46 @@
   --ri-btn-3d-dark-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 0 rgba(0, 0, 0, 0.5), 0 3px 8px rgba(0, 0, 0, 0.35);
 }
 
+.ri-locale-bar {
+  position: relative;
+  z-index: 30;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 6px 12px;
+  background: #F3E6C8;
+  border-bottom: 1px solid rgba(141, 107, 31, 0.55);
+}
+
+.ri-locale-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: #414141;
+}
+
+.ri-locale-switch select {
+  border: 1px solid #8D6B1F;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .ri-locale-bar .ri-locale-switch {
+    width: 100%;
+  }
+
+  .ri-locale-bar .ri-locale-switch select {
+    flex: 1 1 12rem;
+    min-width: 0;
+  }
+}
+
 html,
 body {
   width: 100%;
