@@ -78,6 +78,40 @@ describe('extractResumeText (PDF)', () => {
     expect(mensagemFalhaExtracao(senha, 'pdf')).toMatch(/protegido por senha/);
   });
 
+  it('lê o texto e não executa JavaScript embutido', async () => {
+    const stream = 'BT /F1 18 Tf 40 100 Td (Soldador) Tj ET';
+    const objects = [
+      '1 0 obj << /Type /Catalog /Pages 2 0 R /OpenAction << /S /JavaScript /JS (app.alert("SHOULD_NOT_RUN")) >> >> endobj\n',
+      '2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n',
+      '3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 300 144] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj\n',
+      `4 0 obj << /Length ${stream.length} >> stream\n${stream}\nendstream\n`,
+      '5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n',
+    ];
+    let body = '%PDF-1.4\n';
+    const offsets = [0];
+    for (const object of objects) {
+      offsets.push(body.length);
+      body += object;
+    }
+    const startxref = body.length;
+    body += 'xref\n0 6\n0000000000 65535 f \n';
+    for (let id = 1; id <= 5; id += 1) {
+      body += `${String(offsets[id]).padStart(10, '0')} 00000 n \n`;
+    }
+    body += `trailer << /Size 6 /Root 1 0 R >>\nstartxref\n${startxref}\n%%EOF`;
+    const buffer = Buffer.from(body, 'latin1');
+
+    const result = await extractResumeText({
+      fileName: 'com-script.pdf',
+      mimeType: 'application/pdf',
+      size: buffer.length,
+      buffer,
+    });
+
+    expect(result.rawText).toMatch(/Soldador/);
+    expect(result.rawText).not.toContain('SHOULD_NOT_RUN');
+  });
+
   it('recusa PDF sem texto selecionável', async () => {
     const buffer = pdfSemTexto();
     await expect(extractResumeText({

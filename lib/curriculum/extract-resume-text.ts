@@ -1,3 +1,4 @@
+import "@/lib/curriculum/pdfjs-iterator-polyfill";
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -88,7 +89,10 @@ async function extractFromPdf(buffer: Buffer): Promise<string> {
 
     return raw;
   } finally {
-    await pdf.destroy().catch(() => undefined);
+    const closable = pdf as { destroy?: () => Promise<void> };
+    if (typeof closable.destroy === "function") {
+      await closable.destroy().catch(() => undefined);
+    }
   }
 }
 
