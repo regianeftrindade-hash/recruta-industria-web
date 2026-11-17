@@ -34,3 +34,11 @@ Nomes, cidades, cargos, empresas e qualquer texto escrito pela pessoa permanecem
 4. Não habilite cadastro nem documento desse país. País e idioma são independentes. Só o Brasil tem cadastro e pagamento.
 
 Não crie um segundo sistema de tradução. Use `t(chave, idioma)` ou `exactUi(frase portuguesa exata)`.
+
+## Arquivos privados
+
+Currículo, atestado, certificado, CNH e documento da empresa ficam fora das pastas públicas. A foto de perfil fica em `avatars` e pode ser exibida na busca.
+
+A empresa só recebe o link do documento depois do desbloqueio individual daquele perfil. O link aponta para `/api/media/sign` e a autorização é conferida de novo a cada abertura. O plano Premium não dispensa esse desbloqueio. Sem desbloqueio ativo, a empresa não assina o arquivo de outra pessoa.
+
+O upload feito antes de existir conta continua no fluxo de cadastro, com limite de quantidade. O arquivo fica no prefixo `anon` até ser associado ao perfil.

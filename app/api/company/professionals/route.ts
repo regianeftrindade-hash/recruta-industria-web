@@ -28,6 +28,7 @@ import { notifyProfessionalAsync, notifyProfileViewed } from '@/lib/professional
 import { companyProfileViewType, recordCompanyProfileView } from '@/lib/professional/record-profile-view'
 import { isAnyCompanyAnonymous } from '@/lib/company/company-preferences'
 import { listActivePremiumProfileIds } from '@/lib/professional-storage'
+import { companyDocumentHref } from '@/lib/storage/private-uploads'
 import { profilePublicSlugOrBuild } from '@/lib/profile/resolve-profile-ref'
 import { COMPANY_VIEW_ONLY_NOTICE } from '@/lib/company/company-verification'
 import { companyCanSearchProfessionals } from '@/lib/company/company-search-access'
@@ -186,7 +187,7 @@ function buildFull(profile: ProfileRow, industrial: ProfileIndustrialData, compa
     email: profile.email || profile.user.email,
     telefone: profile.phone || '—',
     whatsapp: profile.whatsapp || '—',
-    curriculoURL: profile.curricoURL || null,
+    curriculoURL: companyDocumentHref(profile.curricoURL),
     disponibilidadeContratacao:
       industrial.disponivelContratacao
       || profile.disponivelContratacao

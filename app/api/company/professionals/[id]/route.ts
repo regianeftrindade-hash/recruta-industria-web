@@ -31,6 +31,7 @@ import {
   companyProfessionalPath,
   looksLikeProfileCuid,
 } from '@/lib/profile/public-slug';
+import { companyDocumentHref } from '@/lib/storage/private-uploads';
 
 function parseSkills(skills: string | null): string[] {
   if (!skills) return [];
@@ -75,7 +76,8 @@ function listarDocumentosAnexos(
   const add = (label: string, url: unknown) => {
     if (!isArquivoAnexado(url) || vistos.has(url)) return;
     vistos.add(url);
-    docs.push({ label, url });
+    const href = companyDocumentHref(url);
+    if (href) docs.push({ label, url: href });
   };
 
   add('Currículo', profile.curricoURL);
@@ -240,8 +242,8 @@ export async function GET(
       email: bloqueado ? undefined : profile.email || profile.user.email,
       telefone: bloqueado ? undefined : profile.phone || '—',
       whatsapp: bloqueado ? undefined : profile.whatsapp || '—',
-      curriculoURL: bloqueado ? null : profile.curricoURL,
-      certificadosUrl: bloqueado ? null : industrial.certificadosUrl,
+      curriculoURL: bloqueado ? null : companyDocumentHref(profile.curricoURL),
+      certificadosUrl: bloqueado ? null : companyDocumentHref(industrial.certificadosUrl),
       disponibilidadeContratacao: bloqueado
         ? undefined
         : industrial.disponivelContratacao
@@ -254,6 +256,14 @@ export async function GET(
     const formEdit = bloqueado
       ? null
       : mapProfileToFormEdit(profile, profile.user, profile.formDataJSON);
+    if (formEdit?.formData) {
+      const files = formEdit.formData as Record<string, unknown>;
+      for (const key of ['curriculo', 'atestado', 'certificados', 'cnhDocumento'] as const) {
+        if (typeof files[key] === 'string') {
+          files[key] = companyDocumentHref(files[key]) ?? files[key];
+        }
+      }
+    }
 
     const sobreMimRaw = bloqueado ? null : await lerCampoJsonDoPerfil(profile.userId, 'sobreMimJSON');
     const testeRaw = bloqueado ? null : await lerCampoJsonDoPerfil(profile.userId, 'testeComportamentalJSON');

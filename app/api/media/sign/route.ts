@@ -3,6 +3,7 @@ import { getToken } from "next-auth/jwt";
 import { resolveAuthEmail } from "@/lib/auth/api-auth";
 import { hasAdminAccess } from "@/lib/auth/admin-auth";
 import { enforceApiRateLimit, getClientIp } from "@/lib/security/api-guard";
+import { companyMayReadUnlockedFile } from "@/lib/storage/company-media-access";
 import {
   canSignMediaPath,
   createSignedMediaUrl,
@@ -46,13 +47,16 @@ export async function GET(request: NextRequest) {
       if (!auth) {
         return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
       }
-      const allowed = canSignMediaPath({
+      let allowed = canSignMediaPath({
         path,
         email: auth.email,
         userId: typeof token?.sub === "string" ? token.sub : null,
         role: typeof token?.userType === "string" ? token.userType : null,
         isAdmin,
       });
+      if (!allowed) {
+        allowed = await companyMayReadUnlockedFile(auth.email, path);
+      }
       if (!allowed) {
         return NextResponse.json({ error: "Sem permissão para este arquivo" }, { status: 403 });
       }

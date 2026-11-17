@@ -3,6 +3,8 @@ import {
   canSignMediaPath,
   extractStoragePath,
   isPublicMediaFolder,
+  companyDocumentHref,
+  mediaPathMatchesStoredFile,
   sanitizeUploadOwnerPrefix,
 } from "@/lib/storage/private-uploads";
 import { isOnlineFromLastSeen, ONLINE_THRESHOLD_MS } from "@/lib/presence";
@@ -40,7 +42,7 @@ describe("private media ACL", () => {
     ).toBe(true);
   });
 
-  it("documento do próprio e-mail ou empresa autenticada", () => {
+  it("documento só do próprio e-mail, inclusive empresa", () => {
     const email = "contato@empresa.com";
     const prefix = sanitizeUploadOwnerPrefix(email);
     expect(
@@ -52,6 +54,13 @@ describe("private media ACL", () => {
     ).toBe(true);
     expect(
       canSignMediaPath({
+        path: `curriculos/${prefix}/file.pdf`,
+        email,
+        role: "COMPANY",
+      }),
+    ).toBe(true);
+    expect(
+      canSignMediaPath({
         path: `documents/outro_email/file.pdf`,
         email: "prof@x.com",
         role: "PROFESSIONAL",
@@ -59,11 +68,22 @@ describe("private media ACL", () => {
     ).toBe(false);
     expect(
       canSignMediaPath({
-        path: `documents/outro_email/file.pdf`,
+        path: `curriculos/outro_email/file.pdf`,
         email: "rh@empresa.com",
         role: "COMPANY",
       }),
+    ).toBe(false);
+    expect(
+      mediaPathMatchesStoredFile(
+        "curriculos/ana/cv.pdf",
+        "https://projeto.supabase.co/storage/v1/object/sign/uploads/curriculos/ana/cv.pdf?token=1",
+      ),
     ).toBe(true);
+    expect(mediaPathMatchesStoredFile("curriculos/outra/cv.pdf", "curriculos/ana/cv.pdf")).toBe(false);
+    expect(companyDocumentHref("curriculos/ana/cv.pdf")).toBe(
+      "/api/media/sign?path=curriculos%2Fana%2Fcv.pdf&redirect=1",
+    );
+    expect(companyDocumentHref("https://evil.example/curriculos/ana/cv.pdf")).toBeNull();
   });
 
   it("extractStoragePath em path relativo", () => {

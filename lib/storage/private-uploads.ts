@@ -114,10 +114,20 @@ export function sanitizeUploadOwnerPrefix(email: string): string {
 /**
  * ACL de mídia assinada (puro, testável).
  * - Pastas públicas: ok sem login
- * - professional-videos/{userId}/: só dono ou admin
- * - {pasta}/{emailSanitizado}/: dono, empresa autenticada ou admin
- * - demais privadas: só admin
+ * - professional-videos/{userId}/: só o dono ou admin
+ * - {pasta}/{emailSanitizado}/: só o dono daquele prefixo ou admin
+ * - arquivo de outra pessoa: a rota só libera se a empresa tiver desbloqueio daquele perfil
  */
+export function mediaPathMatchesStoredFile(requestedPath: string, stored: string | null | undefined): boolean {
+  const requested = String(requestedPath || "").replace(/^\/+/, "").split("?")[0];
+  if (!requested || requested.includes("..") || requested.includes("\\")) return false;
+  const raw = String(stored || "").trim();
+  if (!raw) return false;
+  const extracted = raw.includes("://")
+    ? extractStoragePath(raw)
+    : raw.replace(/^\/+/, "").split("?")[0];
+  return Boolean(extracted) && extracted === requested;
+}
 export function canSignMediaPath(input: {
   path: string;
   email?: string | null;
@@ -140,14 +150,20 @@ export function canSignMediaPath(input: {
     return Boolean(input.userId && ownerSeg === input.userId);
   }
 
-  if (input.email) {
-    const mine = sanitizeUploadOwnerPrefix(input.email);
-    if (ownerSeg && ownerSeg.toLowerCase() === mine.toLowerCase()) return true;
-  }
+  const mine = sanitizeUploadOwnerPrefix(input.email);
+  return Boolean(ownerSeg) && ownerSeg.toLowerCase() === mine.toLowerCase();
+}
 
-  const role = String(input.role || "").toUpperCase();
-  if (role === "COMPANY" || role === "ADMIN") return true;
+/** Link que a empresa abre. Cada clique volta a passar por /api/media/sign. */
+export function companyDocumentHref(stored: string | null | undefined): string | null {
+  const raw = String(stored || "").trim();
+  if (!raw || raw.startsWith("data:") || raw.startsWith("blob:")) return null;
+  if (raw.startsWith("/api/media/sign?") || raw.startsWith("/api/company/professionals/")) return raw;
 
-  return false;
+  const path = raw.includes("://")
+    ? extractStoragePath(raw)
+    : raw.replace(/^\/+/, "").split("?")[0];
+  if (!path || path.includes("..") || path.includes("\\") || path.includes("\0")) return null;
+  return `/api/media/sign?path=${encodeURIComponent(path)}&redirect=1`;
 }
 
