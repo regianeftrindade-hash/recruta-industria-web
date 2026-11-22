@@ -13,12 +13,12 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-vi.mock("@/lib/company-payment", () => ({
+vi.mock("@/lib/payment/company-payment", () => ({
   activateCompanyPlanFromPayment: (...args: unknown[]) => activateCompany(...args),
   activateCompanyExtraSeatsFromPayment: (...args: unknown[]) => activateExtra(...args),
 }));
 
-vi.mock("@/lib/professional-payment", () => ({
+vi.mock("@/lib/payment/professional-payment", () => ({
   activateProfessionalPlanFromPayment: (...args: unknown[]) => activateProfessional(...args),
 }));
 
