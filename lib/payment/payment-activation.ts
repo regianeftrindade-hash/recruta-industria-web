@@ -119,24 +119,22 @@ export async function syncPaymentStatusFromGateway(
     }
   } else if (isPagBankSubscriptionId(paymentReference)) {
     const remote = await getPagBankSubscriptionStatus(paymentReference);
-    if (remote) status = remote;
-  } else if (paymentReference.startsWith('pay_') || rec.method?.toLowerCase().includes('asaas')) {
-    try {
-      const remote = await getAsaasChargeStatus(paymentReference);
-      if (remote) status = remote;
-    } catch {
-      // keep
+    if (remote && typeof remote.status === 'string') {
+      status = remote.status;
+    }
+  } else if (paymentReference.startsWith('pay_')) {
+    const remote = await getAsaasChargeStatus(paymentReference);
+    if (remote && typeof remote.status === 'string') {
+      status = remote.status;
     }
   } else {
-    try {
-      const remote = await getPagSeguroChargeStatus(paymentReference);
-      if (remote) status = remote;
-    } catch {
-      // keep
+    const remote = await getPagSeguroChargeStatus(paymentReference);
+    if (remote && typeof (remote as { status?: string }).status === 'string') {
+      status = (remote as { status: string }).status;
     }
   }
 
-  if (status !== rec.status) {
+  if (rec.status !== status) {
     await prisma.paymentRecord.update({
       where: { id: rec.id },
       data: { status },
