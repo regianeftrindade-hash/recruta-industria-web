@@ -6,217 +6,292 @@ import {
   verifyStripeWebhookSignature,
   type StripeEvent,
 } from "@/lib/payment/stripe-client";
-import { activatePaidPayment } from "@/lib/payment/payment-activation";
-import { findPaymentRecordByGatewayRef } from "@/lib/payment/payment-activation";
+import {
+  activatePaidPayment,
+  findPaymentRecordByGatewayRef,
+} from "@/lib/payment/payment-activation";
+import {
+  asCompanyPaymentMeta,
+  asProfessionalPaymentMeta,
+  parsePaymentMeta,
+} from "@/lib/payment/payment-config";
+import { enforceApiRateLimit, getClientIp } from "@/lib/security/api-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function json(data: unknown, status = 200) {
-  return Response.json(data, { status });
-}
-
 /**
- * Stripe webhook — checkout.session.completed, invoice.paid, etc.
- * Idempotente via event.id em meta.stripeEventId.
- * Assinatura HMAC obrigatória (STRIPE_WEBHOOK_SECRET).
+ * Webhook Stripe — produção:
+ * https://www.recrutaindustria.com/api/stripe/webhook
+ *
+ * Eventos: checkout.session.completed, invoice.paid, invoice.payment_failed,
+ * customer.subscription.updated, customer.subscription.deleted, charge.refunded
+ *
+ * Ativação somente após status PAID + validações de meta existentes.
+ * Idempotência via event.id em meta.stripeEventId.
  */
 export async function POST(req: NextRequest) {
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!webhookSecret) {
-    console.error("[stripe/webhook] STRIPE_WEBHOOK_SECRET missing");
-    return json({ error: "Webhook not configured" }, 503);
-  }
-
-  const signature = req.headers.get("stripe-signature");
-  if (!signature) {
-    return json({ error: "Missing stripe-signature" }, 400);
-  }
-
-  let rawBody: string;
   try {
-    rawBody = await req.text();
-  } catch {
-    return json({ error: "Invalid body" }, 400);
-  }
-
-  let event: StripeEvent;
-  try {
-    const verified = verifyStripeWebhookSignature(rawBody, signature, webhookSecret);
-    if (!verified) {
-      return json({ error: "Invalid signature" }, 400);
+    const ip = getClientIp(req);
+    if (!(await enforceApiRateLimit(`webhook-stripe:${ip}`, 120, 60_000))) {
+      return json({ error: "rate_limited" }, 429);
     }
-    const parsed = parseStripeEvent(JSON.parse(rawBody));
-    if (!parsed) {
-      return json({ error: "Invalid event payload" }, 400);
+
+    const rawBody = await req.text();
+    const signature = req.headers.get("stripe-signature");
+
+    if (!verifyStripeWebhookSignature(rawBody, signature)) {
+      console.error("[stripe/webhook] assinatura inválida");
+      return json({ error: "unauthorized" }, 401);
     }
-    event = parsed;
-  } catch (err) {
-    console.error("[stripe/webhook] signature/parse error", err);
-    return json({ error: "Signature verification failed" }, 400);
-  }
 
-  // Idempotency: skip if we already processed this event
-  const existing = await prisma.paymentRecord.findFirst({
-    where: {
-      meta: { contains: event.id },
-    },
-    select: { id: true, status: true },
-  });
-  if (existing && existing.status === "PAID") {
-    return json({ ok: true, duplicate: true });
-  }
+    let payload: unknown;
+    try {
+      payload = JSON.parse(rawBody);
+    } catch {
+      return json({ error: "invalid_json" }, 400);
+    }
 
-  try {
+    const event = parseStripeEvent(payload);
+    if (!event) {
+      return json({ error: "unrecognized_event" }, 400);
+    }
+
+    const already = await prisma.paymentRecord.findFirst({
+      where: {
+        OR: [
+          { externalId: event.id },
+          { meta: { contains: `"stripeEventId":"${event.id}"` } },
+        ],
+      },
+      select: { id: true, status: true, reference: true },
+    });
+    if (already && already.status === "PAID") {
+      return json({ ok: true, duplicate: true, activated: true });
+    }
+
     switch (event.type) {
       case "checkout.session.completed":
-        return await handleCheckoutCompleted(event);
+        return handleCheckoutCompleted(event);
       case "invoice.paid":
-        return await handleInvoicePaid(event);
+        return handleInvoicePaid(event);
       case "invoice.payment_failed":
-        return await handleInvoiceFailed(event);
+        return handleInvoiceFailed(event);
       case "customer.subscription.updated":
       case "customer.subscription.deleted":
-        return json({ ok: true, ignored: event.type });
+        return handleSubscriptionChange(event);
       case "charge.refunded":
-        return await handleChargeRefunded(event);
+        return handleRefund(event);
       default:
-        return json({ ok: true, ignored: event.type });
+        return json({ ok: true, ignored: true, type: event.type });
     }
-  } catch (err) {
-    console.error("[stripe/webhook] handler error", event.type, err);
-    return json({ error: "Handler failed" }, 500);
+  } catch (error) {
+    console.error("[stripe/webhook]", error);
+    return json({ error: "internal" }, 500);
   }
+}
+
+function json(body: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 async function handleCheckoutCompleted(event: StripeEvent) {
-  const session = event.data?.object as {
-    id?: string;
-    payment_status?: string;
-    status?: string;
-    client_reference_id?: string;
-    metadata?: Record<string, string>;
-    subscription?: string;
-  } | null;
-  if (!session?.id) return json({ error: "No session" }, 400);
+  const obj = event.data.object;
+  const sessionId = String(obj.id || "");
+  const paymentStatus = String(obj.payment_status || "");
+  const sessionStatus = String(obj.status || "");
+  const clientRef = String(obj.client_reference_id || "");
+  const metadata = (obj.metadata || {}) as Record<string, string>;
+  const subscriptionId =
+    typeof obj.subscription === "string"
+      ? obj.subscription
+      : (obj.subscription as { id?: string } | null)?.id || undefined;
 
-  const paymentStatus = mapStripePaymentStatus(
-    session.payment_status || "",
-    session.status || "",
-  );
-  if (paymentStatus !== "PAID") {
-    return json({ ok: true, status: paymentStatus });
-  }
+  const mapped = mapStripePaymentStatus(paymentStatus, sessionStatus);
 
-  const ref = session.id;
-  let payment = await findPaymentRecordByGatewayRef(ref);
-  if (!payment && session.client_reference_id) {
-    payment = await findPaymentRecordByGatewayRef(session.client_reference_id);
-  }
-  if (!payment && session.metadata?.paymentRecordId) {
-    payment = await prisma.paymentRecord.findUnique({
-      where: { id: session.metadata.paymentRecordId },
-    });
-  }
+  let payment =
+    (await findPaymentRecordByGatewayRef(sessionId)) ||
+    (clientRef ? await findPaymentRecordByGatewayRef(clientRef) : null) ||
+    (metadata.paymentReference
+      ? await findPaymentRecordByGatewayRef(metadata.paymentReference)
+      : null);
 
   if (!payment) {
-    console.warn("[stripe/webhook] payment record not found for", ref);
-    return json({ ok: true, warning: "record_not_found" });
+    console.info("[stripe/webhook] checkout sem PaymentRecord", sessionId);
+    return json({ ok: true, not_found: true });
   }
 
-  if (payment.status === "PAID") {
-    return json({ ok: true, alreadyPaid: true });
-  }
-
-  // Merge event id into meta for idempotency
-  let meta: Record<string, unknown> = {};
-  try {
-    meta = payment.meta ? JSON.parse(payment.meta) : {};
-  } catch {
-    meta = {};
-  }
-  meta.stripeEventId = event.id;
-  meta.provider = "stripe";
-  if (session.subscription) {
-    meta.gatewaySubscriptionId = session.subscription;
-  }
+  const meta = parsePaymentMeta(payment.meta) || {};
+  const nextMeta = {
+    ...meta,
+    stripeEventId: event.id,
+    ...(subscriptionId ? { gatewaySubscriptionId: subscriptionId } : {}),
+    provider: "stripe",
+  };
 
   await prisma.paymentRecord.update({
     where: { id: payment.id },
     data: {
-      status: "PAID",
-      gatewayPaymentId: ref,
-      meta: JSON.stringify(meta),
-      paidAt: new Date(),
+      status: mapped,
+      meta: JSON.stringify(nextMeta),
+      externalId: subscriptionId || payment.externalId || sessionId,
     },
   });
 
-  await activatePaidPayment(payment.id);
-  return json({ ok: true, activated: true, paymentId: payment.id });
+  let activated = false;
+  if (mapped === "PAID") {
+    const result = await activatePaidPayment(payment.reference);
+    activated = result.activated;
+  }
+
+  return json({ ok: true, status: mapped, activated, eventId: event.id });
 }
 
 async function handleInvoicePaid(event: StripeEvent) {
-  const invoice = event.data?.object as {
-    id?: string;
-    subscription?: string;
-    payment_intent?: string;
-  } | null;
-  if (!invoice) return json({ ok: true });
+  const obj = event.data.object;
+  const subscriptionId =
+    typeof obj.subscription === "string"
+      ? obj.subscription
+      : (obj.subscription as { id?: string } | null)?.id || "";
+  const invoiceId = String(obj.id || "");
+  const amountPaid = Number(obj.amount_paid ?? 0);
+  const currency = String(obj.currency || "usd").toUpperCase();
+  const metadata = (obj.metadata || {}) as Record<string, string>;
+  const billingReason = String(obj.billing_reason || "");
 
-  const subId = invoice.subscription;
-  if (!subId) return json({ ok: true, no_subscription: true });
+  let payment =
+    (subscriptionId ? await findPaymentRecordByGatewayRef(subscriptionId) : null) ||
+    (metadata.paymentReference
+      ? await findPaymentRecordByGatewayRef(metadata.paymentReference)
+      : null);
 
-  const payment = await findPaymentRecordByGatewayRef(subId);
+  if (!payment && subscriptionId && billingReason === "subscription_cycle") {
+    const parent = await prisma.paymentRecord.findFirst({
+      where: {
+        OR: [
+          { externalId: subscriptionId },
+          { meta: { contains: subscriptionId } },
+        ],
+      },
+      orderBy: { createdAt: "asc" },
+    });
+    if (parent) {
+      const parentMeta = parsePaymentMeta(parent.meta) || {};
+      const company = asCompanyPaymentMeta(parent.meta);
+      const professional = asProfessionalPaymentMeta(parent.meta);
+      if (company || professional) {
+        const reference = `stripe_inv_${invoiceId}`;
+        payment = await prisma.paymentRecord.create({
+          data: {
+            reference,
+            amount: amountPaid / 100,
+            currency,
+            method: "card",
+            customer: parent.customer,
+            status: "PAID",
+            meta: JSON.stringify({
+              ...parentMeta,
+              isRenewal: true,
+              gatewaySubscriptionId: subscriptionId,
+              stripeEventId: event.id,
+              provider: "stripe",
+            }),
+            externalId: invoiceId,
+          },
+        });
+        const result = await activatePaidPayment(reference);
+        return json({
+          ok: true,
+          renewal: true,
+          activated: result.activated,
+          eventId: event.id,
+        });
+      }
+    }
+  }
+
   if (!payment) {
-    return json({ ok: true, warning: "subscription_record_not_found" });
+    return json({ ok: true, not_found: true });
   }
 
-  if (payment.status === "PAID") {
-    return json({ ok: true, alreadyPaid: true });
-  }
-
-  let meta: Record<string, unknown> = {};
-  try {
-    meta = payment.meta ? JSON.parse(payment.meta) : {};
-  } catch {
-    meta = {};
-  }
-  meta.stripeEventId = event.id;
-  meta.isRenewal = true;
-  meta.provider = "stripe";
-
+  const meta = parsePaymentMeta(payment.meta) || {};
   await prisma.paymentRecord.update({
     where: { id: payment.id },
     data: {
       status: "PAID",
-      meta: JSON.stringify(meta),
-      paidAt: new Date(),
+      meta: JSON.stringify({
+        ...meta,
+        stripeEventId: event.id,
+        gatewaySubscriptionId: subscriptionId || meta.gatewaySubscriptionId,
+        provider: "stripe",
+      }),
+      externalId: invoiceId || payment.externalId,
     },
   });
 
-  await activatePaidPayment(payment.id);
-  return json({ ok: true, renewal: true, paymentId: payment.id });
+  const result = await activatePaidPayment(payment.reference);
+  return json({ ok: true, status: "PAID", activated: result.activated, eventId: event.id });
 }
 
 async function handleInvoiceFailed(event: StripeEvent) {
-  const invoice = event.data?.object as { subscription?: string } | null;
-  if (!invoice?.subscription) return json({ ok: true });
-  const payment = await findPaymentRecordByGatewayRef(invoice.subscription);
+  const obj = event.data.object;
+  const subscriptionId =
+    typeof obj.subscription === "string"
+      ? obj.subscription
+      : (obj.subscription as { id?: string } | null)?.id || "";
+  const payment = subscriptionId
+    ? await findPaymentRecordByGatewayRef(subscriptionId)
+    : null;
   if (payment && payment.status !== "PAID") {
     await prisma.paymentRecord.update({
       where: { id: payment.id },
-      data: { status: "FAILED" },
+      data: { status: "DECLINED" },
     });
   }
-  return json({ ok: true, failed: true });
+  return json({ ok: true, status: "DECLINED" });
 }
 
-async function handleChargeRefunded(event: StripeEvent) {
-  const charge = event.data?.object as { payment_intent?: string; id?: string } | null;
-  if (!charge) return json({ ok: true });
-  const ref = charge.payment_intent || charge.id;
-  if (!ref) return json({ ok: true });
-  const payment = await findPaymentRecordByGatewayRef(ref);
+async function handleSubscriptionChange(event: StripeEvent) {
+  const obj = event.data.object;
+  const subscriptionId = String(obj.id || "");
+  const status = String(obj.status || "");
+  const payment = subscriptionId
+    ? await findPaymentRecordByGatewayRef(subscriptionId)
+    : null;
+
+  if (!payment) {
+    return json({ ok: true, not_found: true });
+  }
+
+  if (
+    event.type === "customer.subscription.deleted" ||
+    status === "canceled" ||
+    status === "unpaid"
+  ) {
+    await prisma.paymentRecord.update({
+      where: { id: payment.id },
+      data: { status: "CANCELED" },
+    });
+  }
+
+  return json({ ok: true, subscriptionStatus: status });
+}
+
+async function handleRefund(event: StripeEvent) {
+  const obj = event.data.object;
+  const paymentIntent =
+    typeof obj.payment_intent === "string"
+      ? obj.payment_intent
+      : (obj.payment_intent as { id?: string } | null)?.id || "";
+  const chargeId = String(obj.id || "");
+
+  const payment =
+    (paymentIntent ? await findPaymentRecordByGatewayRef(paymentIntent) : null) ||
+    (await findPaymentRecordByGatewayRef(chargeId));
+
   if (payment) {
     await prisma.paymentRecord.update({
       where: { id: payment.id },
