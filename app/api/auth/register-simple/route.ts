@@ -30,6 +30,7 @@ import { saveCompanyExtraData } from "@/lib/company-storage";
 /**
  * Cadastro simples: profissional (nome) ou empresa (razão social) + e-mail + senha.
  * Perfil/cadastro completo fica para o painel.
+ * Brasil: CPF obrigatório para profissional. Exterior: sem CPF/CNPJ.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -97,28 +98,50 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: t("registration.ui.e-mail-invalido") }, { status: 400 });
     }
 
+    const countryCode = region.region.countryCode;
+    const isBrazil = countryCode === "BR";
+
     if (!isCompany) {
-      const cpfErro = registrationDocumentError(cpfLimpo, "CPF", "BR", t("registration.simple.cpfInvalid"));
-      if (cpfErro) {
-        incrementRegisterAttempts(ip);
-        return NextResponse.json({ error: cpfErro }, { status: 400 });
-      }
-      const telefoneErro = registrationPhoneError(telefone, "BR", t("registration.simple.phoneInvalid"));
-      if (telefoneErro) {
-        incrementRegisterAttempts(ip);
-        return NextResponse.json({ error: telefoneErro }, { status: 400 });
-      }
-      const cpfFormatado = formatCPF(cpfLimpo);
-      const cpfEmUso = await prisma.profile.findFirst({
-        where: { OR: [{ cpf: cpfFormatado }, { cpf: cpfLimpo }] },
-        select: { id: true },
-      });
-      if (cpfEmUso) {
+      if (isBrazil) {
+        const cpfErro = registrationDocumentError(
+          cpfLimpo,
+          "CPF",
+          "BR",
+          t("registration.simple.cpfInvalid"),
+        );
+        if (cpfErro) {
+          incrementRegisterAttempts(ip);
+          return NextResponse.json({ error: cpfErro }, { status: 400 });
+        }
+        const cpfFormatadoCheck = formatCPF(cpfLimpo);
+        const cpfEmUso = await prisma.profile.findFirst({
+          where: { OR: [{ cpf: cpfFormatadoCheck }, { cpf: cpfLimpo }] },
+          select: { id: true },
+        });
+        if (cpfEmUso) {
+          incrementRegisterAttempts(ip);
+          return NextResponse.json(
+            { error: t("registration.ui.este-cpf-ja-esta-cadastrado-entre-com-a-conta-ou-recupere-a-senh") },
+            { status: 409 },
+          );
+        }
+      } else if (cpfLimpo) {
         incrementRegisterAttempts(ip);
         return NextResponse.json(
-          { error: t("registration.ui.este-cpf-ja-esta-cadastrado-entre-com-a-conta-ou-recupere-a-senh") },
-          { status: 409 },
+          { error: "CPF só é aceito em cadastros do Brasil." },
+          { status: 400 },
         );
+      }
+      if (telefone) {
+        const telefoneErro = registrationPhoneError(
+          telefone,
+          countryCode,
+          t("registration.simple.phoneInvalid"),
+        );
+        if (telefoneErro) {
+          incrementRegisterAttempts(ip);
+          return NextResponse.json({ error: telefoneErro }, { status: 400 });
+        }
       }
     }
 
@@ -182,7 +205,7 @@ export async function POST(request: NextRequest) {
 
     const passwordHash = await hashPassword(password);
     const role = isCompany ? "COMPANY" : "PROFESSIONAL";
-    const cpfFormatado = formatCPF(cpfLimpo);
+    const cpfFormatado = cpfLimpo && isBrazil ? formatCPF(cpfLimpo) : "";
 
     const user = isCompany
       ? await prisma.user.create({
@@ -212,14 +235,14 @@ export async function POST(request: NextRequest) {
               location: "Não informado",
               email,
               phone: telefone,
-              cpf: cpfFormatado,
+              ...(cpfFormatado ? { cpf: cpfFormatado } : {}),
               isVisible: false,
               profileCompletion: 0,
               formDataJSON: JSON.stringify({
                 cadastroRapido: true,
                 nome,
                 email,
-                cpf: cpfFormatado,
+                ...(cpfFormatado ? { cpf: cpfFormatado } : {}),
                 telefone,
               }),
             },
@@ -255,6 +278,7 @@ export async function POST(request: NextRequest) {
     await logSecurityAudit("registration_success", email, "account_created_simple", {
       userType: role,
       ip,
+      countryCode,
     });
 
     return NextResponse.json(
