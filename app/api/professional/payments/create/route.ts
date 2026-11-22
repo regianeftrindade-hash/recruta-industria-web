@@ -24,6 +24,7 @@ import {
   isStripeEnabled,
   listMissingStripePriceEnvs,
   resolveProfessionalStripePriceKey,
+  envNameForStripePriceKey,
 } from '@/lib/payment/stripe-client';
 
 export async function POST(req: NextRequest) {
@@ -78,14 +79,15 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const priceKey = resolveProfessionalStripePriceKey(planTier);
+      const priceKey = resolveProfessionalStripePriceKey(planTier, billingPeriod);
       const priceId = priceKey ? getStripePriceId(priceKey) : null;
       if (!priceId) {
         return NextResponse.json(
           {
             error: 'Preço internacional não configurado para este plano',
             detail:
-              'Cadastre o produto no Stripe Dashboard e defina STRIPE_PRICE_PROFESSIONAL_PREMIUM_MONTHLY.',
+              'Cadastre o produto no Stripe Dashboard e defina o Price ID anual/mensal correspondente.',
+            requiredEnv: priceKey ? envNameForStripePriceKey(priceKey) : null,
             missingPriceEnvs: listMissingStripePriceEnvs(),
           },
           { status: 503 },
@@ -111,7 +113,7 @@ export async function POST(req: NextRequest) {
         data: {
           reference: paymentReference,
           amount,
-          currency: 'BRL',
+          currency: 'USD',
           method: 'card',
           customer: JSON.stringify({ name, email, country: billingCountry }),
           status: 'PENDING',
@@ -133,6 +135,7 @@ export async function POST(req: NextRequest) {
           planTier,
           professionalUserId: user.id,
           billingCountry,
+          billingPeriod,
         },
         idempotencyKey: paymentReference,
       });
@@ -154,6 +157,8 @@ export async function POST(req: NextRequest) {
         recurring: true,
         provider: 'stripe',
         billingCountry,
+        adaptivePricing: checkout.adaptivePricing,
+        referenceCurrency: 'USD',
         sandbox: (process.env.STRIPE_SECRET_KEY || '').includes('_test_'),
       });
     }
@@ -182,11 +187,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const taxId =
+      sanitizeTaxId(user.profile.cpf) ??
+      (apiUrl.includes('sandbox') ? fallbackTaxIdForSandbox() : undefined);
+
+    if (!taxId) {
+      return NextResponse.json(
+        { error: 'Cadastre o CPF no perfil antes de pagar.' },
+        { status: 400 },
+      );
+    }
+
     if (billingMode === 'recurring') {
       return NextResponse.json(
         {
           error: 'Assinatura recorrente indisponível no momento',
-          detail: 'Use pagamento único (Pix ou Boleto).',
+          detail: 'Use pagamento único (Pix ou Boleto) via Asaas.',
         },
         { status: 400 },
       );
@@ -194,18 +210,7 @@ export async function POST(req: NextRequest) {
 
     if (!['pix', 'boleto'].includes(method)) {
       return NextResponse.json(
-        { error: 'Use Pix ou Boleto para o Premium profissional.' },
-        { status: 400 },
-      );
-    }
-
-    const sandbox = apiUrl.includes('sandbox');
-    const taxId =
-      sanitizeTaxId(user.profile.cpf) ?? (sandbox ? fallbackTaxIdForSandbox() : undefined);
-
-    if (!taxId) {
-      return NextResponse.json(
-        { error: 'Cadastre seu CPF no perfil antes de pagar.' },
+        { error: 'Use Pix ou Boleto para pagamento único.' },
         { status: 400 },
       );
     }
@@ -225,8 +230,8 @@ export async function POST(req: NextRequest) {
       professionalUserId: user.id,
       expectedAmount: amount,
       billingPeriod,
-      billingMode: 'one_time' as const,
-      provider: 'asaas' as const,
+      billingMode: 'one_time',
+      provider: 'asaas',
       billingCountry: 'BR',
     };
 
@@ -242,6 +247,8 @@ export async function POST(req: NextRequest) {
         externalId: payment.orderId,
       },
     });
+
+    const sandbox = apiUrl.includes('sandbox');
 
     return NextResponse.json({
       chargeId: payment.chargeId,
