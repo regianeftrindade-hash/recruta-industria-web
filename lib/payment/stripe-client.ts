@@ -1,17 +1,29 @@
 /**
  * Cliente Stripe — pagamentos internacionais (país de faturamento ≠ BR).
  * Checkout hospedado; não armazenamos dados de cartão.
+ * Moeda de referência dos produtos: USD.
+ * Adaptive Pricing: localiza a apresentação da moeda no Checkout quando a conta suportar.
  *
  * Env (servidor):
  *   STRIPE_SECRET_KEY
  *   STRIPE_WEBHOOK_SECRET
  *   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY (opcional no browser)
  *
- * Price IDs (opcionais até cadastrados no Dashboard):
+ * Price IDs mensais (obrigatórios para checkout internacional de empresas):
  *   STRIPE_PRICE_COMPANY_BASIC_MONTHLY
  *   STRIPE_PRICE_COMPANY_PREMIUM_MONTHLY
  *   STRIPE_PRICE_COMPANY_EMPRESARIAL_MONTHLY
- *   STRIPE_PRICE_PROFESSIONAL_PREMIUM_MONTHLY
+ *   STRIPE_PRICE_PROFESSIONAL_PREMIUM_MONTHLY (plano oculto)
+ *
+ * Price IDs anuais (opcionais até cadastrados — 10× mensal / 2 meses grátis):
+ *   STRIPE_PRICE_COMPANY_BASIC_YEARLY
+ *   STRIPE_PRICE_COMPANY_PREMIUM_YEARLY
+ *   STRIPE_PRICE_COMPANY_EMPRESARIAL_YEARLY
+ *   STRIPE_PRICE_PROFESSIONAL_PREMIUM_YEARLY
+ *
+ * Adaptive Pricing:
+ *   STRIPE_ADAPTIVE_PRICING=true|false (padrão: true). Se a conta não suportar,
+ *   o checkout tenta de novo sem adaptive_pricing e permanece em USD.
  */
 import { createHmac, timingSafeEqual } from "crypto";
 import { paymentMarketForCountry } from "@/lib/payment/market";
@@ -21,17 +33,20 @@ export type StripeConfig = {
   webhookSecret: string;
   publishableKey: string;
   enabled: boolean;
+  adaptivePricingEnabled: boolean;
 };
 
 export function getStripeConfig(): StripeConfig {
   const secretKey = (process.env.STRIPE_SECRET_KEY || "").trim();
   const webhookSecret = (process.env.STRIPE_WEBHOOK_SECRET || "").trim();
   const publishableKey = (process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "").trim();
+  const adaptiveRaw = (process.env.STRIPE_ADAPTIVE_PRICING || "true").trim().toLowerCase();
   return {
     secretKey,
     webhookSecret,
     publishableKey,
     enabled: Boolean(secretKey),
+    adaptivePricingEnabled: adaptiveRaw !== "false" && adaptiveRaw !== "0",
   };
 }
 
@@ -49,14 +64,29 @@ export type StripePlanPriceKey =
   | "company_basic_monthly"
   | "company_premium_monthly"
   | "company_empresarial_monthly"
-  | "professional_premium_monthly";
+  | "professional_premium_monthly"
+  | "company_basic_yearly"
+  | "company_premium_yearly"
+  | "company_empresarial_yearly"
+  | "professional_premium_yearly";
 
 const PRICE_ENV: Record<StripePlanPriceKey, string> = {
   company_basic_monthly: "STRIPE_PRICE_COMPANY_BASIC_MONTHLY",
   company_premium_monthly: "STRIPE_PRICE_COMPANY_PREMIUM_MONTHLY",
   company_empresarial_monthly: "STRIPE_PRICE_COMPANY_EMPRESARIAL_MONTHLY",
   professional_premium_monthly: "STRIPE_PRICE_PROFESSIONAL_PREMIUM_MONTHLY",
+  company_basic_yearly: "STRIPE_PRICE_COMPANY_BASIC_YEARLY",
+  company_premium_yearly: "STRIPE_PRICE_COMPANY_PREMIUM_YEARLY",
+  company_empresarial_yearly: "STRIPE_PRICE_COMPANY_EMPRESARIAL_YEARLY",
+  professional_premium_yearly: "STRIPE_PRICE_PROFESSIONAL_PREMIUM_YEARLY",
 };
+
+/** Price IDs mensais empresariais exigidos para liberar checkout internacional. */
+export const STRIPE_REQUIRED_COMPANY_MONTHLY_ENVS = [
+  "STRIPE_PRICE_COMPANY_BASIC_MONTHLY",
+  "STRIPE_PRICE_COMPANY_PREMIUM_MONTHLY",
+  "STRIPE_PRICE_COMPANY_EMPRESARIAL_MONTHLY",
+] as const;
 
 export function getStripePriceId(key: StripePlanPriceKey): string | null {
   const envName = PRICE_ENV[key];
@@ -66,24 +96,54 @@ export function getStripePriceId(key: StripePlanPriceKey): string | null {
 
 export function resolveCompanyStripePriceKey(
   planTier: string,
-  _billingPeriod: "monthly" | "annual" = "monthly",
+  billingPeriod: "monthly" | "annual" = "monthly",
 ): StripePlanPriceKey | null {
   const tier = planTier.toUpperCase();
-  if (tier === "BASIC") return "company_basic_monthly";
-  if (tier === "PREMIUM") return "company_premium_monthly";
-  if (tier === "EMPRESARIAL") return "company_empresarial_monthly";
+  const yearly = billingPeriod === "annual";
+  if (tier === "BASIC") return yearly ? "company_basic_yearly" : "company_basic_monthly";
+  if (tier === "PREMIUM") return yearly ? "company_premium_yearly" : "company_premium_monthly";
+  if (tier === "EMPRESARIAL") {
+    return yearly ? "company_empresarial_yearly" : "company_empresarial_monthly";
+  }
   return null;
 }
 
 export function resolveProfessionalStripePriceKey(
   planTier: string,
+  billingPeriod: "monthly" | "annual" = "monthly",
 ): StripePlanPriceKey | null {
-  if (planTier.toUpperCase() === "PREMIUM") return "professional_premium_monthly";
-  return null;
+  if (planTier.toUpperCase() !== "PREMIUM") return null;
+  return billingPeriod === "annual"
+    ? "professional_premium_yearly"
+    : "professional_premium_monthly";
 }
 
+/** Todos os Price envs ausentes (mensal + anual). */
 export function listMissingStripePriceEnvs(): string[] {
   return Object.values(PRICE_ENV).filter((name) => !(process.env[name] || "").trim());
+}
+
+/** Apenas Price IDs mensais empresariais ausentes (gate de readiness). */
+export function listMissingStripeMonthlyCompanyPriceEnvs(): string[] {
+  return STRIPE_REQUIRED_COMPANY_MONTHLY_ENVS.filter(
+    (name) => !(process.env[name] || "").trim(),
+  );
+}
+
+/** Price IDs anuais ausentes (opcionais — checkout anual fica indisponível até cadastrar). */
+export function listMissingStripeYearlyPriceEnvs(): string[] {
+  return (
+    [
+      "STRIPE_PRICE_COMPANY_BASIC_YEARLY",
+      "STRIPE_PRICE_COMPANY_PREMIUM_YEARLY",
+      "STRIPE_PRICE_COMPANY_EMPRESARIAL_YEARLY",
+      "STRIPE_PRICE_PROFESSIONAL_PREMIUM_YEARLY",
+    ] as const
+  ).filter((name) => !(process.env[name] || "").trim());
+}
+
+export function envNameForStripePriceKey(key: StripePlanPriceKey): string {
+  return PRICE_ENV[key];
 }
 
 export type StripeCheckoutInput = {
@@ -96,6 +156,8 @@ export type StripeCheckoutInput = {
   clientReferenceId: string;
   metadata: Record<string, string>;
   idempotencyKey?: string;
+  /** Quando true (padrão), tenta Adaptive Pricing; se a conta não suportar, refaz sem o recurso. */
+  adaptivePricing?: boolean;
 };
 
 export type StripeCheckoutResult = {
@@ -103,6 +165,7 @@ export type StripeCheckoutResult = {
   url: string;
   provider: "stripe";
   status: "PENDING";
+  adaptivePricing: boolean;
 };
 
 async function stripeRequest<T>(
@@ -132,7 +195,7 @@ async function stripeRequest<T>(
     body: init.body ? encodeStripeForm(init.body) : undefined,
   });
 
-  const data = (await res.json()) as T & { error?: { message?: string } };
+  const data = (await res.json()) as T & { error?: { message?: string; code?: string } };
   if (!res.ok) {
     const msg = data?.error?.message || `Stripe HTTP ${res.status}`;
     console.error("[stripe]", path, res.status, msg);
@@ -165,11 +228,29 @@ function encodeStripeForm(obj: Record<string, unknown>, prefix = ""): string {
   return parts.filter(Boolean).join("&");
 }
 
+function isAdaptivePricingUnsupportedError(error: unknown): boolean {
+  const msg = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+  return (
+    msg.includes("adaptive_pricing") ||
+    msg.includes("adaptive pricing") ||
+    msg.includes("presentment") ||
+    (msg.includes("unknown parameter") && msg.includes("adaptive"))
+  );
+}
+
+/**
+ * Cria Checkout Session (subscription).
+ * Adaptive Pricing: tenta habilitar localização de moeda; se a conta/API não suportar,
+ * refaz a sessão apenas em USD (moeda de referência dos Price IDs).
+ */
 export async function createStripeCheckoutSession(
   input: StripeCheckoutInput,
 ): Promise<StripeCheckoutResult> {
   const mode = input.mode || "subscription";
-  const body: Record<string, unknown> = {
+  const wantAdaptive =
+    input.adaptivePricing !== false && getStripeConfig().adaptivePricingEnabled;
+
+  const baseBody: Record<string, unknown> = {
     mode,
     success_url: input.successUrl,
     cancel_url: input.cancelUrl,
@@ -180,16 +261,46 @@ export async function createStripeCheckoutSession(
   };
 
   if (mode === "subscription") {
-    body.subscription_data = { metadata: input.metadata };
+    baseBody.subscription_data = { metadata: input.metadata };
   }
 
-  const session = await stripeRequest<{ id: string; url: string | null }>(
-    "/checkout/sessions",
-    {
+  const attempt = async (withAdaptive: boolean) => {
+    const body = { ...baseBody };
+    if (withAdaptive) {
+      body.adaptive_pricing = { enabled: true };
+    }
+    return stripeRequest<{ id: string; url: string | null }>("/checkout/sessions", {
       body,
-      idempotencyKey: input.idempotencyKey,
-    },
-  );
+      idempotencyKey: withAdaptive
+        ? input.idempotencyKey
+        : input.idempotencyKey
+          ? `${input.idempotencyKey}_usd`
+          : undefined,
+    });
+  };
+
+  let session: { id: string; url: string | null };
+  let adaptivePricing = false;
+
+  if (wantAdaptive) {
+    try {
+      session = await attempt(true);
+      adaptivePricing = true;
+    } catch (error) {
+      if (isAdaptivePricingUnsupportedError(error)) {
+        console.warn(
+          "[stripe] Adaptive Pricing indisponível nesta conta; checkout em USD (referência).",
+        );
+        session = await attempt(false);
+        adaptivePricing = false;
+      } else {
+        throw error;
+      }
+    }
+  } else {
+    session = await attempt(false);
+    adaptivePricing = false;
+  }
 
   if (!session.id || !session.url) {
     throw new Error("Stripe retornou sessão de checkout inválida.");
@@ -200,6 +311,7 @@ export async function createStripeCheckoutSession(
     url: session.url,
     provider: "stripe",
     status: "PENDING",
+    adaptivePricing,
   };
 }
 
