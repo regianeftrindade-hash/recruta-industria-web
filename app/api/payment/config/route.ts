@@ -10,12 +10,20 @@ import {
   getPaymentProvider,
   isPaymentGatewayConfigured,
   isSandboxMode,
+  resolvePaymentProvider,
 } from '@/lib/payment-config';
 import {
   getGatewayApiUrl,
   verifyGatewayCredentials,
 } from '@/lib/payment/gateway';
 import { isProfessionalPremiumOfferingEnabled } from '@/lib/professional/premium-offering';
+import {
+  isStripeEnabled,
+  listMissingStripePriceEnvs,
+  getStripeConfig,
+} from '@/lib/payment/stripe-client';
+import { billingCountryFromProfile } from '@/lib/payment/market';
+import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   const provider = getPaymentProvider();
@@ -32,8 +40,44 @@ export async function GET(request: NextRequest) {
   const professionalMessage = asaasVerification?.message ?? 'ASAAS_API_KEY não definida';
   const professionalPremiumOffering = isProfessionalPremiumOfferingEnabled();
 
+  const stripeEnabled = isStripeEnabled();
+  const missingPriceEnvs = listMissingStripePriceEnvs();
+  // Internacional pronto apenas se chave secreta + pelo menos os Price IDs empresariais principais
+  const companyPriceKeys = [
+    'STRIPE_PRICE_COMPANY_BASIC_MONTHLY',
+    'STRIPE_PRICE_COMPANY_PREMIUM_MONTHLY',
+    'STRIPE_PRICE_COMPANY_EMPRESARIAL_MONTHLY',
+  ];
+  const missingCompanyPrices = companyPriceKeys.filter(
+    (name) => !(process.env[name] || '').trim(),
+  );
+  const internationalCheckoutReady =
+    stripeEnabled && missingCompanyPrices.length === 0;
+
   const session = await getServerSession(authOptions);
   const isDev = process.env.NODE_ENV === 'development';
+
+  let billingCountry: string | null = null;
+  let resolvedProviderForUser: string | null = null;
+  if (session?.user?.email) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email: session.user.email.toLowerCase().trim() },
+        select: { countryCode: true },
+      });
+      billingCountry = billingCountryFromProfile(user?.countryCode);
+      resolvedProviderForUser = resolvePaymentProvider(billingCountry);
+    } catch {
+      // ignore — config pública continua
+    }
+  }
+
+  const stripePublic = {
+    stripeEnabled,
+    internationalCheckoutReady,
+    missingPriceEnvs: internationalCheckoutReady ? [] : missingPriceEnvs,
+    publishableKeyConfigured: Boolean(getStripeConfig().publishableKey),
+  };
 
   if (!isDev && !session?.user) {
     return NextResponse.json({
@@ -45,6 +89,7 @@ export async function GET(request: NextRequest) {
       professionalMessage,
       provider,
       recurringSupported: provider === 'pagseguro',
+      ...stripePublic,
     });
   }
 
@@ -75,6 +120,9 @@ export async function GET(request: NextRequest) {
       professionalProvider: 'asaas',
       professionalMessage,
       sandboxPanelUrl: isDev ? 'https://sandbox.asaas.com' : undefined,
+      ...stripePublic,
+      billingCountry,
+      resolvedProvider: resolvedProviderForUser,
     });
   }
 
@@ -101,5 +149,8 @@ export async function GET(request: NextRequest) {
     professionalMessage,
     sandboxTokenUrl: isDev ? 'https://portaldev.pagbank.com.br/tokens' : undefined,
     gatewayApiUrl: getGatewayApiUrl(),
+    ...stripePublic,
+    billingCountry,
+    resolvedProvider: resolvedProviderForUser,
   });
 }
