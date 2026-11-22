@@ -49,7 +49,7 @@ export default function RegistrationCountryField({
       </select>
       {value !== "BR" ? (
         <p className={hintClassName} role="status">
-          {t("registration.country.unavailable")}
+          Cadastro internacional: CPF/CNPJ não são exigidos. Use telefone com código do país (+).
         </p>
       ) : null}
     </div>

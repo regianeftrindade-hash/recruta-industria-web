@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   BRAZIL_REGISTRATION_REGION,
-  REGISTRATION_COUNTRY_UNAVAILABLE,
   existingRegistrationCountryChangeError,
   registrationCountryChoices,
   resolveNewRegistrationCountry,
@@ -25,15 +24,26 @@ describe("região do cadastro", () => {
     expect(resolveNewRegistrationCountry("br").ok).toBe(true);
   });
 
-  it("permite escolher outro país sem liberar o cadastro nem inventar região", () => {
+  it("aceita países ISO e grava região internacional", () => {
     const choices = registrationCountryChoices();
     expect(choices[0]).toMatchObject({ code: "BR", name: "Brasil" });
     expect(choices.find((country) => country.code === "US")?.name).toBe("Estados Unidos");
     expect(new Set(choices.map((country) => country.code)).size).toBe(choices.length);
 
-    const blocked = resolveNewRegistrationCountry("US");
-    expect(blocked).toEqual({ ok: false, error: REGISTRATION_COUNTRY_UNAVAILABLE });
-    expect(blocked).not.toHaveProperty("region");
+    const us = resolveNewRegistrationCountry("US");
+    expect(us.ok).toBe(true);
+    if (us.ok) {
+      expect(us.region.countryCode).toBe("US");
+      expect(us.region.locale).toBe("en");
+      expect(us.region.currency).toBe("USD");
+    }
+    const pt = resolveNewRegistrationCountry("PT");
+    expect(pt.ok).toBe(true);
+    if (pt.ok) {
+      expect(pt.region.countryCode).toBe("PT");
+      expect(pt.region.locale).toBe("pt-PT");
+      expect(pt.region.currency).toBe("EUR");
+    }
     expect(resolveNewRegistrationCountry("BRL")).toEqual({
       ok: false,
       error: "Selecione um país.",
