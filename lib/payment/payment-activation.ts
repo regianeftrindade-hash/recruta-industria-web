@@ -119,22 +119,24 @@ export async function syncPaymentStatusFromGateway(
     }
   } else if (isPagBankSubscriptionId(paymentReference)) {
     const remote = await getPagBankSubscriptionStatus(paymentReference);
-    if (remote?.status) {
-      status = remote.status;
-    }
-  } else if (paymentReference.startsWith('pay_')) {
-    const remote = await getAsaasChargeStatus(paymentReference);
-    if (remote?.status) {
-      status = remote.status;
+    if (remote) status = remote;
+  } else if (paymentReference.startsWith('pay_') || rec.method?.toLowerCase().includes('asaas')) {
+    try {
+      const remote = await getAsaasChargeStatus(paymentReference);
+      if (remote) status = remote;
+    } catch {
+      // keep
     }
   } else {
-    const remote = await getPagSeguroChargeStatus(paymentReference);
-    if (remote?.status) {
-      status = remote.status;
+    try {
+      const remote = await getPagSeguroChargeStatus(paymentReference);
+      if (remote) status = remote;
+    } catch {
+      // keep
     }
   }
 
-  if (rec.status !== status) {
+  if (status !== rec.status) {
     await prisma.paymentRecord.update({
       where: { id: rec.id },
       data: { status },
@@ -150,27 +152,10 @@ export async function syncPaymentStatusFromGateway(
   return { status, activated };
 }
 
-export async function findPaymentRecordByGatewayRef(
-  gatewayRef: string,
-) {
-  const ref = String(gatewayRef).trim();
-  if (!ref) return null;
-
-  let payment = await prisma.paymentRecord.findUnique({
-    where: { reference: ref },
+export async function findPaymentRecordByGatewayRef(ref: string) {
+  let payment = await prisma.paymentRecord.findFirst({
+    where: { OR: [{ reference: ref }, { externalId: ref }] },
   });
-
-  if (!payment && ref.startsWith('ORDE_')) {
-    payment = await prisma.paymentRecord.findFirst({
-      where: { externalId: ref },
-    });
-  }
-
-  if (!payment && ref.startsWith('CHAR_')) {
-    payment = await prisma.paymentRecord.findFirst({
-      where: { OR: [{ reference: ref }, { externalId: ref }] },
-    });
-  }
 
   if (!payment && ref.startsWith('pay_')) {
     payment = await prisma.paymentRecord.findFirst({
@@ -186,7 +171,7 @@ export async function findPaymentRecordByGatewayRef(
 
   if (!payment && (ref.startsWith('cs_') || ref.startsWith('sub_') || ref.startsWith('in_') || ref.startsWith('pi_'))) {
     payment = await prisma.paymentRecord.findFirst({
-      where: { OR: [{ reference: ref }, { externalId: ref }, { gatewayPaymentId: ref }] },
+      where: { OR: [{ reference: ref }, { externalId: ref }] },
     });
   }
 
