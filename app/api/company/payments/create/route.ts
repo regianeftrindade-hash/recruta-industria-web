@@ -31,6 +31,7 @@ import {
   resolveCompanyStripePriceKey,
   isStripeEnabled,
   listMissingStripePriceEnvs,
+  envNameForStripePriceKey,
 } from '@/lib/payment/stripe-client';
 import { billingCountryFromProfile } from '@/lib/payment/market';
 
@@ -120,7 +121,7 @@ export async function POST(req: NextRequest) {
               'Cadastre o produto no Stripe Dashboard e defina a variável de ambiente do Price ID correspondente.',
             planTier,
             billingPeriod,
-            requiredEnv: priceKey ? `STRIPE_PRICE_COMPANY_${planTier}_MONTHLY` : null,
+            requiredEnv: priceKey ? envNameForStripePriceKey(priceKey) : null,
             missingPriceEnvs: listMissingStripePriceEnvs(),
           },
           { status: 503 },
@@ -146,7 +147,7 @@ export async function POST(req: NextRequest) {
         data: {
           reference: paymentReference,
           amount,
-          currency: 'BRL',
+          currency: 'USD',
           method: 'card',
           customer: JSON.stringify({ name, email, country: billingCountry }),
           status: 'PENDING',
@@ -168,6 +169,7 @@ export async function POST(req: NextRequest) {
           planTier,
           companyUserId: user.id,
           billingCountry,
+          billingPeriod,
         },
         idempotencyKey: paymentReference,
       });
@@ -189,6 +191,8 @@ export async function POST(req: NextRequest) {
         recurring: true,
         provider: 'stripe',
         billingCountry,
+        adaptivePricing: checkout.adaptivePricing,
+        referenceCurrency: 'USD',
         sandbox: (process.env.STRIPE_SECRET_KEY || '').includes('_test_'),
       });
     }
