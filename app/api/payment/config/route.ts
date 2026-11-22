@@ -20,6 +20,8 @@ import { isProfessionalPremiumOfferingEnabled } from '@/lib/professional/premium
 import {
   isStripeEnabled,
   listMissingStripePriceEnvs,
+  listMissingStripeMonthlyCompanyPriceEnvs,
+  listMissingStripeYearlyPriceEnvs,
   getStripeConfig,
 } from '@/lib/payment/stripe-client';
 import { billingCountryFromProfile } from '@/lib/payment/market';
@@ -42,17 +44,15 @@ export async function GET(request: NextRequest) {
 
   const stripeEnabled = isStripeEnabled();
   const missingPriceEnvs = listMissingStripePriceEnvs();
-  // Internacional pronto apenas se chave secreta + pelo menos os Price IDs empresariais principais
-  const companyPriceKeys = [
-    'STRIPE_PRICE_COMPANY_BASIC_MONTHLY',
-    'STRIPE_PRICE_COMPANY_PREMIUM_MONTHLY',
-    'STRIPE_PRICE_COMPANY_EMPRESARIAL_MONTHLY',
-  ];
-  const missingCompanyPrices = companyPriceKeys.filter(
-    (name) => !(process.env[name] || '').trim(),
-  );
+  const missingMonthlyCompanyPrices = listMissingStripeMonthlyCompanyPriceEnvs();
+  const missingYearlyPriceEnvs = listMissingStripeYearlyPriceEnvs();
+  // Internacional mensal pronto se chave secreta + Price IDs empresariais mensais
   const internationalCheckoutReady =
-    stripeEnabled && missingCompanyPrices.length === 0;
+    stripeEnabled && missingMonthlyCompanyPrices.length === 0;
+  const internationalAnnualReady =
+    internationalCheckoutReady &&
+    ['STRIPE_PRICE_COMPANY_BASIC_YEARLY', 'STRIPE_PRICE_COMPANY_PREMIUM_YEARLY', 'STRIPE_PRICE_COMPANY_EMPRESARIAL_YEARLY']
+      .every((name) => (process.env[name] || '').trim());
 
   const session = await getServerSession(authOptions);
   const isDev = process.env.NODE_ENV === 'development';
@@ -72,11 +72,16 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  const stripeCfg = getStripeConfig();
   const stripePublic = {
     stripeEnabled,
     internationalCheckoutReady,
-    missingPriceEnvs: internationalCheckoutReady ? [] : missingPriceEnvs,
-    publishableKeyConfigured: Boolean(getStripeConfig().publishableKey),
+    internationalAnnualReady,
+    missingPriceEnvs: missingMonthlyCompanyPrices,
+    missingYearlyPriceEnvs,
+    publishableKeyConfigured: Boolean(stripeCfg.publishableKey),
+    adaptivePricingEnabled: stripeCfg.adaptivePricingEnabled,
+    referenceCurrency: 'USD',
   };
 
   if (!isDev && !session?.user) {
@@ -120,9 +125,9 @@ export async function GET(request: NextRequest) {
       professionalProvider: 'asaas',
       professionalMessage,
       sandboxPanelUrl: isDev ? 'https://sandbox.asaas.com' : undefined,
-      ...stripePublic,
       billingCountry,
       resolvedProvider: resolvedProviderForUser,
+      ...stripePublic,
     });
   }
 
@@ -149,8 +154,8 @@ export async function GET(request: NextRequest) {
     professionalMessage,
     sandboxTokenUrl: isDev ? 'https://portaldev.pagbank.com.br/tokens' : undefined,
     gatewayApiUrl: getGatewayApiUrl(),
-    ...stripePublic,
     billingCountry,
     resolvedProvider: resolvedProviderForUser,
+    ...stripePublic,
   });
 }

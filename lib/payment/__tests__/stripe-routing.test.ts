@@ -10,29 +10,25 @@ import {
   isStripeReference,
   resolveCompanyStripePriceKey,
   resolveProfessionalStripePriceKey,
+  envNameForStripePriceKey,
 } from "@/lib/payment/stripe-client";
 
 describe("payment market routing", () => {
   it("maps BR and BRA to BR market", () => {
     expect(paymentMarketForCountry("BR")).toBe("BR");
     expect(paymentMarketForCountry("bra")).toBe("BR");
-    expect(paymentMarketForCountry("BR")).toBe("BR");
   });
 
   it("maps other countries to INTL; missing country defaults to BR", () => {
     expect(paymentMarketForCountry("US")).toBe("INTL");
     expect(paymentMarketForCountry("PT")).toBe("INTL");
-    // Regra comercial: sem país informado → BR (produto padrão brasileiro)
     expect(paymentMarketForCountry(null)).toBe("BR");
     expect(paymentMarketForCountry(undefined)).toBe("BR");
     expect(paymentMarketForCountry("")).toBe("BR");
   });
 
-  it("shouldUseStripe is true only for non-BR when Stripe is enabled", () => {
-    // Sem STRIPE_SECRET_KEY no ambiente de teste, shouldUseStripe retorna false.
-    // A lógica de mercado (INTL) é coberta em paymentMarketForCountry.
+  it("shouldUseStripe is false for BR", () => {
     expect(shouldUseStripe("BR")).toBe(false);
-    // Com chave ausente, não força Stripe mesmo para US
     expect(typeof shouldUseStripe("US")).toBe("boolean");
   });
 
@@ -65,18 +61,31 @@ describe("Stripe helpers", () => {
     expect(isStripeReference("pay_123")).toBe(false);
   });
 
-  it("resolves company and professional price keys (internal keys)", () => {
+  it("resolves monthly and yearly company price keys", () => {
     expect(resolveCompanyStripePriceKey("BASIC", "monthly")).toBe(
       "company_basic_monthly",
     );
-    expect(resolveCompanyStripePriceKey("PREMIUM", "monthly")).toBe(
-      "company_premium_monthly",
+    expect(resolveCompanyStripePriceKey("BASIC", "annual")).toBe(
+      "company_basic_yearly",
+    );
+    expect(resolveCompanyStripePriceKey("PREMIUM", "annual")).toBe(
+      "company_premium_yearly",
     );
     expect(resolveCompanyStripePriceKey("EMPRESARIAL", "monthly")).toBe(
       "company_empresarial_monthly",
     );
-    expect(resolveProfessionalStripePriceKey("PREMIUM")).toBe(
+    expect(envNameForStripePriceKey("company_basic_yearly")).toBe(
+      "STRIPE_PRICE_COMPANY_BASIC_YEARLY",
+    );
+  });
+
+  it("resolves professional monthly and yearly keys", () => {
+    expect(resolveProfessionalStripePriceKey("PREMIUM", "monthly")).toBe(
       "professional_premium_monthly",
     );
+    expect(resolveProfessionalStripePriceKey("PREMIUM", "annual")).toBe(
+      "professional_premium_yearly",
+    );
+    expect(resolveProfessionalStripePriceKey("FREE", "monthly")).toBeNull();
   });
 });
