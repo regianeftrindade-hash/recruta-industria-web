@@ -16,6 +16,12 @@ import {
   getPaymentProvider,
   type PaymentProvider,
 } from '@/lib/payment/payment-config';
+import {
+  isStripeEnabled,
+  isStripeReference,
+  mapStripePaymentStatus,
+  retrieveStripeCheckoutSession,
+} from '@/lib/payment/stripe-client';
 
 export type GatewayPaymentMethod = PagSeguroPaymentMethod;
 
@@ -47,7 +53,7 @@ export type GatewayPaymentResult = {
 };
 
 export function isRecurringGatewaySupported(): boolean {
-  return getPaymentProvider() === 'pagseguro';
+  return false;
 }
 
 export async function verifyGatewayCredentials(): Promise<{
@@ -58,6 +64,13 @@ export async function verifyGatewayCredentials(): Promise<{
   if (getPaymentProvider() === 'asaas') {
     return verifyAsaasCredentials();
   }
+  if (getPaymentProvider() === 'stripe') {
+    return {
+      ok: isStripeEnabled(),
+      status: isStripeEnabled() ? 200 : 503,
+      message: isStripeEnabled() ? 'Stripe configurado' : 'STRIPE_SECRET_KEY ausente',
+    };
+  }
   return verifyPagSeguroCredentials();
 }
 
@@ -65,17 +78,20 @@ export function getGatewayApiUrl(): string {
   if (getPaymentProvider() === 'asaas') {
     return getAsaasConfig().apiUrl;
   }
+  if (getPaymentProvider() === 'stripe') {
+    return 'https://api.stripe.com';
+  }
   return getPagSeguroConfig().apiUrl;
 }
 
 export async function createGatewayPayment(
   input: CreateGatewayPaymentInput,
 ): Promise<GatewayPaymentResult> {
-  if (getPaymentProvider() === 'asaas') {
+  const provider = getPaymentProvider();
+  if (provider === 'asaas' || provider !== 'pagseguro') {
     if (input.method === 'card') {
       throw new Error('Pagamento com cartão ainda não está disponível via Asaas. Use Pix ou Boleto.');
     }
-
     const payment = await createAsaasPayment({
       amount: input.amount,
       method: input.method as AsaasPaymentMethod,
@@ -83,10 +99,8 @@ export async function createGatewayPayment(
       description: input.description,
       itemReference: input.itemReference,
     });
-
     return { ...payment, provider: 'asaas' };
   }
-
   const payment = await createPagSeguroPayment(input);
   return { ...payment, provider: 'pagseguro' };
 }
@@ -95,6 +109,20 @@ export async function getGatewayChargeStatus(paymentRef: string): Promise<{
   status: string;
   rawStatus?: string;
 } | null> {
+  if (isStripeReference(paymentRef)) {
+    if (paymentRef.startsWith('cs_')) {
+      try {
+        const session = await retrieveStripeCheckoutSession(paymentRef);
+        return {
+          status: mapStripePaymentStatus(session.payment_status, session.status),
+          rawStatus: session.payment_status,
+        };
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
   if (getPaymentProvider() === 'asaas' || paymentRef.startsWith('pay_')) {
     return getAsaasChargeStatus(paymentRef);
   }
