@@ -240,7 +240,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: region.error }, { status: 400 })
     }
 
+    const countryCode = region.region.countryCode
+    const isBrazil = countryCode === 'BR'
+
     if (userType === 'professional' && cpf) {
+      if (!isBrazil) {
+        incrementRegisterAttempts(ip)
+        return NextResponse.json({ error: 'CPF só é aceito em cadastros do Brasil.' }, { status: 400 })
+      }
       const cpfLimpo = cpf.replace(/\D/g, '')
       const cpfErro = registrationDocumentError(cpfLimpo, 'CPF', 'BR', t("registration.ui.cpf-invalido"))
       if (cpfErro) {
@@ -250,6 +257,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (userType === 'company' && cnpj) {
+      if (!isBrazil) {
+        incrementRegisterAttempts(ip)
+        return NextResponse.json({ error: 'CNPJ só é aceito em cadastros do Brasil.' }, { status: 400 })
+      }
       const cnpjLimpo = cnpj.replace(/\D/g, '')
       const cnpjErro = registrationDocumentError(cnpjLimpo, 'CNPJ', 'BR', t("registration.ui.cnpj-invalido"))
       if (cnpjErro) {
@@ -264,19 +275,21 @@ export async function POST(request: NextRequest) {
         incrementRegisterAttempts(ip)
         return NextResponse.json({ error: t("registration.ui.nome-do-responsavel-e-obrigatorio") }, { status: 400 })
       }
-      const cpfRespErro = registrationDocumentError(cpfResp, 'CPF', 'BR', t("registration.ui.cpf-do-responsavel-invalido"))
-      if (cpfRespErro) {
-        incrementRegisterAttempts(ip)
-        return NextResponse.json({ error: cpfRespErro }, { status: 400 })
-      }
-      const cpfEmUso = await findCompanyByResponsavelCpf(cpfResp)
-      if (cpfEmUso) {
-        incrementRegisterAttempts(ip)
-        return NextResponse.json({ error: t("registration.ui.cpf-do-responsavel-ja-cadastrado") }, { status: 409 })
+      if (isBrazil) {
+        const cpfRespErro = registrationDocumentError(cpfResp, 'CPF', 'BR', t("registration.ui.cpf-do-responsavel-invalido"))
+        if (cpfRespErro) {
+          incrementRegisterAttempts(ip)
+          return NextResponse.json({ error: cpfRespErro }, { status: 400 })
+        }
+        const cpfEmUso = await findCompanyByResponsavelCpf(cpfResp)
+        if (cpfEmUso) {
+          incrementRegisterAttempts(ip)
+          return NextResponse.json({ error: t("registration.ui.cpf-do-responsavel-ja-cadastrado") }, { status: 409 })
+        }
       }
       const telefoneEmpresa = String(telefone || '').trim()
       const telefoneErro = telefoneEmpresa
-        ? registrationPhoneError(telefoneEmpresa, 'BR', t("registration.simple.phoneInvalid"))
+        ? registrationPhoneError(telefoneEmpresa, countryCode, t("registration.simple.phoneInvalid"))
         : null
       if (telefoneErro) {
         incrementRegisterAttempts(ip)
@@ -332,9 +345,9 @@ export async function POST(request: NextRequest) {
       const cartaoUrl = String(cartaoCnpjUrl || '').trim()
 
       const extraData: Parameters<typeof saveCompanyExtraData>[1] = {
-        cnpj: cnpjLimpo || undefined,
+        cnpj: isBrazil ? (cnpjLimpo || undefined) : undefined,
         responsavelNome: String(responsavelNome || '').trim(),
-        responsavelCpf: cpfResp || undefined,
+        responsavelCpf: isBrazil ? (cpfResp || undefined) : undefined,
         telefone: String(telefone || '').trim(),
         endereco: String(endereco || '').trim(),
       }
@@ -344,7 +357,7 @@ export async function POST(request: NextRequest) {
         extraData.emailCorporativoVerificado = emailCorporativoVerificado
       }
 
-      if (cartaoUrl) {
+      if (cartaoUrl && isBrazil) {
         extraData.cartaoCnpjUrl = cartaoUrl
         extraData.verificationStatus = 'PENDING'
         extraData.verifiedAt = null
@@ -394,6 +407,7 @@ export async function POST(request: NextRequest) {
     await logSecurityAudit('registration_success', normalizedEmail, 'account_created', {
       userType,
       ip,
+      countryCode,
     })
 
     try {
