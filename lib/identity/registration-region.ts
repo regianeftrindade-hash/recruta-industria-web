@@ -3,7 +3,7 @@ import { t } from "@/lib/i18n/translate";
 const COUNTRY_UNAVAILABLE_PT =
   "O cadastro deste país ainda não está disponível. Hoje só é possível concluir o cadastro no Brasil.";
 
-/** Região gravada quando o cadastro é do Brasil. Não há outro conjunto definido. */
+/** Região gravada quando o cadastro é do Brasil. */
 export const BRAZIL_REGISTRATION_REGION = {
   countryCode: "BR",
   locale: "pt-BR",
@@ -13,7 +13,14 @@ export const BRAZIL_REGISTRATION_REGION = {
 
 export type BrazilRegistrationRegion = typeof BRAZIL_REGISTRATION_REGION;
 
-/** Frase estável do contrato. A tela traduz no momento do pedido. */
+export type RegistrationRegion = {
+  countryCode: string;
+  locale: string;
+  currency: string;
+  timeZone: string;
+};
+
+/** Mantido por compatibilidade de testes/mensagens legadas (não bloqueia mais países ISO). */
 export const REGISTRATION_COUNTRY_UNAVAILABLE = COUNTRY_UNAVAILABLE_PT;
 
 const ISO_ALPHA2 = `
@@ -46,9 +53,98 @@ ZA ZM ZW
 
 const COUNTRY_CODES = new Set(ISO_ALPHA2);
 
+const LOCALE_BY_COUNTRY: Record<string, string> = {
+  BR: "pt-BR",
+  PT: "pt-PT",
+  US: "en",
+  GB: "en",
+  AU: "en",
+  NZ: "en",
+  IE: "en",
+  CA: "en",
+  ES: "es",
+  MX: "es",
+  AR: "es",
+  CL: "es",
+  CO: "es",
+  PE: "es",
+  UY: "es",
+  FR: "fr",
+  BE: "fr",
+  DE: "de",
+  AT: "de",
+  CH: "de",
+  IT: "it",
+  JP: "ja",
+  KR: "ko",
+  CN: "zh-CN",
+  TW: "zh-CN",
+  SA: "ar",
+  AE: "ar",
+  EG: "ar",
+  IN: "hi",
+};
+
+const CURRENCY_BY_COUNTRY: Record<string, string> = {
+  BR: "BRL",
+  US: "USD",
+  CA: "CAD",
+  MX: "MXN",
+  GB: "GBP",
+  DE: "EUR",
+  FR: "EUR",
+  ES: "EUR",
+  IT: "EUR",
+  PT: "EUR",
+  NL: "EUR",
+  IE: "EUR",
+  AT: "EUR",
+  BE: "EUR",
+  JP: "JPY",
+  KR: "KRW",
+  CN: "CNY",
+  AU: "AUD",
+  NZ: "NZD",
+  CH: "CHF",
+  AR: "ARS",
+  CL: "CLP",
+  CO: "COP",
+  PE: "PEN",
+  IN: "INR",
+  AE: "AED",
+  SA: "SAR",
+};
+
+const TIMEZONE_BY_COUNTRY: Record<string, string> = {
+  BR: "America/Sao_Paulo",
+  US: "America/New_York",
+  CA: "America/Toronto",
+  MX: "America/Mexico_City",
+  GB: "Europe/London",
+  PT: "Europe/Lisbon",
+  ES: "Europe/Madrid",
+  FR: "Europe/Paris",
+  DE: "Europe/Berlin",
+  IT: "Europe/Rome",
+  NL: "Europe/Amsterdam",
+  IE: "Europe/Dublin",
+  JP: "Asia/Tokyo",
+  KR: "Asia/Seoul",
+  CN: "Asia/Shanghai",
+  AU: "Australia/Sydney",
+  NZ: "Pacific/Auckland",
+  AR: "America/Argentina/Buenos_Aires",
+  CL: "America/Santiago",
+  CO: "America/Bogota",
+  PE: "America/Lima",
+  IN: "Asia/Kolkata",
+  AE: "Asia/Dubai",
+  SA: "Asia/Riyadh",
+};
+
 let cachedChoices: { code: string; name: string }[] | null = null;
 
-/** Brasil primeiro. Os demais nomes vêm do idioma pt-BR, sem moeda nem fuso. */
+/** Brasil primeiro. Demais nomes via DisplayNames pt-BR. */
 export function registrationCountryChoices(): { code: string; name: string }[] {
   if (cachedChoices) return cachedChoices;
   const names = new Intl.DisplayNames(["pt-BR"], { type: "region" });
@@ -66,26 +162,37 @@ export function registrationCountryChoices(): { code: string; name: string }[] {
 }
 
 export type NewRegistrationCountry =
-  | { ok: true; region: BrazilRegistrationRegion }
+  | { ok: true; region: RegistrationRegion }
   | { ok: false; error: string };
+
+export function buildRegistrationRegion(countryCode: string): RegistrationRegion {
+  const code = countryCode.trim().toUpperCase();
+  if (code === "BR") return { ...BRAZIL_REGISTRATION_REGION };
+  return {
+    countryCode: code,
+    locale: LOCALE_BY_COUNTRY[code] || "en",
+    currency: CURRENCY_BY_COUNTRY[code] || "USD",
+    timeZone: TIMEZONE_BY_COUNTRY[code] || "UTC",
+  };
+}
 
 /**
  * Cadastro novo sem país informado continua no Brasil.
- * Outro país da lista pode ser escolhido, mas não é gravado.
+ * Qualquer código ISO-3166-1 alpha-2 válido é aceito e gravado.
  */
 export function resolveNewRegistrationCountry(raw: unknown): NewRegistrationCountry {
   if (raw == null || (typeof raw === "string" && raw.trim() === "")) {
-    return { ok: true, region: BRAZIL_REGISTRATION_REGION };
+    return { ok: true, region: { ...BRAZIL_REGISTRATION_REGION } };
   }
   if (typeof raw !== "string") {
     return { ok: false, error: t("registration.country.invalid") };
   }
   const code = raw.trim().toUpperCase();
-  if (code === "BR") return { ok: true, region: BRAZIL_REGISTRATION_REGION };
+  if (code === "BR") return { ok: true, region: { ...BRAZIL_REGISTRATION_REGION } };
   if (!/^[A-Z]{2}$/.test(code) || !COUNTRY_CODES.has(code)) {
     return { ok: false, error: t("registration.country.invalid") };
   }
-  return { ok: false, error: t("registration.country.unavailable") };
+  return { ok: true, region: buildRegistrationRegion(code) };
 }
 
 /** Conta já existente não troca o país gravado. Campo ausente não altera nada. */
