@@ -52,20 +52,25 @@ export function validateCompanyPaymentForActivation(
 
   const planDef = getPlanDefinition(planTier);
   const expected = getPlanPriceCentavos(planDef.precoCentavos, period);
+  const isStripe = meta.provider === 'stripe' || Boolean(meta.stripePriceId);
 
-  if (expected !== Math.round(payment.amount)) {
-    return 'Valor pago não confere com o plano';
-  }
-
-  if (meta.expectedAmount !== expected) {
-    return 'Metadados da cobrança inválidos';
+  // Stripe: preço vem do Price ID no Dashboard; não comparar com tabela BRL local.
+  if (!isStripe) {
+    if (expected !== Math.round(payment.amount)) {
+      return 'Valor pago não confere com o plano';
+    }
+    if (meta.expectedAmount !== expected) {
+      return 'Metadados da cobrança inválidos';
+    }
+  } else if (!meta.stripePriceId) {
+    return 'Cobrança Stripe sem Price ID registrado';
   }
 
   if (!getPaidPlanTiers().includes(planTier)) {
     return 'Plano inválido';
   }
 
-  if (mode === 'recurring' && !meta.gatewaySubscriptionId) {
+  if (mode === 'recurring' && !meta.gatewaySubscriptionId && !isStripe) {
     return 'Assinatura recorrente sem vínculo no gateway';
   }
 
