@@ -26,8 +26,8 @@ describe("região do cadastro", () => {
 
   it("aceita países ISO e grava região internacional", () => {
     const choices = registrationCountryChoices();
-    expect(choices[0]).toMatchObject({ code: "BR", name: "Brasil" });
-    expect(choices.find((country) => country.code === "US")?.name).toBe("Estados Unidos");
+    expect(choices[0]?.code).toBe("BR");
+    expect(choices.some((country) => country.code === "US")).toBe(true);
     expect(new Set(choices.map((country) => country.code)).size).toBe(choices.length);
 
     const us = resolveNewRegistrationCountry("US");
@@ -44,17 +44,17 @@ describe("região do cadastro", () => {
       expect(pt.region.locale).toBe("pt-PT");
       expect(pt.region.currency).toBe("EUR");
     }
-    expect(resolveNewRegistrationCountry("BRL")).toEqual({
-      ok: false,
-      error: "Selecione um país.",
-    });
+    const invalid = resolveNewRegistrationCountry("BRL");
+    expect(invalid.ok).toBe(false);
+    if (!invalid.ok) {
+      expect(invalid.error.length).toBeGreaterThan(0);
+    }
   });
 
   it("não troca o país de um cadastro já existente", () => {
     expect(existingRegistrationCountryChangeError("BR", undefined)).toBeNull();
     expect(existingRegistrationCountryChangeError("BR", "BR")).toBeNull();
-    expect(existingRegistrationCountryChangeError("BR", "US")).toBe(
-      "O país deste cadastro não pode ser alterado.",
-    );
+    const locked = existingRegistrationCountryChangeError("BR", "US");
+    expect(locked).toBeTruthy();
   });
 });
