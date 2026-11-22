@@ -16,6 +16,15 @@ import {
   parseBillingPeriod,
 } from '@/lib/billing';
 import { isProfessionalPremiumOfferingEnabled } from '@/lib/professional/premium-offering';
+import { billingCountryFromProfile } from '@/lib/payment/market';
+import { resolvePaymentProvider } from '@/lib/payment-config';
+import {
+  createStripeCheckoutSession,
+  getStripePriceId,
+  isStripeEnabled,
+  listMissingStripePriceEnvs,
+  resolveProfessionalStripePriceKey,
+} from '@/lib/payment/stripe-client';
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,17 +32,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'O plano Premium profissional não está disponível para novas contratações.' },
         { status: 403 },
-      );
-    }
-
-    const { apiKey, apiUrl } = getAsaasConfig();
-    if (!apiKey) {
-      return NextResponse.json(
-        {
-          error: 'Gateway de pagamento não configurado',
-          detail: 'A cobrança profissional usa a mesma ASAAS_API_KEY da cobrança empresarial. Ela não está definida neste ambiente.',
-        },
-        { status: 503 },
       );
     }
 
@@ -51,6 +49,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Perfil profissional não encontrado' }, { status: 403 });
     }
 
+    const billingCountry = billingCountryFromProfile(user.countryCode);
+    const provider = resolvePaymentProvider(billingCountry);
+
     const body = await req.json();
     const planTier = String(body?.planTier || 'PREMIUM').toUpperCase() as ProfessionalPlanTier;
     const billingPeriod = parseBillingPeriod(body?.billingPeriod);
@@ -61,11 +62,131 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Plano inválido para cobrança' }, { status: 400 });
     }
 
+    const planDef = getProfessionalPlanDefinition(planTier);
+    const amount = getPlanPriceCentavos(planDef.precoCentavos, billingPeriod);
+    const name = String(user.name || user.profile.title || 'Profissional').trim();
+    const email = user.email.toLowerCase().trim();
+
+    if (provider === 'stripe') {
+      if (!isStripeEnabled()) {
+        return NextResponse.json(
+          {
+            error: 'Pagamentos internacionais temporariamente indisponíveis',
+            detail: 'STRIPE_SECRET_KEY não configurada.',
+          },
+          { status: 503 },
+        );
+      }
+
+      const priceKey = resolveProfessionalStripePriceKey(planTier);
+      const priceId = priceKey ? getStripePriceId(priceKey) : null;
+      if (!priceId) {
+        return NextResponse.json(
+          {
+            error: 'Preço internacional não configurado para este plano',
+            detail:
+              'Cadastre o produto no Stripe Dashboard e defina STRIPE_PRICE_PROFESSIONAL_PREMIUM_MONTHLY.',
+            missingPriceEnvs: listMissingStripePriceEnvs(),
+          },
+          { status: 503 },
+        );
+      }
+
+      const baseUrl = (process.env.NEXTAUTH_URL || 'https://www.recrutaindustria.com').replace(/\/$/, '');
+      const paymentReference = `stripe_pro_${user.id}_${Date.now()}`;
+
+      const meta = {
+        type: 'professional_subscription' as const,
+        planTier,
+        professionalUserId: user.id,
+        expectedAmount: amount,
+        billingPeriod,
+        billingMode: 'recurring' as const,
+        provider: 'stripe' as const,
+        stripePriceId: priceId,
+        billingCountry,
+      };
+
+      await prisma.paymentRecord.create({
+        data: {
+          reference: paymentReference,
+          amount,
+          currency: 'BRL',
+          method: 'card',
+          customer: JSON.stringify({ name, email, country: billingCountry }),
+          status: 'PENDING',
+          meta: JSON.stringify(meta),
+        },
+      });
+
+      const checkout = await createStripeCheckoutSession({
+        priceId,
+        customerEmail: email,
+        customerName: name,
+        mode: 'subscription',
+        successUrl: `${baseUrl}/professional/pagamento?success=1&ref=${encodeURIComponent(paymentReference)}`,
+        cancelUrl: `${baseUrl}/professional/pagamento?canceled=1`,
+        clientReferenceId: paymentReference,
+        metadata: {
+          paymentReference,
+          type: 'professional_subscription',
+          planTier,
+          professionalUserId: user.id,
+          billingCountry,
+        },
+        idempotencyKey: paymentReference,
+      });
+
+      await prisma.paymentRecord.update({
+        where: { reference: paymentReference },
+        data: { externalId: checkout.sessionId },
+      });
+
+      return NextResponse.json({
+        chargeId: paymentReference,
+        sessionId: checkout.sessionId,
+        checkoutUrl: checkout.url,
+        status: 'PENDING',
+        planTier,
+        amount,
+        billingPeriod,
+        billingMode: 'recurring',
+        recurring: true,
+        provider: 'stripe',
+        billingCountry,
+        sandbox: (process.env.STRIPE_SECRET_KEY || '').includes('_test_'),
+      });
+    }
+
+    if (billingCountry !== 'BR' || provider !== 'asaas') {
+      return NextResponse.json(
+        {
+          error: 'Pagamentos internacionais temporariamente indisponíveis',
+          detail: 'Stripe não configurado para este país de faturamento.',
+          billingCountry,
+          missingPriceEnvs: listMissingStripePriceEnvs(),
+        },
+        { status: 503 },
+      );
+    }
+
+    const { apiKey, apiUrl } = getAsaasConfig();
+    if (!apiKey) {
+      return NextResponse.json(
+        {
+          error: 'Gateway de pagamento não configurado',
+          detail:
+            'A cobrança profissional usa a mesma ASAAS_API_KEY da cobrança empresarial. Ela não está definida neste ambiente.',
+        },
+        { status: 503 },
+      );
+    }
+
     if (billingMode === 'recurring') {
       return NextResponse.json(
         {
-          error: 'O Premium profissional é cobrado no Asaas por Pix ou Boleto.',
-          detail: 'A assinatura recorrente do PagBank não é usada nesta contratação.',
+          error: 'Assinatura recorrente indisponível no momento',
+          detail: 'Use pagamento único (Pix ou Boleto).',
         },
         { status: 400 },
       );
@@ -78,12 +199,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const planDef = getProfessionalPlanDefinition(planTier);
-    const amount = getPlanPriceCentavos(planDef.precoCentavos, billingPeriod);
-    const name = String(user.name || user.profile.title || 'Profissional').trim();
-    const email = user.email.toLowerCase().trim();
     const sandbox = apiUrl.includes('sandbox');
-    const taxId = sanitizeTaxId(user.profile.cpf) ?? (sandbox ? fallbackTaxIdForSandbox() : undefined);
+    const taxId =
+      sanitizeTaxId(user.profile.cpf) ?? (sandbox ? fallbackTaxIdForSandbox() : undefined);
 
     if (!taxId) {
       return NextResponse.json(
@@ -109,6 +227,7 @@ export async function POST(req: NextRequest) {
       billingPeriod,
       billingMode: 'one_time' as const,
       provider: 'asaas' as const,
+      billingCountry: 'BR',
     };
 
     await prisma.paymentRecord.create({
@@ -139,12 +258,14 @@ export async function POST(req: NextRequest) {
       billingMode: 'one_time',
       recurring: false,
       provider: 'asaas',
+      billingCountry: 'BR',
       sandbox,
     });
   } catch (error) {
     console.error('Erro professional payments/create:', error);
     const message = error instanceof Error ? error.message : 'Erro inesperado';
-    const status = message.includes('não configurada') || message.includes('não configurado') ? 503 : 502;
+    const status =
+      message.includes('não configurada') || message.includes('não configurado') ? 503 : 502;
     return NextResponse.json({ error: message }, { status });
   }
 }
