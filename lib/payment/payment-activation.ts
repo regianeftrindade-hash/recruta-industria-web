@@ -3,18 +3,23 @@ import {
   asCompanyExtraSeatsPaymentMeta,
   asCompanyPaymentMeta,
   asProfessionalPaymentMeta,
-} from '@/lib/payment-config';
+} from '@/lib/payment/payment-config';
 import {
   activateCompanyExtraSeatsFromPayment,
   activateCompanyPlanFromPayment,
-} from '@/lib/company-payment';
-import { activateProfessionalPlanFromPayment } from '@/lib/professional-payment';
+} from '@/lib/payment/company-payment';
+import { activateProfessionalPlanFromPayment } from '@/lib/payment/professional-payment';
 import { getPagSeguroChargeStatus } from '@/lib/pagseguro-client';
 import { getAsaasChargeStatus } from '@/lib/payment/asaas-client';
 import {
   getPagBankSubscriptionStatus,
   isPagBankSubscriptionId,
 } from '@/lib/pagseguro-subscriptions';
+import {
+  isStripeReference,
+  mapStripePaymentStatus,
+  retrieveStripeCheckoutSession,
+} from '@/lib/payment/stripe-client';
 import type { CompanyPlanTier } from '@/lib/company-premium-plans';
 import type { ProfessionalPlanTier } from '@/lib/professional-premium-plans';
 
@@ -105,7 +110,14 @@ export async function syncPaymentStatusFromGateway(
 
   let status = rec.status;
 
-  if (isPagBankSubscriptionId(paymentReference)) {
+  if (isStripeReference(paymentReference) || paymentReference.startsWith('cs_') || paymentReference.startsWith('sub_')) {
+    try {
+      const session = await retrieveStripeCheckoutSession(paymentReference);
+      status = mapStripePaymentStatus(session.payment_status, session.status);
+    } catch {
+      // keep current status
+    }
+  } else if (isPagBankSubscriptionId(paymentReference)) {
     const remote = await getPagBankSubscriptionStatus(paymentReference);
     if (remote?.status) {
       status = remote.status;
@@ -169,6 +181,12 @@ export async function findPaymentRecordByGatewayRef(
   if (!payment && ref.startsWith('SUBS_')) {
     payment = await prisma.paymentRecord.findFirst({
       where: { OR: [{ reference: ref }, { externalId: ref }] },
+    });
+  }
+
+  if (!payment && (ref.startsWith('cs_') || ref.startsWith('sub_') || ref.startsWith('in_') || ref.startsWith('pi_'))) {
+    payment = await prisma.paymentRecord.findFirst({
+      where: { OR: [{ reference: ref }, { externalId: ref }, { gatewayPaymentId: ref }] },
     });
   }
 
