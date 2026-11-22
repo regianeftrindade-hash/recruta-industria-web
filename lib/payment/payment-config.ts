@@ -1,22 +1,49 @@
 import { getAsaasConfig } from '@/lib/payment/asaas-client';
 import { getPagSeguroConfig } from '@/lib/pagseguro-client';
+import { isStripeEnabled, shouldUseStripe } from '@/lib/payment/stripe-client';
+import { paymentMarketForCountry } from '@/lib/payment/market';
 
-export type PaymentProvider = 'pagseguro' | 'asaas';
+/**
+ * Provedores suportados.
+ * Regra comercial: Brasil → Asaas; internacional → Stripe.
+ * PagSeguro permanece no tipo apenas para registros legados / status de cobranças antigas.
+ */
+export type PaymentProvider = 'pagseguro' | 'asaas' | 'stripe';
 
-/** Provedor ativo: PAYMENT_PROVIDER ou detecção automática pela chave configurada. */
+/**
+ * Provedor padrão para o mercado Brasil.
+ * Prioriza Asaas. PagSeguro só se forçado explicitamente (legado).
+ */
 export function getPaymentProvider(): PaymentProvider {
   const explicit = (process.env.PAYMENT_PROVIDER || '').trim().toLowerCase();
   if (explicit === 'asaas') return 'asaas';
+  if (explicit === 'stripe') return 'stripe';
   if (explicit === 'pagseguro' || explicit === 'pagbank') return 'pagseguro';
 
   const asaasKey = getAsaasConfig().apiKey;
-  const pagseguroToken = getPagSeguroConfig().token;
+  if (asaasKey) return 'asaas';
 
-  if (asaasKey && !pagseguroToken) return 'asaas';
-  return 'pagseguro';
+  const pagseguroToken = getPagSeguroConfig().token;
+  if (pagseguroToken) return 'pagseguro';
+  return 'asaas';
 }
 
-/** Tipos de cobrança registrados em PaymentRecord.meta */
+/**
+ * Escolhe o provedor pelo país de faturamento (não pelo idioma).
+ * BR → Asaas (exclusivo para novas cobranças quando configurado)
+ * INTL → Stripe se configurado; caso contrário null (checkout indisponível)
+ */
+export function resolvePaymentProvider(
+  billingCountryCode: string | null | undefined,
+): PaymentProvider | null {
+  if (shouldUseStripe(billingCountryCode)) return 'stripe';
+  if (paymentMarketForCountry(billingCountryCode) === 'BR') {
+    const br = getPaymentProvider();
+    return br === 'stripe' ? 'asaas' : br;
+  }
+  return null;
+}
+
 export type PaymentMetaType =
   | 'company_subscription'
   | 'company_extra_seats'
@@ -31,15 +58,18 @@ export type CompanyPaymentMeta = {
   billingMode?: 'one_time' | 'recurring';
   gatewaySubscriptionId?: string;
   isRenewal?: boolean;
+  provider?: PaymentProvider;
+  stripePriceId?: string;
+  stripeEventId?: string;
 };
 
-/** Usuário(s) RH extras acima do limite do plano */
 export type CompanyExtraSeatsPaymentMeta = {
   type: 'company_extra_seats';
   companyUserId: string;
   quantity: number;
   expectedAmount: number;
   activatedAt?: string;
+  provider?: PaymentProvider;
 };
 
 export type ProfessionalPaymentMeta = {
@@ -51,6 +81,9 @@ export type ProfessionalPaymentMeta = {
   billingMode?: 'one_time' | 'recurring';
   gatewaySubscriptionId?: string;
   isRenewal?: boolean;
+  provider?: PaymentProvider;
+  stripePriceId?: string;
+  stripeEventId?: string;
 };
 
 export const PAYMENT_CONFIG = {
@@ -68,9 +101,22 @@ export const PAYMENT_CONFIG = {
   productionSubscriptionsApiUrl: 'https://api.assinaturas.pagseguro.com',
 } as const;
 
+export function isPaymentGatewayConfiguredForCountry(
+  billingCountryCode: string | null | undefined,
+): boolean {
+  const provider = resolvePaymentProvider(billingCountryCode);
+  if (provider === 'stripe') return isStripeEnabled();
+  if (provider === 'asaas') return Boolean(getAsaasConfig().apiKey);
+  if (provider === 'pagseguro') return Boolean(getPagSeguroConfig().token);
+  return false;
+}
+
 export function isPaymentGatewayConfigured(): boolean {
   if (getPaymentProvider() === 'asaas') {
     return Boolean(getAsaasConfig().apiKey);
+  }
+  if (getPaymentProvider() === 'stripe') {
+    return isStripeEnabled();
   }
   return Boolean(getPagSeguroConfig().token);
 }
@@ -78,6 +124,9 @@ export function isPaymentGatewayConfigured(): boolean {
 export function isSandboxMode(): boolean {
   if (getPaymentProvider() === 'asaas') {
     return getAsaasConfig().apiUrl.includes('sandbox');
+  }
+  if (getPaymentProvider() === 'stripe') {
+    return (process.env.STRIPE_SECRET_KEY || '').includes('_test_');
   }
   const { apiUrl } = getPagSeguroConfig();
   return apiUrl.includes('sandbox');
