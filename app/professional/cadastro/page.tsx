@@ -74,29 +74,38 @@ export default function CadastroRapidoProfissionalPage() {
     e.preventDefault();
     setErrorMessage("");
 
+    const isBrazil = pais === "BR";
     const nomeTrim = nome.trim();
     const emailTrim = email.toLowerCase().trim();
     const cpfLimpo = cpf.replace(/\D/g, "");
 
-    if (pais !== "BR") {
-      setErrorMessage(t("registration.country.unavailable"));
-      return;
-    }
     if (nomeTrim.length < 2) {
       setErrorMessage(t("registration.simple.nameRequired"));
       return;
     }
-    if (!isValidCPF(cpfLimpo)) {
-      setErrorMessage(t("registration.simple.cpfInvalid"));
+    if (isBrazil) {
+      if (!isValidCPF(cpfLimpo)) {
+        setErrorMessage(t("registration.simple.cpfInvalid"));
+        return;
+      }
+    } else if (cpfLimpo) {
+      setErrorMessage("CPF só é aceito em cadastros do Brasil.");
       return;
     }
     if (!emailTrim.includes("@")) {
       setErrorMessage(t("registration.simple.emailInvalid"));
       return;
     }
-    if (!isValidPhoneBR(telefone)) {
-      setErrorMessage(t("registration.simple.phoneInvalid"));
-      return;
+    if (telefone) {
+      if (isBrazil) {
+        if (!isValidPhoneBR(telefone)) {
+          setErrorMessage(t("registration.simple.phoneInvalid"));
+          return;
+        }
+      } else if (!telefone.trim().startsWith("+")) {
+        setErrorMessage("Informe o telefone com o código internacional, começando com +.");
+        return;
+      }
     }
     if (password !== confirmPassword) {
       setErrorMessage(t("registration.simple.passwordMismatch"));
@@ -118,7 +127,7 @@ export default function CadastroRapidoProfissionalPage() {
         body: JSON.stringify({
           name: nomeTrim,
           countryCode: pais,
-          cpf: cpfLimpo,
+          ...(isBrazil && cpfLimpo ? { cpf: cpfLimpo } : {}),
           email: emailTrim,
           telefone,
           password,
@@ -138,7 +147,7 @@ export default function CadastroRapidoProfissionalPage() {
           chavePorEmail(SIMPLE_STORAGE_KEY, emailTrim),
           JSON.stringify({
             nome: nomeTrim,
-            cpf,
+            ...(isBrazil ? { cpf } : {}),
             email: emailTrim,
             telefone,
             password,
@@ -228,23 +237,24 @@ export default function CadastroRapidoProfissionalPage() {
               />
             </div>
 
-            <div className={loginStyles.fieldGroup}>
-              <label className={loginStyles.fieldLabel} htmlFor="cadastro-cpf">
-                {t("registration.simple.cpf")}
-              </label>
-              <input
-                id="cadastro-cpf"
-                className={loginStyles.input}
-                type="text"
-                inputMode="numeric"
-                autoComplete="off"
-                placeholder={t("registration.simple.cpfPlaceholder")}
-                value={cpf}
-                onChange={(e) => setCpf(mascaraCpf(e.target.value))}
-                required={pais === "BR"}
-                disabled={pais !== "BR"}
-              />
-            </div>
+            {pais === "BR" && (
+              <div className={loginStyles.fieldGroup}>
+                <label className={loginStyles.fieldLabel} htmlFor="cadastro-cpf">
+                  {t("registration.simple.cpf")}
+                </label>
+                <input
+                  id="cadastro-cpf"
+                  className={loginStyles.input}
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  placeholder={t("registration.simple.cpfPlaceholder")}
+                  value={cpf}
+                  onChange={(e) => setCpf(mascaraCpf(e.target.value))}
+                  required
+                />
+              </div>
+            )}
 
             <div className={loginStyles.fieldGroup}>
               <label className={loginStyles.fieldLabel} htmlFor="cadastro-email">
@@ -270,11 +280,10 @@ export default function CadastroRapidoProfissionalPage() {
                 className={loginStyles.input}
                 type="tel"
                 autoComplete="tel"
-                placeholder={t("registration.simple.phonePlaceholder")}
+                placeholder={pais === "BR" ? t("registration.simple.phonePlaceholder") : "+1 555 123 4567"}
                 value={telefone}
-                onChange={(e) => setTelefone(mascaraTelefone(e.target.value))}
+                onChange={(e) => setTelefone(pais === "BR" ? mascaraTelefone(e.target.value) : e.target.value)}
                 required={pais === "BR"}
-                disabled={pais !== "BR"}
               />
             </div>
 
