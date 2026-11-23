@@ -39,6 +39,8 @@ const registrationSimpleMessages = {
   "registration.simple.backHome": "← Voltar para a página inicial",
   "registration.simple.nameRequired": "Informe seu nome completo.",
   "registration.simple.cpfInvalid": "CPF inválido.",
+  "registration.simple.cpfBrazilOnly": "CPF só é aceito em cadastros do Brasil.",
+  "registration.simple.cnpjBrazilOnly": "CNPJ só é aceito em cadastros do Brasil.",
   "registration.simple.emailInvalid": "Informe um e-mail válido.",
   "registration.simple.phoneInvalid": "Telefone inválido. Informe DDD + número.",
   "registration.simple.passwordMismatch": "Senhas não conferem.",
