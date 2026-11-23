@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { CONTRACT_TYPES, WORK_MODES, type PublicJob } from "@/lib/jobs/job-posting";
+import { paginarLista, paginasDaBarra } from "@/lib/jobs/paginate-list";
 import { comparePublicationDateDesc, jobApplicationDeadline } from "@/lib/jobs/public-job-display";
 import styles from "./professional-job-search.module.css";
 
@@ -88,14 +89,37 @@ const BUSCAS_KEY = "ri-profissional-buscas-vagas";
 const MAX_BUSCAS = 6;
 const VAGAS_POR_PAGINA = 10;
 
-function paginasDaBarra(atual: number, total: number): number[] {
-  const janela = 5;
-  let inicio = Math.max(1, atual - 2);
-  let fim = Math.min(total, inicio + janela - 1);
-  inicio = Math.max(1, fim - janela + 1);
-  const numeros: number[] = [];
-  for (let numero = inicio; numero <= fim; numero += 1) numeros.push(numero);
-  return numeros;
+function Paginador({
+  rotulo,
+  pagina,
+  total,
+  onIr,
+}: {
+  rotulo: string;
+  pagina: number;
+  total: number;
+  onIr: (numero: number) => void;
+}) {
+  if (total <= 1) return null;
+  return (
+    <nav className={styles.pager} aria-label={rotulo}>
+      <button type="button" disabled={pagina <= 1} onClick={() => onIr(1)}>Primeira</button>
+      <button type="button" disabled={pagina <= 1} onClick={() => onIr(pagina - 1)}>Voltar</button>
+      {paginasDaBarra(pagina, total).map((numero) => (
+        <button
+          key={numero}
+          type="button"
+          aria-current={numero === pagina ? "page" : undefined}
+          className={numero === pagina ? styles.pagerOn : undefined}
+          onClick={() => onIr(numero)}
+        >
+          {numero}
+        </button>
+      ))}
+      <button type="button" disabled={pagina >= total} onClick={() => onIr(pagina + 1)}>Próxima</button>
+      <button type="button" disabled={pagina >= total} onClick={() => onIr(total)}>Última</button>
+    </nav>
+  );
 }
 
 type BuscaSalva = { id: string; form: SearchState; label: string };
@@ -274,7 +298,9 @@ export default function ProfessionalJobSearch() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [pagina, setPagina] = useState(1);
+  const [paginaCompativeis, setPaginaCompativeis] = useState(1);
   const listaRef = useRef<HTMLHeadingElement>(null);
+  const compativeisRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     if (!form.estado) {
@@ -309,6 +335,7 @@ export default function ProfessionalJobSearch() {
     setError("");
     setMatchError("");
     setPagina(1);
+    setPaginaCompativeis(1);
     setConsulta(next);
     const params = new URLSearchParams();
     const faixa = FAIXAS_SALARIO.find((item) => item.id === next.faixa);
@@ -335,12 +362,13 @@ export default function ProfessionalJobSearch() {
       const found = porDataDePublicacao(Array.isArray(data.jobs) ? data.jobs as PublicJob[] : []);
       const matchResponse = await fetch(`/api/professional/vagas-compativeis?${params.toString()}`, { credentials: "include" });
       const matchData = await matchResponse.json().catch(() => ({}));
-      if (!matchResponse.ok) {
-        const premiumRequired = matchResponse.status === 403 && matchData.premiumRequired === true;
-        setIsPremium(premiumRequired ? false : null);
+      const premiumConfirmado = matchResponse.ok && matchData.premium === true;
+      if (!premiumConfirmado) {
+        const bloqueado = matchResponse.status === 403 || matchData.premiumRequired === true;
+        setIsPremium(bloqueado ? false : null);
         setCompatible([]);
         setJobs(found);
-        if (!premiumRequired) {
+        if (!bloqueado) {
           setMatchError("Não foi possível comparar as vagas com o seu perfil agora. A lista geral continua disponível.");
         }
         if (salvar) setBuscas(guardarBusca(next));
@@ -370,13 +398,16 @@ export default function ProfessionalJobSearch() {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
-  const totalPaginas = Math.ceil(jobs.length / VAGAS_POR_PAGINA);
-  const paginaAtual = totalPaginas === 0 ? 1 : Math.min(pagina, totalPaginas);
-  const vagasDaPagina = jobs.slice((paginaAtual - 1) * VAGAS_POR_PAGINA, paginaAtual * VAGAS_POR_PAGINA);
+  const listaGeral = paginarLista(jobs, pagina, VAGAS_POR_PAGINA);
+  const listaCompativel = paginarLista(compatible, paginaCompativeis, VAGAS_POR_PAGINA);
 
-  function irParaPagina(numero: number) {
-    const destino = Math.min(Math.max(1, numero), Math.max(totalPaginas, 1));
-    setPagina(destino);
+  function irParaPagina(numero: number, qual: "geral" | "compativeis") {
+    if (qual === "compativeis") {
+      setPaginaCompativeis(numero);
+      compativeisRef.current?.scrollIntoView({ block: "start" });
+      return;
+    }
+    setPagina(numero);
     listaRef.current?.scrollIntoView({ block: "start" });
   }
 
@@ -491,6 +522,7 @@ export default function ProfessionalJobSearch() {
 
       {error ? <p className={styles.error}>{error}</p> : null}
       {loading ? <p className={styles.lead}>Buscando vagas...</p> : null}
+      {!loading && !error && matchError && isPremium !== true ? <p className={styles.error}>{matchError}</p> : null}
       {!loading && !error && isPremium === false ? (
         <section className={styles.matches} aria-label="Vagas compatíveis com você">
           <h3 className={styles.title}>Vagas compatíveis com você</h3>
@@ -500,16 +532,16 @@ export default function ProfessionalJobSearch() {
           </div>
         </section>
       ) : null}
-      {!loading && !error && isPremium !== false ? (
+      {!loading && !error && isPremium === true ? (
         <section className={styles.matches} aria-label="Vagas compatíveis com você">
-          <h3 className={styles.title}>Vagas compatíveis com você</h3>
+          <h3 ref={compativeisRef} className={styles.title}>Vagas compatíveis com você</h3>
           {matchError ? (
             <p className={styles.error}>{matchError}</p>
           ) : compatible.length === 0 ? (
             <p className={styles.empty}>Ainda não encontramos vagas compatíveis. Atualize seu perfil ou ajuste os filtros para descobrir novas oportunidades.</p>
           ) : (
             <div className={styles.list}>
-              {compatible.map((job) => (
+              {listaCompativel.itens.map((job) => (
                 <article key={job.id} className={styles.card}>
                   <h3>{job.title}</h3>
                   <p className={styles.company}>{job.companyLabel}</p>
@@ -527,6 +559,12 @@ export default function ProfessionalJobSearch() {
               ))}
             </div>
           )}
+          <Paginador
+            rotulo="Páginas das vagas compatíveis"
+            pagina={listaCompativel.pagina}
+            total={listaCompativel.totalPaginas}
+            onIr={(numero) => irParaPagina(numero, "compativeis")}
+          />
         </section>
       ) : null}
 
@@ -537,9 +575,9 @@ export default function ProfessionalJobSearch() {
         </p>
       ) : null}
 
-      {!loading && !error && vagasDaPagina.length > 0 ? (
+      {!loading && !error && listaGeral.itens.length > 0 ? (
         <div className={styles.list}>
-          {vagasDaPagina.map((job) => (
+          {listaGeral.itens.map((job) => (
             <article key={job.id} className={styles.card}>
               <h3>{job.title}</h3>
               <p className={styles.company}>{job.companyLabel}</p>
@@ -557,24 +595,13 @@ export default function ProfessionalJobSearch() {
         </div>
       ) : null}
 
-      {!loading && !error && totalPaginas > 0 ? (
-        <nav className={styles.pager} aria-label="Páginas de todas as vagas">
-          <button type="button" disabled={paginaAtual <= 1} onClick={() => irParaPagina(1)}>Primeira</button>
-          <button type="button" disabled={paginaAtual <= 1} onClick={() => irParaPagina(paginaAtual - 1)}>Voltar</button>
-          {paginasDaBarra(paginaAtual, totalPaginas).map((numero) => (
-            <button
-              key={numero}
-              type="button"
-              aria-current={numero === paginaAtual ? "page" : undefined}
-              className={numero === paginaAtual ? styles.pagerOn : undefined}
-              onClick={() => irParaPagina(numero)}
-            >
-              {numero}
-            </button>
-          ))}
-          <button type="button" disabled={paginaAtual >= totalPaginas} onClick={() => irParaPagina(paginaAtual + 1)}>Próxima</button>
-          <button type="button" disabled={paginaAtual >= totalPaginas} onClick={() => irParaPagina(totalPaginas)}>Última</button>
-        </nav>
+      {!loading && !error ? (
+        <Paginador
+          rotulo="Páginas de todas as vagas"
+          pagina={listaGeral.pagina}
+          total={listaGeral.totalPaginas}
+          onIr={(numero) => irParaPagina(numero, "geral")}
+        />
       ) : null}
     </section>
   );
