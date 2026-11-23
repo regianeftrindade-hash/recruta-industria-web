@@ -2178,5 +2178,19 @@
   "mail.application.label.recolocacao": "Recolocação",
   "mail.application.label.pretensaoSalarial": "Pretensão salarial",
   "mail.application.label.habilidades": "Competências",
-  "mail.application.label.mensagem": "Apresentação"
+  "mail.application.label.mensagem": "Apresentação",
+  "registration.ui.estado-regiao": "Distrito / região / província",
+  "registration.ui.telefone-internacional": "Telefone com indicativo do país (ex.: +1…)",
+  "registration.ui.telefone-placeholder-intl": "+indicativo e número",
+  "registration.ui.cidade-livre": "Cidade",
+  "mail.passwordReset.subject": "Redefinição de palavra-passe — Recruta Indústria",
+  "mail.passwordReset.intro": "Recebemos um pedido para redefinir a sua palavra-passe no Recruta Indústria.",
+  "mail.passwordReset.cta": "Redefinir palavra-passe",
+  "mail.passwordReset.validity": "Ligação válida por 1 hora. Se não pediu isto, ignore este e-mail.",
+  "mail.passwordReset.text": "Recebemos um pedido para redefinir a sua palavra-passe.\n\nAbra a ligação (válida por 1 hora):\n{url}\n\nSe não pediu isto, ignore este e-mail.",
+  "mail.passwordReset.apiOk": "Se o e-mail existir, receberá uma ligação de redefinição",
+  "mail.passwordReset.rateEmail": "Demasiadas tentativas para este e-mail. Tente novamente em 15 minutos.",
+  "mail.passwordReset.rateIp": "Demasiadas tentativas. Tente novamente em 15 minutos.",
+  "mail.passwordReset.emailRequired": "O e-mail é obrigatório",
+  "mail.passwordReset.error": "Não foi possível processar o pedido"
 }

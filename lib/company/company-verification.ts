@@ -39,8 +39,13 @@ export function companyVerificationLabel(status: CompanyVerificationStatus): str
 export function companyDocumentsSubmitted(info: {
   cartaoCnpjUrl?: string | null;
   emailCorporativo?: string | null;
+  /** ISO-3166 alpha-2; fora do BR o cartão CNPJ não é exigido. */
+  countryCode?: string | null;
 }): boolean {
-  return Boolean(info.cartaoCnpjUrl?.trim() && info.emailCorporativo?.trim());
+  const country = (info.countryCode || 'BR').trim().toUpperCase();
+  const emailOk = Boolean(info.emailCorporativo?.trim());
+  if (country !== 'BR') return emailOk;
+  return Boolean(info.cartaoCnpjUrl?.trim() && emailOk);
 }
 
 export type CompanyVerificationTag = 'Em análise' | 'Aprovado' | 'Negado';

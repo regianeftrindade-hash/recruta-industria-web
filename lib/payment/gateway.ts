@@ -110,18 +110,26 @@ export async function getGatewayChargeStatus(paymentRef: string): Promise<{
   rawStatus?: string;
 } | null> {
   if (isStripeReference(paymentRef)) {
-    if (paymentRef.startsWith('cs_')) {
-      try {
-        const session = await retrieveStripeCheckoutSession(paymentRef);
-        return {
-          status: mapStripePaymentStatus(session.payment_status, session.status),
-          rawStatus: session.payment_status,
-        };
-      } catch {
-        return null;
+    try {
+      let sessionId = paymentRef.startsWith('cs_') ? paymentRef : null;
+      if (!sessionId) {
+        const { prisma } = await import('@/lib/db');
+        const rec = await prisma.paymentRecord.findFirst({
+          where: { OR: [{ reference: paymentRef }, { externalId: paymentRef }] },
+          select: { externalId: true, reference: true },
+        });
+        const ext = (rec?.externalId || '').trim();
+        if (ext.startsWith('cs_')) sessionId = ext;
       }
+      if (!sessionId) return null;
+      const session = await retrieveStripeCheckoutSession(sessionId);
+      return {
+        status: mapStripePaymentStatus(session.payment_status, session.status),
+        rawStatus: session.payment_status,
+      };
+    } catch {
+      return null;
     }
-    return null;
   }
   if (getPaymentProvider() === 'asaas' || paymentRef.startsWith('pay_')) {
     return getAsaasChargeStatus(paymentRef);

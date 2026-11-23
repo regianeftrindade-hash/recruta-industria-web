@@ -268,7 +268,7 @@ function PagamentoProfissional() {
       if (!res.ok) {
         setProcessing(false);
         const friendly =
-          /ASAAS_|PAGSEGURO_|PAGBANK_|TOKEN|API_KEY|\.env|Vercel/i.test(
+          /ASAAS_|PAGSEGURO_|PAGBANK_|TOKEN|API_KEY|\.env|Vercel|STRIPE_/i.test(
             `${data?.error || ""} ${data?.detail || ""}`,
           )
             ? "Pagamento temporariamente indisponível. Tente novamente em alguns minutos ou fale com o suporte."
@@ -278,6 +278,12 @@ function PagamentoProfissional() {
             ? `${friendly} (${data.detail})`
             : friendly,
         );
+        return;
+      }
+
+      if (data.provider === "stripe" && data.checkoutUrl) {
+        setStatusMessage("Redirecionando para o checkout seguro...");
+        window.location.href = data.checkoutUrl;
         return;
       }
 

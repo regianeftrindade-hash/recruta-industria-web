@@ -2178,5 +2178,19 @@
   "mail.application.label.recolocacao": "Mobilité",
   "mail.application.label.pretensaoSalarial": "Prétention salariale",
   "mail.application.label.habilidades": "Compétences",
-  "mail.application.label.mensagem": "Présentation"
+  "mail.application.label.mensagem": "Présentation",
+  "registration.ui.estado-regiao": "État / région / province",
+  "registration.ui.telefone-internacional": "Téléphone avec indicatif pays (ex. : +1…)",
+  "registration.ui.telefone-placeholder-intl": "+indicatif et numéro",
+  "registration.ui.cidade-livre": "Ville",
+  "mail.passwordReset.subject": "Réinitialisation du mot de passe — Recruta Indústria",
+  "mail.passwordReset.intro": "Nous avons reçu une demande de réinitialisation de votre mot de passe sur Recruta Indústria.",
+  "mail.passwordReset.cta": "Réinitialiser le mot de passe",
+  "mail.passwordReset.validity": "Lien valable 1 heure. Si vous n’avez pas fait cette demande, ignorez cet e-mail.",
+  "mail.passwordReset.text": "Nous avons reçu une demande de réinitialisation de votre mot de passe.\n\nOuvrez le lien (valable 1 heure) :\n{url}\n\nSi vous n’avez pas fait cette demande, ignorez cet e-mail.",
+  "mail.passwordReset.apiOk": "Si l’e-mail existe, vous recevrez un lien de réinitialisation",
+  "mail.passwordReset.rateEmail": "Trop de tentatives pour cet e-mail. Réessayez dans 15 minutes.",
+  "mail.passwordReset.rateIp": "Trop de tentatives. Réessayez dans 15 minutes.",
+  "mail.passwordReset.emailRequired": "L’e-mail est obligatoire",
+  "mail.passwordReset.error": "Impossible de traiter la demande"
 }

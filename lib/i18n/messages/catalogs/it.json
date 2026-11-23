@@ -2178,5 +2178,19 @@
   "mail.application.label.recolocacao": "Disponibilità a trasferirsi",
   "mail.application.label.pretensaoSalarial": "Pretensione salariale",
   "mail.application.label.habilidades": "Competenze",
-  "mail.application.label.mensagem": "Presentazione"
+  "mail.application.label.mensagem": "Presentazione",
+  "registration.ui.estado-regiao": "Stato / regione / provincia",
+  "registration.ui.telefone-internacional": "Telefono con prefisso internazionale (es. +1…)",
+  "registration.ui.telefone-placeholder-intl": "+prefisso e numero",
+  "registration.ui.cidade-livre": "Città",
+  "mail.passwordReset.subject": "Reimpostazione della password — Recruta Indústria",
+  "mail.passwordReset.intro": "Abbiamo ricevuto una richiesta di reimpostazione della password su Recruta Indústria.",
+  "mail.passwordReset.cta": "Reimposta password",
+  "mail.passwordReset.validity": "Link valido per 1 ora. Se non l’hai richiesto, ignora questa e-mail.",
+  "mail.passwordReset.text": "Abbiamo ricevuto una richiesta di reimpostazione della password.\n\nApri il link (valido 1 ora):\n{url}\n\nSe non l’hai richiesto, ignora questa e-mail.",
+  "mail.passwordReset.apiOk": "Se l’e-mail esiste, riceverai un link di reimpostazione",
+  "mail.passwordReset.rateEmail": "Troppi tentativi per questa e-mail. Riprova tra 15 minuti.",
+  "mail.passwordReset.rateIp": "Troppi tentativi. Riprova tra 15 minuti.",
+  "mail.passwordReset.emailRequired": "L’e-mail è obbligatoria",
+  "mail.passwordReset.error": "Impossibile elaborare la richiesta"
 }

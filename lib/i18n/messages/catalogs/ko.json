@@ -2178,5 +2178,19 @@
   "mail.application.label.recolocacao": "이전 가능 여부",
   "mail.application.label.pretensaoSalarial": "희망 연봉",
   "mail.application.label.habilidades": "기술",
-  "mail.application.label.mensagem": "소개"
+  "mail.application.label.mensagem": "소개",
+  "registration.ui.estado-regiao": "주 / 지역 / 도",
+  "registration.ui.telefone-internacional": "국가 코드가 있는 전화번호(예: +1…)",
+  "registration.ui.telefone-placeholder-intl": "+국가코드와 번호",
+  "registration.ui.cidade-livre": "도시",
+  "mail.passwordReset.subject": "비밀번호 재설정 — Recruta Indústria",
+  "mail.passwordReset.intro": "Recruta Indústria에서 비밀번호 재설정 요청을 받았습니다.",
+  "mail.passwordReset.cta": "비밀번호 재설정",
+  "mail.passwordReset.validity": "링크는 1시간 동안 유효합니다. 요청하지 않았다면 이 이메일을 무시하세요.",
+  "mail.passwordReset.text": "비밀번호 재설정 요청을 받았습니다.\n\n링크를 여세요(1시간 유효):\n{url}\n\n요청하지 않았다면 이 이메일을 무시하세요.",
+  "mail.passwordReset.apiOk": "이메일이 존재하면 재설정 링크를 받게 됩니다",
+  "mail.passwordReset.rateEmail": "이 이메일에 대한 시도가 너무 많습니다. 15분 후에 다시 시도하세요.",
+  "mail.passwordReset.rateIp": "시도가 너무 많습니다. 15분 후에 다시 시도하세요.",
+  "mail.passwordReset.emailRequired": "이메일은 필수입니다",
+  "mail.passwordReset.error": "요청을 처리할 수 없습니다"
 }

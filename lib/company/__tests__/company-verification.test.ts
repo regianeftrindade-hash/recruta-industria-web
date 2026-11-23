@@ -23,6 +23,11 @@ describe("companyVerificationTag", () => {
       cartaoCnpjUrl: "",
       emailCorporativo: "rh@empresa.com.br",
     })).toBe(false);
+    expect(companyDocumentsSubmitted({
+      cartaoCnpjUrl: "",
+      emailCorporativo: "hr@company.com",
+      countryCode: "US",
+    })).toBe(true);
     expect(companyVerificationTag({
       verificationStatus: "PENDING",
       cartaoCnpjUrl: null,

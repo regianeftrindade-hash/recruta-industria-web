@@ -2178,5 +2178,19 @@
   "mail.application.label.recolocacao": "Umzugsbereitschaft",
   "mail.application.label.pretensaoSalarial": "Gehaltsvorstellung",
   "mail.application.label.habilidades": "Fähigkeiten",
-  "mail.application.label.mensagem": "Vorstellung"
+  "mail.application.label.mensagem": "Vorstellung",
+  "registration.ui.estado-regiao": "Bundesland / Region / Provinz",
+  "registration.ui.telefone-internacional": "Telefon mit Ländervorwahl (z. B. +1…)",
+  "registration.ui.telefone-placeholder-intl": "+Vorwahl und Nummer",
+  "registration.ui.cidade-livre": "Stadt",
+  "mail.passwordReset.subject": "Passwort zurücksetzen — Recruta Indústria",
+  "mail.passwordReset.intro": "Wir haben eine Anfrage zum Zurücksetzen Ihres Passworts bei Recruta Indústria erhalten.",
+  "mail.passwordReset.cta": "Passwort zurücksetzen",
+  "mail.passwordReset.validity": "Link 1 Stunde gültig. Wenn Sie das nicht angefordert haben, ignorieren Sie diese E-Mail.",
+  "mail.passwordReset.text": "Wir haben eine Anfrage zum Zurücksetzen Ihres Passworts erhalten.\n\nÖffnen Sie den Link (1 Stunde gültig):\n{url}\n\nWenn Sie das nicht angefordert haben, ignorieren Sie diese E-Mail.",
+  "mail.passwordReset.apiOk": "Falls die E-Mail existiert, erhalten Sie einen Reset-Link",
+  "mail.passwordReset.rateEmail": "Zu viele Versuche für diese E-Mail. Versuchen Sie es in 15 Minuten erneut.",
+  "mail.passwordReset.rateIp": "Zu viele Versuche. Versuchen Sie es in 15 Minuten erneut.",
+  "mail.passwordReset.emailRequired": "E-Mail ist erforderlich",
+  "mail.passwordReset.error": "Anfrage konnte nicht verarbeitet werden"
 }

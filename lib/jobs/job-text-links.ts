@@ -22,6 +22,9 @@ const TOKEN = new RegExp(
     String.raw`www\.[^\s<>"']+`,
     String.raw`wa\.me\/\d{8,15}`,
     String.raw`[a-z0-9][a-z0-9._%+-]*@[a-z0-9][a-z0-9.-]*\.[a-z]{2,}`,
+    // E.164 internacional (não BR): + e 8–15 dígitos, sem forçar +55.
+    String.raw`(?<!\d)\+(?!55\b)[1-9]\d{7,14}(?!\d)`,
+    String.raw`(?<!\d)\+(?!55\b)[1-9]\d{0,2}[\s()-]*\d[\d\s()-]{6,16}\d(?!\d)`,
     String.raw`(?<!\d)(?:\+?55[\s-]*)?\(\d{2}\)[\s-]*(?:9[\s-]?\d{4}|\d{4})[\s-]?\d{4}(?!\d)`,
     String.raw`(?<!\d)\+?55[\s-]*\d{2}[\s-]*(?:9[\s-]?\d{4}|\d{4})[\s-]?\d{4}(?!\d)`,
     String.raw`(?<!\d)\d{2}[\s-]+9[\s-]?\d{4}[\s-]?\d{4}(?!\d)`,
@@ -77,10 +80,22 @@ function nationalPhone(value: string): string | null {
   return digits;
 }
 
-function whatsAppHref(national: string, message?: string): string {
-  const base = `https://wa.me/55${national}`;
+function whatsAppHref(e164Digits: string, message?: string): string {
+  const base = `https://wa.me/${e164Digits}`;
   if (!message) return base;
   return `${base}?text=${encodeURIComponent(message)}`;
+}
+
+/** Números já em E.164 com `+` (exceto fluxo BR tratado por nationalPhone). */
+function internationalE164Digits(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed.startsWith("+")) return null;
+  const digits = trimmed.replace(/\D/g, "");
+  if (digits.length < 8 || digits.length > 15) return null;
+  if (digits.startsWith("55") && (digits.length === 12 || digits.length === 13)) {
+    return null; // deixa o caminho BR tratar
+  }
+  return digits;
 }
 
 function contextBefore(input: string, start: number): string {
@@ -89,6 +104,21 @@ function contextBefore(input: string, start: number): string {
 }
 
 function phoneHref(display: string, before: string, withMessage: boolean): string | null {
+  const intl = internationalE164Digits(display);
+  if (intl) {
+    const mentioned = WHATSAPP_CONTEXT.test(before);
+    const phoneLabel = /telefone|fone\b|\btel\b|celular|phone|whats/i.test(before);
+    if (mentioned || phoneLabel || display.trim().startsWith("+")) {
+      if (mentioned || /whats/i.test(before)) {
+        return whatsAppHref(
+          intl,
+          withMessage ? "Olá! Vi a vaga no Recruta Indústria e quero me candidatar." : undefined,
+        );
+      }
+      return `tel:+${intl}`;
+    }
+  }
+
   const national = nationalPhone(display);
   if (!national) return null;
   const mobile = national.length === 11;
@@ -100,7 +130,7 @@ function phoneHref(display: string, before: string, withMessage: boolean): strin
   if (!mobile && !hasCountryOrParen && !mentioned && !phoneLabel) return null;
   if (mobile || mentioned) {
     return whatsAppHref(
-      national,
+      `55${national}`,
       withMessage ? "Olá! Vi a vaga no Recruta Indústria e quero me candidatar." : undefined,
     );
   }
@@ -150,7 +180,11 @@ export function hrefForShownContact(
     return `mailto:${text}?subject=${encodeURIComponent("Candidatura via Recruta Indústria")}`;
   }
   if (kind === "url") return safeHttpUrl(text);
+  const intl = internationalE164Digits(text);
+  if (intl) {
+    return whatsAppHref(intl, "Olá! Vi a vaga no Recruta Indústria e quero me candidatar.");
+  }
   const national = nationalPhone(text);
   if (!national) return null;
-  return whatsAppHref(national, "Olá! Vi a vaga no Recruta Indústria e quero me candidatar.");
+  return whatsAppHref(`55${national}`, "Olá! Vi a vaga no Recruta Indústria e quero me candidatar.");
 }

@@ -9,6 +9,9 @@ import {
 } from '@/lib/security.server'
 import { sendEmail } from '@/lib/email'
 import { enforceApiRateLimit, getClientIp, maskEmail } from '@/lib/security/api-guard'
+import { negotiateAcceptLanguage } from '@/lib/i18n/accept-language'
+import { resolveLocale, type SupportedLocale } from '@/lib/i18n/locales'
+import { t } from '@/lib/i18n/translate'
 
 function appBaseUrl(request: NextRequest): string {
   const fromEnv = process.env.NEXTAUTH_URL?.trim() || process.env.APP_URL?.trim()
@@ -18,15 +21,27 @@ function appBaseUrl(request: NextRequest): string {
   return host ? `${proto}://${host}` : 'http://localhost:3000'
 }
 
+function localeForReset(
+  request: NextRequest,
+  userLocale?: string | null,
+): SupportedLocale {
+  if (userLocale) return resolveLocale(userLocale)
+  return (
+    negotiateAcceptLanguage(request.headers.get('accept-language')) ||
+    resolveLocale(null)
+  )
+}
+
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request)
     const userAgent = request.headers.get('user-agent') || 'unknown'
+    const requestLocale = localeForReset(request)
 
     if (!(await enforceApiRateLimit(`reset-ip:${ip}`, 5, 15 * 60 * 1000))) {
       logAudit('password_reset_request', 'unknown', ip, userAgent, 'failure', 'Rate limit exceeded')
       return NextResponse.json(
-        { error: 'Muitas tentativas. Tente novamente em 15 minutos.' },
+        { error: t('mail.passwordReset.rateIp', requestLocale) },
         { status: 429 },
       )
     }
@@ -35,12 +50,15 @@ export async function POST(request: NextRequest) {
     const normalized = typeof email === 'string' ? email.toLowerCase().trim() : ''
 
     if (!normalized) {
-      return NextResponse.json({ error: 'Email é obrigatório' }, { status: 400 })
+      return NextResponse.json(
+        { error: t('mail.passwordReset.emailRequired', requestLocale) },
+        { status: 400 },
+      )
     }
 
     if (!(await enforceApiRateLimit(`reset-email:${normalized}`, 3, 15 * 60 * 1000))) {
       return NextResponse.json(
-        { error: 'Muitas tentativas para este e-mail. Tente novamente em 15 minutos.' },
+        { error: t('mail.passwordReset.rateEmail', requestLocale) },
         { status: 429 },
       )
     }
@@ -50,32 +68,36 @@ export async function POST(request: NextRequest) {
     if (user) {
       const token = generatePasswordResetToken(normalized)
       const resetUrl = `${appBaseUrl(request)}/reset-password?token=${encodeURIComponent(token)}`
+      const locale = localeForReset(request, (user as { locale?: string | null }).locale)
       logAudit('password_reset_requested', normalized, ip, userAgent, 'success', 'Token generated')
 
       await sendEmail({
         to: normalized,
-        subject: 'Redefinição de senha — Recruta Indústria',
-        text: `Recebemos um pedido para redefinir sua senha.\n\nAbra o link (válido por 1 hora):\n${resetUrl}\n\nSe você não pediu isso, ignore este e-mail.`,
+        subject: t('mail.passwordReset.subject', locale),
+        text: t('mail.passwordReset.text', locale).replace('{url}', resetUrl),
         html: `
-          <p>Recebemos um pedido para redefinir sua senha no <strong>Recruta Indústria</strong>.</p>
-          <p><a href="${resetUrl}" style="display:inline-block;padding:12px 18px;background:#c89b3c;color:#000;font-weight:700;text-decoration:none;border-radius:8px;">Redefinir senha</a></p>
-          <p style="font-size:13px;color:#555;">Link válido por 1 hora. Se você não pediu isso, ignore este e-mail.</p>
+          <p>${t('mail.passwordReset.intro', locale)}</p>
+          <p><a href="${resetUrl}" style="display:inline-block;padding:12px 18px;background:#c89b3c;color:#000;font-weight:700;text-decoration:none;border-radius:8px;">${t('mail.passwordReset.cta', locale)}</a></p>
+          <p style="font-size:13px;color:#555;">${t('mail.passwordReset.validity', locale)}</p>
         `,
       })
 
       return NextResponse.json({
         success: true,
-        message: 'Se o email existe, você receberá um link de reset',
+        message: t('mail.passwordReset.apiOk', locale),
         token: process.env.NODE_ENV === 'development' ? token : undefined,
       })
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Se o email existe, você receberá um link de reset',
+      message: t('mail.passwordReset.apiOk', requestLocale),
     })
   } catch {
-    return NextResponse.json({ error: 'Erro ao processar solicitação' }, { status: 500 })
+    return NextResponse.json(
+      { error: t('mail.passwordReset.error', localeForReset(request)) },
+      { status: 500 },
+    )
   }
 }
 

@@ -19,6 +19,7 @@ import {
   isStripeReference,
   mapStripePaymentStatus,
   retrieveStripeCheckoutSession,
+  stripeCheckoutSessionIdFromRefs,
 } from '@/lib/payment/stripe-client';
 import type { CompanyPlanTier } from '@/lib/company-premium-plans';
 import type { ProfessionalPlanTier } from '@/lib/professional-premium-plans';
@@ -112,8 +113,11 @@ export async function syncPaymentStatusFromGateway(
 
   if (isStripeReference(paymentReference) || paymentReference.startsWith('cs_') || paymentReference.startsWith('sub_')) {
     try {
-      const session = await retrieveStripeCheckoutSession(paymentReference);
-      status = mapStripePaymentStatus(session.payment_status, session.status);
+      const sessionId = stripeCheckoutSessionIdFromRefs(paymentReference, rec.externalId);
+      if (sessionId) {
+        const session = await retrieveStripeCheckoutSession(sessionId);
+        status = mapStripePaymentStatus(session.payment_status, session.status);
+      }
     } catch {
       // keep current status
     }
