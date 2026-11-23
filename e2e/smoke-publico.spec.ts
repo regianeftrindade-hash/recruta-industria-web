@@ -106,4 +106,59 @@ test.describe("smoke público", () => {
     await expect(page.getByRole("button", { name: /criar conta|create account/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /voltar.*página inicial|back to the home/i })).toBeVisible();
   });
+
+  test("idioma: cookie ri-locale aplica lang/dir em home, login e cadastro (inclui RTL árabe)", async ({
+    page,
+    context,
+  }) => {
+    const api = context.request;
+
+    // Accept-Language sem cookie
+    await context.clearCookies();
+    await page.setExtraHTTPHeaders({ "Accept-Language": "en-US,en;q=0.9" });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+    await page.setExtraHTTPHeaders({});
+
+    const samples: Array<{ locale: string; dir: "ltr" | "rtl"; path: string }> = [
+      { locale: "en", dir: "ltr", path: "/" },
+      { locale: "es", dir: "ltr", path: "/login" },
+      { locale: "ar", dir: "rtl", path: "/professional/cadastro" },
+      { locale: "zh-CN", dir: "ltr", path: "/company/register" },
+    ];
+
+    for (const sample of samples) {
+      const res = await api.post("/api/account/locale", {
+        data: { locale: sample.locale },
+      });
+      expect(res.ok(), `locale ${sample.locale}`).toBeTruthy();
+      const payload = await res.json();
+      expect(payload.locale).toBe(sample.locale);
+
+      await page.goto(sample.path, { waitUntil: "domcontentloaded" });
+      await expect(page.locator("html")).toHaveAttribute("lang", sample.locale);
+      await expect(page.locator("html")).toHaveAttribute("dir", sample.dir);
+    }
+
+    // Alias /api/locale (pode 404 em produção até o deploy desta etapa)
+    await context.clearCookies();
+    const alias = await api.post("/api/locale", { data: { locale: "ar" } });
+    const aliasPayload = alias.ok() ? await alias.json().catch(() => null) : null;
+    if (aliasPayload?.locale === "ar") {
+      await page.goto("/login", { waitUntil: "domcontentloaded" });
+      await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    } else {
+      test.info().annotations.push({
+        type: "note",
+        description: "Alias /api/locale ainda ausente no alvo; validado via /api/account/locale",
+      });
+      const fallback = await api.post("/api/account/locale", { data: { locale: "ar" } });
+      expect(fallback.ok()).toBeTruthy();
+      await page.goto("/login", { waitUntil: "domcontentloaded" });
+      await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    }
+  });
 });

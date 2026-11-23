@@ -119,3 +119,30 @@ describe("POST /api/account/locale", () => {
     })).toBe("ar");
   });
 });
+
+describe("POST /api/locale (alias)", () => {
+  beforeEach(() => {
+    update.mockReset();
+    getServerSession.mockReset();
+    getServerSession.mockResolvedValue(null);
+    getToken.mockReset();
+    getToken.mockResolvedValue(null);
+    process.env.NEXTAUTH_SECRET = "segredo-de-teste";
+    process.env.NEXTAUTH_URL = "http://localhost:3000";
+  });
+
+  it("grava o mesmo cookie ri-locale que /api/account/locale", async () => {
+    const { POST: postAlias } = await import("@/app/api/locale/route");
+    const response = await postAlias(
+      new NextRequest("http://localhost/api/locale", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ locale: "ar" }),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(response.cookies.get("ri-locale")?.value).toBe("ar");
+    const payload = await response.json();
+    expect(payload.locale).toBe("ar");
+  });
+});
