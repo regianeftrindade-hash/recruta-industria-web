@@ -4,10 +4,7 @@ import { internalEn } from "@/lib/i18n/messages/internal.en";
 import { fixEn } from "@/lib/i18n/messages/fix.en";
 import { restEn } from "@/lib/i18n/messages/rest.en";
 import { surfacesEn } from "@/lib/i18n/messages/surfaces.en";
-import esSeg0 from "@/lib/i18n/messages/catalogs/es-seg-0.json";
-import esSeg1 from "@/lib/i18n/messages/catalogs/es-seg-1.json";
-import esSeg2 from "@/lib/i18n/messages/catalogs/es-seg-2.json";
-import esSeg3 from "@/lib/i18n/messages/catalogs/es-seg-3.json";
+import es from "@/lib/i18n/messages/catalogs/es.json";
 import fr from "@/lib/i18n/messages/catalogs/fr.json";
 import de from "@/lib/i18n/messages/catalogs/de.json";
 import it from "@/lib/i18n/messages/catalogs/it.json";
@@ -21,13 +18,8 @@ import { messagesPtBR, type MessageKey } from "@/lib/i18n/messages/pt-BR";
 import { brazilOnlyDocumentMessages } from "@/lib/i18n/messages/brazil-only-document";
 import { DEFAULT_LOCALE, resolveLocale, type SupportedLocale } from "@/lib/i18n/locales";
 
-/** Catálogo ES integral recuperado de 755ea070, recomposto em 4 segmentos autênticos. */
-export const esCatalog: Partial<Record<MessageKey, string>> = {
-  ...(esSeg0 as object),
-  ...(esSeg1 as object),
-  ...(esSeg2 as object),
-  ...(esSeg3 as object),
-};
+/** Catálogo ES integral recuperado de 755ea070 (+ CPF/CNPJ Brazil-only). */
+export const esCatalog: Partial<Record<MessageKey, string>> = es as Partial<Record<MessageKey, string>>;
 
 const catalogs: Record<SupportedLocale, Partial<Record<MessageKey, string>>> = {
   "pt-BR": messagesPtBR,
