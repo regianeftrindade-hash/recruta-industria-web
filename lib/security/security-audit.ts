@@ -24,11 +24,21 @@ export async function logAudit(
   }
 }
 
+function redactEmail(email: string): string {
+  const normalized = String(email || '').trim().toLowerCase()
+  const at = normalized.indexOf('@')
+  if (at <= 0) return '[redacted]'
+  const local = normalized.slice(0, at)
+  const domain = normalized.slice(at)
+  const hint = local.slice(0, 1)
+  return `${hint}***${domain}`
+}
+
 export async function lockAccount(email: string, reason: string) {
   try {
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000) // 30 minutos
     ACCOUNT_LOCKS.set(email, { expiresAt, reason })
-    console.log('[SECURITY] Account locked:', { email, reason })
+    console.log('[SECURITY] Account locked:', { email: redactEmail(email), reason })
   } catch (err) {
     console.error('Error locking account:', err)
   }
@@ -56,7 +66,10 @@ export async function isAccountLocked(email: string): Promise<boolean> {
 export async function unlockAccount(email: string, unlockedBy: string) {
   try {
     ACCOUNT_LOCKS.delete(email)
-    console.log('[SECURITY] Account unlocked:', { email, unlockedBy })
+    console.log('[SECURITY] Account unlocked:', {
+      email: redactEmail(email),
+      unlockedBy: unlockedBy.includes('@') ? redactEmail(unlockedBy) : '[actor]',
+    })
   } catch (err) {
     console.error('Error unlocking account:', err)
   }
