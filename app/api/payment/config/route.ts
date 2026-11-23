@@ -19,13 +19,13 @@ import {
 import { isProfessionalPremiumOfferingEnabled } from '@/lib/professional/premium-offering';
 import {
   isStripeEnabled,
-  listMissingStripePriceEnvs,
   listMissingStripeMonthlyCompanyPriceEnvs,
   listMissingStripeYearlyPriceEnvs,
   getStripeConfig,
 } from '@/lib/payment/stripe-client';
 import { billingCountryFromProfile } from '@/lib/payment/market';
 import { prisma } from '@/lib/db';
+import { paymentSandboxSnapshot } from '@/lib/payment/sandbox-guards';
 
 export async function GET(request: NextRequest) {
   const provider = getPaymentProvider();
@@ -43,7 +43,6 @@ export async function GET(request: NextRequest) {
   const professionalPremiumOffering = isProfessionalPremiumOfferingEnabled();
 
   const stripeEnabled = isStripeEnabled();
-  const missingPriceEnvs = listMissingStripePriceEnvs();
   const missingMonthlyCompanyPrices = listMissingStripeMonthlyCompanyPriceEnvs();
   const missingYearlyPriceEnvs = listMissingStripeYearlyPriceEnvs();
   // Internacional mensal pronto se chave secreta + Price IDs empresariais mensais
@@ -56,6 +55,7 @@ export async function GET(request: NextRequest) {
 
   const session = await getServerSession(authOptions);
   const isDev = process.env.NODE_ENV === 'development';
+  const sandboxSnapshot = paymentSandboxSnapshot();
 
   let billingCountry: string | null = null;
   let resolvedProviderForUser: string | null = null;
@@ -79,9 +79,19 @@ export async function GET(request: NextRequest) {
     internationalAnnualReady,
     missingPriceEnvs: missingMonthlyCompanyPrices,
     missingYearlyPriceEnvs,
+    missingProfessionalPriceEnvs: sandboxSnapshot.missingStripeProfessionalPriceEnvs,
+    professionalIntlCheckoutReady: sandboxSnapshot.professionalIntlCheckoutReady,
     publishableKeyConfigured: Boolean(stripeCfg.publishableKey),
     adaptivePricingEnabled: stripeCfg.adaptivePricingEnabled,
     referenceCurrency: 'USD',
+    /** true = STRIPE_SECRET_KEY contém `_test_` (sem expor o valor). */
+    stripeTestMode: sandboxSnapshot.stripeTestMode,
+    stripeLiveMode: sandboxSnapshot.stripeLiveMode,
+    stripePublishableTestMode: sandboxSnapshot.stripePublishableTestMode,
+    stripeWebhookConfigured: sandboxSnapshot.stripeWebhookConfigured,
+    asaasSandbox: sandboxSnapshot.asaasSandbox,
+    asaasWebhookTokenConfigured: sandboxSnapshot.asaasWebhookTokenConfigured,
+    safeForAutomatedSandboxCharges: sandboxSnapshot.safeForAutomatedSandboxCharges,
   };
 
   if (!isDev && !session?.user) {
