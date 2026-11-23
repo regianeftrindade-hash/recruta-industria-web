@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { CONTRACT_TYPES, WORK_MODES, type PublicJob } from "@/lib/jobs/job-posting";
-import { jobApplicationDeadline } from "@/lib/jobs/public-job-display";
+import { comparePublicationDateDesc, jobApplicationDeadline } from "@/lib/jobs/public-job-display";
 import styles from "./professional-job-search.module.css";
 
 type CompatibleJob = PublicJob & { reasons: string[] };
@@ -16,6 +16,10 @@ type SearchState = {
   contrato: string;
   modalidade: string;
 };
+
+function porDataDePublicacao<T extends { publicationDate: string | null }>(items: T[]): T[] {
+  return [...items].sort((a, b) => comparePublicationDateDesc(a.publicationDate, b.publicationDate));
+}
 
 const EMPTY: SearchState = {
   q: "",
@@ -328,7 +332,7 @@ export default function ProfessionalJobSearch() {
         setMatchError("");
         return;
       }
-      const found = Array.isArray(data.jobs) ? data.jobs as PublicJob[] : [];
+      const found = porDataDePublicacao(Array.isArray(data.jobs) ? data.jobs as PublicJob[] : []);
       const matchResponse = await fetch(`/api/professional/vagas-compativeis?${params.toString()}`, { credentials: "include" });
       const matchData = await matchResponse.json().catch(() => ({}));
       if (!matchResponse.ok) {
@@ -343,7 +347,7 @@ export default function ProfessionalJobSearch() {
         return;
       }
       setIsPremium(true);
-      const matches = Array.isArray(matchData.jobs) ? matchData.jobs as CompatibleJob[] : [];
+      const matches = porDataDePublicacao(Array.isArray(matchData.jobs) ? matchData.jobs as CompatibleJob[] : []);
       const matchedIds = new Set(matches.map((job) => job.id));
       setCompatible(matches);
       setJobs(found.filter((job) => !matchedIds.has(job.id)));

@@ -126,10 +126,16 @@ function writeData(data: JobWriteData, current?: { publishedAt: Date | null; clo
   };
 }
 
+const byNewestPublication: Prisma.JobPostingOrderByWithRelationInput[] = [
+  { publicationDate: { sort: "desc", nulls: "last" } },
+  { publishedAt: { sort: "desc", nulls: "last" } },
+  { createdAt: "desc" },
+];
+
 export async function listAdminJobs(): Promise<AdminJob[]> {
   await ensureJobApplicationWhatsappColumn();
   const rows = await prisma.jobPosting.findMany({
-    orderBy: [{ updatedAt: "desc" }],
+    orderBy: byNewestPublication,
     include: { _count: { select: { applications: true } } },
   });
 
@@ -182,7 +188,7 @@ export async function listCompanyJobs(companyOwnerUserId: string): Promise<Admin
   await ensureJobApplicationWhatsappColumn();
   const rows = await prisma.jobPosting.findMany({
     where: { companyUserId: companyOwnerUserId },
-    orderBy: [{ updatedAt: "desc" }],
+    orderBy: byNewestPublication,
     include: { _count: { select: { applications: true } } },
   });
   return rows.map((row) => toAdminJob(asRecord(row, row._count.applications)));
@@ -362,7 +368,7 @@ export async function searchPublicJobs(filters: JobSearchFilters): Promise<Publi
   await ensureJobApplicationWhatsappColumn();
   const rows = await prisma.jobPosting.findMany({
     where: publicJobWhere(filters),
-    orderBy: [{ publicationDate: "desc" }, { createdAt: "desc" }],
+    orderBy: byNewestPublication,
   });
   return rows.map((row) => toPublicJob(asRecord(row)));
 }

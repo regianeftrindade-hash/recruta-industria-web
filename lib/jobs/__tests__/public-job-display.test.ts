@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { jobApplicationDeadline, textWithoutJobSource } from "@/lib/jobs/public-job-display";
+import {
+  comparePublicationDateDesc,
+  jobApplicationDeadline,
+  textWithoutJobSource,
+} from "@/lib/jobs/public-job-display";
 
 describe("textWithoutJobSource", () => {
   it("remove a fonte e a atribuição do anúncio", () => {
@@ -21,6 +25,17 @@ describe("jobApplicationDeadline", () => {
     expect(jobApplicationDeadline({
       applicationInstructions: "Colocar a sigla FERRAMENTEIRO no assunto. Prazo informado no anúncio: até 30/10/2026.",
     })).toBe("30/10/2026");
+  });
+
+  it("ordena da publicação mais nova para a mais antiga", () => {
+    const dates = ["01/09/2026", null, "23/10/2026", "23/10/2026", "18/09/2026"];
+    expect([...dates].sort(comparePublicationDateDesc)).toEqual([
+      "23/10/2026",
+      "23/10/2026",
+      "18/09/2026",
+      "01/09/2026",
+      null,
+    ]);
   });
 
   it("lê o prazo das observações quando as instruções não têm data", () => {
