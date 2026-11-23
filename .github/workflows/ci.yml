@@ -119,6 +119,17 @@ jobs:
       - name: Dashboard profissional logado
         run: npm run test:e2e:profissional
 
+      - name: Upload artefatos Playwright (profissional)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-profissional-${{ github.run_id }}
+          path: |
+            test-results/**
+            playwright-report/**
+          if-no-files-found: ignore
+          retention-days: 7
+
   build:
     name: Build e typecheck
     runs-on: ubuntu-latest

@@ -1,4 +1,10 @@
 import type { APIRequestContext, Page } from "@playwright/test";
+import {
+  emailFingerprint,
+  extractNextAuthError,
+  extractSchemaDriftHint,
+  normalizeE2eSecret,
+} from "../../lib/e2e/login-diagnostics";
 
 export class E2eLoginError extends Error {
   constructor(message: string) {
@@ -7,22 +13,12 @@ export class E2eLoginError extends Error {
   }
 }
 
-/** Extrai indício de coluna/tabela ausente da URL/erro do NextAuth. */
-function extractSchemaDriftHint(raw: string): string | null {
-  if (!raw) return null;
-  let text = raw;
-  try {
-    text = decodeURIComponent(raw);
-  } catch {
-    /* manter raw */
-  }
-  const column = text.match(/column [`']?(\w+\.\w+)[`']? does not exist/i);
-  if (column?.[1]) return column[1];
-  if (/countryCode|does not exist|P2022/i.test(text)) {
-    return "coluna internacional ausente (ex.: User.countryCode)";
-  }
-  return null;
-}
+export {
+  emailFingerprint,
+  extractNextAuthError,
+  extractSchemaDriftHint,
+  normalizeE2eSecret,
+};
 
 /**
  * Login via NextAuth credentials (sem mexer na UI do login).
@@ -35,6 +31,9 @@ export async function loginViaApi(
   password: string,
   callbackUrl: string,
 ): Promise<void> {
+  const normalizedEmail = normalizeE2eSecret(email).toLowerCase();
+  const normalizedPassword = normalizeE2eSecret(password);
+
   const csrfRes = await request.get("/api/auth/csrf");
   if (!csrfRes.ok()) {
     throw new E2eLoginError(`CSRF HTTP ${csrfRes.status()} — site ou NextAuth indisponível`);
@@ -48,8 +47,8 @@ export async function loginViaApi(
   const loginRes = await request.post("/api/auth/callback/credentials", {
     form: {
       csrfToken,
-      email,
-      password,
+      email: normalizedEmail,
+      password: normalizedPassword,
       redirect: "false",
       json: "true",
       callbackUrl,
@@ -64,13 +63,17 @@ export async function loginViaApi(
     /* corpo não-JSON (redirect/html) */
   }
 
-  const schemaHint = extractSchemaDriftHint(body.url || body.error || "");
-  if (body.error || (!loginRes.ok() && status !== 302)) {
+  const authError = extractNextAuthError(body);
+  const schemaHint = extractSchemaDriftHint(body.url || body.error || authError || "");
+  if (authError || body.error || (!loginRes.ok() && status !== 302)) {
+    const errLabel = authError || body.error || "sem-codigo";
     throw new E2eLoginError(
-      `Login falhou (HTTP ${status}${body.error ? `, ${body.error}` : ""}). ` +
+      `Login falhou (HTTP ${status}, ${errLabel}, ${emailFingerprint(normalizedEmail)}). ` +
         (schemaHint
           ? `Schema de produção desatualizado (${schemaHint}). Rode prisma migrate deploy (docs/ops-producao.md). `
-          : `Confira e-mail/senha dos secrets E2E no GitHub — conta deve existir em produção. `),
+          : errLabel === "CredentialsSignin"
+            ? `CredentialsSignin: secret E2E inválido ou conta sem senha em produção (docs/e2e-secrets.md). `
+            : `Confira e-mail/senha dos secrets E2E no GitHub — conta deve existir em produção. `),
     );
   }
 
@@ -111,15 +114,15 @@ export async function loginProfessionalViaApi(
 }
 
 export function companyE2eCredentials(): { email: string; password: string } | null {
-  const email = (process.env.E2E_COMPANY_EMAIL || "").trim();
-  const password = (process.env.E2E_COMPANY_PASSWORD || "").trim();
+  const email = normalizeE2eSecret(process.env.E2E_COMPANY_EMAIL || "").toLowerCase();
+  const password = normalizeE2eSecret(process.env.E2E_COMPANY_PASSWORD || "");
   if (!email || !password) return null;
   return { email, password };
 }
 
 export function professionalE2eCredentials(): { email: string; password: string } | null {
-  const email = (process.env.E2E_PROFESSIONAL_EMAIL || "").trim();
-  const password = (process.env.E2E_PROFESSIONAL_PASSWORD || "").trim();
+  const email = normalizeE2eSecret(process.env.E2E_PROFESSIONAL_EMAIL || "").toLowerCase();
+  const password = normalizeE2eSecret(process.env.E2E_PROFESSIONAL_PASSWORD || "");
   if (!email || !password) return null;
   return { email, password };
 }

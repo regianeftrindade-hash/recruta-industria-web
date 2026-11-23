@@ -53,11 +53,19 @@ Atualize pelo menos:
 
 Com secrets definidos, login inválido **falha** o job e2e e o **CI fica vermelho**. Corrija e-mail/senha dos secrets e rode de novo.
 
+Resposta típica do NextAuth (já observada em produção):
+
+- HTTP **401**
+- JSON `{ "url": ".../api/auth/error?error=CredentialsSignin&provider=credentials" }` (sem campo `error` no corpo)
+
+Isso é **CredentialsSignin**: `authorize` recusou e-mail/senha (conta inexistente, sem `passwordHash`, ou senha divergente do secret). Não é schema drift (P2022).
+
 Causas comuns:
 
 1. Senha errada no secret (atualize `E2E_*_PASSWORD`)
 2. Conta só existe com Google (sem senha) — crie senha em “esqueci a senha” ou use conta com e-mail+senha
 3. Typo no **nome** do secret (`E2E_COMPANY_EMAIL`, sem L a mais)
+4. Aspas extras no valor do secret (`"senha"`); o helper E2E já tenta remover aspas externas
 
 Scripts:
 
