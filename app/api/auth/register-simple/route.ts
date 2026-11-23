@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
       } else if (cpfLimpo) {
         incrementRegisterAttempts(ip);
         return NextResponse.json(
-          { error: "CPF só é aceito em cadastros do Brasil." },
+          { error: t("registration.simple.cpfBrazilOnly") },
           { status: 400 },
         );
       }
