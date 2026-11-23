@@ -49,6 +49,14 @@ const registrationSimpleMessages = {
   "registration.simple.autoLoginFailed":
     "Conta criada, mas o login automático falhou. Entre com seu e-mail e senha.",
   "registration.simple.networkError": "Erro ao criar conta. Tente novamente.",
+
+  "registration.company.brDocumentsHint": "Brasil — CNPJ e CPF do responsável",
+  "registration.company.intlDocumentsHint":
+    "Internacional — documentos fiscais brasileiros não são exigidos",
+  "registration.company.phoneIntlLabel": "Telefone (E.164, ex.: +1…)",
+  "registration.company.phoneIntlError":
+    "Informe o telefone com código do país, começando com +.",
+  "registration.company.createdLoginHint": "Conta criada. Faça login para continuar.",
 } as const;
 
 export const messagesPtBR = {

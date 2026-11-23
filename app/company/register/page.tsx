@@ -55,7 +55,7 @@ function CadastroEmpresaForm({ incorporado = false }: { incorporado?: boolean })
       return;
     }
     if (!isBrazil && telefone && !telefone.trim().startsWith("+")) {
-      setError("Informe o telefone com código do país, começando com +.");
+      setError(t("registration.company.phoneIntlError"));
       return;
     }
 
@@ -89,7 +89,7 @@ function CadastroEmpresaForm({ incorporado = false }: { incorporado?: boolean })
         setLoading(false);
         return;
       }
-      setOk("Conta criada. Faça login para continuar.");
+      setOk(t("registration.company.createdLoginHint"));
       if (!incorporado) {
         setTimeout(() => router.push("/login?tipo=empresa"), 1200);
       }
@@ -135,24 +135,27 @@ function CadastroEmpresaForm({ incorporado = false }: { incorporado?: boolean })
           {!incorporado ? <LogoRecruta /> : null}
           <h1 style={{ color: "#C89B3C", margin: "12px 0 4px" }}>{t("registration.ui.cadastro-empresa")}</h1>
           <p style={{ fontSize: 13, opacity: 0.85 }}>
-            {isBrazil ? "Brasil — CNPJ e CPF do responsável" : "International — no Brazilian tax ID required"}
+            {isBrazil
+              ? t("registration.company.brDocumentsHint")
+              : t("registration.company.intlDocumentsHint")}
           </p>
         </div>
 
         <form onSubmit={submit} style={{ background: "#E8D5A3", border: "1px solid rgba(200,155,60,0.7)", borderRadius: 16, padding: 20 }}>
           <RegistrationCountryField id="empresa-pais" value={pais} onChange={setPais} />
 
-          <label style={label}>{t("registration.ui.razao-social")}</label>
-          <input style={field} value={nome} onChange={(e) => setNome(e.target.value)} required />
+          <label style={label} htmlFor="empresa-razao-social">{t("registration.ui.razao-social")}</label>
+          <input id="empresa-razao-social" style={field} value={nome} onChange={(e) => setNome(e.target.value)} required />
 
-          <label style={label}>{t("registration.ui.nome-do-responsavel")}</label>
-          <input style={field} value={responsavelNome} onChange={(e) => setResponsavelNome(e.target.value)} required />
+          <label style={label} htmlFor="empresa-responsavel">{t("registration.ui.nome-do-responsavel")}</label>
+          <input id="empresa-responsavel" style={field} value={responsavelNome} onChange={(e) => setResponsavelNome(e.target.value)} required />
 
-          <label style={label}>{t("registration.simple.email")}</label>
-          <input style={field} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <label style={label} htmlFor="empresa-email">{t("registration.simple.email")}</label>
+          <input id="empresa-email" style={field} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
 
-          <label style={label}>{t("registration.ui.email-corporativo-label")}</label>
+          <label style={label} htmlFor="empresa-email-corporativo">{t("registration.ui.email-corporativo-label")}</label>
           <input
+            id="empresa-email-corporativo"
             style={field}
             type="email"
             value={emailCorporativo}
@@ -160,32 +163,35 @@ function CadastroEmpresaForm({ incorporado = false }: { incorporado?: boolean })
             placeholder={email || "company@example.com"}
           />
 
-          <label style={label}>{isBrazil ? t("registration.simple.phone") : "Phone (E.164, e.g. +1…)"}</label>
+          <label style={label} htmlFor="empresa-telefone">
+            {isBrazil ? t("registration.simple.phone") : t("registration.company.phoneIntlLabel")}
+          </label>
           <input
+            id="empresa-telefone"
             style={field}
             value={telefone}
             onChange={(e) => setTelefone(e.target.value)}
             placeholder={isBrazil ? "(11) 99999-9999" : "+351 912 345 678"}
           />
 
-          <label style={label}>{t("registration.ui.endereco")}</label>
-          <input style={field} value={endereco} onChange={(e) => setEndereco(e.target.value)} />
+          <label style={label} htmlFor="empresa-endereco">{t("registration.ui.endereco")}</label>
+          <input id="empresa-endereco" style={field} value={endereco} onChange={(e) => setEndereco(e.target.value)} />
 
           {isBrazil && (
             <>
-              <label style={label}>{t("registration.ui.cnpj")}</label>
-              <input style={field} value={cnpj} onChange={(e) => setCnpj(e.target.value)} placeholder="00.000.000/0000-00" />
-              <label style={label}>{t("registration.ui.cpf-do-responsavel")}</label>
-              <input style={field} value={responsavelCpf} onChange={(e) => setResponsavelCpf(e.target.value)} placeholder="000.000.000-00" />
+              <label style={label} htmlFor="empresa-cnpj">{t("registration.ui.cnpj")}</label>
+              <input id="empresa-cnpj" style={field} value={cnpj} onChange={(e) => setCnpj(e.target.value)} placeholder="00.000.000/0000-00" />
+              <label style={label} htmlFor="empresa-cpf">{t("registration.ui.cpf-do-responsavel")}</label>
+              <input id="empresa-cpf" style={field} value={responsavelCpf} onChange={(e) => setResponsavelCpf(e.target.value)} placeholder="000.000.000-00" />
             </>
           )}
 
           {!isEdit && (
             <>
-              <label style={label}>{t("registration.simple.password")}</label>
-              <input style={field} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
-              <label style={label}>{t("registration.simple.confirmPassword")}</label>
-              <input style={field} type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={8} />
+              <label style={label} htmlFor="empresa-senha">{t("registration.simple.password")}</label>
+              <input id="empresa-senha" style={field} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
+              <label style={label} htmlFor="empresa-confirma-senha">{t("registration.simple.confirmPassword")}</label>
+              <input id="empresa-confirma-senha" style={field} type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={8} />
             </>
           )}
 

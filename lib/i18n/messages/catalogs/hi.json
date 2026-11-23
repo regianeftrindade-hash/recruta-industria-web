@@ -2148,5 +2148,10 @@
   "surface.page.installAndroid": "Android: Chrome, मेनू, ऐप इंस्टॉल करें, फिर इंस्टॉल।",
   "surface.page.installIphone": "iPhone: Safari, शेयर, और होम स्क्रीन में जोड़ें।",
   "surface.page.installDesktop": "कंप्यूटर: Chrome, पता पट्टी का इंस्टॉल आइकन।",
-  "surface.page.backHome": "साइट पर वापस जाएँ"
+  "surface.page.backHome": "साइट पर वापस जाएँ",
+  "registration.company.brDocumentsHint": "ब्राज़ील — CNPJ और ज़िम्मेदार व्यक्ति का CPF",
+  "registration.company.intlDocumentsHint": "अंतरराष्ट्रीय — ब्राज़ीलियाई कर दस्तावेज़ आवश्यक नहीं",
+  "registration.company.phoneIntlLabel": "फ़ोन (E.164, जैसे +1…)",
+  "registration.company.phoneIntlError": "देश कोड के साथ फ़ोन नंबर दर्ज करें, जो + से शुरू हो।",
+  "registration.company.createdLoginHint": "खाता बन गया। जारी रखने के लिए साइन इन करें।"
 }

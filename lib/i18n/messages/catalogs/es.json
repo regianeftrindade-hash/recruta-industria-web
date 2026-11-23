@@ -2150,5 +2150,10 @@
   "surface.page.installDesktop": "Computadora: Chrome, icono de instalar en la barra de direcciones.",
   "surface.page.backHome": "Volver al sitio",
   "registration.simple.cpfBrazilOnly": "El CPF solo se acepta en registros de Brasil.",
-  "registration.simple.cnpjBrazilOnly": "El CNPJ solo se acepta en registros de Brasil."
+  "registration.simple.cnpjBrazilOnly": "El CNPJ solo se acepta en registros de Brasil.",
+  "registration.company.brDocumentsHint": "Brasil — CNPJ y CPF del responsable",
+  "registration.company.intlDocumentsHint": "Internacional — no se exigen documentos fiscales brasileños",
+  "registration.company.phoneIntlLabel": "Teléfono (E.164, p. ej. +1…)",
+  "registration.company.phoneIntlError": "Indique el teléfono con código de país, empezando por +.",
+  "registration.company.createdLoginHint": "Cuenta creada. Inicie sesión para continuar."
 }

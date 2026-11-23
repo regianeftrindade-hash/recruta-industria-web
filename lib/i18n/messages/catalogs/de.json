@@ -2148,5 +2148,10 @@
   "surface.page.installAndroid": "Android: Chrome, Menü, App installieren und dann Installieren.",
   "surface.page.installIphone": "iPhone: Safari, Teilen und Zum Home-Bildschirm.",
   "surface.page.installDesktop": "Computer: Chrome, Installationssymbol in der Adressleiste.",
-  "surface.page.backHome": "Zurück zur Website"
+  "surface.page.backHome": "Zurück zur Website",
+  "registration.company.brDocumentsHint": "Brasilien — CNPJ und CPF der verantwortlichen Person",
+  "registration.company.intlDocumentsHint": "International — brasilianische Steuerdokumente sind nicht erforderlich",
+  "registration.company.phoneIntlLabel": "Telefon (E.164, z. B. +1…)",
+  "registration.company.phoneIntlError": "Geben Sie die Telefonnummer mit Ländervorwahl an, beginnend mit +.",
+  "registration.company.createdLoginHint": "Konto erstellt. Melden Sie sich an, um fortzufahren."
 }

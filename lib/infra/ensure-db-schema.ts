@@ -5,6 +5,7 @@ let lastSeenReady = false;
 let jobWhatsappColumnReady = false;
 let jobFavoritesReady = false;
 let manualApplicationReady = false;
+let internationalDefaultsReady = false;
 
 /** Tabela de vagas favoritas do profissional. */
 export async function ensureJobFavoritesTable(): Promise<void> {
@@ -31,6 +32,36 @@ export async function ensureJobFavoritesTable(): Promise<void> {
   jobFavoritesReady = true;
 }
 
+/**
+ * País/idioma/moeda/fuso da migração 20261116130000.
+ * Sem estas colunas o Prisma quebra listagens públicas de vagas e leituras de User/Company.
+ * Só ADD IF NOT EXISTS — não apaga dados.
+ */
+export async function ensureInternationalDefaultsColumns(): Promise<void> {
+  if (internationalDefaultsReady) return;
+  if (!isRuntimeDdlEnabled()) {
+    internationalDefaultsReady = true;
+    return;
+  }
+
+  const tables = ["User", "Company", "Professional", "Profile", "job_postings"] as const;
+  for (const table of tables) {
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "${table}" ADD COLUMN IF NOT EXISTS "countryCode" TEXT NOT NULL DEFAULT 'BR'`,
+    );
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "${table}" ADD COLUMN IF NOT EXISTS "locale" TEXT NOT NULL DEFAULT 'pt-BR'`,
+    );
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "${table}" ADD COLUMN IF NOT EXISTS "currency" TEXT NOT NULL DEFAULT 'BRL'`,
+    );
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "${table}" ADD COLUMN IF NOT EXISTS "timeZone" TEXT NOT NULL DEFAULT 'America/Sao_Paulo'`,
+    );
+  }
+  internationalDefaultsReady = true;
+}
+
 /** Coluna anulável do WhatsApp da vaga. Não apaga vagas nem candidaturas. */
 export async function ensureJobApplicationWhatsappColumn(): Promise<void> {
   if (jobWhatsappColumnReady) return;
@@ -39,6 +70,7 @@ export async function ensureJobApplicationWhatsappColumn(): Promise<void> {
     return;
   }
 
+  await ensureInternationalDefaultsColumns();
   await prisma.$executeRawUnsafe(
     `ALTER TABLE "job_postings" ADD COLUMN IF NOT EXISTS "applicationWhatsapp" TEXT`,
   );
@@ -88,6 +120,7 @@ export async function applyCoreSchema(): Promise<void> {
   }
 
   try {
+    await ensureInternationalDefaultsColumns();
     await prisma.$executeRawUnsafe(
       `ALTER TABLE "Profile" ADD COLUMN IF NOT EXISTS "planTier" TEXT NOT NULL DEFAULT 'FREE'`,
     );

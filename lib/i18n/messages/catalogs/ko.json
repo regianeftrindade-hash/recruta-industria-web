@@ -2148,5 +2148,10 @@
   "surface.page.installAndroid": "Android: Chrome, 메뉴, 앱 설치, 그다음 설치.",
   "surface.page.installIphone": "iPhone: Safari, 공유, 홈 화면에 추가.",
   "surface.page.installDesktop": "컴퓨터: Chrome, 주소 표시줄의 설치 아이콘.",
-  "surface.page.backHome": "사이트로 돌아가기"
+  "surface.page.backHome": "사이트로 돌아가기",
+  "registration.company.brDocumentsHint": "브라질 — CNPJ 및 담당자 CPF",
+  "registration.company.intlDocumentsHint": "해외 — 브라질 세금 서류가 필요하지 않습니다",
+  "registration.company.phoneIntlLabel": "전화(E.164, 예: +1…)",
+  "registration.company.phoneIntlError": "국가 코드가 포함된 전화번호를 +로 시작해 입력하세요.",
+  "registration.company.createdLoginHint": "계정이 생성되었습니다. 계속하려면 로그인하세요."
 }

@@ -2148,5 +2148,10 @@
   "surface.page.installAndroid": "Android: Chrome، القائمة، تثبيت التطبيق ثم تثبيت.",
   "surface.page.installIphone": "iPhone: Safari، مشاركة، ثم إضافة إلى الشاشة الرئيسية.",
   "surface.page.installDesktop": "الكمبيوتر: Chrome، أيقونة التثبيت في شريط العنوان.",
-  "surface.page.backHome": "العودة إلى الموقع"
+  "surface.page.backHome": "العودة إلى الموقع",
+  "registration.company.brDocumentsHint": "البرازيل — CNPJ وCPF للمسؤول",
+  "registration.company.intlDocumentsHint": "دولي — لا تُطلب مستندات ضريبية برازيلية",
+  "registration.company.phoneIntlLabel": "الهاتف (E.164، مثل +1…)",
+  "registration.company.phoneIntlError": "أدخل رقم الهاتف مع رمز الدولة بدءًا من +.",
+  "registration.company.createdLoginHint": "تم إنشاء الحساب. سجّل الدخول للمتابعة."
 }

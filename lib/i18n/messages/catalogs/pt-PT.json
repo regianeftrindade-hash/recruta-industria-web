@@ -2148,5 +2148,10 @@
   "surface.page.installAndroid": "Android: Chrome, menu, Instalar aplicação e depois Instalar.",
   "surface.page.installIphone": "iPhone: Safari, Partilhar e Adicionar ao Ecrã Principal.",
   "surface.page.installDesktop": "Computador: Chrome, ícone de instalar na barra de endereço.",
-  "surface.page.backHome": "Voltar ao site"
+  "surface.page.backHome": "Voltar ao site",
+  "registration.company.brDocumentsHint": "Brasil — CNPJ e CPF do responsável",
+  "registration.company.intlDocumentsHint": "Internacional — documentos fiscais brasileiros não são exigidos",
+  "registration.company.phoneIntlLabel": "Telefone (E.164, ex.: +351…)",
+  "registration.company.phoneIntlError": "Indique o telefone com o indicativo do país, a começar por +.",
+  "registration.company.createdLoginHint": "Conta criada. Inicie sessão para continuar."
 }

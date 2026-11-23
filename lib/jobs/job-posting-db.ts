@@ -57,7 +57,11 @@ import { savedResumeLabel } from "@/lib/jobs/resume-pdf";
 import { isProfessionalRegistrationComplete } from "@/lib/professional/professional-registration";
 import { extractStoragePath } from "@/lib/storage/private-uploads";
 import { parseJobSearch, publicJobWhere, type JobSearchFilters } from "@/lib/jobs/job-search";
-import { ensureJobApplicationWhatsappColumn, ensureManualApplicationColumns } from "@/lib/infra/ensure-db-schema";
+import {
+  ensureInternationalDefaultsColumns,
+  ensureJobApplicationWhatsappColumn,
+  ensureManualApplicationColumns,
+} from "@/lib/infra/ensure-db-schema";
 import { getProfessionalPlanTier } from "@/lib/professional/professional-storage";
 
 export function asPublicJob(job: JobPosting): PublicJob {
@@ -458,6 +462,7 @@ export async function updateAdminApplicationStage(
 }
 
 export async function searchPublicJobs(filters: JobSearchFilters): Promise<PublicJob[]> {
+  await ensureInternationalDefaultsColumns();
   await ensureJobApplicationWhatsappColumn();
   const rows = await prisma.jobPosting.findMany({
     where: publicJobWhere(filters),

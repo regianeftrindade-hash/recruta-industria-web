@@ -20,4 +20,24 @@ describe("voltar à página inicial nos cadastros", () => {
       "Volver a la página de inicio",
     );
   });
+
+  it("traduz textos do cadastro empresa nos 12 idiomas", () => {
+    const keys = [
+      "registration.company.brDocumentsHint",
+      "registration.company.intlDocumentsHint",
+      "registration.company.phoneIntlLabel",
+      "registration.company.phoneIntlError",
+      "registration.company.createdLoginHint",
+    ] as const;
+    for (const key of keys) {
+      for (const locale of SUPPORTED_LOCALES) {
+        const label = t(key, locale);
+        expect(label.trim().length).toBeGreaterThan(0);
+        expect(label).not.toBe(key);
+      }
+    }
+    expect(t("registration.company.createdLoginHint", "pt-BR")).toContain("Conta criada");
+    expect(t("registration.company.createdLoginHint", "en")).toContain("Account created");
+    expect(t("registration.company.phoneIntlError", "pt-PT")).toMatch(/\+/);
+  });
 });
