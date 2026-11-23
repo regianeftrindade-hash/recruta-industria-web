@@ -7,17 +7,13 @@ import LogoRecruta from "@/app/components/LogoRecruta";
 import PageLoader from "@/app/components/PageLoader";
 import { AuthAtmosphere } from "@/components/shared/AuthAtmosphere";
 import { t } from "@/lib/i18n/translate";
+import { publicLoginHomeHref } from "@/lib/auth/public-login-home";
 import styles from "@/app/login/login.module.css";
 
 function EsqueciSenhaContent() {
   const searchParams = useSearchParams();
   const tipo = searchParams.get("tipo");
-  const loginHref =
-    tipo === "empresa"
-      ? "/login?tipo=empresa"
-      : tipo === "profissional"
-        ? "/login?tipo=profissional"
-        : "/login";
+  const loginHref = publicLoginHomeHref({ tipo });
 
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);

@@ -195,10 +195,11 @@ function LoginContent() {
       router.push('/company/cadastro');
       return;
     }
+    // Cadastro público: fluxo rápido (não a tela completa antiga).
     const jobReturn = safeJobReturnPath(redirectTo);
     router.push(jobReturn
-      ? `/professional/register?redirect=${encodeURIComponent(jobReturn)}`
-      : '/professional/register');
+      ? `/professional/cadastro?redirect=${encodeURIComponent(jobReturn)}`
+      : '/professional/cadastro');
   };
 
   return (

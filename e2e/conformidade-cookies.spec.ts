@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("conformidade — cookies e consentimento", () => {
   test("banner de cookies aparece e essenciais não carrega gtag", async ({ page }) => {
     await page.context().clearCookies();
-    await page.goto("/login");
+    await page.goto("/");
     await expect(page.getByRole("dialog")).toBeVisible({ timeout: 10000 });
     await page.getByRole("button", { name: /essenciais|essential|Solo esenciales|Essentiels|Nur essenziell|Solo essenziali|仅必要|必須のみ|필수만|الأساسية|केवल आवश्यक/i }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);

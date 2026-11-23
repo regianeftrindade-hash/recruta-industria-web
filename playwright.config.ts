@@ -1,7 +1,13 @@
 import { defineConfig, devices } from "@playwright/test";
 
-/** Alvo padrão: produção. Override com E2E_BASE_URL. Specs logados: docs/e2e-secrets.md */
-const baseURL = process.env.E2E_BASE_URL || "https://www.recrutaindustria.com";
+/**
+ * Alvo do Playwright:
+ * - CI smoke: E2E_BASE_URL=http://127.0.0.1:3000 (build local do commit)
+ * - Specs logados no CI: E2E_BASE_URL=produção (contas dos secrets)
+ * - Local sem env: localhost (evita acertar produção por engano)
+ * Specs logados: docs/e2e-secrets.md
+ */
+const baseURL = process.env.E2E_BASE_URL || "http://127.0.0.1:3000";
 
 export default defineConfig({
   testDir: "./e2e",

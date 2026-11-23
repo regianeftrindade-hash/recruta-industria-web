@@ -96,7 +96,7 @@ function CadastroEmpresaForm({ incorporado = false }: { incorporado?: boolean })
       }
       setOk(t("registration.company.createdLoginHint"));
       if (!incorporado) {
-        setTimeout(() => router.push("/login?tipo=empresa"), 1200);
+        setTimeout(() => router.push("/?acesso=empresa"), 1200);
       }
     } catch {
       setError(t("registration.simple.networkError"));

@@ -93,7 +93,7 @@ function ResetPasswordContent() {
         return;
       }
       setSuccessMessage(data.message || t("surface.reset.changed"));
-      setTimeout(() => router.push("/login"), 1800);
+      setTimeout(() => router.push("/"), 1800);
     } catch {
       setErrorMessage(t("surface.reset.changeError"));
     } finally {
@@ -177,7 +177,7 @@ function ResetPasswordContent() {
         )}
 
         <div className={styles.footer}>
-          <Link href="/login" className={styles.footerLink}>
+          <Link href="/" className={styles.footerLink}>
             {t("surface.reset.backLogin")}
           </Link>
         </div>

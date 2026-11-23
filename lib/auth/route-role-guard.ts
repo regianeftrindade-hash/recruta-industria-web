@@ -49,7 +49,8 @@ export function homePathForRole(role: AppAccountRole): string {
 }
 
 export function loginRedirectForArea(area: ProtectedArea): string {
-  return area === "company" ? "/login?tipo=empresa" : "/login?tipo=profissional";
+  // Login público é na home (não na página /login com vitrine).
+  return area === "company" ? "/?acesso=empresa" : "/?acesso=profissional";
 }
 
 /**

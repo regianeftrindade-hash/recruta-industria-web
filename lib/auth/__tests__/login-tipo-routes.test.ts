@@ -2,13 +2,12 @@ import { describe, expect, it } from "vitest";
 import { createRequire } from "node:module";
 
 /**
- * Garante que /login?tipo=profissional e /login/profissional abrem o login
- * profissional (não redirecionam para a home), espelhando o fluxo empresa.
+ * Login público é na home. /login/profissional e /login/empresa
+ * redirecionam para a home; /login?tipo=* também (via proxy).
  */
 describe("rotas de login por tipo", () => {
-  it("next.config redireciona /login/profissional e /login/empresa para ?tipo=", async () => {
+  it("next.config manda /login/profissional e /login/empresa para a home", async () => {
     const require = createRequire(import.meta.url);
-    // next.config.js exporta função ou objeto conforme o ambiente
     const mod = require("../../../next.config.js");
     const config = typeof mod === "function" ? await mod() : mod;
     const redirects =
@@ -21,23 +20,18 @@ describe("rotas de login por tipo", () => {
       ]),
     );
 
-    expect(bySource["/login/empresa"]).toBe("/login?tipo=empresa");
-    expect(bySource["/login/profissional"]).toBe("/login?tipo=profissional");
-    expect(bySource["/login/profissional"]).not.toBe("/");
+    expect(bySource["/login/empresa"]).toBe("/?acesso=empresa");
+    expect(bySource["/login/profissional"]).toBe("/");
   });
 
-  it("proxy.ts não contém redirect de tipo=profissional para home", async () => {
+  it("proxy.ts redireciona /login público para a home", async () => {
     const fs = await import("node:fs/promises");
     const path = await import("node:path");
     const proxySrc = await fs.readFile(
       path.join(process.cwd(), "proxy.ts"),
       "utf8",
     );
-    expect(proxySrc).not.toMatch(
-      /tipo['"]?\s*===\s*['"]profissional['"][\s\S]{0,120}pathname\s*=\s*['"]\/['"]/,
-    );
-    expect(proxySrc).not.toMatch(
-      /searchParams\.get\(['"]tipo['"]\)\s*===\s*['"]profissional['"]/,
-    );
+    expect(proxySrc).toMatch(/publicLoginHomeHref/);
+    expect(proxySrc).toMatch(/isAdminLoginRedirect/);
   });
 });
