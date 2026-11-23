@@ -108,6 +108,19 @@ describe("busca pública de vagas", () => {
     expect(text).toContain('"currency":"BRL"');
     expect(text).toContain('"gte":100000');
     expect(text).toContain('"lte":200000');
-    expect(parseJobSearch({ salario: "informado" }).salaryCurrency).toBe("BRL");
+    // Sem ?moeda= o filtro isolado fica vazio; faixas/salário informado caem em BRL no where.
+    expect(parseJobSearch({ salario: "informado" }).salaryCurrency).toBe("");
+    expect(JSON.stringify(publicJobWhere(parseJobSearch({ salario: "informado" })))).toContain(
+      '"currency":"BRL"',
+    );
+  });
+
+  it("filtra por país e por moeda explícita sem exigir faixa", () => {
+    expect(JSON.stringify(publicJobWhere(parseJobSearch({ pais: "PT" })))).toContain(
+      '"countryCode":"PT"',
+    );
+    expect(JSON.stringify(publicJobWhere(parseJobSearch({ moeda: "USD" })))).toContain(
+      '"currency":"USD"',
+    );
   });
 });

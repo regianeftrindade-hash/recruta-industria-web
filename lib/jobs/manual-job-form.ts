@@ -7,6 +7,8 @@ import {
   normalizeJobCurrency,
   parseSalaryToCents,
 } from "@/lib/jobs/job-posting";
+import { parseJobRegionFields } from "@/lib/jobs/job-region";
+import { buildRegistrationRegion } from "@/lib/identity/registration-region";
 
 export type ManualJobDraft = {
   title: string;
@@ -17,6 +19,9 @@ export type ManualJobDraft = {
   salaryCents: number | null;
   salaryNegotiable: boolean;
   currency: string;
+  countryCode: string;
+  locale: string;
+  timeZone: string;
   applicationEmail: string | null;
   applicationWhatsapp: string | null;
   careOf: string;
@@ -80,13 +85,27 @@ export function parseManualJobDraft(input: unknown, now = new Date()): ManualJob
   const publicationDate = parsePublicationDate(body.publicationDate || dataDeHojeSaoPaulo(now));
   if (!publicationDate) throw new JobPostingError("Informe a data da publicação.");
 
+  const region = parseJobRegionFields({
+    countryCode: body.countryCode,
+    locale: body.locale,
+    timeZone: body.timeZone,
+  });
+  if (!region.ok) throw new JobPostingError(region.error);
+  const { countryCode, locale, timeZone } = region;
+
   const salaryNegotiable = body.salaryNegotiable === true;
-  const currency = normalizeJobCurrency(body.currency, "write");
+  const currency = body.currency == null || (typeof body.currency === "string" && !body.currency.trim())
+    ? normalizeJobCurrency(buildRegistrationRegion(countryCode).currency, "write")
+    : normalizeJobCurrency(body.currency, "write");
   const salaryCents = salaryNegotiable
     ? null
-    : parseSalaryToCents(typeof body.salary === "string" ? body.salary : "", currency, "pt-BR");
+    : parseSalaryToCents(
+      typeof body.salary === "string" ? body.salary : "",
+      currency,
+      locale.startsWith("pt") ? "pt-BR" : locale,
+    );
   const applicationEmail = parseApplicationEmail(body.applicationEmail);
-  const applicationWhatsapp = parseApplicationWhatsapp(body.applicationWhatsapp);
+  const applicationWhatsapp = parseApplicationWhatsapp(body.applicationWhatsapp, countryCode);
   if (!applicationEmail && !applicationWhatsapp) {
     throw new JobPostingError("Informe o e-mail ou o WhatsApp para onde o currículo será enviado.");
   }
@@ -100,6 +119,9 @@ export function parseManualJobDraft(input: unknown, now = new Date()): ManualJob
     salaryCents,
     salaryNegotiable,
     currency,
+    countryCode,
+    locale,
+    timeZone,
     applicationEmail,
     applicationWhatsapp,
     careOf,

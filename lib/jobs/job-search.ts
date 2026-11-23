@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { CONTRACT_TYPES, WORK_MODES, normalizeJobCurrency } from "@/lib/jobs/job-posting";
+import { resolveNewRegistrationCountry } from "@/lib/identity/registration-region";
 
 const CONTRACT_VALUES = new Set<string>(CONTRACT_TYPES.map((item) => item.value));
 const WORK_MODE_VALUES = new Set<string>(WORK_MODES.map((item) => item.value));
@@ -20,7 +21,10 @@ export type JobSearchFilters = {
   workplace: string;
   city: string;
   state: string;
+  /** ISO-3166-1 alpha-2. Vazio = qualquer país. */
+  countryCode: string;
   salary: SalaryFilter;
+  /** Moeda explícita do filtro (?moeda=). Vazio = sem filtro de moeda isolado. */
   salaryCurrency: string;
   salaryMinCents: number | null;
   salaryMaxCents: number | null;
@@ -115,6 +119,14 @@ export function parseJobSearch(source: URLSearchParams | Record<string, string |
     salaryMaxCents = swap;
   }
 
+  const moedaRaw = read(source, "moeda").trim();
+  const paisRaw = (read(source, "pais") || read(source, "país") || read(source, "country")).trim();
+  let countryCode = "";
+  if (paisRaw) {
+    const resolved = resolveNewRegistrationCountry(paisRaw);
+    countryCode = resolved.ok ? resolved.region.countryCode : "";
+  }
+
   return {
     q: clip(read(source, "q"), 80),
     contractType: CONTRACT_VALUES.has(contract) ? contract : null,
@@ -122,8 +134,11 @@ export function parseJobSearch(source: URLSearchParams | Record<string, string |
     workplace: clip(read(source, "local"), 120),
     city: clip(read(source, "cidade"), 80),
     state: clip(read(source, "estado"), 40),
+    countryCode,
     salary: salaryRaw === "negociavel" || salaryRaw === "informado" ? salaryRaw : "",
-    salaryCurrency: normalizeJobCurrency(read(source, "moeda")),
+    // Sem ?moeda= → string vazia (não força BRL no filtro isolado).
+    // Faixas salariais sem moeda continuam em BRL em publicJobWhere.
+    salaryCurrency: moedaRaw ? normalizeJobCurrency(moedaRaw) : "",
     salaryMinCents,
     salaryMaxCents,
     period: PERIODS.has(periodRaw) ? periodRaw as PeriodFilter : "",
@@ -161,18 +176,27 @@ export function publicJobWhere(filters: JobSearchFilters, now = new Date()): Pri
     and.push({ workplace: { contains: filters.city, mode: "insensitive" } });
   }
   if (filters.state) and.push(stateClause(filters.state));
+  if (filters.countryCode) and.push({ countryCode: filters.countryCode });
+  // Filtro explícito de moeda (sem exigir faixa)
+  if (filters.salaryCurrency && filters.salary !== "negociavel"
+    && filters.salary !== "informado"
+    && filters.salaryMinCents == null
+    && filters.salaryMaxCents == null) {
+    and.push({ currency: filters.salaryCurrency });
+  }
+  const salaryCurrency = filters.salaryCurrency || "BRL";
   if (filters.salary === "negociavel") and.push({ salaryNegotiable: true });
   if (filters.salary === "informado") {
     and.push({
       salaryNegotiable: false,
-      currency: filters.salaryCurrency,
+      currency: salaryCurrency,
       salaryCents: { not: null },
     });
   }
   if (filters.salaryMinCents != null || filters.salaryMaxCents != null) {
     and.push({
       salaryNegotiable: false,
-      currency: filters.salaryCurrency,
+      currency: salaryCurrency,
       salaryCents: {
         not: null,
         ...(filters.salaryMinCents != null ? { gte: filters.salaryMinCents } : {}),
