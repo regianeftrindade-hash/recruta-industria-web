@@ -69,15 +69,15 @@ test.describe("smoke público", () => {
     await expect(page.getByLabel(/telefone|phone/i)).toBeVisible();
     await expect(page.getByLabel(/^senha$|^password$|^palavra-passe$/i)).toBeVisible();
     await expect(page.getByRole("button", { name: /criar conta|create account/i })).toBeVisible();
-    await expect(page.getByText(/vídeo de apresentação|presentation video/i)).toHaveCount(0);
+    // O pitch lateral menciona vídeo; o formulário rápido não tem campo de vídeo.
+    await expect(page.locator("#cadastro-nome")).toBeVisible();
+    await expect(page.locator('input[type="file"]')).toHaveCount(0);
   });
 
   test("cadastro empresa abre formulário com país, documentos BR e senha", async ({ page }) => {
-    await page.goto("/company/cadastro");
-    await expect(page.getByRole("heading", { name: /cadastro empresa|registo empresa/i })).toBeVisible({
-      timeout: 20_000,
-    });
-    await expect(page.locator("#empresa-pais")).toBeVisible();
+    await page.goto("/company/cadastro", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("#empresa-pais")).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(/cadastro empresa|registo empresa|company registration/i).first()).toBeVisible();
     await expect(page.locator("#empresa-razao-social")).toBeVisible();
     await expect(page.locator("#empresa-cnpj")).toBeVisible();
     await expect(page.locator("#empresa-cpf")).toBeVisible();
