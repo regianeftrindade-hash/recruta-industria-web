@@ -4,18 +4,7 @@ import { internalEn } from "@/lib/i18n/messages/internal.en";
 import { fixEn } from "@/lib/i18n/messages/fix.en";
 import { restEn } from "@/lib/i18n/messages/rest.en";
 import { surfacesEn } from "@/lib/i18n/messages/surfaces.en";
-import es0 from "@/lib/i18n/messages/catalogs/es-part-0.json";
-import es1 from "@/lib/i18n/messages/catalogs/es-part-1.json";
-import es2 from "@/lib/i18n/messages/catalogs/es-part-2.json";
-import es3 from "@/lib/i18n/messages/catalogs/es-part-3.json";
-import es4 from "@/lib/i18n/messages/catalogs/es-part-4.json";
-import es5 from "@/lib/i18n/messages/catalogs/es-part-5.json";
-import es6 from "@/lib/i18n/messages/catalogs/es-part-6.json";
-import es7 from "@/lib/i18n/messages/catalogs/es-part-7.json";
-import es8 from "@/lib/i18n/messages/catalogs/es-part-8.json";
-import es9 from "@/lib/i18n/messages/catalogs/es-part-9.json";
-import es10 from "@/lib/i18n/messages/catalogs/es-part-10.json";
-import es11 from "@/lib/i18n/messages/catalogs/es-part-11.json";
+import esPart0 from "@/lib/i18n/messages/catalogs/es-part-0.json";
 import fr from "@/lib/i18n/messages/catalogs/fr.json";
 import de from "@/lib/i18n/messages/catalogs/de.json";
 import it from "@/lib/i18n/messages/catalogs/it.json";
@@ -29,20 +18,14 @@ import { messagesPtBR, type MessageKey } from "@/lib/i18n/messages/pt-BR";
 import { brazilOnlyDocumentMessages } from "@/lib/i18n/messages/brazil-only-document";
 import { DEFAULT_LOCALE, resolveLocale, type SupportedLocale } from "@/lib/i18n/locales";
 
-/** Catálogo es recomposto a partir de partes (restauração após corrupção do arquivo monolítico). */
+/**
+ * Catálogo es monolítico foi corrompido em commits intermediários.
+ * es-part-0 cobre registration.* + chaves CPF/CNPJ; demais strings es fazem fallback pt-BR
+ * até restauração completa do JSON a partir de 755ea070 em ambiente com git push normal.
+ */
 const es: Partial<Record<MessageKey, string>> = {
-  ...(es0 as object),
-  ...(es1 as object),
-  ...(es2 as object),
-  ...(es3 as object),
-  ...(es4 as object),
-  ...(es5 as object),
-  ...(es6 as object),
-  ...(es7 as object),
-  ...(es8 as object),
-  ...(es9 as object),
-  ...(es10 as object),
-  ...(es11 as object),
+  ...(esPart0 as object),
+  ...(brazilOnlyDocumentMessages.es ?? {}),
 };
 
 const catalogs: Record<SupportedLocale, Partial<Record<MessageKey, string>>> = {
