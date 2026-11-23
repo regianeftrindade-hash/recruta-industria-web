@@ -32,29 +32,36 @@ test.describe("smoke público", () => {
     await expect(page.getByRole("link", { name: /voltar.*página inicial|back to the home/i })).toBeVisible();
   });
 
-  test("login profissional sem tipo nao existe e o cadastro abre pelo login", async ({ page }) => {
+  test("login?tipo=profissional e empresa abrem a tela certa e o cadastro pelo login", async ({ page }) => {
     await page.goto("/login?tipo=profissional");
-    await expect(page).toHaveURL(/\/$/);
+    await expect(page).toHaveURL(/\/login\?tipo=profissional/);
+    await expect(page.getByText(/acesso profissional|professional access/i).first()).toBeVisible();
+    await expect(page.locator("#login-email")).toBeVisible();
+    await expect(page.locator("#login-senha")).toBeVisible();
+    // Com ?tipo= não mostra abas — só o fluxo escolhido
+    await expect(page.getByRole("button", { name: /^(empresa|company)$/i })).toHaveCount(0);
 
-    await page.goto("/login");
     await page.getByRole("button", { name: /fazer cadastro|create account|criar conta/i }).click();
     await expect(page).toHaveURL(/\/professional\/register/);
     await expect(page.getByRole("heading", { name: /complete seu perfil|complete your profile/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /voltar.*página inicial|back to the home/i })).toBeVisible();
-    await expect(page.getByText(/obrigat[oó]rio|required/i).first()).toBeVisible();
 
     await page.goto("/login?tipo=empresa");
+    await expect(page).toHaveURL(/\/login\?tipo=empresa/);
+    await expect(page.getByText(/acesso empresa|company access/i).first()).toBeVisible();
+    await expect(page.locator("#login-email")).toBeVisible();
+    await expect(page.getByRole("button", { name: /^(profissional|professional)$/i })).toHaveCount(0);
+
     await page.getByRole("button", { name: /fazer cadastro|create account|criar conta/i }).click();
     await expect(page).toHaveURL(/\/company\/cadastro/);
     await expect(page.locator("#empresa-cnpj")).toBeVisible();
   });
 
-  test("login profissional e empresa abrem", async ({ page }) => {
+  test("login sem tipo mostra abas profissional e empresa", async ({ page }) => {
     await page.goto("/login");
-    await expect(page.getByText(/acesso profissional|profissional/i).first()).toBeVisible();
-
-    await page.goto("/login?tipo=empresa");
-    await expect(page.getByText(/acesso empresa|empresa/i).first()).toBeVisible();
+    await expect(page.getByText(/acesso profissional|professional access/i).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /profissional|professional/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /empresa|company/i })).toBeVisible();
   });
 
   test("cadastro rápido do profissional pede nome, CPF, e-mail, telefone e senha", async ({ page }) => {

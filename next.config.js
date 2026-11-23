@@ -62,7 +62,7 @@ const nextConfig = {
       },
       {
         source: "/login/profissional",
-        destination: "/",
+        destination: "/login?tipo=profissional",
         permanent: false,
       },
       {

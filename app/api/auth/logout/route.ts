@@ -19,7 +19,7 @@ async function handleLogout(request: NextRequest) {
 
   const redirectParam = request.nextUrl.searchParams.get('redirect');
 
-  // Sem destino interno: home. /login?tipo=profissional não é mais página de saída.
+  // Sem destino interno: home (logout público).
   if (!redirectParam?.startsWith('/') || redirectParam === '/') {
     const response = NextResponse.redirect(new URL('/', request.url), { status: 302 });
     response.cookies.delete('next-auth.session-token');

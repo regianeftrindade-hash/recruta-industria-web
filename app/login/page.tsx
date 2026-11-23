@@ -36,10 +36,6 @@ function LoginContent() {
 
   React.useEffect(() => {
     const tipo = searchParams.get('tipo');
-    if (tipo === 'profissional' && !searchParams.get('redirect')) {
-      router.replace('/');
-      return;
-    }
     if (tipo === 'empresa') {
       setTipoLogin('company');
     } else if (tipo === 'profissional') {

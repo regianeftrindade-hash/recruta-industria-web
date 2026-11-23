@@ -19,17 +19,6 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  if (
-    pathname === '/login'
-    && request.nextUrl.searchParams.get('tipo') === 'profissional'
-    && !request.nextUrl.searchParams.get('redirect')
-  ) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/';
-    url.search = '';
-    return NextResponse.redirect(url);
-  }
-
   const isNextAuthFlow =
     pathname === '/api/auth/session'
     || pathname === '/api/auth/csrf'
