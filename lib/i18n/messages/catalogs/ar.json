@@ -2230,5 +2230,11 @@
   "legal.bodyFallbackNotice": "النص الكامل ما زال بالبرتغالية البرازيلية. الترجمة الرسمية لهذه اللغة بانتظار المراجعة القانونية.",
   "legal.registrationLinksHint": "راجع أيضًا شروط الاستخدام وسياسة الخصوصية للمنصة.",
   "legal.linkTermsOfUse": "شروط الاستخدام",
-  "legal.linkPrivacy": "سياسة الخصوصية"
+  "legal.linkPrivacy": "سياسة الخصوصية",
+  "privacy.cookieBannerTitle": "ملفات تعريف الارتباط والخصوصية",
+  "privacy.cookieBannerBody": "نستخدم ملفات تعريف ارتباط أساسية لتسجيل الدخول واللغة. ملفات التسويق (Google Ads) تُفعَّل فقط إذا وافقت. التفاصيل في",
+  "privacy.cookieEssentialOnly": "الأساسية فقط",
+  "privacy.cookieAcceptMarketing": "قبول التسويق",
+  "privacy.acceptPrefix": "لقد قرأت وأوافق على",
+  "privacy.acceptRequired": "اقبل شروط الاستخدام وسياسة الخصوصية للمتابعة."
 }

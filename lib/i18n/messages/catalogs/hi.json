@@ -2230,5 +2230,11 @@
   "legal.bodyFallbackNotice": "पूर्ण पाठ अभी भी ब्राज़ीलियाई पुर्तगाली में है। इस भाषा का आधिकारिक अनुवाद कानूनी सत्यापन की प्रतीक्षा में है।",
   "legal.registrationLinksHint": "प्लेटफ़ॉर्म की उपयोग शर्तें और गोपनीयता नीति भी देखें।",
   "legal.linkTermsOfUse": "उपयोग की शर्तें",
-  "legal.linkPrivacy": "गोपनीयता नीति"
+  "legal.linkPrivacy": "गोपनीयता नीति",
+  "privacy.cookieBannerTitle": "कुकीज़ और गोपनीयता",
+  "privacy.cookieBannerBody": "हम लॉगिन और भाषा के लिए आवश्यक कुकीज़ का उपयोग करते हैं। मार्केटिंग कुकीज़ (Google Ads) केवल सहमति पर सक्रिय होती हैं। विवरण:",
+  "privacy.cookieEssentialOnly": "केवल आवश्यक",
+  "privacy.cookieAcceptMarketing": "मार्केटिंग स्वीकार करें",
+  "privacy.acceptPrefix": "मैंने पढ़ लिया है और स्वीकार करता/करती हूँ",
+  "privacy.acceptRequired": "जारी रखने के लिए उपयोग की शर्तें और गोपनीयता नीति स्वीकार करें।"
 }

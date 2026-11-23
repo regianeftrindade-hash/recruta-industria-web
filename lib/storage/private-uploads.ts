@@ -83,6 +83,33 @@ export async function downloadPrivateFile(filePath: string): Promise<Buffer | nu
   return Buffer.from(await data.arrayBuffer());
 }
 
+/** Remove arquivos do bucket (exclusão de conta / LGPD). Falhas são retornadas, não lançadas. */
+export async function removePrivateFiles(paths: string[]): Promise<{ removed: string[]; failed: string[] }> {
+  const cleaned = [
+    ...new Set(
+      paths
+        .map((p) => {
+          const raw = String(p || "").trim();
+          if (!raw) return "";
+          if (raw.includes("://")) return extractStoragePath(raw) || "";
+          return raw.replace(/^\/+/, "").split("?")[0];
+        })
+        .filter((p) => p && !p.includes("..") && !p.includes("\\")),
+    ),
+  ];
+  if (cleaned.length === 0) return { removed: [], failed: [] };
+
+  try {
+    const supabase = getSupabase();
+    const bucket = getUploadsBucket();
+    const { error } = await supabase.storage.from(bucket).remove(cleaned);
+    if (error) return { removed: [], failed: cleaned };
+    return { removed: cleaned, failed: [] };
+  } catch {
+    return { removed: [], failed: cleaned };
+  }
+}
+
 /** Extrai path relativo a partir de URL pública/assinada do bucket. */
 export function extractStoragePath(urlOrPath: string): string | null {
   if (!urlOrPath) return null;

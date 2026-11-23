@@ -2230,5 +2230,11 @@
   "legal.bodyFallbackNotice": "O texto completo ainda está em português do Brasil. A tradução oficial deste idioma aguarda validação jurídica.",
   "legal.registrationLinksHint": "Consulte também os Termos de Utilização e a Política de Privacidade da plataforma.",
   "legal.linkTermsOfUse": "Termos de Utilização",
-  "legal.linkPrivacy": "Política de Privacidade"
+  "legal.linkPrivacy": "Política de Privacidade",
+  "privacy.cookieBannerTitle": "Cookies e privacidade",
+  "privacy.cookieBannerBody": "Usamos cookies essenciais para início de sessão e idioma. Cookies de marketing (Google Ads) só são ativados se aceitar. Detalhes na",
+  "privacy.cookieEssentialOnly": "Apenas essenciais",
+  "privacy.cookieAcceptMarketing": "Aceitar marketing",
+  "privacy.acceptPrefix": "Li e aceito os",
+  "privacy.acceptRequired": "Aceite os Termos de Utilização e a Política de Privacidade para continuar."
 }

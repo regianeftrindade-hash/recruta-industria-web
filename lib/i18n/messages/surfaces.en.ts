@@ -24,6 +24,14 @@ export const surfacesEn: Partial<Record<MessageKey, string>> = {
     "Also see the platform Terms of Use and Privacy Policy.",
   "legal.linkTermsOfUse": "Terms of Use",
   "legal.linkPrivacy": "Privacy Policy",
+
+  "privacy.cookieBannerTitle": "Cookies and privacy",
+  "privacy.cookieBannerBody":
+    "We use essential cookies for sign-in and language. Marketing cookies (Google Ads) are enabled only if you accept. Details in the",
+  "privacy.cookieEssentialOnly": "Essential only",
+  "privacy.cookieAcceptMarketing": "Accept marketing",
+  "privacy.acceptPrefix": "I have read and accept the",
+  "privacy.acceptRequired": "Accept the Terms of Use and Privacy Policy to continue.",
   "surface.home.login": "SIGN IN",
   "surface.home.email": "EMAIL",
   "surface.home.emailLabel": "Email",

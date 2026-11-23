@@ -2230,5 +2230,11 @@
   "legal.bodyFallbackNotice": "Der vollständige Text ist noch auf brasilianischem Portugiesisch. Die offizielle Übersetzung dieser Sprache erwartet eine rechtliche Prüfung.",
   "legal.registrationLinksHint": "Siehe auch die Nutzungsbedingungen und die Datenschutzrichtlinie der Plattform.",
   "legal.linkTermsOfUse": "Nutzungsbedingungen",
-  "legal.linkPrivacy": "Datenschutzrichtlinie"
+  "legal.linkPrivacy": "Datenschutzrichtlinie",
+  "privacy.cookieBannerTitle": "Cookies und Datenschutz",
+  "privacy.cookieBannerBody": "Wir verwenden essenzielle Cookies für Anmeldung und Sprache. Marketing-Cookies (Google Ads) werden nur bei Zustimmung aktiviert. Details in der",
+  "privacy.cookieEssentialOnly": "Nur essenziell",
+  "privacy.cookieAcceptMarketing": "Marketing akzeptieren",
+  "privacy.acceptPrefix": "Ich habe gelesen und akzeptiere die",
+  "privacy.acceptRequired": "Akzeptieren Sie die Nutzungsbedingungen und die Datenschutzrichtlinie, um fortzufahren."
 }
