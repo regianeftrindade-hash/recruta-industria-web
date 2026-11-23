@@ -14,6 +14,8 @@ export const brazilOnlyDocumentMessages: Partial<
     "surface.jobs.title": "Vacantes",
     "surface.home.tagline": "La industria evoluciona. El reclutamiento también.",
     "surface.home.accessPro": "Acceso profesional",
+    "surface.pwa.download": "Descargar aplicación",
+    "surface.page.backHome": "Volver al sitio",
   },
   fr: {
     "registration.simple.cpfBrazilOnly": "Le CPF n'est accepté que pour les inscriptions au Brésil.",
