@@ -77,8 +77,8 @@ export default function Home() {
             .${styles.proHomeCard} .${styles.proLoginRow}{display:flex!important;flex:1 1 auto!important;flex-wrap:nowrap!important;align-items:flex-start!important;min-width:0!important;gap:8px!important;width:auto!important}
             .${styles.homeAccessFields}{align-items:flex-start!important}
             .home-password-stack{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:4px!important;min-width:0!important}
-            .home-password-field{position:relative!important;display:inline-flex!important;align-items:center!important;min-width:0!important;width:100%!important}
-            .home-password-field input{padding-right:28px!important;width:100%!important;box-sizing:border-box!important}
+            .home-password-field{position:relative!important;display:inline-flex!important;align-items:center!important;flex:0 0 auto!important;min-width:0!important;width:100%!important;max-width:100%!important;height:auto!important;min-height:28px!important;overflow:visible!important}
+            .home-password-field input{padding-right:28px!important;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
             .home-password-eye,.home-password-eye:active{position:absolute!important;top:50%!important;right:3px!important;transform:translateY(-50%)!important;width:22px!important;height:22px!important;padding:0!important;border:none!important;border-radius:999px!important;background:transparent!important;color:#414141!important;cursor:pointer!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;line-height:0!important;box-shadow:none!important}
             .home-forgot-btn,.home-forgot-btn:active{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:auto!important;max-width:100%!important;align-self:flex-end!important;flex:0 0 auto!important;box-sizing:border-box!important;margin:0!important;padding:3px 8px!important;border-radius:999px!important;border:2px solid #8D6B1F!important;background:#F3E6C8!important;color:#414141!important;font-size:0.6rem!important;font-weight:600!important;line-height:1.2!important;text-decoration:none!important;white-space:nowrap!important;box-shadow:var(--ri-btn-3d-gold-shadow)!important;transition:transform .12s ease,box-shadow .12s ease!important}
             .home-forgot-btn:active,
@@ -126,6 +126,21 @@ export default function Home() {
             .${styles.homeAccessEmpresa} .${styles.proLoginGoogleIconOnly} button svg{width:16px!important;height:16px!important}
             .${styles.proHomeCard} .${styles.proLoginAcessarTag},
             .${styles.proHomeCard} .${styles.proLoginRegisterTag}{flex:0 0 auto!important}
+            .${styles.proHomeCard} .home-password-field input,
+            .${styles.homeAccessEmpresa} .home-password-field input{width:100%!important;min-width:0!important;max-width:100%!important}
+            @media (max-width:768px){
+              .${styles.proHomeCard} .${styles.proLoginForm},
+              .${styles.proHomeCard} .${styles.proLoginRow},
+              .${styles.homeAccessEmpresa} .${styles.homeAccessFields}{flex-wrap:wrap!important;row-gap:8px!important}
+              .${styles.proHomeCard} .${styles.proLoginInputPill},
+              .${styles.homeAccessEmpresa} .${styles.homeAccessInput}{flex:1 1 140px!important;min-width:120px!important;max-width:100%!important}
+              .${styles.proHomeCard} .home-password-stack,
+              .${styles.homeAccessEmpresa} .home-password-stack{flex:1 1 140px!important;min-width:120px!important;max-width:100%!important}
+              .${styles.proHomeCard} .home-password-field input,
+              .${styles.homeAccessEmpresa} .home-password-field input{width:100%!important;min-width:0!important;max-width:100%!important}
+              .${styles.proHomeCard} .${styles.proLoginGoogleIconOnly},
+              .${styles.homeAccessEmpresa} .${styles.proLoginGoogleIconOnly}{position:relative!important;z-index:2!important;flex:0 0 28px!important}
+            }
           `}</style>
           <article className={`${styles.actionCard} ${styles.actionCardSide} ${styles.proHomeCard}`}>
             <div className={styles.proMidRow}>

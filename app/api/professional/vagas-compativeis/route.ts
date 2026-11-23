@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     };
     const jobs = await searchPublicJobs(parseJobSearch(request.nextUrl.searchParams));
     const compatible = rankCompatibleJobs(signals, jobs);
-    return NextResponse.json({ jobs: compatible, total: compatible.length });
+    return NextResponse.json({ jobs: compatible, total: compatible.length, premium: true });
   } catch (error) {
     return jsonError(error, "Não foi possível comparar as vagas com o perfil.");
   }

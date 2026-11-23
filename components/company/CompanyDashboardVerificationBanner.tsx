@@ -42,7 +42,7 @@ export default function CompanyDashboardVerificationBanner({
       background: isRejected ? "rgba(220,53,69,0.12)" : "rgba(200,155,60,0.12)",
     }}>
       <p style={{ margin: 0, fontSize: 13, color: DASH.text, lineHeight: 1.5 }}>
-        <strong>{awaitingAdmin ? "Em análise" : isRejected ? "Verificação recusada" : "Somente visualização"}</strong>
+        <strong>{isRejected ? "Reprovada" : "Em análise"}</strong>
         {" "}— {COMPANY_VIEW_ONLY_NOTICE}
       </p>
       {camposVazios ? (

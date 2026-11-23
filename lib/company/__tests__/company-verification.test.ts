@@ -5,23 +5,20 @@ import {
 } from "@/lib/company/company-verification";
 
 describe("companyVerificationTag", () => {
-  it("marca empresa verificada quando o admin aprovou", () => {
+  it("marca a conta como aprovada quando o admin aprovou", () => {
     expect(companyVerificationTag({
       verificationStatus: "VERIFIED",
       cartaoCnpjUrl: "https://arquivo/cartao.pdf",
       emailCorporativo: "rh@empresa.com.br",
-    })).toBe("Empresa verificada");
+    })).toBe("Aprovada");
   });
 
-  it("marca em análise só com cartão e e-mail preenchidos", () => {
+  it("marca em análise com ou sem cartão e e-mail preenchidos", () => {
     expect(companyVerificationTag({
       verificationStatus: "PENDING",
       cartaoCnpjUrl: "https://arquivo/cartao.pdf",
       emailCorporativo: "rh@empresa.com.br",
     })).toBe("Em análise");
-  });
-
-  it("não marca em análise quando cartão ou e-mail estão vazios", () => {
     expect(companyDocumentsSubmitted({
       cartaoCnpjUrl: "",
       emailCorporativo: "rh@empresa.com.br",
@@ -30,19 +27,19 @@ describe("companyVerificationTag", () => {
       verificationStatus: "PENDING",
       cartaoCnpjUrl: null,
       emailCorporativo: "rh@empresa.com.br",
-    })).toBeNull();
+    })).toBe("Em análise");
     expect(companyVerificationTag({
       verificationStatus: "PENDING",
       cartaoCnpjUrl: "https://arquivo/cartao.pdf",
       emailCorporativo: "  ",
-    })).toBeNull();
+    })).toBe("Em análise");
   });
 
-  it("mostra recusa quando a verificação foi rejeitada", () => {
+  it("mostra reprovada quando a verificação foi rejeitada", () => {
     expect(companyVerificationTag({
       verificationStatus: "REJECTED",
       cartaoCnpjUrl: null,
       emailCorporativo: null,
-    })).toBe("Verificação recusada");
+    })).toBe("Reprovada");
   });
 });

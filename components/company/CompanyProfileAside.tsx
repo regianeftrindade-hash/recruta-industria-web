@@ -51,6 +51,13 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
   const companyProfile = dash.companyProfile;
   const slotsLabel = dash.slotsRestantes === null ? "∞" : String(dash.slotsRestantes ?? "…");
   const completude = companyProfile ? completudeEmpresa(companyProfile) : 0;
+  const verificationTag = dash.verificationStatus
+    ? companyVerificationTag({
+        verificationStatus: dash.verificationStatus,
+        cartaoCnpjUrl: companyProfile?.cartaoCnpjUrl,
+        emailCorporativo: companyProfile?.emailCorporativo,
+      })
+    : null;
 
   if (compact) {
     const pct = companyProfile ? completude : 0;
@@ -99,18 +106,27 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
           >
             CADASTRO {pct}%
           </span>
+          {verificationTag ? (
+            <span
+              style={{
+                display: "inline-block",
+                marginLeft: 6,
+                padding: "2px 8px",
+                borderRadius: 14,
+                border: "2px solid #8D6B1F",
+                background: verificationTag === "Aprovada" ? "#1a3d1a" : verificationTag === "Reprovada" ? "#3d1a1a" : "#F3E6C8",
+                color: verificationTag === "Aprovada" ? "#9ae6b4" : verificationTag === "Reprovada" ? "#f87171" : "#24180a",
+                fontSize: 10,
+                fontWeight: 800,
+              }}
+            >
+              {verificationTag}
+            </span>
+          ) : null}
         </div>
       </section>
     );
   }
-
-  const verificationTag = dash.verificationStatus
-    ? companyVerificationTag({
-        verificationStatus: dash.verificationStatus,
-        cartaoCnpjUrl: dash.companyProfile?.cartaoCnpjUrl,
-        emailCorporativo: dash.companyProfile?.emailCorporativo,
-      })
-    : null;
 
   return (
     <aside style={{ ...dashAside, borderRight: "none", width: "100%", maxWidth: "none" }}>
