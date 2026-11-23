@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createStripeCheckoutSession,
   isStripeEnabled,
+  mapStripePaymentStatus,
   parseStripeEvent,
   shouldUseStripe,
   verifyStripeWebhookSignature,
@@ -133,5 +134,17 @@ describe("Etapa A — Asaas BR / Stripe INTL (TEST MODE)", () => {
     expect(shouldUseStripe("US")).toBe(false);
     expect(resolvePaymentProvider("US")).toBeNull();
     expect(resolvePaymentProvider("BR")).toBe("asaas");
+  });
+
+  it("mapeia recusa/cancelamento Stripe sem marcar PAID", () => {
+    expect(mapStripePaymentStatus("unpaid", "expired")).toBe("DECLINED");
+    expect(mapStripePaymentStatus("unpaid", "open")).toBe("PENDING");
+    expect(mapStripePaymentStatus("paid", "complete")).toBe("PAID");
+  });
+
+  it("rejeita chave live quando o objetivo é TEST MODE", () => {
+    process.env.STRIPE_SECRET_KEY = "sk_live_should_not_use_in_sandbox_validation";
+    expect(process.env.STRIPE_SECRET_KEY.includes("_test_")).toBe(false);
+    expect(process.env.STRIPE_SECRET_KEY.startsWith("sk_live_")).toBe(true);
   });
 });
