@@ -1815,6 +1815,13 @@ export default function CadastroProfissional({
           </div>
         ) : null}
         {acoes ? <div className={styles.cardAcoes}>{acoes}</div> : null}
+        {!incorporado ? (
+          <nav className={styles.voltarHome} aria-label={t("registration.ui.voltar-a-pagina-inicial")}>
+            <Link href="/" className={styles.voltarHomeLink}>
+              {t("registration.ui.voltar-a-pagina-inicial")}
+            </Link>
+          </nav>
+        ) : null}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
           <LogoRecruta size="sm" as="div" depth />
         </div>

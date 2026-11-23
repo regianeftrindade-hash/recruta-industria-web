@@ -1,11 +1,13 @@
 "use client";
 
 import React, { Suspense, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { t } from "@/lib/i18n/translate";
 import RegistrationCountryField from "@/components/identity/RegistrationCountryField";
 import { AuthAtmosphere } from "@/components/shared/AuthAtmosphere";
 import LogoRecruta from "@/app/components/LogoRecruta";
+import layout from "./cadastro-empresa.module.css";
 
 /**
  * Cadastro de empresa — Brasil (CNPJ/CPF) e internacional (sem documentos BR).
@@ -122,6 +124,13 @@ function CadastroEmpresaForm({ incorporado = false }: { incorporado?: boolean })
     >
       {!incorporado ? <AuthAtmosphere /> : null}
       <div style={{ position: "relative", zIndex: 1, maxWidth: 560, margin: "0 auto" }}>
+        {!incorporado ? (
+          <nav className={layout.voltarHome} aria-label={t("registration.ui.voltar-a-pagina-inicial")}>
+            <Link href="/" className={layout.voltarHomeLink}>
+              {t("registration.ui.voltar-a-pagina-inicial")}
+            </Link>
+          </nav>
+        ) : null}
         <div style={{ textAlign: "center", marginBottom: 20 }}>
           {!incorporado ? <LogoRecruta /> : null}
           <h1 style={{ color: "#C89B3C", margin: "12px 0 4px" }}>{t("registration.ui.cadastro-empresa")}</h1>

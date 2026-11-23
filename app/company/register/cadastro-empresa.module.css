@@ -1,3 +1,21 @@
+.voltarHome {
+  margin: 0 0 16px;
+  text-align: left;
+}
+
+.voltarHomeLink {
+  display: inline-block;
+  font-size: 14px;
+  color: #414141;
+  text-decoration: underline;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.voltarHomeLink:hover {
+  color: #24180a;
+}
+
 .linhaTripla,
 .linhaDupla {
   display: grid;
