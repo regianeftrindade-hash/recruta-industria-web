@@ -3,6 +3,8 @@ import { publicJobCopy, statedJobFact } from "@/lib/jobs/public-job-display";
 import { formatMoney, isIsoCurrency } from "@/lib/money/format-money";
 import { uiIntlLocale } from "@/lib/i18n/format-ui";
 import { t } from "@/lib/i18n/translate";
+import { parseJobRegionFields } from "@/lib/jobs/job-region";
+import { buildRegistrationRegion } from "@/lib/identity/registration-region";
 
 export const CONTRACT_TYPES = [
   { value: "CLT", label: "CLT" },
@@ -84,6 +86,12 @@ export type JobRecord = {
   salaryNegotiable: boolean;
   /** ISO 4217. Ausente significa BRL, o padrão da vaga. */
   currency?: string;
+  /** ISO-3166-1 alpha-2. Ausente significa BR. */
+  countryCode?: string;
+  /** Locale BCP-47 da vaga (conteúdo/e-mails). */
+  locale?: string;
+  /** Fuso IANA da vaga. */
+  timeZone?: string;
   contractType: string | null;
   contractTypeOther: string | null;
   workMode: string | null;
@@ -120,6 +128,10 @@ export type PublicJob = {
   applicationInstructions: string | null;
   applicationMode: ApplicationMode;
   externalApplyUrl: string | null;
+  currency: string;
+  countryCode: string;
+  locale: string;
+  timeZone: string;
   /** ADMIN = publicada pelo Recruta | COMPANY = publicada pela empresa */
   origin: "ADMIN" | "COMPANY";
 };
@@ -174,6 +186,9 @@ export type JobWriteData = {
   salaryCents: number | null;
   salaryNegotiable: boolean;
   currency: string;
+  countryCode: string;
+  locale: string;
+  timeZone: string;
   contractType: ContractType | null;
   contractTypeOther: string | null;
   workMode: WorkMode | null;
@@ -282,7 +297,10 @@ export function parseApplicationEmail(value: unknown): string | null {
   return email;
 }
 
-export function parseApplicationWhatsapp(value: unknown): string | null {
+export function parseApplicationWhatsapp(
+  value: unknown,
+  countryCode: string | null | undefined = "BR",
+): string | null {
   if (value == null || value === "") return null;
   if (typeof value !== "string") {
     throw new JobPostingError("O WhatsApp para candidaturas é inválido.");
@@ -292,22 +310,33 @@ export function parseApplicationWhatsapp(value: unknown): string | null {
   if (text.length > 40) {
     throw new JobPostingError("Informe um WhatsApp válido com DDD.");
   }
-  const phone = normalizePhoneE164(text);
+  const country = (countryCode || "BR").trim().toUpperCase() || "BR";
+  const phone = normalizePhoneE164(text, country);
   if (!phone) {
-    throw new JobPostingError("Informe um WhatsApp válido com DDD, por exemplo (11) 98888-7777.");
+    throw new JobPostingError(
+      country === "BR"
+        ? "Informe um WhatsApp válido com DDD, por exemplo (11) 98888-7777."
+        : "Informe um WhatsApp internacional com código do país, por exemplo +1 415 555 0123.",
+    );
   }
   return phone;
 }
 
 /** Número legível para o profissional copiar. Não inclui outros contatos da vaga. */
-export function formatWhatsappDisplay(stored: string): string {
+export function formatWhatsappDisplay(
+  stored: string,
+  countryCode: string | null | undefined = "BR",
+): string {
   const digits = stored.replace(/\D/g, "");
-  const national = digits.startsWith("55") && digits.length > 11 ? digits.slice(2) : digits;
-  if (national.length === 11) {
-    return `+55 (${national.slice(0, 2)}) ${national.slice(2, 7)}-${national.slice(7)}`;
-  }
-  if (national.length === 10) {
-    return `+55 (${national.slice(0, 2)}) ${national.slice(2, 6)}-${national.slice(6)}`;
+  const country = (countryCode || "BR").trim().toUpperCase() || "BR";
+  if (country === "BR") {
+    const national = digits.startsWith("55") && digits.length > 11 ? digits.slice(2) : digits;
+    if (national.length === 11) {
+      return `+55 (${national.slice(0, 2)}) ${national.slice(2, 7)}-${national.slice(7)}`;
+    }
+    if (national.length === 10) {
+      return `+55 (${national.slice(0, 2)}) ${national.slice(2, 6)}-${national.slice(6)}`;
+    }
   }
   return digits ? `+${digits}` : stored.trim();
 }
@@ -536,6 +565,7 @@ export function publicSalaryLabel(job: {
 }
 
 export function toPublicJob(job: JobRecord): PublicJob {
+  const countryCode = job.countryCode || "BR";
   return {
     id: job.id,
     anonymous: job.confidential,
@@ -554,6 +584,10 @@ export function toPublicJob(job: JobRecord): PublicJob {
       job.applicationMode === "EXTERNAL" && job.externalApplyUrl
         ? job.externalApplyUrl
         : null,
+    currency: job.currency || "BRL",
+    countryCode,
+    locale: job.locale || "pt-BR",
+    timeZone: job.timeZone || "America/Sao_Paulo",
     origin: job.origin === "COMPANY" ? "COMPANY" : "ADMIN",
   };
 }
@@ -561,6 +595,7 @@ export function toPublicJob(job: JobRecord): PublicJob {
 export function toAdminJob(job: JobRecord): AdminJob {
   const status = isJobStatus(job.status) ? job.status : "DRAFT";
   const publicJob = toPublicJob(job);
+  const countryCode = publicJob.countryCode;
 
   return {
     ...publicJob,
@@ -578,7 +613,7 @@ export function toAdminJob(job: JobRecord): AdminJob {
     externalApplyUrl: job.externalApplyUrl ?? "",
     applicationEmail: job.applicationEmail ?? "",
     applicationWhatsapp: job.applicationWhatsapp
-      ? formatWhatsappDisplay(job.applicationWhatsapp)
+      ? formatWhatsappDisplay(job.applicationWhatsapp, countryCode)
       : "",
     status,
     statusLabel: jobStatusLabel(status),
@@ -653,11 +688,19 @@ export function parseJobWrite(input: unknown): JobWriteData {
   const externalApplyUrl = applicationMode === "EXTERNAL"
     ? parseExternalApplyUrl(body.externalApplyUrl)
     : null;
+  const region = parseJobRegionFields({
+    countryCode: body.countryCode,
+    locale: body.locale,
+    timeZone: body.timeZone,
+  });
+  if (!region.ok) throw new JobPostingError(region.error);
+  const { countryCode, locale, timeZone } = region;
+
   const applicationEmail = applicationMode === "EMAIL"
     ? parseApplicationEmail(body.applicationEmail)
     : null;
   const applicationWhatsapp = applicationMode === "WHATSAPP"
-    ? parseApplicationWhatsapp(body.applicationWhatsapp)
+    ? parseApplicationWhatsapp(body.applicationWhatsapp, countryCode)
     : null;
 
   if (statusRaw === "PUBLISHED" && applicationMode === "EXTERNAL" && !externalApplyUrl) {
@@ -670,16 +713,17 @@ export function parseJobWrite(input: unknown): JobWriteData {
     throw new JobPostingError("Informe o WhatsApp da empresa para receber as candidaturas.");
   }
 
-  const currency = normalizeJobCurrency(body.currency, "write");
+  const currency = body.currency == null || (typeof body.currency === "string" && !body.currency.trim())
+    ? normalizeJobCurrency(buildRegistrationRegion(countryCode).currency, "write")
+    : normalizeJobCurrency(body.currency, "write");
   let salaryCents: number | null = null;
   if (!salaryNegotiable) {
     salaryCents = parseSalaryToCents(
       typeof body.salary === "string" ? body.salary : "",
       currency,
-      "pt-BR",
+      locale.startsWith("pt") ? "pt-BR" : locale,
     );
   }
-
   if (!title) {
     throw new JobPostingError("Informe o cargo da vaga.");
   }
@@ -705,30 +749,6 @@ export function parseJobWrite(input: unknown): JobWriteData {
     }
   }
 
-  if (contractType !== "OUTRO") {
-    return {
-      companyName,
-      confidential,
-      publicationDate,
-      title,
-      salaryCents,
-      salaryNegotiable,
-      currency,
-      contractType,
-      contractTypeOther: null,
-      workMode,
-      workplace,
-      description,
-      observations,
-      applicationInstructions,
-      applicationMode,
-      externalApplyUrl,
-      applicationEmail,
-      applicationWhatsapp,
-      status: statusRaw,
-    };
-  }
-
   return {
     companyName,
     confidential,
@@ -737,8 +757,11 @@ export function parseJobWrite(input: unknown): JobWriteData {
     salaryCents,
     salaryNegotiable,
     currency,
+    countryCode,
+    locale,
+    timeZone,
     contractType,
-    contractTypeOther,
+    contractTypeOther: contractType === "OUTRO" ? contractTypeOther : null,
     workMode,
     workplace,
     description,

@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: social.title,
         description: social.description,
         siteName: "Recruta Indústria",
-        locale: "pt_BR",
+        locale: (view.job.locale || "pt-BR").replace("-", "_"),
       },
       twitter: {
         card: "summary_large_image",
@@ -82,7 +82,14 @@ function jobPostingJsonLd(job: {
   publicationDate: string | null;
   workplace: string | null;
   contractLabel: string | null;
+  countryCode?: string;
+  currency?: string;
+  salaryLabel?: string | null;
+  timeZone?: string;
+  locale?: string;
 }) {
+  const country = (job.countryCode || "BR").toUpperCase();
+  const currency = (job.currency || "BRL").toUpperCase();
   const data = {
     "@context": "https://schema.org",
     "@type": "JobPosting",
@@ -93,12 +100,30 @@ function jobPostingJsonLd(job: {
       "@type": "Organization",
       name: job.companyLabel,
     },
-    jobLocation: job.workplace
-      ? { "@type": "Place", address: job.workplace }
-      : undefined,
+    jobLocation: {
+      "@type": "Place",
+      address: {
+        "@type": "PostalAddress",
+        addressCountry: country,
+        ...(job.workplace ? { addressLocality: job.workplace } : {}),
+      },
+    },
+    ...(job.salaryLabel
+      ? {
+          baseSalary: {
+            "@type": "MonetaryAmount",
+            currency,
+            value: {
+              "@type": "QuantitativeValue",
+              unitText: "MONTH",
+            },
+          },
+        }
+      : {}),
     employmentType: job.contractLabel || undefined,
     url: publicJobUrl(job.id),
     directApply: true,
+    inLanguage: job.locale || "pt-BR",
   };
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
@@ -159,6 +184,8 @@ export default async function VagaPage({ params, searchParams }: Props) {
           <div className={styles.facts}>
             <Fact label={text("surface.jobs.publishedOn")} value={view.job.publicationDate} />
             <Fact label={text("surface.jobs.salary")} value={view.job.salaryLabel} />
+            <Fact label={text("surface.jobs.currency")} value={view.job.currency} />
+            <Fact label={text("surface.jobs.country")} value={view.job.countryCode} />
             <Fact label={text("surface.jobs.contract")} value={view.job.contractLabel} />
             <Fact label={text("surface.jobs.mode")} value={view.job.workModeLabel} />
             <Fact label={text("surface.jobs.workplace")} value={view.job.workplace} />

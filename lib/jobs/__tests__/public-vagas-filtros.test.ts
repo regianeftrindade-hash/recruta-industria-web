@@ -21,8 +21,11 @@ describe("filtros da lista pública", () => {
 
   it("monta o link da página sem perder os filtros", () => {
     expect(hrefListaVagas({ q: "auxilia", estado: "SP" }, 2)).toBe("/vagas?q=auxilia&estado=SP&pagina=2");
+    expect(hrefListaVagas({ pais: "US", moeda: "USD" }, 1)).toBe("/vagas?pais=US&moeda=USD");
     expect(hrefListaVagas({}, 1)).toBe("/vagas");
     expect(temFiltroDeVaga({ cidade: "Curitiba" })).toBe(true);
+    expect(temFiltroDeVaga({ pais: "PT" })).toBe(true);
+    expect(temFiltroDeVaga({ moeda: "EUR" })).toBe(true);
     expect(temFiltroDeVaga({})).toBe(false);
   });
 });

@@ -47,7 +47,31 @@ export const FAIXAS_SALARIO_VAGA: Array<{
   { id: "combinar", label: "A combinar", minimo: "", maximo: "", negociavel: true },
 ];
 
-const CHAVES_FILTRO = ["q", "cidade", "estado", "periodo", "faixa", "contrato", "modalidade"] as const;
+const CHAVES_FILTRO = [
+  "q",
+  "cidade",
+  "estado",
+  "pais",
+  "moeda",
+  "periodo",
+  "faixa",
+  "contrato",
+  "modalidade",
+] as const;
+
+/** Moedas comuns no filtro público (BRL primeiro para compatibilidade). */
+export const MOEDAS_FILTRO_VAGA = [
+  "BRL",
+  "USD",
+  "EUR",
+  "GBP",
+  "CAD",
+  "MXN",
+  "ARS",
+  "CLP",
+  "JPY",
+  "CNY",
+] as const;
 
 export function achatarSearchParams(
   raw: Record<string, string | string[] | undefined>,

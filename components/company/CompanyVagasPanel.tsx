@@ -23,6 +23,14 @@ import styles from "./company-vagas.module.css";
 import { useCompanyDashboardDataOptional } from "@/components/company/CompanyDashboardDataContext";
 import FotoPerfilAvatar from "@/components/shared/FotoPerfilAvatar";
 import { COMPANY_VIEW_ONLY_NOTICE } from "@/lib/company/company-verification";
+import {
+  buildRegistrationRegion,
+  registrationCountryChoices,
+} from "@/lib/identity/registration-region";
+import {
+  jobCurrencyChoices,
+  jobTimeZoneChoicesForCountry,
+} from "@/lib/jobs/job-region";
 
 type Screen = "form" | "list" | "applications";
 
@@ -213,6 +221,10 @@ type FormState = {
   title: string;
   salary: string;
   salaryNegotiable: boolean;
+  currency: string;
+  countryCode: string;
+  locale: string;
+  timeZone: string;
   contractType: string;
   contractTypeOther: string;
   workMode: string;
@@ -240,6 +252,7 @@ type ApplicationRow = {
 const COMPANY_RETURN_KEY = "ri-company-vagas-return";
 
 function emptyForm(companyName: string): FormState {
+  const region = buildRegistrationRegion("BR");
   return {
     companyName,
     confidential: false,
@@ -247,6 +260,10 @@ function emptyForm(companyName: string): FormState {
     title: "",
     salary: "",
     salaryNegotiable: false,
+    currency: region.currency,
+    countryCode: region.countryCode,
+    locale: region.locale,
+    timeZone: region.timeZone,
     contractType: "",
     contractTypeOther: "",
     workMode: "",
@@ -268,6 +285,10 @@ function formFromJob(job: AdminJob): FormState {
     title: job.title,
     salary: job.salaryInput,
     salaryNegotiable: job.salaryNegotiable,
+    currency: job.currency || "BRL",
+    countryCode: job.countryCode || "BR",
+    locale: job.locale || "pt-BR",
+    timeZone: job.timeZone || "America/Sao_Paulo",
     contractType: job.contractType,
     contractTypeOther: job.contractTypeOther,
     workMode: job.workMode,
@@ -716,41 +737,131 @@ export default function CompanyVagasPanel({
             </p>
             <label className={fields.field}>{exactUi("Cargo")}<input value={form.title} onChange={(event) => update("title", event.target.value)} maxLength={160} placeholder={exactUi("Ex.: Operador CNC")} />
             </label>
-            <ListaSuspensa
-              label="Salário"
-              value={faixaId}
-              placeholder={exactUi("Faixa")}
-              options={FAIXAS_SALARIO.map((faixa) => ({ id: faixa.id, label: exactUi(faixa.label) }))}
-              vazio={exactUi("Nenhuma faixa encontrada.")}
-              onChange={(id) => {
-                setFaixaId(id);
-                const salario = salarioDaFaixa(id);
-                setForm((current) => ({ ...current, ...salario }));
-              }}
-            />
-            <ListaSuspensa
-              label="Estado"
-              value={estado}
-              placeholder={exactUi("UF")}
-              options={ESTADOS.map((item) => ({ id: item.uf, label: `${item.uf} — ${item.nome}` }))}
-              vazio={exactUi("Nenhum estado encontrado.")}
-              onChange={(uf) => {
-                setEstado(uf);
-                setCidade("");
-                setForm((current) => ({ ...current, workplace: textoDoLocal(uf, "") }));
-              }}
-            />
-            <ListaSuspensa
-              label="Cidade"
-              value={cidade}
-              placeholder={estado ? exactUi("Cidade") : exactUi("Escolha o estado")}
-              options={cidades.map((nome) => ({ id: nome, label: nome }))}
-              vazio={estado ? (carregandoCidades ? exactUi("Carregando cidades...") : exactUi("Nenhuma cidade encontrada.")) : exactUi("Escolha o estado para ver as cidades.")}
-              onChange={(nome) => {
-                setCidade(nome);
-                setForm((current) => ({ ...current, workplace: textoDoLocal(estado, nome) }));
-              }}
-            />
+            <label className={fields.field}>
+              {t("surface.jobs.country")}
+              <select
+                value={form.countryCode}
+                onChange={(event) => {
+                  const code = event.target.value || "BR";
+                  const region = buildRegistrationRegion(code);
+                  setForm((current) => ({
+                    ...current,
+                    countryCode: code,
+                    locale: region.locale,
+                    currency: region.currency,
+                    timeZone: region.timeZone,
+                    workplace: code === "BR" ? current.workplace : current.workplace,
+                  }));
+                  if (code !== "BR") {
+                    setEstado("");
+                    setCidade("");
+                  }
+                }}
+              >
+                {registrationCountryChoices().map((pais) => (
+                  <option key={pais.code} value={pais.code}>{pais.code} — {pais.name}</option>
+                ))}
+              </select>
+            </label>
+            <label className={fields.field}>
+              {t("surface.jobs.currency")}
+              <select value={form.currency} onChange={(event) => update("currency", event.target.value)}>
+                {jobCurrencyChoices().map((moeda) => (
+                  <option key={moeda} value={moeda}>{moeda}</option>
+                ))}
+              </select>
+            </label>
+            <label className={fields.field}>
+              {t("surface.jobs.timeZone")}
+              <select value={form.timeZone} onChange={(event) => update("timeZone", event.target.value)}>
+                {jobTimeZoneChoicesForCountry(form.countryCode).map((zone) => (
+                  <option key={zone} value={zone}>{zone}</option>
+                ))}
+              </select>
+            </label>
+            {form.countryCode === "BR" ? (
+              <ListaSuspensa
+                label="Salário"
+                value={faixaId}
+                placeholder={exactUi("Faixa")}
+                options={FAIXAS_SALARIO.map((faixa) => ({ id: faixa.id, label: exactUi(faixa.label) }))}
+                vazio={exactUi("Nenhuma faixa encontrada.")}
+                onChange={(id) => {
+                  setFaixaId(id);
+                  const salario = salarioDaFaixa(id);
+                  setForm((current) => ({ ...current, ...salario }));
+                }}
+              />
+            ) : (
+              <label className={fields.field}>
+                {exactUi("Salário")}
+                <input
+                  value={form.salary}
+                  onChange={(event) => {
+                    setFaixaId("");
+                    setForm((current) => ({
+                      ...current,
+                      salary: event.target.value,
+                      salaryNegotiable: false,
+                    }));
+                  }}
+                  placeholder={exactUi("Ex.: 3500.00")}
+                />
+                <label className={fields.help}>
+                  <input
+                    type="checkbox"
+                    checked={form.salaryNegotiable}
+                    onChange={(event) => {
+                      setFaixaId(event.target.checked ? "combinar" : "");
+                      setForm((current) => ({
+                        ...current,
+                        salaryNegotiable: event.target.checked,
+                        salary: event.target.checked ? "" : current.salary,
+                      }));
+                    }}
+                  />
+                  {" "}
+                  {exactUi("A combinar")}
+                </label>
+              </label>
+            )}
+            {form.countryCode === "BR" ? (
+              <>
+                <ListaSuspensa
+                  label="Estado"
+                  value={estado}
+                  placeholder={exactUi("UF")}
+                  options={ESTADOS.map((item) => ({ id: item.uf, label: `${item.uf} — ${item.nome}` }))}
+                  vazio={exactUi("Nenhum estado encontrado.")}
+                  onChange={(uf) => {
+                    setEstado(uf);
+                    setCidade("");
+                    setForm((current) => ({ ...current, workplace: textoDoLocal(uf, "") }));
+                  }}
+                />
+                <ListaSuspensa
+                  label="Cidade"
+                  value={cidade}
+                  placeholder={estado ? exactUi("Cidade") : exactUi("Escolha o estado")}
+                  options={cidades.map((nome) => ({ id: nome, label: nome }))}
+                  vazio={estado ? (carregandoCidades ? exactUi("Carregando cidades...") : exactUi("Nenhuma cidade encontrada.")) : exactUi("Escolha o estado para ver as cidades.")}
+                  onChange={(nome) => {
+                    setCidade(nome);
+                    setForm((current) => ({ ...current, workplace: textoDoLocal(estado, nome) }));
+                  }}
+                />
+              </>
+            ) : (
+              <label className={`${fields.field} ${styles.span}`}>
+                {exactUi("Local de trabalho")}
+                <input
+                  value={form.workplace}
+                  onChange={(event) => update("workplace", event.target.value)}
+                  maxLength={120}
+                  placeholder={exactUi("Cidade, região ou remoto")}
+                />
+              </label>
+            )}
             <div className={styles.span}>
               <fieldset className={fields.field}>
                 <legend>{t("internal.company.contractType")}</legend>

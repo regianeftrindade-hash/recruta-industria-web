@@ -28,6 +28,7 @@ import {
   toPublicJob,
   workModeLabel,
 } from "@/lib/jobs/job-posting";
+import { jobWhatsappHref, regionFieldPatch } from "@/lib/jobs/job-region";
 import {
   assertServerDelivery,
   discloseApplicationContact,
@@ -78,6 +79,9 @@ function asRecord(job: JobPosting, applicationCount = 0): JobRecord {
     salaryCents: job.salaryCents,
     salaryNegotiable: job.salaryNegotiable,
     currency: job.currency,
+    countryCode: job.countryCode,
+    locale: job.locale,
+    timeZone: job.timeZone,
     contractType: job.contractType,
     contractTypeOther: job.contractTypeOther,
     workMode: job.workMode,
@@ -127,13 +131,24 @@ function jobDataForUpdate(
 ) {
   const payload = writeData(data, current);
   if (!input || typeof input !== "object" || Array.isArray(input)) return payload;
-  const { workplace, applicationInstructions, currency, ...rest } = payload;
+  const {
+    workplace,
+    applicationInstructions,
+    currency,
+    countryCode,
+    locale,
+    timeZone,
+    ...rest
+  } = payload;
   const source = input as Record<string, unknown>;
   return {
     ...rest,
     ...("workplace" in source ? { workplace } : {}),
     ...("applicationInstructions" in source ? { applicationInstructions } : {}),
     ...currencyPatch(input, currency),
+    ...regionFieldPatch(input, "countryCode", countryCode),
+    ...regionFieldPatch(input, "locale", locale),
+    ...regionFieldPatch(input, "timeZone", timeZone),
   };
 }
 
@@ -146,6 +161,9 @@ function writeData(data: JobWriteData, current?: { publishedAt: Date | null; clo
     salaryCents: data.salaryCents,
     salaryNegotiable: data.salaryNegotiable,
     currency: data.currency,
+    countryCode: data.countryCode,
+    locale: data.locale,
+    timeZone: data.timeZone,
     contractType: data.contractType,
     contractTypeOther: data.contractTypeOther,
     workMode: data.workMode,
@@ -645,10 +663,11 @@ function digitsOnly(value: string | null | undefined): string {
   return (value || "").replace(/\D/g, "");
 }
 
-function whatsappHref(digits: string): string | null {
-  if (digits.length < 10 || digits.length > 13) return null;
-  const full = digits.startsWith("55") ? digits : `55${digits}`;
-  return `https://wa.me/${full}`;
+function whatsappHref(
+  digits: string,
+  countryCode: string | null | undefined = "BR",
+): string | null {
+  return jobWhatsappHref(digits, countryCode);
 }
 
 /** Número de WhatsApp do profissional. “Sim” usa o telefone do cadastro. */
@@ -684,6 +703,9 @@ export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard
       salaryCents: true,
       salaryNegotiable: true,
       currency: true,
+      countryCode: true,
+      locale: true,
+      timeZone: true,
       description: true,
       observations: true,
       applicationInstructions: true,
@@ -713,10 +735,11 @@ export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard
   return {
     jobs: jobs.map((job) => {
       const applications = byJob.get(job.id) ?? [];
+      const jobCountry = job.countryCode || "BR";
       const jobWhatsapp = digitsOnly(job.applicationWhatsapp);
       const publicationDate = formatPublicationDate(job.publicationDate);
       const salaryLabel = publicSalaryLabel(job);
-      const applicationWhatsapp = jobWhatsapp ? formatWhatsappDisplay(jobWhatsapp) : null;
+      const applicationWhatsapp = jobWhatsapp ? formatWhatsappDisplay(jobWhatsapp, jobCountry) : null;
       const legacy = job.id === MANUAL_APPLICATION_JOB_ID;
       const deadline = datedLine(job.applicationInstructions)
         || datedLine(job.observations)
@@ -741,7 +764,7 @@ export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard
         salaryLabel,
         applicationEmail: job.applicationEmail,
         applicationWhatsapp,
-        applicationWhatsappHref: whatsappHref(jobWhatsapp),
+        applicationWhatsappHref: whatsappHref(jobWhatsapp, jobCountry),
         careOf,
         subject,
         deadline,
@@ -763,8 +786,8 @@ export async function listManualJobApplications(): Promise<{ jobs: ManualJobCard
             id: row.id,
             name: row.user.name,
             email: row.user.email || row.profile?.email || null,
-            whatsapp: whatsapp ? formatWhatsappDisplay(whatsapp) : null,
-            whatsappHref: whatsapp ? whatsappHref(whatsapp) : null,
+            whatsapp: whatsapp ? formatWhatsappDisplay(whatsapp, jobCountry) : null,
+            whatsappHref: whatsapp ? whatsappHref(whatsapp, jobCountry) : null,
             resumeLabel: savedResumeLabel(storedResumePath(row.profile?.curricoURL), row.user.email),
           };
         }),
@@ -786,6 +809,9 @@ export async function createManualAdminJob(createdByUserId: string, input: unkno
       salaryCents: data.salaryCents,
       salaryNegotiable: data.salaryNegotiable,
       currency: data.currency,
+      countryCode: data.countryCode,
+      locale: data.locale,
+      timeZone: data.timeZone,
       workplace: data.workplace,
       description: data.description,
       observations: data.deadline
@@ -1188,6 +1214,8 @@ export async function registerJobApplication(jobId: string, email: string) {
       applicationMode: true,
       applicationEmail: true,
       manualApplication: true,
+      locale: true,
+      countryCode: true,
     },
   });
   if (!job) {
@@ -1241,6 +1269,7 @@ export async function registerJobApplication(jobId: string, email: string) {
       professionalEmail: user.email,
       resume: resume.bytes,
       resumeFormat: resume.format,
+      locale: job.locale || "pt-BR",
     });
     if (!sent.ok) {
       await prisma.jobApplication.updateMany({

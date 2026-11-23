@@ -107,6 +107,29 @@ test.describe("smoke público", () => {
     await expect(page.getByRole("link", { name: /voltar.*página inicial|back to the home/i })).toBeVisible();
   });
 
+  test("lista pública de vagas expõe filtros de país e moeda quando disponíveis", async ({ page }) => {
+    await page.goto("/vagas", { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("heading", { name: /vagas|jobs|vacantes|offres/i }).first()).toBeVisible({
+      timeout: 20_000,
+    });
+    const pais = page.locator('select[name="pais"]');
+    const moeda = page.locator('select[name="moeda"]');
+    if ((await pais.count()) === 0 || (await moeda.count()) === 0) {
+      test.info().annotations.push({
+        type: "note",
+        description: "Filtros país/moeda ainda ausentes no alvo (pré-deploy da Etapa B)",
+      });
+      return;
+    }
+    await expect(pais).toBeVisible();
+    await expect(moeda).toBeVisible();
+    await pais.selectOption("US");
+    await moeda.selectOption("USD");
+    await page.getByRole("button", { name: /buscar|search|rechercher|suchen/i }).click();
+    await expect(page).toHaveURL(/pais=US/);
+    await expect(page).toHaveURL(/moeda=USD/);
+  });
+
   test("idioma: cookie ri-locale aplica lang/dir em home, login e cadastro (inclui RTL árabe)", async ({
     page,
     context,

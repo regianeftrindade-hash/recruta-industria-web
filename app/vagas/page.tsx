@@ -8,6 +8,7 @@ import { paginarLista, paginasDaBarra } from "@/lib/jobs/paginate-list";
 import { jobApplicationDeadline } from "@/lib/jobs/public-job-display";
 import {
   FAIXAS_SALARIO_VAGA,
+  MOEDAS_FILTRO_VAGA,
   UFS_BRASIL,
   VAGAS_POR_PAGINA_PUBLICA,
   achatarSearchParams,
@@ -15,6 +16,7 @@ import {
   hrefListaVagas,
   temFiltroDeVaga,
 } from "@/lib/jobs/public-vagas-filtros";
+import { registrationCountryChoices } from "@/lib/identity/registration-region";
 import { caminhoDeVolta, hrefComVolta } from "@/lib/jobs/job-return-path";
 import "@/lib/i18n/active-locale.server";
 import { bindLocale } from "@/lib/i18n/active-locale";
@@ -99,6 +101,15 @@ export default async function VagasPage({
           <input className={styles.control} name="q" defaultValue={valor(params, "q")} maxLength={80} placeholder={text("surface.jobs.keyword")} />
         </label>
         <label>
+          {text("surface.jobs.country")}
+          <select className={styles.control} name="pais" defaultValue={valor(params, "pais")}>
+            <option value="">{text("surface.jobs.allCountries")}</option>
+            {registrationCountryChoices().map((pais) => (
+              <option key={pais.code} value={pais.code}>{pais.code} — {pais.name}</option>
+            ))}
+          </select>
+        </label>
+        <label>
           {text("surface.jobs.state")}
           <select className={styles.control} name="estado" defaultValue={valor(params, "estado")}>
             <option value="">{text("surface.jobs.allStates")}</option>
@@ -110,6 +121,15 @@ export default async function VagasPage({
         <label>
           {text("surface.jobs.city")}
           <input className={styles.control} name="cidade" defaultValue={valor(params, "cidade")} maxLength={80} placeholder={text("surface.jobs.city")} />
+        </label>
+        <label>
+          {text("surface.jobs.currency")}
+          <select className={styles.control} name="moeda" defaultValue={valor(params, "moeda")}>
+            <option value="">{text("surface.jobs.allCurrencies")}</option>
+            {MOEDAS_FILTRO_VAGA.map((moeda) => (
+              <option key={moeda} value={moeda}>{moeda}</option>
+            ))}
+          </select>
         </label>
         <label>
           {text("surface.jobs.published")}
