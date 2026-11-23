@@ -1,6 +1,8 @@
 import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
 
 export const restEn: Partial<Record<MessageKey, string>> = {
+  "registration.simple.cpfBrazilOnly": "CPF is only accepted for registrations in Brazil.",
+  "registration.simple.cnpjBrazilOnly": "CNPJ is only accepted for registrations in Brazil.",
   "rest.profile.title": "Full registration",
   "rest.profile.experiences": "Experiences",
   "rest.profile.experience": "Experience",
