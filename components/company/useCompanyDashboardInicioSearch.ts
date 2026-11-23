@@ -1,7 +1,9 @@
 /* 🔒 BLOQUEADO (06/07/2026) — não editar sem pedido explícito. Ver .cursor/rules/dashboard-page-lock.mdc */
+/* Autorizado: i18n residual (finalização internacionalização). */
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
+import { exactUi } from "@/lib/i18n/exact-ui";
 import {
   EMPTY_FILTROS,
   filtrosTemValor,
@@ -115,7 +117,7 @@ export function useCompanyDashboardInicioSearch({
       const res = await fetch(`/api/company/professionals?${params}`, { credentials: "include" });
       const data = await res.json();
       if (!res.ok) {
-        setErroBusca(data.error || "Erro ao buscar profissionais");
+        setErroBusca(data.error || exactUi("Erro ao buscar profissionais"));
         return;
       }
       setProfissionais(data.profissionais || data.bloqueados || []);
@@ -146,7 +148,7 @@ export function useCompanyDashboardInicioSearch({
       if (data.features) setPlanFeatures(data.features);
       salvarBuscaVitrine({ filtros: usados, page: pagina });
     } catch {
-      setErroBusca("Erro de rede ao buscar profissionais");
+      setErroBusca(exactUi("Erro de rede ao buscar profissionais"));
     } finally {
       setLoadingProfissionais(false);
     }
@@ -271,7 +273,7 @@ export function useCompanyDashboardInicioSearch({
   const handleCreateAlert = async () => {
     const temPreferencia = (Object.keys(EMPTY_FILTROS) as (keyof Filtros)[]).some((key) => Boolean(filtros[key]));
     if (!temPreferencia) {
-      setErroBusca("Defina ao menos um filtro de preferência antes de criar o alerta.");
+      setErroBusca(exactUi("Defina ao menos um filtro de preferência antes de criar o alerta."));
       setMsgAcao("");
       return;
     }
@@ -449,7 +451,7 @@ export function useCompanyDashboardInicioSearch({
   const onBuscar = () => {
     if (!filtrosTemValor(filtros)) {
       limparBuscaVitrine();
-      setErroBusca("Selecione ao menos um filtro para buscar profissionais.");
+      setErroBusca(exactUi("Selecione ao menos um filtro para buscar profissionais."));
       setBuscaRealizada(false);
       setProfissionais([]);
       setDesbloqueados([]);

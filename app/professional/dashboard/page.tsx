@@ -12,6 +12,7 @@ import InstallAppPrompt from "@/components/pwa/InstallAppPrompt";
 import "@/app/dashboard/dashboard-theme.css";
 import { uiIntlLocale } from "@/lib/i18n/format-ui";
 import { t } from "@/lib/i18n/translate";
+import { exactUi } from "@/lib/i18n/exact-ui";
 import {
   DASH,
   DashboardThemeShell,
@@ -407,7 +408,7 @@ export default function DashboardProfissional() {
     return (
       <DashboardThemeShell className="ri-dash-prof">
         <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
-          Perfil não encontrado.
+          {exactUi("Perfil não encontrado.")}
         </div>
       </DashboardThemeShell>
     );

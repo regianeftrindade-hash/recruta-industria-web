@@ -199,7 +199,7 @@ export default function ProfessionalOpportunityBoard({ proposals, onChanged }: P
           setBusyId(null);
           return;
         }
-        body.justification = justification.trim() || "Cancelada pelo profissional";
+        body.justification = justification.trim() || exactUi("Cancelada pelo profissional");
       }
       if (campo === "contratado" && !atual) body.naoContratado = false;
       if (campo === "naoContratado" && !atual) body.contratado = false;

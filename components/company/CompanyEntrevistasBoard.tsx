@@ -364,7 +364,7 @@ export default function CompanyEntrevistasBoard() {
     const motivo = t.contratado
       ? "Contratado"
       : t.naoContratado
-        ? "Não contratado"
+        ? exactUi("Não contratado")
         : t.entrevistaCancelada || p.status === "INTERVIEW_CANCELLED"
           ? "Entrevista cancelada"
           : p.status === "DECLINED"
