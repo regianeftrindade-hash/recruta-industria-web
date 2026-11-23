@@ -63,6 +63,22 @@ export const metadata: Metadata = {
   publisher: "Recruta Indústria",
   alternates: {
     canonical: "/",
+    // Mesma URL para todos os idiomas (preferência em cookie / Accept-Language; sem prefixo de rota).
+    languages: {
+      "pt-BR": "/",
+      en: "/",
+      es: "/",
+      fr: "/",
+      de: "/",
+      it: "/",
+      "pt-PT": "/",
+      "zh-CN": "/",
+      ja: "/",
+      ko: "/",
+      ar: "/",
+      hi: "/",
+      "x-default": "/",
+    },
   },
   openGraph: {
     type: "website",
@@ -164,7 +180,7 @@ export default async function RootLayout({
         url: "https://www.recrutaindustria.com/",
         name: "Recruta Indústria",
         publisher: { "@id": "https://www.recrutaindustria.com/#organization" },
-        inLanguage: "pt-BR",
+        inLanguage: locale,
       },
     ],
   };
