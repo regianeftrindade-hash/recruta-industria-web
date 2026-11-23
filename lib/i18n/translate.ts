@@ -15,6 +15,7 @@ import ko from "@/lib/i18n/messages/catalogs/ko.json";
 import ar from "@/lib/i18n/messages/catalogs/ar.json";
 import hi from "@/lib/i18n/messages/catalogs/hi.json";
 import { messagesPtBR, type MessageKey } from "@/lib/i18n/messages/pt-BR";
+import { brazilOnlyDocumentMessages } from "@/lib/i18n/messages/brazil-only-document";
 import { DEFAULT_LOCALE, resolveLocale, type SupportedLocale } from "@/lib/i18n/locales";
 
 const catalogs: Record<SupportedLocale, Partial<Record<MessageKey, string>>> = {
@@ -38,7 +39,7 @@ export function translate(key: MessageKey, locale?: string | null): string {
     ? getBoundLocale()
     : resolveLocale(locale);
   if (requested !== DEFAULT_LOCALE) {
-    const foreign = catalogs[requested]?.[key];
+    const foreign = catalogs[requested]?.[key] ?? brazilOnlyDocumentMessages[requested]?.[key];
     if (foreign) return foreign;
   }
   return catalogs[DEFAULT_LOCALE][key] ?? messagesPtBR[key];
