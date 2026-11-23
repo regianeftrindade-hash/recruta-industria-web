@@ -9,6 +9,10 @@ import {
   verifyAdmin2faToken,
 } from '@/lib/security/admin-2fa-edge';
 import { destinoEmailSemSessao } from '@/lib/notifications/email-home-link';
+import {
+  decideProtectedRouteAccess,
+  protectedAreaForPath,
+} from '@/lib/auth/route-role-guard';
 
 export async function proxy(request: NextRequest) {
   const ip = getClientIp(request);
@@ -104,6 +108,67 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
+  // URLs antigas /company/profissional/... → sempre /company/professional/[id]
+  // (antes do early-return de development e dos redirects HTTPS)
+  if (pathname.startsWith('/company/profissional/')) {
+    const rest = pathname.slice('/company/profissional/'.length).split('/')[0] || '';
+    const qid = request.nextUrl.searchParams.get('id') || '';
+    const cuidRe = /^c[a-z0-9]{20,}$/i;
+    const targetId = cuidRe.test(qid) ? qid : cuidRe.test(rest) ? rest : '';
+    const url = request.nextUrl.clone();
+    if (targetId) {
+      url.pathname = `/company/professional/${encodeURIComponent(targetId)}`;
+      url.search = '';
+      return NextResponse.redirect(url);
+    }
+    url.pathname = '/company/dashboard-empresa';
+    url.search = '';
+    return NextResponse.redirect(url);
+  }
+
+  // Sessão + papel: profissional / empresa (também em development)
+  if (protectedAreaForPath(pathname)) {
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+    const email = typeof token?.email === 'string' ? token.email : null;
+    const decision = decideProtectedRouteAccess({
+      pathname,
+      hasEmail: Boolean(email),
+      userType: token?.userType,
+      isAdmin: token?.isAdmin === true,
+      emailHomePath: destinoEmailSemSessao(pathname),
+    });
+
+    if (decision.action === 'unauthenticated') {
+      const url = request.nextUrl.clone();
+      if (decision.redirectPath.startsWith('/login')) {
+        const [pathOnly, query = ''] = decision.redirectPath.split('?');
+        url.pathname = pathOnly;
+        url.search = '';
+        if (query) {
+          const params = new URLSearchParams(query);
+          params.forEach((v, k) => url.searchParams.set(k, v));
+        }
+        if (decision.preserveRedirectQuery) {
+          url.searchParams.set('redirect', pathname);
+        }
+        return NextResponse.redirect(url);
+      }
+      url.pathname = decision.redirectPath;
+      url.search = '';
+      return NextResponse.redirect(url);
+    }
+
+    if (decision.action === 'wrong_role') {
+      const url = request.nextUrl.clone();
+      url.pathname = decision.redirectPath;
+      url.search = '';
+      return NextResponse.redirect(url);
+    }
+  }
+
   if (process.env.NODE_ENV === 'development') {
     return response;
   }
@@ -124,55 +189,6 @@ export async function proxy(request: NextRequest) {
     url.protocol = 'https:';
     url.hostname = 'www.recrutaindustria.com';
     return NextResponse.redirect(url, { status: 308 });
-  }
-
-  // URLs antigas /company/profissional/... → sempre /company/professional/[id]
-  // Evita a página que chama /api/.../resolve ("Erro ao resolver perfil").
-  if (pathname.startsWith('/company/profissional/')) {
-    const rest = pathname.slice('/company/profissional/'.length).split('/')[0] || '';
-    const qid = request.nextUrl.searchParams.get('id') || '';
-    const cuidRe = /^c[a-z0-9]{20,}$/i;
-    const targetId = cuidRe.test(qid) ? qid : cuidRe.test(rest) ? rest : '';
-    const url = request.nextUrl.clone();
-    if (targetId) {
-      url.pathname = `/company/professional/${encodeURIComponent(targetId)}`;
-      url.search = '';
-      return NextResponse.redirect(url);
-    }
-    url.pathname = '/company/dashboard-empresa';
-    url.search = '';
-    return NextResponse.redirect(url);
-  }
-
-  const protectedRoutes = [
-    '/company/dashboard-empresa',
-    '/professional/dashboard',
-    '/company/professional',
-    '/company/profissional',
-    '/company/pagamento',
-    '/professional/pagamento',
-  ];
-
-  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
-
-  if (isProtectedRoute) {
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-
-    if (!token?.email) {
-      const url = request.nextUrl.clone();
-      const home = destinoEmailSemSessao(pathname);
-      if (home) {
-        url.pathname = home;
-        url.search = '';
-        return NextResponse.redirect(url);
-      }
-      url.pathname = '/login';
-      url.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(url);
-    }
   }
 
   return response;

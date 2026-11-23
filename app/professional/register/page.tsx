@@ -3407,6 +3407,13 @@ export default function CadastroProfissional({
                 onChange={(checked) => setFormData((prev) => ({ ...prev, aceitoLGPD: checked }))}
                 className={termoErro('aceitoLGPD')}
               />
+
+              <p className={styles.avisoObrigatoriosTitulo} style={{ marginTop: 12, fontWeight: 500 }}>
+                {t("legal.registrationLinksHint")}{" "}
+                <a href="/termos/uso">{t("legal.linkTermsOfUse")}</a>
+                {" · "}
+                <a href="/termos/privacidade">{t("legal.linkPrivacy")}</a>
+              </p>
             </div>
           </BlocoCadastro>
           </>

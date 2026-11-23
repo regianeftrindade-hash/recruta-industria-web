@@ -2219,5 +2219,16 @@
   "fix.u.638": "Indiquez le salaire.",
   "fix.u.639": "Sélectionnez l’équipe.",
   "fix.u.640": "Indiquez la ville.",
-  "fix.u.641": "Écrivez un message."
+  "fix.u.641": "Écrivez un message.",
+  "surface.home.termsOfUse": "Conditions d'utilisation",
+  "legal.termsOfUse": "Conditions d'utilisation",
+  "legal.privacyPolicy": "Politique de confidentialité",
+  "legal.lgpdShort": "LGPD",
+  "legal.backHome": "Retour à l'accueil",
+  "legal.backToRegister": "Retour à l'inscription",
+  "legal.pendingReviewHeading": "En attente de validation juridique",
+  "legal.bodyFallbackNotice": "Le texte complet est encore en portugais brésilien. La traduction officielle de cette langue attend une validation juridique.",
+  "legal.registrationLinksHint": "Consultez également les Conditions d'utilisation et la Politique de confidentialité de la plateforme.",
+  "legal.linkTermsOfUse": "Conditions d'utilisation",
+  "legal.linkPrivacy": "Politique de confidentialité"
 }

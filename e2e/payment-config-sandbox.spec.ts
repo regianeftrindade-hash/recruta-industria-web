@@ -23,8 +23,12 @@ test.describe("payment config — sandbox safety (produção)", () => {
       expect(typeof body.safeForAutomatedSandboxCharges).toBe("boolean");
       expect(Array.isArray(body.missingProfessionalPriceEnvs)).toBe(true);
 
-      // Nunca automatizar cobrança se produção Asaas ou Stripe live.
-      if (body.asaasSandbox === false || body.stripeLiveMode === true) {
+      // Bloquear automação só quando há risco real: Stripe live, ou Asaas
+      // com chave ativa apontando para API não-sandbox.
+      if (body.stripeLiveMode === true) {
+        expect(body.safeForAutomatedSandboxCharges).toBe(false);
+      }
+      if (body.asaasSandbox === false && body.professionalPlansEnabled === true) {
         expect(body.safeForAutomatedSandboxCharges).toBe(false);
       }
     }

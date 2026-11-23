@@ -1,0 +1,39 @@
+import type { PublicTermDocument } from "@/lib/legal/public-terms";
+
+/**
+ * Política de Privacidade — conteúdo inicial em pt-BR.
+ * Compatível com LGPD em linhas gerais; sem inventar prazos de retenção,
+ * CNPJ, endereço ou bases legais específicas não confirmadas.
+ */
+export const privacidadePtBR: PublicTermDocument = {
+  slug: "privacidade",
+  titlePtBR: "Política de Privacidade",
+  paragraphsByLocale: {
+    "pt-BR": [
+      "Esta Política de Privacidade explica, de forma geral, como o Recruta Indústria trata dados pessoais de profissionais, representantes de empresas e visitantes, em conformidade com a Lei nº 13.709/2018 (LGPD) e com princípios de proteção de dados aplicáveis à operação internacional da plataforma.",
+      "Quem somos. O Recruta Indústria opera uma plataforma de recrutamento industrial acessível pela internet. Dados de contato institucional públicos incluem o e-mail contato@recrutaindustria.com. Demais dados societários e de encarregado serão publicados após validação jurídica.",
+      "Dados que podemos tratar. Conforme o uso da plataforma: dados de identificação e contato; dados profissionais (experiência, formação, habilidades, currículo, mídia de apresentação); dados de conta e autenticação; dados de navegação e segurança (por exemplo, registros técnicos e IP, quando necessário); dados de pagamento processados por prestadores especializados (a plataforma não armazena dados completos de cartão); e comunicações enviadas por meio dos canais da plataforma.",
+      "Finalidades. Os dados são tratados para criar e gerir contas; apresentar perfis a empresas autorizadas; publicar e candidatar-se a vagas; viabilizar mensagens, propostas e entrevistas; processar planos e cobranças; cumprir obrigações legais; prevenir fraude e abuso; e melhorar a segurança e o funcionamento do serviço.",
+      "Bases legais (LGPD). A depender do contexto, o tratamento pode fundamentar-se em execução de contrato ou procedimentos preliminares; cumprimento de obrigação legal ou regulatória; legítimo interesse na operação segura da plataforma; e consentimento, quando exigido (por exemplo, certas comunicações ou tratamentos opcionais).",
+      "Compartilhamento. Dados de profissionais podem ser apresentados a empresas cadastradas, de acordo com permissões de plano e configurações de perfil. Prestadores de infraestrutura, e-mail, pagamento e análise técnica podem processar dados na qualidade de operadores, sob instruções e medidas de segurança. Não vendemos dados pessoais.",
+      "Transferências internacionais. Como a plataforma atende usuários em diferentes países e utiliza serviços de nuvem e pagamento globais, dados podem ser processados fora do país do titular. Nesses casos, buscamos salvaguardas compatíveis com a legislação aplicável. Detalhes de mecanismos específicos (cláusulas, certificações etc.) dependem de validação jurídica e contratos com subprocessadores.",
+      "Segurança. Adotamos medidas técnicas e organizacionais razoáveis, como controle de acesso, criptografia em trânsito quando aplicável, monitoramento e práticas de desenvolvimento seguro. Nenhum sistema é isento de riscos; pedimos que você proteja suas credenciais e nos avise sobre incidentes suspeitos.",
+      "Retenção. Mantemos dados pelo tempo necessário às finalidades descritas, à gestão da conta e a obrigações legais ou de defesa de direitos. Prazos numéricos específicos de retenção por categoria de dado serão definidos e publicados após validação jurídica — não são inventados neste documento.",
+      "Direitos dos titulares (LGPD). Você pode solicitar confirmação de tratamento, acesso, correção, anonimização, bloqueio ou eliminação de dados desnecessários, portabilidade (quando aplicável), informação sobre compartilhamentos e revogação de consentimento. Pedidos podem ser enviados a contato@recrutaindustria.com. Responderemos nos prazos legais aplicáveis.",
+      "Crianças e adolescentes. A plataforma destina-se a uso profissional e empresarial. Não coletamos intencionalmente dados de crianças. Contas e cadastros devem ser feitos por pessoas com capacidade legal para tanto.",
+      "Cookies e tecnologias semelhantes. Podemos utilizar cookies essenciais ao funcionamento e, quando houver, cookies de medição ou marketing conforme configuração e consentimento exigidos. Detalhamentos de ferramentas de analytics/ads, se aplicáveis, devem ser alinhados à política de cookies após revisão.",
+      "Alterações. Esta política pode ser atualizada para refletir mudanças legais ou operacionais. A versão vigente será publicada em /termos/privacidade. Em traduções, o português brasileiro prevalece até validação jurídica das versões localizadas.",
+      "Contato. Para exercer direitos ou esclarecer dúvidas sobre privacidade: contato@recrutaindustria.com.",
+    ],
+  },
+  pendingLegalValidation: [
+    "Identificação completa do controlador e do encarregado (DPO/encarregado de dados)",
+    "CNPJ, endereço e dados societários oficiais",
+    "Tabela de retenção por categoria de dado com prazos definidos",
+    "Lista de subprocessadores e países de tratamento",
+    "Mecanismos formais de transferência internacional (SCC, cláusulas etc.)",
+    "Política de cookies detalhada e banners de consentimento, se exigidos",
+    "Versões oficiais traduzidas para os 12 idiomas da interface",
+    "Procedimento interno e prazos operacionais de atendimento a titulares",
+  ],
+};

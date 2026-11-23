@@ -2219,5 +2219,16 @@
   "fix.u.638": "Indique o salário.",
   "fix.u.639": "Selecione o turno.",
   "fix.u.640": "Indique a cidade.",
-  "fix.u.641": "Escreva uma mensagem."
+  "fix.u.641": "Escreva uma mensagem.",
+  "surface.home.termsOfUse": "Termos de utilização",
+  "legal.termsOfUse": "Termos de Utilização",
+  "legal.privacyPolicy": "Política de Privacidade",
+  "legal.lgpdShort": "LGPD",
+  "legal.backHome": "Voltar à página inicial",
+  "legal.backToRegister": "Voltar ao registo",
+  "legal.pendingReviewHeading": "Pendente de validação jurídica",
+  "legal.bodyFallbackNotice": "O texto completo ainda está em português do Brasil. A tradução oficial deste idioma aguarda validação jurídica.",
+  "legal.registrationLinksHint": "Consulte também os Termos de Utilização e a Política de Privacidade da plataforma.",
+  "legal.linkTermsOfUse": "Termos de Utilização",
+  "legal.linkPrivacy": "Política de Privacidade"
 }

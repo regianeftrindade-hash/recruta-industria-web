@@ -211,8 +211,16 @@ export default async function Home() {
               © {new Date().getFullYear()} Recruta Indústria · {text("surface.home.rights")}
             </p>
             <p className={styles.footerPrivacy}>
-              <Link href="/termos/lgpd" className="footer-privacy-link">
+              <Link href="/termos/uso" className="footer-privacy-link">
+                {text("surface.home.termsOfUse")}
+              </Link>
+              {" · "}
+              <Link href="/termos/privacidade" className="footer-privacy-link">
                 {text("surface.home.privacy")}
+              </Link>
+              {" · "}
+              <Link href="/termos/lgpd" className="footer-privacy-link">
+                LGPD
               </Link>
             </p>
             <style>{`.footer-privacy-link{color:#414141!important;font-size:0.58rem!important;font-weight:400!important;letter-spacing:0.01em!important;text-decoration:none!important}.footer-privacy-link:hover{color:#414141!important;text-decoration:underline!important}`}</style>

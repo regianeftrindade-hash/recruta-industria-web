@@ -2219,5 +2219,16 @@
   "fix.u.638": "أدخل الراتب.",
   "fix.u.639": "اختر الوردية.",
   "fix.u.640": "أدخل المدينة.",
-  "fix.u.641": "اكتب رسالة."
+  "fix.u.641": "اكتب رسالة.",
+  "surface.home.termsOfUse": "شروط الاستخدام",
+  "legal.termsOfUse": "شروط الاستخدام",
+  "legal.privacyPolicy": "سياسة الخصوصية",
+  "legal.lgpdShort": "LGPD",
+  "legal.backHome": "العودة إلى الصفحة الرئيسية",
+  "legal.backToRegister": "العودة إلى التسجيل",
+  "legal.pendingReviewHeading": "بانتظار المراجعة القانونية",
+  "legal.bodyFallbackNotice": "النص الكامل ما زال بالبرتغالية البرازيلية. الترجمة الرسمية لهذه اللغة بانتظار المراجعة القانونية.",
+  "legal.registrationLinksHint": "راجع أيضًا شروط الاستخدام وسياسة الخصوصية للمنصة.",
+  "legal.linkTermsOfUse": "شروط الاستخدام",
+  "legal.linkPrivacy": "سياسة الخصوصية"
 }

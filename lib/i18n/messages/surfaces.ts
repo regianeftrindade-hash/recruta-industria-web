@@ -9,6 +9,20 @@ export const surfaceMessages = {
   "surface.home.trust": "Dados protegidos com criptografia, controle de acesso e auditoria contínua.",
   "surface.home.rights": "Todos os direitos reservados",
   "surface.home.privacy": "Política de privacidade",
+  "surface.home.termsOfUse": "Termos de uso",
+
+  "legal.termsOfUse": "Termos de Uso",
+  "legal.privacyPolicy": "Política de Privacidade",
+  "legal.lgpdShort": "LGPD",
+  "legal.backHome": "Voltar à página inicial",
+  "legal.backToRegister": "Voltar ao cadastro",
+  "legal.pendingReviewHeading": "Pendências para validação jurídica",
+  "legal.bodyFallbackNotice":
+    "O texto completo ainda está em português brasileiro. A tradução oficial deste idioma aguarda validação jurídica.",
+  "legal.registrationLinksHint":
+    "Consulte também os Termos de Uso e a Política de Privacidade da plataforma.",
+  "legal.linkTermsOfUse": "Termos de Uso",
+  "legal.linkPrivacy": "Política de Privacidade",
   "surface.home.login": "LOGIN",
   "surface.home.email": "EMAIL",
   "surface.home.emailLabel": "E-mail",
