@@ -8,6 +8,7 @@ import {
   ensureCompanyTestBypassReady,
   matchesCompanyTestBypass,
 } from '@/lib/company/company-test-bypass';
+import { clientIpFromHeaders } from '@/lib/security/api-guard';
 import {
   checkRateLimit,
   incrementRateLimitCounter,
@@ -48,10 +49,7 @@ export const authOptions: NextAuthOptions = {
 
         email = email.toLowerCase().trim();
         const headers = (req as { headers?: Record<string, string | string[] | undefined> })?.headers;
-        const forwarded = headers?.['x-forwarded-for'];
-        const ip = Array.isArray(forwarded)
-          ? forwarded[0]
-          : String(forwarded || headers?.['x-real-ip'] || 'unknown').split(',')[0].trim();
+        const ip = clientIpFromHeaders(headers || {});
         const userAgent = String(headers?.['user-agent'] || 'unknown');
 
         if (isAccountLocked(email)) {

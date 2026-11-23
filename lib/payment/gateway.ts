@@ -88,7 +88,10 @@ export async function createGatewayPayment(
   input: CreateGatewayPaymentInput,
 ): Promise<GatewayPaymentResult> {
   const provider = getPaymentProvider();
-  if (provider === 'asaas' || provider !== 'pagseguro') {
+  if (provider === 'stripe') {
+    throw new Error('Pix e boleto não são cobrados no Stripe. Use Asaas para esta cobrança.');
+  }
+  if (provider === 'asaas') {
     if (input.method === 'card') {
       throw new Error('Pagamento com cartão ainda não está disponível via Asaas. Use Pix ou Boleto.');
     }
