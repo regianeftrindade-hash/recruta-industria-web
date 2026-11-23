@@ -1,7 +1,13 @@
 /**
  * Google Ads (gtag) — IDs e conversões do Recruta Indústria.
- * A tag global fica em app/layout.tsx; aqui só helpers de evento.
+ * Scripts só carregam com opt-in de marketing (GoogleAdsLoader).
+ * Eventos de conversão também exigem o mesmo consentimento.
  */
+
+import {
+  marketingConsentGranted,
+  readBrowserCookieConsent,
+} from "@/lib/privacy/cookie-consent";
 
 export const GOOGLE_ADS_ID = 'AW-18447724143';
 
@@ -19,8 +25,13 @@ declare global {
   }
 }
 
+function hasMarketingConsent(): boolean {
+  return marketingConsentGranted(readBrowserCookieConsent());
+}
+
 /** Garante dataLayer + gtag (fila) mesmo antes do script externo carregar. */
-function ensureGtag(): (...args: unknown[]) => void {
+function ensureGtag(): ((...args: unknown[]) => void) | null {
+  if (!hasMarketingConsent()) return null;
   window.dataLayer = window.dataLayer || [];
   if (typeof window.gtag === 'function') {
     return window.gtag;
@@ -67,6 +78,7 @@ export function markProfessionalSignupConversionPending(): void {
  */
 export function trackProfessionalSignupConversion(): void {
   if (typeof window === 'undefined') return;
+  if (!hasMarketingConsent()) return;
 
   const label = GOOGLE_ADS_PROFESSIONAL_SIGNUP_CONVERSION_LABEL.trim();
   if (!label) return;
@@ -74,6 +86,7 @@ export function trackProfessionalSignupConversion(): void {
   if (alreadySent()) return;
 
   const gtag = ensureGtag();
+  if (!gtag) return;
   gtag('event', 'conversion', {
     send_to: `${GOOGLE_ADS_ID}/${label}`,
   });

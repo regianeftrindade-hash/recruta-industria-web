@@ -110,6 +110,135 @@ export async function removePrivateFiles(paths: string[]): Promise<{ removed: st
   }
 }
 
+const UPLOAD_TYPE_PREFIXES = [
+  "documents",
+  "images",
+  "avatars",
+  "logos",
+  "cnpj",
+  "curriculos",
+  "certificados",
+  "company-cnpj",
+  "company-logo",
+  "company-responsavel",
+  "cnh-documentos",
+  "curso-certificados",
+] as const;
+
+/** Prefixos de pasta do usuário autenticado no upload (`tipo/emailSanitizado`). */
+export function uploadOwnerFolderPrefixes(email: string): string[] {
+  const owner = sanitizeUploadOwnerPrefix(email);
+  if (!owner) return [];
+  return UPLOAD_TYPE_PREFIXES.map((type) => `${type}/${owner}`);
+}
+
+export function professionalVideoFolderPrefix(userId: string): string | null {
+  const id = String(userId || "").trim();
+  if (!id || id.includes("..") || id.includes("/")) return null;
+  return `professional-videos/${id}`;
+}
+
+/**
+ * Coleta paths de storage a partir de JSON/objetos (ex.: formDataJSON).
+ * Aceita paths relativos ou URLs do bucket.
+ */
+export function collectStoragePathsFromUnknown(value: unknown): string[] {
+  const found = new Set<string>();
+
+  const consider = (raw: string) => {
+    const text = raw.trim();
+    if (!text || text.length > 800) return;
+    if (text.includes("://") || text.startsWith("/api/media/sign")) {
+      const extracted = extractStoragePath(text);
+      if (extracted) found.add(extracted);
+      return;
+    }
+    if (
+      !text.includes("..")
+      && !text.includes("\\")
+      && !text.includes("\0")
+      && /^[a-z0-9@._/-]+$/i.test(text)
+      && text.includes("/")
+    ) {
+      found.add(text.replace(/^\/+/, "").split("?")[0]);
+    }
+  };
+
+  const walk = (node: unknown, depth: number) => {
+    if (depth > 8 || node == null) return;
+    if (typeof node === "string") {
+      consider(node);
+      return;
+    }
+    if (Array.isArray(node)) {
+      for (const item of node) walk(item, depth + 1);
+      return;
+    }
+    if (typeof node === "object") {
+      for (const v of Object.values(node as Record<string, unknown>)) {
+        walk(v, depth + 1);
+      }
+    }
+  };
+
+  if (typeof value === "string") {
+    try {
+      walk(JSON.parse(value), 0);
+    } catch {
+      consider(value);
+    }
+  } else {
+    walk(value, 0);
+  }
+
+  return [...found];
+}
+
+/** Lista e remove arquivos sob prefixos `pasta/dono` (best-effort). */
+export async function removePrivateFilesByPrefixes(
+  prefixes: string[],
+): Promise<{ removed: string[]; failed: string[] }> {
+  const cleanedPrefixes = [
+    ...new Set(
+      prefixes
+        .map((p) => String(p || "").replace(/^\/+/, "").replace(/\/+$/, ""))
+        .filter((p) => p && !p.includes("..") && !p.includes("\\") && p.includes("/")),
+    ),
+  ];
+  if (cleanedPrefixes.length === 0) return { removed: [], failed: [] };
+
+  const removed: string[] = [];
+  const failed: string[] = [];
+
+  try {
+    const supabase = getSupabase();
+    const bucket = getUploadsBucket();
+
+    for (const prefix of cleanedPrefixes) {
+      const folder = prefix;
+      const { data, error } = await supabase.storage.from(bucket).list(folder, {
+        limit: 1000,
+      });
+      if (error) {
+        failed.push(prefix);
+        continue;
+      }
+      const paths = (data || [])
+        .map((row) => row?.name)
+        .filter((name): name is string => Boolean(name))
+        .map((name) => `${folder}/${name}`);
+      if (paths.length === 0) continue;
+      const { error: removeError } = await supabase.storage.from(bucket).remove(paths);
+      if (removeError) failed.push(...paths);
+      else removed.push(...paths);
+    }
+  } catch {
+    failed.push(...cleanedPrefixes);
+  }
+
+  return { removed, failed };
+}
+
 /** Extrai path relativo a partir de URL pública/assinada do bucket. */
 export function extractStoragePath(urlOrPath: string): string | null {
   if (!urlOrPath) return null;
