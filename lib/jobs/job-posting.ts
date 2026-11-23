@@ -117,7 +117,10 @@ export type PublicJob = {
   id: string;
   anonymous: boolean;
   companyLabel: string;
+  /** Data de publicação formatada para UI (locale ativo). */
   publicationDate: string | null;
+  /** YYYY-MM-DD (UTC) para JSON-LD / schema.org JobPosting.datePosted. */
+  publicationDateIso: string | null;
   title: string;
   salaryLabel: string | null;
   contractLabel: string | null;
@@ -571,6 +574,7 @@ export function toPublicJob(job: JobRecord): PublicJob {
     anonymous: job.confidential,
     companyLabel: publicCompanyLabel(job),
     publicationDate: formatPublicationDate(job.publicationDate),
+    publicationDateIso: toDateInputValue(job.publicationDate) || null,
     title: job.title,
     salaryLabel: publicSalaryLabel(job),
     contractLabel: contractLabel(job.contractType, job.contractTypeOther),

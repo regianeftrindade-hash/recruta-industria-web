@@ -99,6 +99,7 @@ function jobPostingJsonLd(job: {
   description: string;
   companyLabel: string;
   publicationDate: string | null;
+  publicationDateIso?: string | null;
   workplace: string | null;
   contractLabel: string | null;
   countryCode?: string;
@@ -109,12 +110,13 @@ function jobPostingJsonLd(job: {
 }) {
   const country = (job.countryCode || "BR").toUpperCase();
   const currency = (job.currency || "BRL").toUpperCase();
+  const datePosted = job.publicationDateIso || undefined;
   const data = {
     "@context": "https://schema.org",
     "@type": "JobPosting",
     title: job.title,
     description: job.description,
-    datePosted: job.publicationDate,
+    ...(datePosted ? { datePosted } : {}),
     hiringOrganization: {
       "@type": "Organization",
       name: job.companyLabel,
