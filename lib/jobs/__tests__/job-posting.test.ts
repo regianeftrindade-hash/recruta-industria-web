@@ -92,6 +92,7 @@ describe("publicação de vagas", () => {
     expect(pub.contractLabel).toBe("CLT");
     expect(pub.workModeLabel).toBe("Presencial");
     expect(pub.publicationDate).toBe("21/10/2026");
+    expect(pub.publicationDateIso).toBe("2026-10-21");
   });
 
   it("aceita CLT, PJ e as demais contratações, inclusive Outro", () => {
