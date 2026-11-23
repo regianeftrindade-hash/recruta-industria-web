@@ -57,12 +57,12 @@ const nextConfig = {
       },
       {
         source: "/login/empresa",
-        destination: "/login?tipo=empresa",
+        destination: "/?acesso=empresa",
         permanent: false,
       },
       {
         source: "/login/profissional",
-        destination: "/login?tipo=profissional",
+        destination: "/",
         permanent: false,
       },
       {

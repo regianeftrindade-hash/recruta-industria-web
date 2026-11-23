@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import GoogleSignInButton from "@/app/components/GoogleSignInButton";
 import HomePasswordEye from "@/app/components/HomePasswordEye";
+import { safePostLoginPath } from "@/lib/auth/public-login-home";
 import { t } from "@/lib/i18n/translate";
 import styles from "@/app/home.module.css";
 
@@ -16,6 +17,11 @@ type HomeAccessFormProps = {
   registerHref: string;
   compact?: boolean;
 };
+
+function readHomeQuery(): URLSearchParams {
+  if (typeof window === "undefined") return new URLSearchParams();
+  return new URLSearchParams(window.location.search);
+}
 
 export default function HomeAccessForm({
   role,
@@ -34,6 +40,22 @@ export default function HomeAccessForm({
   const dashboardPath = isCompany
     ? "/company/dashboard-empresa"
     : "/professional/dashboard";
+
+  useEffect(() => {
+    const acesso = readHomeQuery().get("acesso");
+    if (!acesso) return;
+    const targetId =
+      acesso === "empresa"
+        ? "acesso-empresa"
+        : acesso === "profissional"
+          ? "acesso-profissional"
+          : null;
+    if (!targetId) return;
+    const el = document.getElementById(targetId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,9 +97,11 @@ export default function HomeAccessForm({
       const data = await typeRes.json().catch(() => ({}));
       const userType = String(data.userType || "").toLowerCase();
 
+      const postLoginRedirect = safePostLoginPath(readHomeQuery().get("redirect"));
+
       if (expectedType === "company") {
         if (userType === "company") {
-          router.push(dashboardPath);
+          router.push(postLoginRedirect || dashboardPath);
           return;
         }
         setErrorMessage(t("surface.home.notCompany"));
@@ -91,7 +115,7 @@ export default function HomeAccessForm({
         return;
       }
 
-      router.push(dashboardPath);
+      router.push(postLoginRedirect || dashboardPath);
     } catch {
       setErrorMessage(t("surface.home.loginError"));
       setLoading(false);
@@ -120,13 +144,17 @@ export default function HomeAccessForm({
       document.cookie = `login_intent=${isCompany ? "company" : "professional"}; path=/; max-age=600; SameSite=Lax${secure}`;
     }
 
-    const callbackUrl = `${window.location.origin}${dashboardPath}`;
+    const postLoginRedirect = safePostLoginPath(readHomeQuery().get("redirect"));
+    const callbackUrl = `${window.location.origin}${postLoginRedirect || dashboardPath}`;
     void signIn("google", { callbackUrl });
   };
 
   if (!isCompany) {
     return (
-      <div className={`${styles.homeAccess} ${styles.homeAccessPro} ${styles.proLoginPanel}`}>
+      <div
+        id="acesso-profissional"
+        className={`${styles.homeAccess} ${styles.homeAccessPro} ${styles.proLoginPanel}`}
+      >
         <h4 className={styles.proLoginTitle}>{t("surface.home.login")}</h4>
         <form onSubmit={handleSubmit} className={styles.proLoginForm} noValidate suppressHydrationWarning>
           <div className={styles.proLoginRow}>
@@ -186,7 +214,7 @@ export default function HomeAccessForm({
   }
 
   return (
-    <div className={styles.empresaAccessBlock}>
+    <div id="acesso-empresa" className={styles.empresaAccessBlock}>
       <div
         className={`${styles.homeAccess} ${compact ? styles.homeAccessCompact : ""} ${styles.homeAccessEmpresa}`}
       >

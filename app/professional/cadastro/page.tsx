@@ -176,9 +176,7 @@ export default function CadastroRapidoProfissionalPage() {
         );
         setLoading(false);
         const back = safeJobReturnPath(new URLSearchParams(window.location.search).get("redirect"));
-        router.push(back
-          ? `/login?tipo=profissional&redirect=${encodeURIComponent(back)}`
-          : "/login?tipo=profissional");
+        router.push(back ? `/?redirect=${encodeURIComponent(back)}` : "/");
         return;
       }
 

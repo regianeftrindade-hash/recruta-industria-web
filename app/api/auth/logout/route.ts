@@ -30,10 +30,13 @@ async function handleLogout(request: NextRequest) {
     return response;
   }
 
-  const loginUrl = new URL('/login', request.url);
-  loginUrl.searchParams.set('redirect', redirectParam);
+  // Admin volta ao /login; demais fluxos públicos usam a home.
+  const target =
+    redirectParam === '/admin' || redirectParam.startsWith('/admin/')
+      ? new URL(`/login?redirect=${encodeURIComponent(redirectParam)}`, request.url)
+      : new URL(`/?redirect=${encodeURIComponent(redirectParam)}`, request.url);
 
-  const response = NextResponse.redirect(loginUrl, {
+  const response = NextResponse.redirect(target, {
     status: 302,
   });
 

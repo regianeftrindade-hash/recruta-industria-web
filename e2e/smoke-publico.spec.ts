@@ -32,50 +32,38 @@ test.describe("smoke público", () => {
     await expect(page.getByRole("link", { name: /voltar.*página inicial|back to the home/i })).toBeVisible();
   });
 
-  test("login?tipo=profissional e empresa abrem a tela certa e o cadastro pelo login", async ({ page }) => {
+  test("login?tipo=profissional e empresa redirecionam para a home (login público)", async ({ page }) => {
     await page.goto("/login?tipo=profissional", { waitUntil: "domcontentloaded" });
-    const profissionalAberto = /\/login\?(?:[^#]*&)?tipo=profissional(?:&|$)/.test(page.url());
+    await expect(page).toHaveURL(/\/(?:\?acesso=profissional)?$/);
+    await expect(page.locator("#acesso-profissional")).toBeVisible();
+    await expect(page.locator("#pro-home-email")).toBeVisible();
+    await expect(page.locator('a[href="/professional/cadastro"]')).toBeVisible();
 
-    if (profissionalAberto) {
-      await expect(page.getByText(/acesso profissional|professional access/i).first()).toBeVisible();
-      await expect(page.locator("#login-email")).toBeVisible();
-      await expect(page.locator("#login-senha")).toBeVisible();
-      // Com ?tipo= não mostra abas — só o fluxo escolhido
-      await expect(page.getByRole("button", { name: /^(empresa|company)$/i })).toHaveCount(0);
-    } else {
-      // CI aponta para produção: o 307→/ só some após o deploy deste PR.
-      // Até lá validamos o login profissional via /login (aba padrão).
-      test.info().annotations.push({
-        type: "note",
-        description:
-          "Ambiente ainda redireciona /login?tipo=profissional→/; validando login profissional via /login",
-      });
-      await page.goto("/login", { waitUntil: "domcontentloaded" });
-      await expect(page.getByText(/acesso profissional|professional access/i).first()).toBeVisible();
-      await expect(page.locator("#login-email")).toBeVisible();
-    }
-
-    await page.getByRole("button", { name: /fazer cadastro|create account|criar conta/i }).click();
-    await expect(page).toHaveURL(/\/professional\/register/);
-    await expect(page.getByRole("heading", { name: /complete seu perfil|complete your profile/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /voltar.*página inicial|back to the home/i })).toBeVisible();
-
-    await page.goto("/login?tipo=empresa");
-    await expect(page).toHaveURL(/\/login\?tipo=empresa/);
-    await expect(page.getByText(/acesso empresa|company access/i).first()).toBeVisible();
-    await expect(page.locator("#login-email")).toBeVisible();
-    await expect(page.getByRole("button", { name: /^(profissional|professional)$/i })).toHaveCount(0);
-
-    await page.getByRole("button", { name: /fazer cadastro|create account|criar conta/i }).click();
-    await expect(page).toHaveURL(/\/company\/cadastro/);
-    await expect(page.locator("#empresa-cnpj")).toBeVisible();
+    await page.goto("/login?tipo=empresa", { waitUntil: "domcontentloaded" });
+    await expect(page).toHaveURL(/\/\?acesso=empresa/);
+    await expect(page.locator("#acesso-empresa")).toBeVisible();
+    await expect(page.locator('a[href="/company/cadastro"]')).toBeVisible();
   });
 
-  test("login sem tipo mostra abas profissional e empresa", async ({ page }) => {
-    await page.goto("/login");
-    await expect(page.getByText(/acesso profissional|professional access/i).first()).toBeVisible();
-    await expect(page.getByRole("button", { name: /profissional|professional/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /empresa|company/i })).toBeVisible();
+  test("login sem tipo público também cai na home; admin mantém /login", async ({ page }) => {
+    await page.goto("/login", { waitUntil: "domcontentloaded" });
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.locator("#acesso-profissional")).toBeVisible();
+
+    await page.goto("/login?redirect=/admin", { waitUntil: "domcontentloaded" });
+    await expect(page).toHaveURL(/\/login\?redirect=%2Fadmin|\/login\?redirect=\/admin/);
+    await expect(page.locator("#login-email")).toBeVisible();
+  });
+
+  test("esqueci senha: voltar ao login vai para a home", async ({ page }) => {
+    await page.goto("/esqueci-senha?tipo=profissional", { waitUntil: "domcontentloaded" });
+    const cookieDialog = page.getByRole("dialog");
+    if (await cookieDialog.isVisible().catch(() => false)) {
+      await cookieDialog.getByRole("button").first().click();
+    }
+    await page.locator('a[href="/?acesso=profissional"]').click();
+    await expect(page).toHaveURL(/\/\?acesso=profissional$/);
+    await expect(page.locator("#acesso-profissional")).toBeVisible();
   });
 
   test("cadastro rápido do profissional pede nome, CPF, e-mail, telefone e senha", async ({ page }) => {
@@ -146,7 +134,7 @@ test.describe("smoke público", () => {
 
     const samples: Array<{ locale: string; dir: "ltr" | "rtl"; path: string }> = [
       { locale: "en", dir: "ltr", path: "/" },
-      { locale: "es", dir: "ltr", path: "/login" },
+      { locale: "es", dir: "ltr", path: "/" },
       { locale: "ar", dir: "rtl", path: "/professional/cadastro" },
       { locale: "zh-CN", dir: "ltr", path: "/company/register" },
     ];
@@ -169,7 +157,7 @@ test.describe("smoke público", () => {
     const alias = await api.post("/api/locale", { data: { locale: "ar" } });
     const aliasPayload = alias.ok() ? await alias.json().catch(() => null) : null;
     if (aliasPayload?.locale === "ar") {
-      await page.goto("/login", { waitUntil: "domcontentloaded" });
+      await page.goto("/", { waitUntil: "domcontentloaded" });
       await expect(page.locator("html")).toHaveAttribute("lang", "ar");
       await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     } else {
@@ -179,7 +167,7 @@ test.describe("smoke público", () => {
       });
       const fallback = await api.post("/api/account/locale", { data: { locale: "ar" } });
       expect(fallback.ok()).toBeTruthy();
-      await page.goto("/login", { waitUntil: "domcontentloaded" });
+      await page.goto("/", { waitUntil: "domcontentloaded" });
       await expect(page.locator("html")).toHaveAttribute("lang", "ar");
       await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     }
