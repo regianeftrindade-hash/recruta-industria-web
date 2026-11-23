@@ -1,13 +1,19 @@
 import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
 import type { SupportedLocale } from "@/lib/i18n/locales";
 
-/** Traduções pontuais das validações CPF/CNPJ só-Brasil nos catálogos estrangeiros. */
+/**
+ * Traduções pontuais: CPF/CNPJ só-Brasil em 10 idiomas +
+ * chaves de superfície críticas em es enquanto o catálogo monolítico não é republicado.
+ */
 export const brazilOnlyDocumentMessages: Partial<
   Record<SupportedLocale, Partial<Record<MessageKey, string>>>
 > = {
   es: {
     "registration.simple.cpfBrazilOnly": "El CPF solo se acepta en registros de Brasil.",
     "registration.simple.cnpjBrazilOnly": "El CNPJ solo se acepta en registros de Brasil.",
+    "surface.jobs.title": "Vacantes",
+    "surface.home.tagline": "La industria evoluciona. El reclutamiento también.",
+    "surface.home.accessPro": "Acceso profesional",
   },
   fr: {
     "registration.simple.cpfBrazilOnly": "Le CPF n'est accepté que pour les inscriptions au Brésil.",
