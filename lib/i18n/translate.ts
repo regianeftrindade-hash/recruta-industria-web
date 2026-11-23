@@ -10,6 +10,12 @@ import es2 from "@/lib/i18n/messages/catalogs/es-part-2.json";
 import es3 from "@/lib/i18n/messages/catalogs/es-part-3.json";
 import es4 from "@/lib/i18n/messages/catalogs/es-part-4.json";
 import es5 from "@/lib/i18n/messages/catalogs/es-part-5.json";
+import es6 from "@/lib/i18n/messages/catalogs/es-part-6.json";
+import es7 from "@/lib/i18n/messages/catalogs/es-part-7.json";
+import es8 from "@/lib/i18n/messages/catalogs/es-part-8.json";
+import es9 from "@/lib/i18n/messages/catalogs/es-part-9.json";
+import es10 from "@/lib/i18n/messages/catalogs/es-part-10.json";
+import es11 from "@/lib/i18n/messages/catalogs/es-part-11.json";
 import fr from "@/lib/i18n/messages/catalogs/fr.json";
 import de from "@/lib/i18n/messages/catalogs/de.json";
 import it from "@/lib/i18n/messages/catalogs/it.json";
@@ -31,6 +37,12 @@ const es: Partial<Record<MessageKey, string>> = {
   ...(es3 as object),
   ...(es4 as object),
   ...(es5 as object),
+  ...(es6 as object),
+  ...(es7 as object),
+  ...(es8 as object),
+  ...(es9 as object),
+  ...(es10 as object),
+  ...(es11 as object),
 };
 
 const catalogs: Record<SupportedLocale, Partial<Record<MessageKey, string>>> = {
