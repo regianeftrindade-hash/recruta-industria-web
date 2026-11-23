@@ -7,6 +7,23 @@ export class E2eLoginError extends Error {
   }
 }
 
+/** Extrai indício de coluna/tabela ausente da URL/erro do NextAuth. */
+function extractSchemaDriftHint(raw: string): string | null {
+  if (!raw) return null;
+  let text = raw;
+  try {
+    text = decodeURIComponent(raw);
+  } catch {
+    /* manter raw */
+  }
+  const column = text.match(/column [`']?(\w+\.\w+)[`']? does not exist/i);
+  if (column?.[1]) return column[1];
+  if (/countryCode|does not exist|P2022/i.test(text)) {
+    return "coluna internacional ausente (ex.: User.countryCode)";
+  }
+  return null;
+}
+
 /**
  * Login via NextAuth credentials (sem mexer na UI do login).
  * Credenciais: E2E_COMPANY_* / E2E_PROFESSIONAL_* — ver docs/e2e-secrets.md
@@ -47,10 +64,13 @@ export async function loginViaApi(
     /* corpo não-JSON (redirect/html) */
   }
 
+  const schemaHint = extractSchemaDriftHint(body.url || body.error || "");
   if (body.error || (!loginRes.ok() && status !== 302)) {
     throw new E2eLoginError(
       `Login falhou (HTTP ${status}${body.error ? `, ${body.error}` : ""}). ` +
-        `Confira e-mail/senha dos secrets E2E no GitHub — conta deve existir em produção.`,
+        (schemaHint
+          ? `Schema de produção desatualizado (${schemaHint}). Rode prisma migrate deploy (docs/ops-producao.md). `
+          : `Confira e-mail/senha dos secrets E2E no GitHub — conta deve existir em produção. `),
     );
   }
 
@@ -63,7 +83,9 @@ export async function loginViaApi(
   );
   if (!hasSession) {
     throw new E2eLoginError(
-      "Login sem cookie de sessão — e-mail/senha dos secrets E2E provavelmente inválidos.",
+      schemaHint
+        ? `Login sem cookie de sessão — possível drift de schema (${schemaHint}). Rode prisma migrate deploy.`
+        : "Login sem cookie de sessão — e-mail/senha dos secrets E2E provavelmente inválidos.",
     );
   }
 

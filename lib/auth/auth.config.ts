@@ -19,6 +19,7 @@ import {
 } from '@/lib/security';
 import type { NextAuthOptions } from 'next-auth';
 import { ensureProductionNextAuthUrl } from '@/lib/auth/sync-nextauth-url';
+import { ensureInternationalDefaultsColumns } from '@/lib/infra/ensure-db-schema';
 
 ensureProductionNextAuthUrl();
 
@@ -64,8 +65,24 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // Garante countryCode/locale/currency/timeZone quando o DDL de runtime está ligado.
+        // O select abaixo evita quebrar o login se a migração internacional ainda não rodou
+        // e DISABLE_RUNTIME_DDL=true (Prisma só lê as colunas pedidas).
+        try {
+          await ensureInternationalDefaultsColumns();
+        } catch (schemaError) {
+          console.error('[auth] ensureInternationalDefaultsColumns', schemaError);
+        }
+
         const user = await prisma.user.findUnique({
           where: { email },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            passwordHash: true,
+          },
         });
 
         if (!user || !user.passwordHash) {
@@ -176,9 +193,11 @@ export const authOptions: NextAuthOptions = {
       if (needsDbSync && token.email) {
         const normalizedEmail = token.email.toLowerCase().trim();
         try {
+          // Sem locale no select: a coluna só existe após migrate internacional;
+          // o idioma da UI continua vindo do cookie ri-locale.
           const dbUser = await prisma.user.findUnique({
             where: { email: normalizedEmail },
-            select: { id: true, name: true, role: true, locale: true },
+            select: { id: true, name: true, role: true },
           });
 
           if (dbUser) {
@@ -192,7 +211,7 @@ export const authOptions: NextAuthOptions = {
               token.name = dbUser.name;
             }
             token.isAdmin = isAdminUser(normalizedEmail, dbUser.role);
-            token.locale = dbUser.locale || 'pt-BR';
+            if (!token.locale) token.locale = 'pt-BR';
           } else if (!token.userType) {
             token.userType = 'PROFESSIONAL';
           }
