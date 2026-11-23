@@ -40,8 +40,13 @@ jobs:
     name: E2E smoke (público)
     runs-on: ubuntu-latest
     needs: test
+    # Smoke valida o código do commit/PR via build local — nunca produção.
     env:
-      E2E_BASE_URL: https://www.recrutaindustria.com
+      E2E_BASE_URL: http://127.0.0.1:3000
+      NEXTAUTH_SECRET: ci-build-secret-with-at-least-32-characters
+      NEXTAUTH_URL: http://127.0.0.1:3000
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
+      DIRECT_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -58,13 +63,42 @@ jobs:
       - name: Instalar Chromium Playwright
         run: npx playwright install --with-deps chromium
 
+      - name: Build de produção (alvo do smoke)
+        run: npm run build
+
+      - name: Subir servidor local do commit
+        run: |
+          npm run start -- --hostname 127.0.0.1 --port 3000 &
+          echo $! > /tmp/next-e2e-smoke.pid
+          for i in $(seq 1 60); do
+            if curl -fsS "http://127.0.0.1:3000/" >/dev/null 2>&1; then
+              echo "Servidor local pronto"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Falha ao subir next start em :3000"
+          exit 1
+
       - name: Smoke público
         run: npm run test:e2e:smoke
+
+      - name: Upload artefatos Playwright (smoke)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-smoke-${{ github.run_id }}
+          path: |
+            test-results/**
+            playwright-report/**
+          if-no-files-found: ignore
+          retention-days: 7
 
   e2e-empresa:
     name: E2E empresa logada
     runs-on: ubuntu-latest
     needs: test
+    # Contas de teste vivem em produção (secrets). Smoke público usa build local.
     # Secrets: E2E_COMPANY_EMAIL + E2E_COMPANY_PASSWORD (docs/e2e-secrets.md).
     # Sem secrets: Playwright faz skip. Com secrets e login inválido: job falha e o CI fica vermelho.
     env:
