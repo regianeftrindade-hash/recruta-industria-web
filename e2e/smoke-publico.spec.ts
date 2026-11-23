@@ -40,7 +40,8 @@ test.describe("smoke público", () => {
     await page.getByRole("button", { name: /fazer cadastro|create account|criar conta/i }).click();
     await expect(page).toHaveURL(/\/professional\/register/);
     await expect(page.getByRole("heading", { name: /complete seu perfil|complete your profile/i })).toBeVisible();
-    await expect(page.getByText(/vídeo de apresentação|presentation video/i)).toBeVisible();
+    await expect(page.getByRole("link", { name: /voltar.*página inicial|back to the home/i })).toBeVisible();
+    await expect(page.getByText(/obrigat[oó]rio|required/i).first()).toBeVisible();
 
     await page.goto("/login?tipo=empresa");
     await page.getByRole("button", { name: /fazer cadastro|create account|criar conta/i }).click();
