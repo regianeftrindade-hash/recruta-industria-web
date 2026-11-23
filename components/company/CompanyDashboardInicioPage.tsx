@@ -51,6 +51,7 @@ interface CompanyProfile {
   logoUrl?: string | null;
   fotoResponsavelUrl?: string | null;
   email: string;
+  countryCode?: string | null;
 }
 
 export default function CompanyDashboardInicioPage() {
@@ -322,6 +323,7 @@ export default function CompanyDashboardInicioPage() {
                 emailCorporativoVerificado={emailCorporativoVerificado}
                 cartaoCnpjPreenchido={Boolean(companyProfile?.cartaoCnpjUrl?.trim())}
                 emailCorporativoPreenchido={Boolean(companyProfile?.emailCorporativo?.trim() || emailCorporativoVerificado)}
+                countryCode={companyProfile?.countryCode || "BR"}
               />
             </div>
           )}

@@ -2178,5 +2178,19 @@
   "mail.application.label.recolocacao": "إمكانية الانتقال",
   "mail.application.label.pretensaoSalarial": "الراتب المتوقع",
   "mail.application.label.habilidades": "المهارات",
-  "mail.application.label.mensagem": "تقديم"
+  "mail.application.label.mensagem": "تقديم",
+  "registration.ui.estado-regiao": "ولاية / منطقة / مقاطعة",
+  "registration.ui.telefone-internacional": "هاتف مع رمز الدولة (مثال: +1…)",
+  "registration.ui.telefone-placeholder-intl": "+الرمز والرقم",
+  "registration.ui.cidade-livre": "المدينة",
+  "mail.passwordReset.subject": "إعادة تعيين كلمة المرور — Recruta Indústria",
+  "mail.passwordReset.intro": "تلقينا طلبًا لإعادة تعيين كلمة مرورك في Recruta Indústria.",
+  "mail.passwordReset.cta": "إعادة تعيين كلمة المرور",
+  "mail.passwordReset.validity": "الرابط صالح لمدة ساعة. إذا لم تطلب ذلك، تجاهل هذا البريد.",
+  "mail.passwordReset.text": "تلقينا طلبًا لإعادة تعيين كلمة المرور.\n\nافتح الرابط (صالح لمدة ساعة):\n{url}\n\nإذا لم تطلب ذلك، تجاهل هذا البريد.",
+  "mail.passwordReset.apiOk": "إذا كان البريد موجودًا، ستتلقى رابط إعادة التعيين",
+  "mail.passwordReset.rateEmail": "محاولات كثيرة لهذا البريد. حاول مرة أخرى خلال 15 دقيقة.",
+  "mail.passwordReset.rateIp": "محاولات كثيرة. حاول مرة أخرى خلال 15 دقيقة.",
+  "mail.passwordReset.emailRequired": "البريد الإلكتروني مطلوب",
+  "mail.passwordReset.error": "تعذر معالجة الطلب"
 }

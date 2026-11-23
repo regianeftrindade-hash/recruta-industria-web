@@ -2180,5 +2180,19 @@
   "mail.application.label.recolocacao": "Reubicación",
   "mail.application.label.pretensaoSalarial": "Pretensión salarial",
   "mail.application.label.habilidades": "Habilidades",
-  "mail.application.label.mensagem": "Presentación"
+  "mail.application.label.mensagem": "Presentación",
+  "registration.ui.estado-regiao": "Estado / región / provincia",
+  "registration.ui.telefone-internacional": "Teléfono con código de país (ej.: +1…)",
+  "registration.ui.telefone-placeholder-intl": "+código y número",
+  "registration.ui.cidade-livre": "Ciudad",
+  "mail.passwordReset.subject": "Restablecimiento de contraseña — Recruta Indústria",
+  "mail.passwordReset.intro": "Recibimos una solicitud para restablecer tu contraseña en Recruta Indústria.",
+  "mail.passwordReset.cta": "Restablecer contraseña",
+  "mail.passwordReset.validity": "Enlace válido durante 1 hora. Si no lo pediste, ignora este correo.",
+  "mail.passwordReset.text": "Recibimos una solicitud para restablecer tu contraseña.\n\nAbre el enlace (válido 1 hora):\n{url}\n\nSi no lo pediste, ignora este correo.",
+  "mail.passwordReset.apiOk": "Si el correo existe, recibirás un enlace de restablecimiento",
+  "mail.passwordReset.rateEmail": "Demasiados intentos para este correo. Prueba de nuevo en 15 minutos.",
+  "mail.passwordReset.rateIp": "Demasiados intentos. Prueba de nuevo en 15 minutos.",
+  "mail.passwordReset.emailRequired": "El correo es obligatorio",
+  "mail.passwordReset.error": "No se pudo procesar la solicitud"
 }

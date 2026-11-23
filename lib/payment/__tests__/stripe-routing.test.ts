@@ -62,6 +62,8 @@ describe("Stripe helpers", () => {
   it("detects Stripe references", () => {
     expect(isStripeReference("cs_test_123")).toBe(true);
     expect(isStripeReference("sub_123")).toBe(true);
+    expect(isStripeReference("stripe_pro_user_1")).toBe(true);
+    expect(isStripeReference("stripe_co_user_1")).toBe(true);
     expect(isStripeReference("pay_123")).toBe(false);
   });
 

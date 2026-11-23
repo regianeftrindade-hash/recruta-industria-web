@@ -308,10 +308,23 @@ export async function getCompanyVerificationInfo(
     ? extra.verificationStatus
     : 'PENDING';
 
-  const isDocumentVerified = !!(
-    extra.cartaoCnpjUrl?.trim()
-    && status === 'VERIFIED'
-  );
+  let countryCode = 'BR';
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { countryCode: true },
+    });
+    const code = (user?.countryCode || 'BR').trim().toUpperCase();
+    if (/^[A-Z]{2}$/.test(code)) countryCode = code;
+  } catch {
+    // mantém BR
+  }
+  const isBrazil = countryCode === 'BR';
+
+  // Brasil: cartão CNPJ + status VERIFIED. Internacional: admin VERIFIED sem exigir CNPJ.
+  const isDocumentVerified = isBrazil
+    ? !!(extra.cartaoCnpjUrl?.trim() && status === 'VERIFIED')
+    : status === 'VERIFIED';
   const isEmailVerified = !!(
     extra.emailCorporativo?.trim()
     && extra.emailCorporativoVerificado

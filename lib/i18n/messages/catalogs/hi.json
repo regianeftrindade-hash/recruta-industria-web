@@ -2178,5 +2178,19 @@
   "mail.application.label.recolocacao": "स्थानांतरण के लिए तैयार",
   "mail.application.label.pretensaoSalarial": "वेतन अपेक्षा",
   "mail.application.label.habilidades": "कौशल",
-  "mail.application.label.mensagem": "परिचय"
+  "mail.application.label.mensagem": "परिचय",
+  "registration.ui.estado-regiao": "राज्य / क्षेत्र / प्रांत",
+  "registration.ui.telefone-internacional": "देश कोड सहित फ़ोन (उदा. +1…)",
+  "registration.ui.telefone-placeholder-intl": "+कोड और नंबर",
+  "registration.ui.cidade-livre": "शहर",
+  "mail.passwordReset.subject": "पासवर्ड रीसेट — Recruta Indústria",
+  "mail.passwordReset.intro": "हमें Recruta Indústria पर आपका पासवर्ड रीसेट करने का अनुरोध मिला।",
+  "mail.passwordReset.cta": "पासवर्ड रीसेट करें",
+  "mail.passwordReset.validity": "लिंक 1 घंटे के लिए मान्य है। यदि आपने यह नहीं माँगा, तो इस ईमेल को अनदेखा करें।",
+  "mail.passwordReset.text": "हमें पासवर्ड रीसेट का अनुरोध मिला।\n\nलिंक खोलें (1 घंटे मान्य):\n{url}\n\nयदि आपने यह नहीं माँगा, तो इस ईमेल को अनदेखा करें।",
+  "mail.passwordReset.apiOk": "यदि ईमेल मौजूद है, तो आपको रीसेट लिंक मिलेगा",
+  "mail.passwordReset.rateEmail": "इस ईमेल के लिए बहुत अधिक प्रयास। 15 मिनट बाद फिर कोशिश करें।",
+  "mail.passwordReset.rateIp": "बहुत अधिक प्रयास। 15 मिनट बाद फिर कोशिश करें।",
+  "mail.passwordReset.emailRequired": "ईमेल आवश्यक है",
+  "mail.passwordReset.error": "अनुरोध संसाधित नहीं हो सका"
 }

@@ -18,6 +18,7 @@ const userSelect = {
   email: true,
   name: true,
   role: true,
+  countryCode: true,
 } as const
 
 export async function GET() {
@@ -71,6 +72,18 @@ export async function GET() {
 
     const extra = await getCompanyExtraData(ownerUserId)
     const verification = await getCompanyVerificationInfo(ownerUserId, extra)
+    let ownerCountryCode = user.countryCode || 'BR'
+    if (ownerUserId !== user.id) {
+      try {
+        const owner = await prisma.user.findUnique({
+          where: { id: ownerUserId },
+          select: { countryCode: true },
+        })
+        if (owner?.countryCode) ownerCountryCode = owner.countryCode
+      } catch {
+        // mantém country do usuário da sessão
+      }
+    }
     let planContext
     try {
       planContext = await getCompanyPlanContext(user.id, {
@@ -109,6 +122,7 @@ export async function GET() {
         logoUrl: companyLogo,
         fotoResponsavelUrl: companyFoto,
         email: user.email,
+        countryCode: ownerCountryCode,
       },
       team: {
         isOwner: actor?.isOwner ?? true,

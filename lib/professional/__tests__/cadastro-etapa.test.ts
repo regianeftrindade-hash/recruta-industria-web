@@ -126,4 +126,29 @@ describe("validarCamposObrigatoriosCadastro", () => {
     expect(ids).not.toContain("cursoFormacao");
     expect(ids).not.toContain("experiencias");
   });
+
+  it("aceita endereço e telefone internacionais sem UF/IBGE", () => {
+    const faltando = validarCamposObrigatoriosCadastro(
+      base({
+        nome: "Alex Smith",
+        dataNascimentoValue: "15/03/1990",
+        dataNascimento: "1990-03-15",
+        email: "alex@example.com",
+        telefone: "+1 415 555 0123",
+        whatsapp: "Sim",
+        estado: "California",
+        cidade: "San Francisco",
+        escolaridade: "Médio completo",
+        situacaoProfissional: "Empregado",
+        cargoDesejado: "CNC Operator",
+        pretensaoSalarial: "4500",
+        autorizoDados: true,
+        declaroVerdadeiro: true,
+        aceitoLGPD: true,
+        exigeSenha: false,
+        countryCode: "US",
+      }),
+    );
+    expect(faltando).toEqual([]);
+  });
 });

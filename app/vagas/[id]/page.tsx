@@ -40,17 +40,36 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
     const social = jobSocialMetadata(view.job);
     const path = `/vagas/${view.job.id}`;
+    const absolute = publicJobUrl(view.job.id);
+    const jobLocale = (view.job.locale || "pt-BR").replace("-", "_");
     return {
       title: social.title,
       description: social.description,
-      alternates: { canonical: path },
+      alternates: {
+        canonical: path,
+        languages: {
+          "pt-BR": path,
+          en: path,
+          es: path,
+          fr: path,
+          de: path,
+          it: path,
+          "pt-PT": path,
+          "zh-CN": path,
+          ja: path,
+          ko: path,
+          ar: path,
+          hi: path,
+          "x-default": path,
+        },
+      },
       openGraph: {
         type: "website",
-        url: path,
+        url: absolute,
         title: social.title,
         description: social.description,
         siteName: "Recruta Indústria",
-        locale: (view.job.locale || "pt-BR").replace("-", "_"),
+        locale: jobLocale,
       },
       twitter: {
         card: "summary_large_image",

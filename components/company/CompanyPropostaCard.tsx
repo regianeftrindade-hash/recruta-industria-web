@@ -10,14 +10,14 @@ import { formatInterviewComprovante } from "@/lib/company/job-proposals-shared";
 import { formatReaisDisplay, turnoPropostaLabel } from "@/lib/format-reais";
 
 const STATUS_LABEL: Record<string, string> = {
-  SENT: "Aguardando resposta",
-  INTERESTED: "Interesse confirmado — agende a entrevista",
-  MORE_INFO: "Pediu mais informações",
-  DECLINED: "Sem interesse",
-  INTERVIEW_PENDING: "Entrevista aguardando confirmação",
-  INTERVIEW_CONFIRMED: "Entrevista confirmada",
-  INTERVIEW_DECLINED: "Entrevista recusada",
-  INTERVIEW_CANCELLED: "Entrevista cancelada",
+  SENT: exactUi("Aguardando resposta"),
+  INTERESTED: exactUi("Interesse confirmado — agende a entrevista"),
+  MORE_INFO: exactUi("Pediu mais informações"),
+  DECLINED: exactUi("Sem interesse"),
+  INTERVIEW_PENDING: exactUi("Entrevista aguardando confirmação"),
+  INTERVIEW_CONFIRMED: exactUi("Entrevista confirmada"),
+  INTERVIEW_DECLINED: exactUi("Entrevista recusada"),
+  INTERVIEW_CANCELLED: exactUi("Entrevista cancelada"),
 };
 
 const rotulo: React.CSSProperties = {

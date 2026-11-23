@@ -1166,12 +1166,14 @@ export default function CadastroProfissional({
     exigeSenha: !isEditMode && !cadastroComGoogle,
     password,
     confirmPassword,
+    countryCode: pais,
   }), [
     formData,
     cpf,
     dataNascimentoValue,
     telefone,
     telefone2,
+    pais,
     pretensaoSalarial,
     empresas,
     password,
@@ -1479,11 +1481,6 @@ export default function CadastroProfissional({
     const formEmail = formData.email.toLowerCase().trim();
     const sessaoAtiva = emailsConferem(sessionEmail, formEmail);
 
-    if (!isEditMode && !sessaoAtiva && pais !== 'BR') {
-      setFormFeedback({ tone: 'error', message: t('registration.country.unavailable') });
-      return;
-    }
-
     const faltando = validarCamposObrigatoriosCadastro(montarInputValidacao());
 
     if (faltando.length > 0) {
@@ -1523,7 +1520,7 @@ export default function CadastroProfissional({
       return;
     }
 
-    const cpfLimpo = cpf.replace(/\D/g, '');
+    const cpfLimpo = pais === 'BR' ? cpf.replace(/\D/g, '') : '';
 
     const cargoDerivado = buildCargoDesejado({
       nivelOperacional: formData.nivelOperacional,
@@ -2342,15 +2339,23 @@ export default function CadastroProfissional({
                 />
               </div>
               <div className={fg('telefone')}>
-                <LabelMarcador htmlFor="telefone" marcador="obrigatorio">{t("registration.ui.telefone-whatsapp-ddd")}</LabelMarcador>
+                <LabelMarcador htmlFor="telefone" marcador="obrigatorio">
+                  {pais === 'BR' ? t("registration.ui.telefone-whatsapp-ddd") : t("registration.ui.telefone-internacional")}
+                </LabelMarcador>
                 <input
                   id="telefone"
                   type="tel"
                   className={styles.input}
-                  placeholder={t("registration.ui.xx-xxxxx-xxxx")}
+                  placeholder={pais === 'BR' ? t("registration.ui.xx-xxxxx-xxxx") : t("registration.ui.telefone-placeholder-intl")}
                   value={telefone}
                   onChange={(e) => {
                     const value = e.target.value;
+                    if (pais !== 'BR') {
+                      const intl = value.replace(/[^\d+\s()-]/g, '').slice(0, 20);
+                      setTelefone(intl);
+                      setFormData((prev) => ({ ...prev, telefone: intl }));
+                      return;
+                    }
                     const telefoneLimpo = value.replace(/\D/g, '');
 
                     let telefoneFormatado = '';
@@ -2389,10 +2394,16 @@ export default function CadastroProfissional({
                   id="telefone2"
                   type="tel"
                   className={styles.input}
-                  placeholder={t("registration.ui.xx-xxxxx-xxxx")}
+                  placeholder={pais === 'BR' ? t("registration.ui.xx-xxxxx-xxxx") : t("registration.ui.telefone-placeholder-intl")}
                   value={telefone2}
                   onChange={(e) => {
                     const value = e.target.value;
+                    if (pais !== 'BR') {
+                      const intl = value.replace(/[^\d+\s()-]/g, '').slice(0, 20);
+                      setTelefone2(intl);
+                      setFormData((prev) => ({ ...prev, telefone2: intl }));
+                      return;
+                    }
                     const telefoneLimpo = value.replace(/\D/g, '');
 
                     let telefoneFormatado = '';
@@ -2430,37 +2441,66 @@ export default function CadastroProfissional({
 
             <div className={styles.fieldsRow}>
               <div className={fg('estado')}>
-                <LabelMarcador htmlFor="estado" marcador="obrigatorio">{t("registration.ui.estado-uf")}</LabelMarcador>
-                <div className={styles.selectWrap}>
-                  <select
+                <LabelMarcador htmlFor="estado" marcador="obrigatorio">
+                  {pais === 'BR' ? t("registration.ui.estado-uf") : t("registration.ui.estado-regiao")}
+                </LabelMarcador>
+                {pais === 'BR' ? (
+                  <div className={styles.selectWrap}>
+                    <select
+                      id="estado"
+                      className={styles.select}
+                      required
+                      value={formData.estado}
+                      onChange={(e) => {
+                        pendingCidadeImportRef.current = null;
+                        setFormData((prev) => ({ ...prev, estado: e.target.value, cidade: '' }));
+                      }}
+                    >
+                      <option value="">{t("registration.ui.selecione")}</option>
+                      {listaEstados.map(uf => <option key={uf} value={uf}>{uf}</option>)}
+                    </select>
+                  </div>
+                ) : (
+                  <input
                     id="estado"
-                    className={styles.select}
+                    type="text"
+                    className={styles.input}
                     required
+                    maxLength={80}
                     value={formData.estado}
                     onChange={(e) => {
                       pendingCidadeImportRef.current = null;
-                      setFormData((prev) => ({ ...prev, estado: e.target.value, cidade: '' }));
+                      setFormData((prev) => ({ ...prev, estado: e.target.value }));
                     }}
-                  >
-                    <option value="">{t("registration.ui.selecione")}</option>
-                    {listaEstados.map(uf => <option key={uf} value={uf}>{uf}</option>)}
-                  </select>
-                </div>
+                  />
+                )}
               </div>
               <div className={fg('cidade')}>
                 <LabelMarcador htmlFor="cidade" marcador="obrigatorio">{t("registration.ui.cidade")}</LabelMarcador>
-                <div className={styles.selectWrap}>
-                  <select
+                {pais === 'BR' ? (
+                  <div className={styles.selectWrap}>
+                    <select
+                      id="cidade"
+                      className={styles.select}
+                      required
+                      value={formData.cidade}
+                      onChange={e => setFormData((prev) => ({ ...prev, cidade: e.target.value }))}
+                    >
+                      <option value="">{t("registration.ui.escolha-a-cidade")}</option>
+                      {cidades.map((c, i) => <option key={i} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                ) : (
+                  <input
                     id="cidade"
-                    className={styles.select}
+                    type="text"
+                    className={styles.input}
                     required
+                    maxLength={120}
                     value={formData.cidade}
                     onChange={e => setFormData((prev) => ({ ...prev, cidade: e.target.value }))}
-                  >
-                    <option value="">{t("registration.ui.escolha-a-cidade")}</option>
-                    {cidades.map((c, i) => <option key={i} value={c}>{c}</option>)}
-                  </select>
-                </div>
+                  />
+                )}
               </div>
               <div className={fg('disponibilidadeMudanca')}>
                 <LabelMarcador htmlFor="disponibilidadeMudanca" marcador="recomendado">{t("registration.ui.disponibilidade-para-mudanca")}</LabelMarcador>

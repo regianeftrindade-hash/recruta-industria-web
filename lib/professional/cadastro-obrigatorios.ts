@@ -1,5 +1,6 @@
 import { t } from '@/lib/i18n/translate';
 import { isValidEmail } from '@/lib/security';
+import { isValidPhone, normalizeCountryCode } from '@/lib/identity/registration-documents';
 
 export type CampoObrigatorioId =
   | 'nome'
@@ -87,6 +88,8 @@ export type ValidacaoCadastroInput = {
   exigeSenha: boolean;
   password: string;
   confirmPassword: string;
+  /** ISO-3166 alpha-2 do cadastro (padrão BR). */
+  countryCode?: string;
 };
 
 function campoVazio(valor: string | null | undefined): boolean {
@@ -122,14 +125,22 @@ export function validarCamposObrigatoriosCadastro(input: ValidacaoCadastroInput)
   if (campoVazio(input.email)) add('email', t("registration.simple.email"));
   else if (!isValidEmail(input.email)) add('email', t("registration.ui.e-mail-valido"));
 
-  const telPrincipal = input.telefone.replace(/\D/g, '');
-  const telAlternativo = input.telefone2.replace(/\D/g, '');
-  if (telPrincipal.length < 10 && telAlternativo.length < 10) {
-    add('telefone', t("registration.ui.telefone-whatsapp-ddd"));
+  const country = normalizeCountryCode(input.countryCode);
+  const telPrincipalOk = isValidPhone(input.telefone, country);
+  const telAlternativoOk = isValidPhone(input.telefone2, country);
+  if (!telPrincipalOk && !telAlternativoOk) {
+    add(
+      'telefone',
+      country === 'BR'
+        ? t("registration.ui.telefone-whatsapp-ddd")
+        : t("registration.ui.telefone-internacional"),
+    );
   }
   if (campoVazio(input.whatsapp)) add('whatsapp', t("registration.ui.este-numero-e-whatsapp"));
 
-  if (campoVazio(input.estado)) add('estado', t("registration.ui.estado-uf"));
+  if (campoVazio(input.estado)) {
+    add('estado', country === 'BR' ? t("registration.ui.estado-uf") : t("registration.ui.estado-regiao"));
+  }
   if (campoVazio(input.cidade)) add('cidade', t("registration.ui.cidade"));
 
   if (campoVazio(input.escolaridade)) add('escolaridade', t("registration.ui.escolaridade-nivel"));

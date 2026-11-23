@@ -424,6 +424,20 @@ export function isStripeReference(ref: string): boolean {
     r.startsWith("sub_") ||
     r.startsWith("in_") ||
     r.startsWith("pi_") ||
-    r.startsWith("ch_")
+    r.startsWith("ch_") ||
+    r.startsWith("stripe_pro_") ||
+    r.startsWith("stripe_co_")
   );
+}
+
+/** ID de sessão Checkout (`cs_…`) a partir da referência interna ou do próprio `cs_`. */
+export function stripeCheckoutSessionIdFromRefs(
+  reference: string,
+  externalId?: string | null,
+): string | null {
+  const ref = reference.trim();
+  if (ref.startsWith("cs_")) return ref;
+  const ext = (externalId || "").trim();
+  if (ext.startsWith("cs_")) return ext;
+  return null;
 }

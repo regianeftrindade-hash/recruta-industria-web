@@ -61,6 +61,13 @@ describe("linkifyJobText", () => {
     expect(linksOf("11 2026-1234")).toEqual([]);
     expect(linksOf("Telefone 16 2310-1118")[0]?.href).toBe("tel:+551623101118");
   });
+
+  it("gera tel/WhatsApp para números E.164 internacionais sem forçar +55", () => {
+    expect(linksOf("Phone +1 415 555 0123")[0]?.href).toBe("tel:+14155550123");
+    expect(linksOf("WhatsApp +351 912 345 678")[0]?.href).toBe(
+      "https://wa.me/351912345678",
+    );
+  });
 });
 
 describe("hrefForShownContact", () => {
