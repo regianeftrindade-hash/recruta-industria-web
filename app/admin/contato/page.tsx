@@ -81,7 +81,7 @@ function CaixaEmailPage() {
       setMessages(inbox.messages || []);
       setInboxError(localizeServerText(inbox.error) || '');
     } catch {
-      setInboxError('Erro ao carregar a caixa de e-mail.');
+      setInboxError(exactUi('Erro ao carregar a caixa de e-mail.'));
     } finally {
       setLoading(false);
     }

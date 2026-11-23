@@ -32,18 +32,19 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
     turno: "",
     cidade: "",
     beneficios: "",
-    mensagem:
+    mensagem: exactUi(
       "Gostamos do seu perfil e gostaríamos de saber se você tem interesse nesta oportunidade.",
+    ),
   });
 
   const validate = (): boolean => {
     const next: Record<string, string> = {};
-    if (!form.cargo.trim()) next.cargo = "Informe o cargo.";
+    if (!form.cargo.trim()) next.cargo = exactUi("Informe o cargo.");
     const salarioFmt = formatReaisDisplay(form.salario.trim());
-    if (!form.salario.trim() || salarioFmt === "—") next.salario = "Informe o salário em R$.";
-    if (!form.turno.trim()) next.turno = "Selecione o turno.";
-    if (!form.cidade.trim()) next.cidade = "Informe a cidade.";
-    if (!form.mensagem.trim()) next.mensagem = "Escreva uma mensagem.";
+    if (!form.salario.trim() || salarioFmt === "—") next.salario = exactUi("Informe o salário em R$.");
+    if (!form.turno.trim()) next.turno = exactUi("Selecione o turno.");
+    if (!form.cidade.trim()) next.cidade = exactUi("Informe a cidade.");
+    if (!form.mensagem.trim()) next.mensagem = exactUi("Escreva uma mensagem.");
     setFieldErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -52,7 +53,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
     setError(null);
     setSuccess(null);
     if (!validate()) {
-      setError("Preencha cargo, salário (R$), turno, cidade e mensagem.");
+      setError(exactUi("Preencha cargo, salário (R$), turno, cidade e mensagem."));
       return;
     }
     setSaving(true);
@@ -65,7 +66,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Erro ao enviar proposta");
+        setError(data.error || exactUi("Erro ao enviar proposta"));
         return;
       }
       setShowForm(false);
@@ -78,10 +79,10 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
         beneficios: "",
       }));
       setFieldErrors({});
-      setSuccess("Proposta enviada! O profissional receberá no painel e por e-mail.");
+      setSuccess(exactUi("Proposta enviada! O profissional receberá no painel e por e-mail."));
       onChanged();
     } catch {
-      setError("Erro ao enviar proposta");
+      setError(exactUi("Erro ao enviar proposta"));
     } finally {
       setSaving(false);
     }
@@ -103,7 +104,7 @@ export default function CompanyEnviarPropostaForm({ profileId, onChanged }: Prop
         }}
         style={{ ...botaoPerfil, width: "100%", padding: "10px 14px", fontSize: 13, marginBottom: 12 }}
       >
-        {showForm ? "Fechar formulário" : "Enviar Proposta"}
+        {showForm ? exactUi("Fechar formulário") : exactUi("Enviar Proposta")}
       </button>
 
       {success && (

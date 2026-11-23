@@ -200,7 +200,7 @@ export default function CompanyEntrevistaCard({
         >
           {p.status === "INTERVIEW_CONFIRMED"
             ? "✓ Confirmada pelo profissional"
-            : "Aguardando confirmação do profissional"}
+            : exactUi("Aguardando confirmação do profissional")}
         </p>
       </div>
       <div

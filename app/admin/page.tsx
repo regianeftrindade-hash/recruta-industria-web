@@ -195,7 +195,7 @@ export default function AdminDashboardPage() {
 
       setLastUpdate(new Date());
     } catch {
-      if (!silent) setError('Erro ao carregar o painel.');
+      if (!silent) setError(exactUi('Erro ao carregar o painel.'));
     } finally {
       if (!silent) setLoading(false);
     }

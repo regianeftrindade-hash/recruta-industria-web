@@ -119,12 +119,12 @@ export default function CompanyDashboardInicioPage() {
         setPlanLoaded(true);
       } else {
         const data = await res.json().catch(() => ({}));
-        setProfileLoadError(data.error || "Não foi possível carregar o perfil da empresa.");
+        setProfileLoadError(data.error || exactUi("Não foi possível carregar o perfil da empresa."));
         setPlanLoaded(true);
       }
     } catch (e) {
       console.error(e);
-      setProfileLoadError("Erro de rede ao carregar o perfil da empresa.");
+      setProfileLoadError(exactUi("Erro de rede ao carregar o perfil da empresa."));
       setPlanLoaded(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- mesmo contrato da versão monolítica (deps [])
@@ -306,7 +306,7 @@ export default function CompanyDashboardInicioPage() {
               }}
             >
               <h2 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 800, color: DASH.gold, lineHeight: 1.35 }}>
-                Sua conta está criada! Agora complete o cadastro da empresa para acessar a vitrine.
+                {exactUi("Sua conta está criada! Agora complete o cadastro da empresa para acessar a vitrine.")}
               </h2>
               <p style={{ margin: 0, fontSize: 12, color: DASH.text, lineHeight: 1.45 }}>
                 Nenhum perfil profissional é exibido até o cadastro estar completo e a verificação

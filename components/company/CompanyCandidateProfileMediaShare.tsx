@@ -134,7 +134,7 @@ export default function CompanyCandidateProfileMediaShare({
             }}
           >
             <p style={{ margin: 0, fontSize: 14, color: "#000", lineHeight: 1.4 }}>
-              Sem vídeo de apresentação
+              {exactUi("Sem vídeo de apresentação")}
             </p>
           </div>
         ) : null}

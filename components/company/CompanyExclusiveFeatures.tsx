@@ -109,7 +109,7 @@ export default function CompanyExclusiveFeatures({
           fontWeight: 800,
         }}
       >
-        Recursos do Recruta Indústria
+        {exactUi("Recursos do Recruta Indústria")}
       </h3>
       <p style={{ color: DASH.text, margin: "0 0 0.5cm", fontSize: horizontal ? 11 : 10, lineHeight: 1.3 }}>
         Ferramentas disponíveis hoje na plataforma para buscar e analisar profissionais da indústria.
