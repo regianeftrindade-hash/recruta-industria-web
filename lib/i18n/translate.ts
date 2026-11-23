@@ -4,6 +4,7 @@ import { internalEn } from "@/lib/i18n/messages/internal.en";
 import { fixEn } from "@/lib/i18n/messages/fix.en";
 import { restEn } from "@/lib/i18n/messages/rest.en";
 import { surfacesEn } from "@/lib/i18n/messages/surfaces.en";
+import es from "@/lib/i18n/messages/catalogs/es.json";
 import fr from "@/lib/i18n/messages/catalogs/fr.json";
 import de from "@/lib/i18n/messages/catalogs/de.json";
 import it from "@/lib/i18n/messages/catalogs/it.json";
@@ -16,14 +17,6 @@ import hi from "@/lib/i18n/messages/catalogs/hi.json";
 import { messagesPtBR, type MessageKey } from "@/lib/i18n/messages/pt-BR";
 import { brazilOnlyDocumentMessages } from "@/lib/i18n/messages/brazil-only-document";
 import { DEFAULT_LOCALE, resolveLocale, type SupportedLocale } from "@/lib/i18n/locales";
-
-/**
- * Catálogo es.json foi corrompido em commit intermediário (placeholder).
- * Até republicar o JSON completo do histórico 755ea070, es usa override pontual + fallback pt-BR.
- */
-const es: Partial<Record<MessageKey, string>> = {
-  ...(brazilOnlyDocumentMessages.es ?? {}),
-};
 
 const catalogs: Record<SupportedLocale, Partial<Record<MessageKey, string>>> = {
   "pt-BR": messagesPtBR,
