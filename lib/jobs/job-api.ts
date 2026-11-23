@@ -5,6 +5,25 @@ import { requireAdmin } from "@/lib/auth/admin-auth";
 import { prisma } from "@/lib/db";
 import { JobPostingError } from "@/lib/jobs/job-posting";
 
+/** Extrai indício seguro de drift de schema (sem senhas/SQL completo). */
+export function schemaDriftFromUnknown(error: unknown): {
+  code: "SCHEMA_DRIFT";
+  prismaCode: string;
+  column: string | null;
+} | null {
+  if (!error || typeof error !== "object") return null;
+  const err = error as { code?: unknown; message?: unknown; meta?: { column?: unknown } };
+  const prismaCode = typeof err.code === "string" ? err.code : "";
+  const message = typeof err.message === "string" ? err.message : "";
+  const metaColumn = typeof err.meta?.column === "string" ? err.meta.column : null;
+  const fromMessage = message.match(/column [`']?([\w."]+(?:\.[\w."]+)?)[`']? does not exist/i)?.[1] ?? null;
+  const column = metaColumn || fromMessage;
+  if (prismaCode === "P2022" || /does not exist/i.test(message)) {
+    return { code: "SCHEMA_DRIFT", prismaCode: prismaCode || "P2022", column };
+  }
+  return null;
+}
+
 export function jsonError(error: unknown, fallback: string) {
   if (error instanceof JobPostingError) {
     return NextResponse.json(
@@ -18,6 +37,18 @@ export function jsonError(error: unknown, fallback: string) {
   }
 
   console.error(fallback, error);
+  const drift = schemaDriftFromUnknown(error);
+  if (drift) {
+    return NextResponse.json(
+      {
+        error: fallback,
+        code: drift.code,
+        prismaCode: drift.prismaCode,
+        column: drift.column,
+      },
+      { status: 500 },
+    );
+  }
   return NextResponse.json({ error: fallback }, { status: 500 });
 }
 
