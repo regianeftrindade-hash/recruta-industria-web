@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
 import { resolveCompanyActor, ensureCompanyTeamTable } from '@/lib/company/company-team';
+import { removePrivateFiles } from '@/lib/storage/private-uploads';
 
 export type DeleteOwnAccountResult = {
   mode: 'professional' | 'company_owner' | 'company_member';
@@ -16,8 +17,24 @@ export async function deleteOwnAccount(userId: string): Promise<DeleteOwnAccount
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
-      profile: { select: { id: true } },
-      company: { select: { id: true, userId: true } },
+      profile: {
+        select: {
+          id: true,
+          avatar: true,
+          curricoURL: true,
+          atestadoURL: true,
+          videoApresentacaoPath: true,
+        },
+      },
+      company: {
+        select: {
+          id: true,
+          userId: true,
+          logoUrl: true,
+          fotoResponsavelUrl: true,
+          cartaoCnpjUrl: true,
+        },
+      },
       professional: { select: { id: true } },
     },
   });
@@ -78,6 +95,11 @@ export async function deleteOwnAccount(userId: string): Promise<DeleteOwnAccount
     }
 
     if (user.company) {
+      await bestEffortRemoveStorage([
+        user.company.logoUrl,
+        user.company.fotoResponsavelUrl,
+        user.company.cartaoCnpjUrl,
+      ]);
       await prisma.company.delete({ where: { id: user.company.id } });
     }
 
@@ -90,12 +112,32 @@ export async function deleteOwnAccount(userId: string): Promise<DeleteOwnAccount
   return { mode: 'professional', email: user.email };
 }
 
+async function bestEffortRemoveStorage(paths: Array<string | null | undefined>) {
+  try {
+    await removePrivateFiles(paths.filter((p): p is string => Boolean(p && String(p).trim())));
+  } catch (error) {
+    console.warn('[delete-account] Falha ao limpar arquivos do storage:', error);
+  }
+}
+
 async function deleteProfileProfessionalAndUser(user: {
   id: string;
-  profile: { id: string } | null;
+  profile: {
+    id: string;
+    avatar?: string | null;
+    curricoURL?: string | null;
+    atestadoURL?: string | null;
+    videoApresentacaoPath?: string | null;
+  } | null;
   professional: { id: string } | null;
 }) {
   if (user.profile) {
+    await bestEffortRemoveStorage([
+      user.profile.avatar,
+      user.profile.curricoURL,
+      user.profile.atestadoURL,
+      user.profile.videoApresentacaoPath,
+    ]);
     await prisma.profile.delete({ where: { id: user.profile.id } });
   }
   if (user.professional) {

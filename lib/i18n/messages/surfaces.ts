@@ -23,6 +23,14 @@ export const surfaceMessages = {
     "Consulte também os Termos de Uso e a Política de Privacidade da plataforma.",
   "legal.linkTermsOfUse": "Termos de Uso",
   "legal.linkPrivacy": "Política de Privacidade",
+
+  "privacy.cookieBannerTitle": "Cookies e privacidade",
+  "privacy.cookieBannerBody":
+    "Usamos cookies essenciais para login e idioma. Cookies de marketing (Google Ads) só são ativados se você aceitar. Detalhes na",
+  "privacy.cookieEssentialOnly": "Apenas essenciais",
+  "privacy.cookieAcceptMarketing": "Aceitar marketing",
+  "privacy.acceptPrefix": "Li e aceito os",
+  "privacy.acceptRequired": "Aceite os Termos de Uso e a Política de Privacidade para continuar.",
   "surface.home.login": "LOGIN",
   "surface.home.email": "EMAIL",
   "surface.home.emailLabel": "E-mail",

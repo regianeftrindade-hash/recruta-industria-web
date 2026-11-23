@@ -28,6 +28,7 @@ function CadastroEmpresaForm({ incorporado = false }: { incorporado?: boolean })
   const [cnpj, setCnpj] = useState("");
   const [responsavelCpf, setResponsavelCpf] = useState("");
   const [endereco, setEndereco] = useState("");
+  const [aceitoPrivacidade, setAceitoPrivacidade] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
@@ -56,6 +57,10 @@ function CadastroEmpresaForm({ incorporado = false }: { incorporado?: boolean })
     }
     if (!isBrazil && telefone && !telefone.trim().startsWith("+")) {
       setError(t("registration.company.phoneIntlError"));
+      return;
+    }
+    if (!isEdit && !aceitoPrivacidade) {
+      setError(t("privacy.acceptRequired"));
       return;
     }
 
@@ -197,6 +202,28 @@ function CadastroEmpresaForm({ incorporado = false }: { incorporado?: boolean })
 
           {error && <p style={{ color: "#8B0000", fontSize: 13 }}>{error}</p>}
           {ok && <p style={{ color: "#2E7D32", fontSize: 13 }}>{ok}</p>}
+
+          {!isEdit ? (
+            <label style={{ display: "flex", gap: 8, alignItems: "flex-start", margin: "8px 0 4px", fontSize: 12, lineHeight: 1.4 }}>
+              <input
+                type="checkbox"
+                checked={aceitoPrivacidade}
+                onChange={(e) => setAceitoPrivacidade(e.target.checked)}
+                required
+                style={{ marginTop: 2 }}
+              />
+              <span>
+                {t("privacy.acceptPrefix")}{" "}
+                <Link href="/termos/uso" style={{ color: "#414141" }}>
+                  {t("legal.linkTermsOfUse")}
+                </Link>
+                {" · "}
+                <Link href="/termos/privacidade" style={{ color: "#414141" }}>
+                  {t("legal.linkPrivacy")}
+                </Link>
+              </span>
+            </label>
+          ) : null}
 
           <button
             type="submit"

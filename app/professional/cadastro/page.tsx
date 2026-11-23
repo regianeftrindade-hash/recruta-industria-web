@@ -69,10 +69,16 @@ export default function CadastroRapidoProfissionalPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [aceitoPrivacidade, setAceitoPrivacidade] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
+
+    if (!aceitoPrivacidade) {
+      setErrorMessage(t("privacy.acceptRequired"));
+      return;
+    }
 
     const isBrazil = pais === "BR";
     const nomeTrim = nome.trim();
@@ -142,6 +148,7 @@ export default function CadastroRapidoProfissionalPage() {
         return;
       }
 
+      // Não gravar senha em localStorage (risco LGPD / XSS).
       try {
         localStorage.setItem(
           chavePorEmail(SIMPLE_STORAGE_KEY, emailTrim),
@@ -150,7 +157,6 @@ export default function CadastroRapidoProfissionalPage() {
             ...(isBrazil ? { cpf } : {}),
             email: emailTrim,
             telefone,
-            password,
             _ownerEmail: emailTrim,
           }),
         );
@@ -340,6 +346,32 @@ export default function CadastroRapidoProfissionalPage() {
                 </button>
               </div>
             </div>
+
+            <label
+              style={{
+                display: "flex",
+                gap: 8,
+                alignItems: "flex-start",
+                margin: "12px 0",
+                fontSize: "0.82rem",
+                lineHeight: 1.4,
+                color: "#414141",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={aceitoPrivacidade}
+                onChange={(e) => setAceitoPrivacidade(e.target.checked)}
+                required
+                style={{ marginTop: 2 }}
+              />
+              <span>
+                {t("privacy.acceptPrefix")}{" "}
+                <a href="/termos/uso">{t("legal.linkTermsOfUse")}</a>
+                {" · "}
+                <a href="/termos/privacidade">{t("legal.linkPrivacy")}</a>
+              </span>
+            </label>
 
             <button type="submit" className={loginStyles.btnPrimary} disabled={loading}>
               {t("registration.simple.submit")}

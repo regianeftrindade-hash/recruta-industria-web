@@ -11,6 +11,7 @@ import ManifestInjector from "@/components/app-shell/ManifestInjector";
 import SiteVisitTracker from "@/components/app-shell/SiteVisitTracker";
 import { InstallPromptProvider } from "@/components/pwa/InstallPromptProvider";
 import GoogleAdsLoader from "@/components/analytics/GoogleAdsLoader";
+import CookieConsentBanner from "@/components/privacy/CookieConsentBanner";
 import Providers from "./providers";
 import SiteEmailFooter from "@/components/shared/SiteEmailFooter";
 import SiteLocaleBar from "@/components/i18n/SiteLocaleBar";
@@ -207,6 +208,7 @@ export default async function RootLayout({
             <SiteLocaleBar locale={locale} />
             {children}
             <SiteEmailFooter />
+            <CookieConsentBanner />
           </InstallPromptProvider>
         </Providers>
       </body>
