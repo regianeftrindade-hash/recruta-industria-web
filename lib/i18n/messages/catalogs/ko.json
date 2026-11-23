@@ -2219,5 +2219,16 @@
   "fix.u.638": "급여를 입력하세요.",
   "fix.u.639": "교대를 선택하세요.",
   "fix.u.640": "도시를 입력하세요.",
-  "fix.u.641": "메시지를 작성하세요."
+  "fix.u.641": "메시지를 작성하세요.",
+  "surface.home.termsOfUse": "이용 약관",
+  "legal.termsOfUse": "이용 약관",
+  "legal.privacyPolicy": "개인정보 처리방침",
+  "legal.lgpdShort": "LGPD",
+  "legal.backHome": "홈으로 돌아가기",
+  "legal.backToRegister": "등록으로 돌아가기",
+  "legal.pendingReviewHeading": "법률 검토 대기",
+  "legal.bodyFallbackNotice": "본문은 아직 브라질 포르투갈어입니다. 이 언어의 공식 번역은 법률 검토를 기다립니다.",
+  "legal.registrationLinksHint": "플랫폼 이용 약관 및 개인정보 처리방침도 확인하세요.",
+  "legal.linkTermsOfUse": "이용 약관",
+  "legal.linkPrivacy": "개인정보 처리방침"
 }

@@ -10,6 +10,20 @@ export const surfacesEn: Partial<Record<MessageKey, string>> = {
   "surface.home.trust": "Data protected with encryption, access control, and continuous auditing.",
   "surface.home.rights": "All rights reserved",
   "surface.home.privacy": "Privacy policy",
+  "surface.home.termsOfUse": "Terms of use",
+
+  "legal.termsOfUse": "Terms of Use",
+  "legal.privacyPolicy": "Privacy Policy",
+  "legal.lgpdShort": "LGPD",
+  "legal.backHome": "Back to home",
+  "legal.backToRegister": "Back to registration",
+  "legal.pendingReviewHeading": "Pending legal validation",
+  "legal.bodyFallbackNotice":
+    "The full text is still in Brazilian Portuguese. An official translation for this language awaits legal validation.",
+  "legal.registrationLinksHint":
+    "Also see the platform Terms of Use and Privacy Policy.",
+  "legal.linkTermsOfUse": "Terms of Use",
+  "legal.linkPrivacy": "Privacy Policy",
   "surface.home.login": "SIGN IN",
   "surface.home.email": "EMAIL",
   "surface.home.emailLabel": "Email",

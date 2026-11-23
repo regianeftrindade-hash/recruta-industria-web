@@ -172,13 +172,19 @@ export default async function RootLayout({
         logo: "https://www.recrutaindustria.com/logo-recruta.png",
         email: "contato@recrutaindustria.com",
         description:
-          "Plataforma de recrutamento industrial para empresas e profissionais no Brasil.",
+          "Plataforma de recrutamento industrial que conecta empresas e profissionais no Brasil e em mercados internacionais.",
+        areaServed: [
+          { "@type": "Country", name: "Brazil" },
+          { "@type": "Place", name: "International" },
+        ],
       },
       {
         "@type": "WebSite",
         "@id": "https://www.recrutaindustria.com/#website",
         url: "https://www.recrutaindustria.com/",
         name: "Recruta Indústria",
+        description:
+          "Recrutamento industrial para empresas e profissionais, com suporte a múltiplos idiomas e países.",
         publisher: { "@id": "https://www.recrutaindustria.com/#organization" },
         inLanguage: locale,
       },

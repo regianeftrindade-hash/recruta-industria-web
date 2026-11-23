@@ -2219,5 +2219,16 @@
   "fix.u.638": "Geben Sie das Gehalt an.",
   "fix.u.639": "Wählen Sie die Schicht.",
   "fix.u.640": "Geben Sie die Stadt an.",
-  "fix.u.641": "Schreiben Sie eine Nachricht."
+  "fix.u.641": "Schreiben Sie eine Nachricht.",
+  "surface.home.termsOfUse": "Nutzungsbedingungen",
+  "legal.termsOfUse": "Nutzungsbedingungen",
+  "legal.privacyPolicy": "Datenschutzrichtlinie",
+  "legal.lgpdShort": "LGPD",
+  "legal.backHome": "Zur Startseite",
+  "legal.backToRegister": "Zurück zur Registrierung",
+  "legal.pendingReviewHeading": "Ausstehende rechtliche Prüfung",
+  "legal.bodyFallbackNotice": "Der vollständige Text ist noch auf brasilianischem Portugiesisch. Die offizielle Übersetzung dieser Sprache erwartet eine rechtliche Prüfung.",
+  "legal.registrationLinksHint": "Siehe auch die Nutzungsbedingungen und die Datenschutzrichtlinie der Plattform.",
+  "legal.linkTermsOfUse": "Nutzungsbedingungen",
+  "legal.linkPrivacy": "Datenschutzrichtlinie"
 }

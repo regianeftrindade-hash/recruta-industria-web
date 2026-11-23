@@ -215,6 +215,17 @@ function CadastroEmpresaForm({ incorporado = false }: { incorporado?: boolean })
           >
             {loading ? "…" : t("registration.simple.submit")}
           </button>
+
+          <p style={{ marginTop: 14, fontSize: 12, lineHeight: 1.45, color: "#414141" }}>
+            {t("legal.registrationLinksHint")}{" "}
+            <Link href="/termos/uso" style={{ color: "#414141" }}>
+              {t("legal.linkTermsOfUse")}
+            </Link>
+            {" · "}
+            <Link href="/termos/privacidade" style={{ color: "#414141" }}>
+              {t("legal.linkPrivacy")}
+            </Link>
+          </p>
         </form>
       </div>
     </div>

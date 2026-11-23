@@ -30,6 +30,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/company/register", priority: 0.7, changeFrequency: "monthly" },
     { path: "/vagas", priority: 0.9, changeFrequency: "daily" },
     { path: "/baixar-app", priority: 0.6, changeFrequency: "monthly" },
+    { path: "/termos/uso", priority: 0.4, changeFrequency: "yearly" },
+    { path: "/termos/privacidade", priority: 0.4, changeFrequency: "yearly" },
     { path: "/termos/autorizacao-dados", priority: 0.3, changeFrequency: "yearly" },
     { path: "/termos/declaracao-veracidade", priority: 0.3, changeFrequency: "yearly" },
     { path: "/termos/lgpd", priority: 0.3, changeFrequency: "yearly" },
