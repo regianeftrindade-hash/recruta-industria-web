@@ -7,11 +7,10 @@ import { surfacesEn } from "@/lib/i18n/messages/surfaces.en";
 import { messagesPtBR } from "@/lib/i18n/messages/pt-BR";
 import "@/lib/i18n/active-locale.server";
 import { bindLocale } from "@/lib/i18n/active-locale";
-import { t } from "@/lib/i18n/translate";
+import { t, esCatalog } from "@/lib/i18n/translate";
 import { countryCapability } from "@/lib/identity/country-support";
 import { paymentMarketForCountry } from "@/lib/payment/market";
 import { SUPPORTED_LOCALES, textDirection } from "@/lib/i18n/locales";
-import es from "@/lib/i18n/messages/catalogs/es-part-0.json";
 import fr from "@/lib/i18n/messages/catalogs/fr.json";
 
 const messagesEn = { ...messagesEnCore, ...surfacesEn, ...internalEn, ...restEn, ...fixEn };
@@ -50,7 +49,9 @@ describe("internacionalização essencial", () => {
   });
 
   it("catálogos ES e FR não estão vazios", () => {
-    expect(Object.keys(es).length).toBeGreaterThan(20); // es-part-0: registration + CPF/CNPJ; full es pending restore
+    expect(Object.keys(esCatalog).length).toBeGreaterThan(100);
     expect(Object.keys(fr).length).toBeGreaterThan(100);
+    expect(t("surface.jobs.title", "es")).toBe("Vacantes");
+    expect(t("surface.jobs.title", "es")).not.toBe(t("surface.jobs.title", "pt-BR"));
   });
 });
