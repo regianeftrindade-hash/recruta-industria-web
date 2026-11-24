@@ -140,3 +140,30 @@ Pedido do usuário: usar `STAGING_DATABASE_URL` e `STAGING_DIRECT_URL` exclusiva
 Globals ainda presentes e apontando para produção — **intencionalmente não usados**.
 
 Foi solicitada a inclusão dos secrets `STAGING_DATABASE_URL` e `STAGING_DIRECT_URL` no ambiente deste Cloud Agent. Após estarem injetados na sessão, repetir o gate (ref ≠ produção, ambas iguais) e só então o migrate.
+
+---
+
+## 11. Tentativa com STAGING_* injetadas (interrompida na identidade)
+
+| Verificação | Resultado |
+|-------------|-----------|
+| `STAGING_*` presentes | Sim |
+| Project ref (ambas) | `gshhznyretzrdnmkgmgj` |
+| ≠ produção `yxwgjlzzxkitvcduckgk` | Sim |
+| Mesmo projeto nas duas vars | Sim |
+| Região pooler | `sa-east-1` (produção conhecida: `us-east-2`) |
+| `DIRECT` host `db.<ref>.supabase.co:5432` | DNS só IPv6 → **TCP unreachable** neste agente |
+| Pooler `:6543` / `:5432` TCP | OK |
+| Consulta read-only / auth | **FALHA: password authentication failed** |
+| `prisma migrate deploy` | **NÃO executado** |
+
+Globals `DATABASE_URL`/`DIRECT_URL` de produção **não** foram usadas no migrate (não houve migrate).
+
+### Causa do bloqueio
+A senha configurada nas URLs de staging foi rejeitada pelo pooler Supabase (`FATAL: password authentication failed for user "postgres"`), mesmo com user `postgres.<ref>` e encoding correto de caracteres especiais (`[`, `]`, `-`).
+
+### Ação necessária (sua)
+1. No painel Supabase do projeto **recruta-industria-staging** (`gshhznyretzrdnmkgmgj`): resetar/confirmar a **database password**.  
+2. Atualizar `STAGING_DATABASE_URL` e `STAGING_DIRECT_URL` no Cloud Agent com a senha correta (URL-encode de caracteres especiais).  
+3. Para este agente, preferir `DIRECT_URL` de staging como pooler sessão `:5432` (o host `db.*` está inacessível por IPv6 aqui).  
+4. Pedir novamente o migrate após o gate de auth passar.
