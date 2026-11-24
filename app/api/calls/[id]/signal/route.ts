@@ -7,6 +7,7 @@ import {
   insertCallSignal,
   listCallSignalsForPeer,
 } from "@/lib/video-calls";
+import { apiUnauthorizedResponse, apiErrorResponse } from "@/lib/i18n/api-response";
 
 async function getAuthUser(request: NextRequest) {
   const auth = await resolveAuthEmail(request);
@@ -35,7 +36,7 @@ export async function GET(
   try {
     const user = await getAuthUser(request);
     if (!user) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
     const { id } = await params;
     const call = await getVideoCallById(id);
@@ -43,7 +44,7 @@ export async function GET(
       return NextResponse.json({ error: "Chamada não encontrada" }, { status: 404 });
     }
     if (!(await canAccessCall(user, call))) {
-      return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+      return await apiErrorResponse("rest.api.denied", 403);
     }
     const signals = await listCallSignalsForPeer(id, user.id);
     return NextResponse.json({ signals });
@@ -60,7 +61,7 @@ export async function POST(
   try {
     const user = await getAuthUser(request);
     if (!user) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
     const { id } = await params;
     const call = await getVideoCallById(id);
@@ -71,7 +72,7 @@ export async function POST(
       return NextResponse.json({ error: "Chamada inativa" }, { status: 400 });
     }
     if (!(await canAccessCall(user, call))) {
-      return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+      return await apiErrorResponse("rest.api.denied", 403);
     }
 
     const body = await request.json();

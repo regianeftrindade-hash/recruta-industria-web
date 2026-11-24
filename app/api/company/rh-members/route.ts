@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { resolveAuthEmail } from "@/lib/api-auth";
 import { listActiveTeamPeers, resolveCompanyActor } from "@/lib/company/company-team";
+import { apiUnauthorizedResponse, apiErrorResponse } from "@/lib/i18n/api-response";
 
 /**
  * Pessoas da mesma assinatura/plano para convidar em chat e videochamada.
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest) {
   try {
     const auth = await resolveAuthEmail(request);
     if (!auth) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const user = await prisma.user.findUnique({
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user || user.role !== "COMPANY") {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const actor = await resolveCompanyActor(user.id);

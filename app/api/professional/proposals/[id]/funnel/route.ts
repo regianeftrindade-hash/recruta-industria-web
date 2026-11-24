@@ -8,6 +8,7 @@ import {
   notifyProfessionalAsync,
   notifyCompanyInterviewCancelledByProfessional,
 } from "@/lib/professional-notifications";
+import { apiUnauthorizedResponse, apiErrorResponse } from "@/lib/i18n/api-response";
 
 export async function PATCH(
   request: NextRequest,
@@ -16,7 +17,7 @@ export async function PATCH(
   try {
     const auth = await resolveAuthEmail(request);
     if (!auth) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const user = await prisma.user.findUnique({
@@ -24,7 +25,7 @@ export async function PATCH(
       include: { profile: { select: { id: true } } },
     });
     if (!user || user.role !== "PROFESSIONAL" || !user.profile) {
-      return NextResponse.json({ error: "Acesso restrito a profissionais" }, { status: 403 });
+      return await apiErrorResponse("rest.api.professionalOnly", 403);
     }
 
     const { id: proposalId } = await params;

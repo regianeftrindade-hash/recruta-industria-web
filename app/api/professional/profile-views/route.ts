@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth.config';
 import { getProfessionalPlanContext } from '@/lib/professional-plan';
 import { visibleCompanyName } from '@/lib/professional/record-profile-view';
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 function getStartOfWeek(date: Date): Date {
   const d = new Date(date);
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user?.email) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const user = await prisma.user.findUnique({

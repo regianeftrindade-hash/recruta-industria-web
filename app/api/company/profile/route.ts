@@ -26,7 +26,7 @@ export async function GET() {
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user?.email) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+      return await apiUnauthorizedResponse()
     }
 
     const email = session.user.email.toLowerCase().trim()
@@ -148,3 +148,5 @@ export async function GET() {
     return NextResponse.json({ error: 'Erro ao buscar perfil da empresa' }, { status: 500 })
   }
 }
+
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";

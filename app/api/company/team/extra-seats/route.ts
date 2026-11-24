@@ -19,6 +19,7 @@ import {
 } from "@/lib/payment/gateway";
 import { isPaymentGatewayConfigured, isSandboxMode, getPaymentProvider } from "@/lib/payment-config";
 import { sanitizeTaxId, fallbackTaxIdForSandbox } from "@/lib/payment-tax";
+import { apiErrorResponse } from "@/lib/i18n/api-response";
 
 async function getCompanyUser(request: NextRequest) {
   const auth = await resolveAuthEmail(request);
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCompanyUser(request);
     if (!user || user.role !== "COMPANY") {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const actor = await resolveCompanyActor(user.id);
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     const user = await getCompanyUser(request);
     if (!user || user.role !== "COMPANY" || !user.company) {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const actor = await resolveCompanyActor(user.id);

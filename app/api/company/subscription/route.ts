@@ -25,7 +25,7 @@ export async function GET() {
 
   if (!session?.user?.email) {
 
-    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+    return await apiUnauthorizedResponse()
 
   }
 
@@ -41,7 +41,7 @@ export async function GET() {
 
   if (!user || user.role !== 'COMPANY') {
 
-    return NextResponse.json({ error: 'Acesso restrito a empresas' }, { status: 403 })
+    return await apiErrorResponse("rest.api.companyOnly", 403)
 
   }
 
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     if (!session?.user?.email) {
 
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+      return await apiUnauthorizedResponse()
 
     }
 
@@ -185,3 +185,5 @@ export async function POST(request: NextRequest) {
 
 }
 
+
+import { apiUnauthorizedResponse, apiErrorResponse } from "@/lib/i18n/api-response";

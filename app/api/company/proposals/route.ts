@@ -13,6 +13,7 @@ import {
   notifyProfessionalAsync,
   notifyProposalReceived,
 } from "@/lib/professional-notifications";
+import { apiErrorResponse } from "@/lib/i18n/api-response";
 
 async function getCompanyUser(request: NextRequest) {
   const auth = await resolveAuthEmail(request);
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
   try {
     const companyUser = await getCompanyUser(request);
     if (!companyUser) {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const profileId = request.nextUrl.searchParams.get("profileId")?.trim() || "";
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
   try {
     const companyUser = await getCompanyUser(request);
     if (!companyUser) {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const plan = await getCompanyPlanContext(companyUser.id);

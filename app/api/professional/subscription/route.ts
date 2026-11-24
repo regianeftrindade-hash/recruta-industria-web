@@ -11,12 +11,13 @@ import {
   type ProfessionalPlanTier,
 } from '@/lib/professional-premium-plans';
 import { getProfessionalSubscriptionBilling } from '@/lib/subscription-billing-storage';
+import { apiUnauthorizedResponse, apiErrorResponse } from "@/lib/i18n/api-response";
 
 export async function GET() {
 
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+    return await apiUnauthorizedResponse();
   }
 
   const user = await prisma.user.findUnique({
@@ -24,7 +25,7 @@ export async function GET() {
   });
 
   if (!user || user.role !== 'PROFESSIONAL') {
-    return NextResponse.json({ error: 'Acesso restrito a profissionais' }, { status: 403 });
+    return await apiErrorResponse("rest.api.professionalOnly", 403);
   }
 
   const planContext = await getProfessionalPlanContext(user.id);
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const user = await prisma.user.findUnique({

@@ -3,7 +3,8 @@
 import React, { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { t } from "@/lib/i18n/translate";
+import { t } from "@/lib/i18n/translate"
+import { localizeServerText } from "@/lib/i18n/server-text";
 import RegistrationCountryField from "@/components/identity/RegistrationCountryField";
 import { AuthAtmosphere } from "@/components/shared/AuthAtmosphere";
 import LogoRecruta from "@/app/components/LogoRecruta";
@@ -90,7 +91,7 @@ function CadastroEmpresaForm({ incorporado = false }: { incorporado?: boolean })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data?.error || t("registration.simple.createFailed"));
+        setError(localizeServerText(data?.error) || data?.error || t("registration.simple.createFailed"));
         setLoading(false);
         return;
       }

@@ -5,6 +5,7 @@ import {
   getCompanyAnonymousMode,
   setCompanyAnonymousMode,
 } from "@/lib/company/company-preferences";
+import { apiErrorResponse } from "@/lib/i18n/api-response";
 
 async function getCompanyUser(request: NextRequest) {
   const auth = await resolveAuthEmail(request);
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCompanyUser(request);
     if (!user) {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
     const anonymousMode = await getCompanyAnonymousMode(user.id);
     return NextResponse.json({ anonymousMode });
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getCompanyUser(request);
     if (!user) {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
     const body = await request.json();
     const anonymousMode = body?.anonymousMode === true;

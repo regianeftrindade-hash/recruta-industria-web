@@ -4,12 +4,13 @@ import { resolveAuthEmail } from "@/lib/api-auth";
 import { getProfessionalRecruitmentHistory } from "@/lib/company/job-proposals";
 import { lerCampoJsonDoPerfil } from "@/lib/profile-json-fields";
 import { parseTesteComportamentalJSON } from "@/lib/teste-comportamental";
+import { apiUnauthorizedResponse, apiErrorResponse } from "@/lib/i18n/api-response";
 
 export async function GET(request: NextRequest) {
   try {
     const auth = await resolveAuthEmail(request);
     if (!auth) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const user = await prisma.user.findUnique({
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
       include: { profile: { select: { id: true, userId: true } } },
     });
     if (!user || user.role !== "PROFESSIONAL" || !user.profile) {
-      return NextResponse.json({ error: "Acesso restrito a profissionais" }, { status: 403 });
+      return await apiErrorResponse("rest.api.professionalOnly", 403);
     }
 
     const [counts, testeRaw] = await Promise.all([

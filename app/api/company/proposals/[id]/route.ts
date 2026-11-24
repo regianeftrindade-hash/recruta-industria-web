@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { resolveAuthEmail } from "@/lib/api-auth";
 import { deleteProposalForCompany } from "@/lib/company/job-proposals";
 import { resolveCompanyOwnerUserId } from "@/lib/company/company-team";
+import { apiErrorResponse } from "@/lib/i18n/api-response";
 
 async function getCompanyOwner(request: NextRequest) {
   const auth = await resolveAuthEmail(request);
@@ -23,7 +24,7 @@ export async function DELETE(
   try {
     const company = await getCompanyOwner(request);
     if (!company) {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const { id: proposalId } = await params;

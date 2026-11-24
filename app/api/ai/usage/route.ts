@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { resolveAuthEmail } from "@/lib/api-auth";
 import { AI_MONTHLY_LIMITS, resolveAiUser, getUsageSnapshot } from "@/lib/ai";
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 /** GET /api/ai/usage — quanto resta do limite mensal */
 export async function GET(request: NextRequest) {
   try {
     const auth = await resolveAuthEmail(request);
     if (!auth) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const user = await prisma.user.findUnique({

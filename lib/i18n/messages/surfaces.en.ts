@@ -85,6 +85,58 @@ export const surfacesEn: Partial<Record<MessageKey, string>> = {
   "surface.auth.noAdminHelp": "Click \"Sign out and sign in with an admin email\" and use an authorized email (ADMIN_EMAILS) or the paizaonacozinha test account.",
   "surface.auth.wrongAdmin": "This email does not have admin permission. Check ADMIN_EMAILS in .env and sign in with the correct email.",
   "surface.auth.processError": "Could not process sign-in.",
+
+  "surface.auth.pitch.pro.title": "🚀 Your experience can be found by companies",
+  "surface.auth.pitch.pro.p1":
+    "On Recruta Indústria, you do not need to chase openings and send a résumé to every company. You create your Professional Showcase and stay available to companies looking for your profile.",
+  "surface.auth.pitch.pro.p2":
+    "Unlike a typical job board, Recruta Indústria is built to connect professionals and companies more directly — from profile presentation to contact and hiring.",
+  "surface.auth.pitch.pro.subtitle": "⭐ Everything in one place",
+  "surface.auth.pitch.pro.li1":
+    "Complete profile: present your experience, education, courses, skills, and qualifications.",
+  "surface.auth.pitch.pro.li2":
+    "Presentation video: show who you are and highlight your professional experience.",
+  "surface.auth.pitch.pro.li3":
+    "Company search: your profile can be found through professional filters.",
+  "surface.auth.pitch.pro.li4":
+    "Direct contact: talk with companies interested in your profile on the platform.",
+  "surface.auth.pitch.pro.li5":
+    "Online interviews: join interviews without installing other apps.",
+  "surface.auth.pitch.pro.li6":
+    "Interview scheduling: receive and organize interview invites on the platform.",
+  "surface.auth.pitch.pro.li7":
+    "Professional proposals: receive proposals from companies interested in your profile.",
+  "surface.auth.pitch.pro.li8":
+    "Company tips: receive guidance about your professional profile.",
+  "surface.auth.pitch.pro.highlight": "✨ And for professionals, it is free.",
+  "surface.auth.pitch.pro.closing":
+    "Create your Professional Showcase and keep in one place the tools to present your experience, be found by companies, and follow new professional contact opportunities.",
+
+  "surface.auth.pitch.company.title": "🏭 Find industrial professionals in the Showcase",
+  "surface.auth.pitch.company.p1":
+    "On Recruta Indústria, your company does not need to rely only on ads and scattered résumés. You access the professional Showcase, filter by industrial profile, and find talent aligned with your operations.",
+  "surface.auth.pitch.company.p2":
+    "The platform is built to connect companies and professionals more directly — from search to contact, proposals, and interviews.",
+  "surface.auth.pitch.company.subtitle": "⭐ Everything in one place",
+  "surface.auth.pitch.company.li1":
+    "Filtered search: location, role, experience, education, and more.",
+  "surface.auth.pitch.company.li2":
+    "Complete profiles: education, courses, skills, and presentation video.",
+  "surface.auth.pitch.company.li3":
+    "Direct contact: talk with professionals on the platform.",
+  "surface.auth.pitch.company.li4": "Proposals: send proposals aligned with your needs.",
+  "surface.auth.pitch.company.li5":
+    "Online interviews: schedule and run interviews without other apps.",
+  "surface.auth.pitch.company.li6":
+    "Tips for professionals: guide profiles with objective feedback.",
+  "surface.auth.pitch.company.li7":
+    "Recruitment history: follow the funnel in your operation.",
+  "surface.auth.pitch.company.li8":
+    "Company verification: security before releasing contacts and sensitive data.",
+  "surface.auth.pitch.company.highlight":
+    "✨ Complete registration and verification to view profiles.",
+  "surface.auth.pitch.company.closing":
+    "Create your company account, finish registration, and after verification access the showcase to find industrial professionals with the profile you need.",
   "surface.reset.title": "Forgot password",
   "surface.reset.help": "Enter your account email. We will send a link to create a new password.",
   "surface.reset.emailRequired": "Enter the account email.",

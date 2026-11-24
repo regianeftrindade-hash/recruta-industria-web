@@ -6,6 +6,7 @@ import {
   createInterviewRating,
   listInterviewRatingsForCompany,
 } from "@/lib/interview-ratings";
+import { apiErrorResponse } from "@/lib/i18n/api-response";
 
 async function getAuthUser(request: NextRequest) {
   const auth = await resolveAuthEmail(request);
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser(request);
     if (!user || user.role !== "COMPANY") {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
     const ratings = await listInterviewRatingsForCompany(user.id);
     return NextResponse.json({ ratings });

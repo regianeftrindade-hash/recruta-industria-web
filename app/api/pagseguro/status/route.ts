@@ -6,12 +6,13 @@ import {
   paymentBelongsToUser,
   syncPaymentStatusFromGateway,
 } from '@/lib/payment-activation';
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const chargeId = new URL(req.url).searchParams.get('chargeId');

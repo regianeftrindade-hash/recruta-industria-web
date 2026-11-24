@@ -7,6 +7,7 @@ import {
   resolveCompanyActor,
 } from "@/lib/company/company-team";
 import { ensureCompanyChatMessageTable } from "@/lib/company/company-chat-db";
+import { apiErrorResponse } from "@/lib/i18n/api-response";
 
 type ChatRow = {
   id: string;
@@ -64,7 +65,7 @@ export async function GET(request: NextRequest) {
   try {
     const ctx = await getCompanyChatContext(request);
     if (!ctx) {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     await ensureCompanyChatMessageTable();
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
   try {
     const ctx = await getCompanyChatContext(request);
     if (!ctx) {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const body = await request.json().catch(() => ({}));

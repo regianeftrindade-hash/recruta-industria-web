@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { resolveAuthEmail } from "@/lib/api-auth";
 import { getTeamCallContext, respondTeamVideoCall } from "@/lib/video-calls";
+import { apiUnauthorizedResponse, apiErrorResponse } from "@/lib/i18n/api-response";
 
 async function getAuthUser(request: NextRequest) {
   const auth = await resolveAuthEmail(request);
@@ -17,10 +18,10 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser(request);
     if (!user) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
     if (user.role !== "COMPANY") {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const profileId = String(request.nextUrl.searchParams.get("profileId") || "").trim();
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser(request);
     if (!user || user.role !== "COMPANY") {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const body = await request.json();
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "A chamada já tem 4 participantes da empresa" }, { status: 400 });
     }
     if (msg === "FORBIDDEN" || msg === "INITIATOR_CANNOT_TEAM_RESPOND") {
-      return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+      return await apiErrorResponse("rest.api.denied", 403);
     }
     console.error("Erro ao responder chamada da equipe:", error);
     return NextResponse.json({ error: "Erro ao responder chamada" }, { status: 500 });

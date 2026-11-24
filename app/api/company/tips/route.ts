@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+      return await apiUnauthorizedResponse()
     }
 
     const user = await prisma.user.findUnique({
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     })
 
     if (!user || user.role !== 'COMPANY') {
-      return NextResponse.json({ error: 'Acesso restrito a empresas' }, { status: 403 })
+      return await apiErrorResponse("rest.api.companyOnly", 403)
     }
 
     const profileId = new URL(request.url).searchParams.get('profileId')
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+      return await apiUnauthorizedResponse()
     }
 
     const user = await prisma.user.findUnique({
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!user || user.role !== 'COMPANY') {
-      return NextResponse.json({ error: 'Acesso restrito a empresas' }, { status: 403 })
+      return await apiErrorResponse("rest.api.companyOnly", 403)
     }
 
     const planContext = await getCompanyPlanContext(user.id)
@@ -115,7 +115,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+      return await apiUnauthorizedResponse()
     }
 
     const user = await prisma.user.findUnique({
@@ -123,7 +123,7 @@ export async function DELETE(request: NextRequest) {
     })
 
     if (!user || user.role !== 'COMPANY') {
-      return NextResponse.json({ error: 'Acesso restrito a empresas' }, { status: 403 })
+      return await apiErrorResponse("rest.api.companyOnly", 403)
     }
 
     const tipId = new URL(request.url).searchParams.get('id')?.trim() || ''
@@ -151,3 +151,5 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Erro ao excluir dica' }, { status: 500 })
   }
 }
+
+import { apiUnauthorizedResponse, apiErrorResponse } from "@/lib/i18n/api-response";

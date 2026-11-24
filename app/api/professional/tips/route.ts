@@ -3,16 +3,14 @@ import { prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth.config';
 import { limparDicasExpiradas } from '@/lib/profile/inbox-cleanup';
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
     if (!session || !session.user?.email) {
-      return NextResponse.json(
-        { error: 'Não autenticado' },
-        { status: 401 }
-      );
+      return await apiUnauthorizedResponse();
     }
 
     // Buscar o usuário e seu perfil

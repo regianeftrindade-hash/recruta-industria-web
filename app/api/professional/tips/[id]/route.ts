@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth.config";
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 export async function DELETE(
   _request: NextRequest,
@@ -10,7 +11,7 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const { id } = await params;

@@ -10,6 +10,7 @@ import {
   notifyCompanyMessageReply,
   notifyProfessionalAsync,
 } from "@/lib/professional-notifications";
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 function limparTextoMensagem(raw: string): string {
   return raw
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
 
     const auth = await resolveAuthEmail(request);
     if (!auth) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const user = await prisma.user.findUnique({
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     const auth = await resolveAuthEmail(request);
     if (!auth) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const user = await prisma.user.findUnique({
@@ -130,7 +131,7 @@ export async function DELETE(request: NextRequest) {
 
     const auth = await resolveAuthEmail(request);
     if (!auth) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const user = await prisma.user.findUnique({

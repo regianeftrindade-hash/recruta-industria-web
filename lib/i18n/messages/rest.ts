@@ -135,6 +135,7 @@ export const restMessages = {
 
   "rest.api.unauthenticated": "Não autenticado",
   "rest.api.companyOnly": "Acesso restrito a empresas",
+  "rest.api.professionalOnly": "Acesso restrito a profissionais",
   "rest.api.denied": "Acesso negado",
   "rest.api.invalidBody": "Corpo da requisição inválido.",
   "rest.api.invalidData": "Dados inválidos",

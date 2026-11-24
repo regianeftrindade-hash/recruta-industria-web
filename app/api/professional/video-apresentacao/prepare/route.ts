@@ -12,6 +12,7 @@ import {
   buildProfessionalVideoPath,
   createProfessionalVideoUploadUrl,
 } from '@/lib/professional/professional-video-storage';
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 export const runtime = 'nodejs';
 
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
   try {
     const userId = await resolveProfessionalUserId(request);
     if (!userId) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const body = (await request.json()) as {

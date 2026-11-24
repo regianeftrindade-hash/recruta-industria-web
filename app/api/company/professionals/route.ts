@@ -202,7 +202,7 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user?.email) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+      return await apiUnauthorizedResponse()
     }
 
     const companyUser = await prisma.user.findUnique({
@@ -210,7 +210,7 @@ export async function GET(request: NextRequest) {
     })
 
     if (!companyUser || companyUser.role !== 'COMPANY') {
-      return NextResponse.json({ error: 'Acesso restrito a empresas' }, { status: 403 })
+      return await apiErrorResponse("rest.api.companyOnly", 403)
     }
 
     const planContext = await getCompanyPlanContext(companyUser.id)
@@ -474,7 +474,7 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user?.email) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+      return await apiUnauthorizedResponse()
     }
 
     const companyUser = await prisma.user.findUnique({
@@ -482,7 +482,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!companyUser || companyUser.role !== 'COMPANY') {
-      return NextResponse.json({ error: 'Acesso restrito a empresas' }, { status: 403 })
+      return await apiErrorResponse("rest.api.companyOnly", 403)
     }
 
     const planContext = await getCompanyPlanContext(companyUser.id)
@@ -585,3 +585,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erro ao desbloquear perfil' }, { status: 500 })
   }
 }
+
+import { apiUnauthorizedResponse, apiErrorResponse } from "@/lib/i18n/api-response";

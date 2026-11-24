@@ -3,6 +3,7 @@ import { findUserByEmail } from '@/lib/users';
 import { matchesCompanyTestBypass } from '@/lib/company/company-test-bypass-shared';
 import { resolveAuthEmail } from '@/lib/auth/api-auth';
 import { enforceApiRateLimit, getClientIp } from '@/lib/security/api-guard';
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     const auth = await resolveAuthEmail(request);
     if (!auth) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const body = await request.json().catch(() => ({}));

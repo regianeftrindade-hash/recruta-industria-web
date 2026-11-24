@@ -131,6 +131,7 @@ export const restEn: Partial<Record<MessageKey, string>> = {
   "rest.admin.description": "Description",
   "rest.api.unauthenticated": "Not signed in",
   "rest.api.companyOnly": "Restricted to companies",
+  "rest.api.professionalOnly": "Restricted to professionals",
   "rest.api.denied": "Access denied",
   "rest.api.invalidBody": "Invalid request body.",
   "rest.api.invalidData": "Invalid data",
