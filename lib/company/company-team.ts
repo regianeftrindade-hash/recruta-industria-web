@@ -369,8 +369,7 @@ export async function acceptTeamInvite(input: {
 
   const email = found.invite.invitedEmail.toLowerCase();
   const password = input.password.trim();
-  // Mesma regra mínima do restante do site (cadastro / reset).
-  if (password.length < 8) throw new Error("PASSWORD_WEAK");
+  if (password.length < 6) throw new Error("PASSWORD_WEAK");
 
   const name = input.name.trim() || email.split("@")[0];
   const passwordHash = await bcrypt.hash(password, 10);

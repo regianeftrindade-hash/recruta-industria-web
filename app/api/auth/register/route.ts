@@ -12,7 +12,6 @@ import {
   existingRegistrationCountryChangeError,
   resolveNewRegistrationCountry,
 } from '@/lib/identity/registration-region'
-import { getClientIp } from '@/lib/security/api-guard'
 import { hashPassword } from '@/lib/security.server'
 import { validatePasswordStrength } from '@/lib/password-strength'
 import { logAudit as logSecurityAudit } from '@/lib/security-audit'
@@ -53,7 +52,7 @@ async function completarPerfilProfissionalExistente(
 export async function POST(request: NextRequest) {
   try {
     bindLocale(await resolveInterfaceLocale())
-    const ip = getClientIp(request)
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
 
     if (isIPBlocked(ip)) {
@@ -432,9 +431,10 @@ export async function POST(request: NextRequest) {
     )
   } catch (error: unknown) {
     console.error('Erro no registro:', error)
-    return NextResponse.json(
-      { error: t("registration.ui.erro-ao-registrar-usuario-tente-novamente-ou-contate-o-suporte-s") },
-      { status: 500 },
-    )
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : t("registration.ui.erro-ao-registrar-usuario-tente-novamente-ou-contate-o-suporte-s")
+    return NextResponse.json({ error: errorMessage }, { status: 500 })
   }
 }

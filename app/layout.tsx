@@ -64,9 +64,20 @@ export const metadata: Metadata = {
   publisher: "Recruta Indústria",
   alternates: {
     canonical: "/",
-    // Idioma via cookie — sem URLs distintas por locale. Evita hreflang falso.
+    // Mesma URL para todos os idiomas (preferência em cookie / Accept-Language; sem prefixo de rota).
     languages: {
       "pt-BR": "/",
+      en: "/",
+      es: "/",
+      fr: "/",
+      de: "/",
+      it: "/",
+      "pt-PT": "/",
+      "zh-CN": "/",
+      ja: "/",
+      ko: "/",
+      ar: "/",
+      hi: "/",
       "x-default": "/",
     },
   },

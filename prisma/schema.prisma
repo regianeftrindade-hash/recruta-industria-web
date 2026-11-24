@@ -248,21 +248,6 @@ model EmailVerification {
   @@index([email])
 }
 
-/// Token de redefinição de senha (uso único, multi-instância).
-/// Guarda só o hash SHA-256 do token opaco enviado por e-mail.
-model PasswordResetToken {
-  id        String    @id @default(cuid())
-  email     String
-  tokenHash String    @unique
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
-
-  @@index([email])
-  @@index([expiresAt])
-  @@map("password_reset_tokens")
-}
-
 model CorporateEmailConfirmation {
   id         String    @id @default(cuid())
   email      String

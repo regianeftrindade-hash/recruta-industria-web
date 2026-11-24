@@ -55,7 +55,7 @@ describe("busca pública de vagas", () => {
     const text = JSON.stringify(where);
     expect(text).toContain("Hortolândia");
     expect(text).toContain("/SP");
-    expect(text).toContain('"publishedAt":{"gte":"2026-10-06T15:00:00.000Z"}');
+    expect(text).toContain("2026-10-06T00:00:00.000Z");
     expect(text).toContain('"gte":100000');
     expect(text).toContain('"lte":200000');
     expect(text).toContain('"currency":"BRL"');
@@ -122,18 +122,5 @@ describe("busca pública de vagas", () => {
     expect(JSON.stringify(publicJobWhere(parseJobSearch({ moeda: "USD" })))).toContain(
       '"currency":"USD"',
     );
-  });
-
-  it("não mistura moeda quando o salário é a combinar", () => {
-    const where = publicJobWhere(parseJobSearch({ salario: "negociavel", moeda: "USD" }));
-    const text = JSON.stringify(where);
-    expect(text).toContain('"salaryNegotiable":true');
-    expect(text).toContain('"currency":"USD"');
-  });
-
-  it("não aplica UF brasileira quando o país não é o Brasil", () => {
-    const text = JSON.stringify(publicJobWhere(parseJobSearch({ pais: "US", estado: "SP" })));
-    expect(text).toContain('"countryCode":"US"');
-    expect(text).not.toContain("/SP");
   });
 });

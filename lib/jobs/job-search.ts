@@ -175,9 +175,7 @@ export function publicJobWhere(filters: JobSearchFilters, now = new Date()): Pri
   if (filters.city) {
     and.push({ workplace: { contains: filters.city, mode: "insensitive" } });
   }
-  if (filters.state && (!filters.countryCode || filters.countryCode === "BR")) {
-    and.push(stateClause(filters.state));
-  }
+  if (filters.state) and.push(stateClause(filters.state));
   if (filters.countryCode) and.push({ countryCode: filters.countryCode });
   // Filtro explícito de moeda (sem exigir faixa)
   if (filters.salaryCurrency && filters.salary !== "negociavel"
@@ -187,10 +185,7 @@ export function publicJobWhere(filters: JobSearchFilters, now = new Date()): Pri
     and.push({ currency: filters.salaryCurrency });
   }
   const salaryCurrency = filters.salaryCurrency || "BRL";
-  if (filters.salary === "negociavel") {
-    and.push({ salaryNegotiable: true });
-    if (filters.salaryCurrency) and.push({ currency: filters.salaryCurrency });
-  }
+  if (filters.salary === "negociavel") and.push({ salaryNegotiable: true });
   if (filters.salary === "informado") {
     and.push({
       salaryNegotiable: false,
@@ -209,9 +204,13 @@ export function publicJobWhere(filters: JobSearchFilters, now = new Date()): Pri
       },
     });
   }
-  if (filters.period === "24h" || filters.period === "7" || filters.period === "15" || filters.period === "30") {
-    const days = filters.period === "24h" ? 1 : Number(filters.period);
-    and.push({ publishedAt: { gte: new Date(now.getTime() - days * 24 * 60 * 60 * 1000) } });
+  if (filters.period === "24h") {
+    and.push({ publishedAt: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) } });
+  } else if (filters.period === "7" || filters.period === "15" || filters.period === "30") {
+    const days = Number(filters.period);
+    const start = utcDay(now);
+    start.setUTCDate(start.getUTCDate() - days);
+    and.push({ publicationDate: { gte: start } });
   }
   if (filters.publishedFrom || filters.publishedTo) {
     and.push({

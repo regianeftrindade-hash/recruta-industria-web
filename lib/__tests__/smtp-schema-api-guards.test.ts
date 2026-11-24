@@ -3,6 +3,11 @@ import { readdirSync, readFileSync, statSync } from "fs";
 import { join } from "path";
 import { isAdmin2faRequired, createAdmin2faToken, verifyAdmin2faToken } from "@/lib/security/admin-2fa-edge";
 import {
+  generatePasswordResetToken,
+  verifyPasswordResetToken,
+  consumePasswordResetToken,
+} from "@/lib/security/security.server";
+import {
   resolveSmtpConfig,
   resolveSmtpFromHeader,
   smtpFailureHint,
@@ -48,6 +53,25 @@ describe("cookie 2FA admin", () => {
     const expired = Buffer.from(`${email}:${Date.now() - 1000}:${sig}`).toString("base64url");
     expect(verifyAdmin2faToken(expired, "admin@test.com")).toBe(false);
     expect(verifyAdmin2faToken(token, "admin@test.com")).toBe(true);
+  });
+});
+
+describe("password reset assinado (multi-instância)", () => {
+  it("gera, verifica e consome token", () => {
+    process.env.NEXTAUTH_SECRET = "test-secret-reset-token";
+    const token = generatePasswordResetToken("user@empresa.com");
+    expect(verifyPasswordResetToken(token)).toBe("user@empresa.com");
+    consumePasswordResetToken(token);
+    expect(verifyPasswordResetToken(token)).toBeNull();
+    expect(verifyPasswordResetToken("token-invalido")).toBeNull();
+  });
+
+  it("rejeita assinatura adulterada", () => {
+    process.env.NEXTAUTH_SECRET = "test-secret-reset-token";
+    const token = generatePasswordResetToken("a@b.com");
+    const [body] = token.split(".");
+    const forged = `${body}.${"0".repeat(64)}`;
+    expect(verifyPasswordResetToken(forged)).toBeNull();
   });
 });
 

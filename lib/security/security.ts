@@ -22,10 +22,9 @@ function buildContentSecurityPolicy(): string {
     ].join('; ');
   }
 
-  // 'unsafe-inline' permanece para hidratação Next e JSON-LD até migração com nonce
-  // (proxy + layout). Ads/gtag e OAuth usam hosts externos explícitos.
   return [
     "default-src 'self'",
+    // Google Ads: gtag + pixel de conversão (viewthroughconversion em doubleclick)
     "script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
@@ -37,7 +36,6 @@ function buildContentSecurityPolicy(): string {
     "base-uri 'self'",
     // NextAuth redireciona o POST de sign-in para o Google; 'self' sozinho bloqueia o OAuth.
     "form-action 'self' https://accounts.google.com",
-    // blob: = prévia de PDF gerada no cliente (currículo).
     "object-src blob:",
     "upgrade-insecure-requests",
   ].join('; ');
