@@ -16,6 +16,7 @@ export function resolveDatabaseUrl(): string | undefined {
 
 function createPrismaClient(): PrismaClient {
   const datasourceUrl = resolveDatabaseUrl()
+  // datasourceUrl sobrescreve o `url` do schema; não embute a senha em logs.
   return new PrismaClient({
     ...(datasourceUrl ? { datasourceUrl } : {}),
     log: env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
