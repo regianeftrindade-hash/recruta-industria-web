@@ -42,4 +42,15 @@ describe("jsonError DATABASE_URL", () => {
       code: "DATABASE_URL_MISSING",
     });
   });
+
+  it("expõe só o código Prisma seguro", async () => {
+    const res = jsonError(
+      { code: "P1001", message: "Can't reach database server at `secret-host:5432`" },
+      "Não foi possível carregar as vagas.",
+    );
+    const body = await res.json();
+    expect(body.code).toBe("PRISMA_ERROR");
+    expect(body.prismaCode).toBe("P1001");
+    expect(JSON.stringify(body)).not.toMatch(/secret-host/);
+  });
 });
