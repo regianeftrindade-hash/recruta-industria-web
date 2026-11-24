@@ -34,6 +34,14 @@ export const STAGING_SUPABASE_PROJECT_REF = 'gshhznyretzrdnmkgmgj'
  * Pooler Supabase (porta 6543): garante `pgbouncer=true` para evitar
  * `prepared statement already exists` (42P05) no Session/Transaction pooler.
  */
+/**
+ * Sentinel local inválido. Usado quando o Preview ainda aponta para Production:
+ * precisa ser uma URL explícita — se devolvermos `undefined`, o Prisma cai no
+ * `env("DATABASE_URL")` do schema e continua batendo em Production.
+ */
+export const PREVIEW_PRODUCTION_BLOCK_URL =
+  'postgresql://preview_refused_production:preview_refused_production@127.0.0.1:1/preview_refused_production'
+
 export function resolveDatabaseUrl(): string | undefined {
   const vercelEnv = env.VERCEL_ENV?.trim()
 
@@ -50,7 +58,7 @@ export function resolveDatabaseUrl(): string | undefined {
       '[db] Preview recusou DATABASE_URL do projeto Production. ' +
         'Configure STAGING_DATABASE_URL ou DATABASE_URL do Staging somente no ambiente Preview.',
     )
-    return undefined
+    return PREVIEW_PRODUCTION_BLOCK_URL
   }
 
   return ensurePgBouncerParam(url)

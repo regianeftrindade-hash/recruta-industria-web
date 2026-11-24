@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { env } from "node:process";
 import {
   ensurePgBouncerParam,
+  PREVIEW_PRODUCTION_BLOCK_URL,
   PRODUCTION_SUPABASE_PROJECT_REF,
   resolveDatabaseUrl,
   STAGING_SUPABASE_PROJECT_REF,
@@ -57,11 +58,11 @@ describe("resolveDatabaseUrl", () => {
     expect(resolved).not.toContain(PRODUCTION_SUPABASE_PROJECT_REF);
   });
 
-  it("em Preview recusa DATABASE_URL do projeto Production quando Staging ausente", () => {
+  it("em Preview bloqueia DATABASE_URL do projeto Production com sentinel (sem fallback)", () => {
     env.VERCEL_ENV = "preview";
     delete env.STAGING_DATABASE_URL;
     env.DATABASE_URL = `postgresql://user.${PRODUCTION_SUPABASE_PROJECT_REF}:pass@aws-1-us-east-2.pooler.supabase.com:6543/postgres?pgbouncer=true`;
-    expect(resolveDatabaseUrl()).toBeUndefined();
+    expect(resolveDatabaseUrl()).toBe(PREVIEW_PRODUCTION_BLOCK_URL);
   });
 
   it("em Production continua usando DATABASE_URL do projeto Production", () => {
