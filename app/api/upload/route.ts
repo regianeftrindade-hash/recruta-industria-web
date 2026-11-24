@@ -3,8 +3,7 @@ import { resolveAuthEmail } from '@/lib/auth/api-auth';
 import { enforceApiRateLimit, getClientIp } from '@/lib/security/api-guard';
 import { uploadPrivateFile } from '@/lib/storage/private-uploads';
 
-const MAX_FILE_SIZE_AUTH = 10 * 1024 * 1024;
-const MAX_FILE_SIZE_ANON = 5 * 1024 * 1024;
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 const ALLOWED_MIME_TYPES = new Set([
   'application/pdf',
@@ -16,29 +15,19 @@ const ALLOWED_MIME_TYPES = new Set([
   'image/webp',
 ]);
 
-/** Pastas permitidas no cadastro pré-login (profissional). */
-const ANON_ALLOWED_UPLOAD_TYPES = new Set([
+const ALLOWED_UPLOAD_TYPES = new Set([
   'documents',
   'images',
   'avatars',
-  'curriculos',
-  'cnpj',
-]);
-
-/** Demais pastas exigem sessão autenticada. */
-const AUTH_REQUIRED_UPLOAD_TYPES = new Set([
   'logos',
+  'cnpj',
+  'curriculos',
   'certificados',
   'company-cnpj',
   'company-logo',
   'company-responsavel',
   'cnh-documentos',
   'curso-certificados',
-]);
-
-const ALLOWED_UPLOAD_TYPES = new Set([
-  ...ANON_ALLOWED_UPLOAD_TYPES,
-  ...AUTH_REQUIRED_UPLOAD_TYPES,
 ]);
 
 function looksLikeAllowedFile(buffer: Buffer, mime: string): boolean {
@@ -58,14 +47,6 @@ function looksLikeAllowedFile(buffer: Buffer, mime: string): boolean {
   return false;
 }
 
-function sanitizeOwnerPrefix(value: string): string {
-  return value.replace(/[^a-z0-9@._-]/gi, '_').slice(0, 80);
-}
-
-function isPlausibleEmail(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && value.length <= 160;
-}
-
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request);
@@ -77,13 +58,18 @@ export async function POST(request: NextRequest) {
     }
 
     const auth = await resolveAuthEmail(request);
+    if (!auth) {
+      if (!(await enforceApiRateLimit(`upload-anon:${ip}`, 12, 60 * 60 * 1000))) {
+        return NextResponse.json(
+          { error: 'Muitos uploads anônimos. Faça login ou aguarde.' },
+          { status: 429 },
+        );
+      }
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const rawType = String(formData.get('type') || 'documents').toLowerCase().trim();
-    // Opcional: cadastro pode enviar e-mail para amarrar o path (sem quebrar quem não envia).
-    const claimedEmail = String(formData.get('ownerEmail') || formData.get('email') || '')
-      .toLowerCase()
-      .trim();
 
     if (!file) {
       return NextResponse.json({ error: 'Nenhum arquivo enviado' }, { status: 400 });
@@ -91,21 +77,6 @@ export async function POST(request: NextRequest) {
 
     if (!ALLOWED_UPLOAD_TYPES.has(rawType)) {
       return NextResponse.json({ error: 'Tipo de pasta de upload inválido' }, { status: 400 });
-    }
-
-    if (!auth) {
-      if (AUTH_REQUIRED_UPLOAD_TYPES.has(rawType) || !ANON_ALLOWED_UPLOAD_TYPES.has(rawType)) {
-        return NextResponse.json(
-          { error: 'Faça login para enviar este tipo de arquivo.' },
-          { status: 401 },
-        );
-      }
-      if (!(await enforceApiRateLimit(`upload-anon:${ip}`, 8, 60 * 60 * 1000))) {
-        return NextResponse.json(
-          { error: 'Muitos uploads anônimos. Faça login ou aguarde.' },
-          { status: 429 },
-        );
-      }
     }
 
     let mime = file.type;
@@ -120,12 +91,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Tipo de arquivo não permitido' }, { status: 400 });
     }
 
-    const maxSize = auth ? MAX_FILE_SIZE_AUTH : MAX_FILE_SIZE_ANON;
-    if (file.size > maxSize) {
-      return NextResponse.json(
-        { error: auth ? 'Arquivo muito grande (máx. 10MB)' : 'Arquivo muito grande (máx. 5MB sem login)' },
-        { status: 400 },
-      );
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: 'Arquivo muito grande (máx. 10MB)' }, { status: 400 });
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -143,10 +110,8 @@ export async function POST(request: NextRequest) {
       .slice(0, 120);
 
     const ownerPrefix = auth?.email
-      ? sanitizeOwnerPrefix(auth.email)
-      : isPlausibleEmail(claimedEmail)
-        ? sanitizeOwnerPrefix(claimedEmail)
-        : 'anon';
+      ? auth.email.replace(/[^a-z0-9@._-]/gi, '_').slice(0, 80)
+      : 'anon';
     const filePath = `${rawType}/${ownerPrefix}/${timestamp}_${sanitizedFileName}`;
 
     const uploaded = await uploadPrivateFile(filePath, buffer, mime);

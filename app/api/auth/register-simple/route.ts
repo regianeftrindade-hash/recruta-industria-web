@@ -4,7 +4,6 @@ import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
 import { t } from "@/lib/i18n/translate";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getClientIp } from "@/lib/security/api-guard";
 import {
   isValidEmail,
   checkRegisterRateLimit,
@@ -36,7 +35,10 @@ import { saveCompanyExtraData } from "@/lib/company-storage";
 export async function POST(request: NextRequest) {
   try {
     bindLocale(await resolveInterfaceLocale());
-    const ip = getClientIp(request);
+    const ip =
+      request.headers.get("x-forwarded-for") ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
     const userAgent = request.headers.get("user-agent") || "unknown";
 
     if (isIPBlocked(ip)) {

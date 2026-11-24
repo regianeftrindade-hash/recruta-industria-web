@@ -145,13 +145,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (getPaymentProvider() === "stripe") {
-      return NextResponse.json(
-        { error: "Compra de usuários extras por Pix ou boleto não usa Stripe." },
-        { status: 501 },
-      );
-    }
-
     const description = buildCompanyExtraSeatDescription(quantity);
     const payment = await createGatewayPayment({
       amount,

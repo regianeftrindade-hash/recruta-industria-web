@@ -8,6 +8,7 @@ export function getCompanyTestBypassKeys(): string[] {
   const fromEnv = (typeof process !== 'undefined'
     ? (process.env.COMPANY_TEST_BYPASS_KEYS
       || process.env.COMPANY_TEST_BYPASS_EMAILS
+      || process.env.NEXT_PUBLIC_COMPANY_TEST_BYPASS_KEYS
       || '')
     : '')
     .split(',')
@@ -30,20 +31,12 @@ export function matchesCompanyTestBypass(params: {
   if (keys.length === 0) return false;
 
   const email = params.email?.toLowerCase().trim() || '';
-  const emails = [
-    email ? normalizeCompanyTestKey(email.split('@')[0] || '') : '',
+  const candidates = [
+    email ? normalizeCompanyTestKey(email.split('@')[0] || email) : '',
     email ? normalizeCompanyTestKey(email) : '',
-  ].filter(Boolean);
-  const names = [
     params.companyName ? normalizeCompanyTestKey(params.companyName) : '',
     params.userName ? normalizeCompanyTestKey(params.userName) : '',
   ].filter(Boolean);
-  return keys.some((key) => emails.some((candidate) => candidate === key) || names.some((candidate) => nameMatchesKey(candidate, key)));
-}
 
-const NAME_SUFFIXES = ['ltda', 'me', 'mei', 'eireli', 'sa'];
-
-function nameMatchesKey(candidate: string, key: string): boolean {
-  if (candidate === key) return true;
-  return NAME_SUFFIXES.some((suffix) => candidate === `${key}${suffix}`);
+  return keys.some((key) => candidates.some((candidate) => candidate === key || candidate.includes(key)));
 }

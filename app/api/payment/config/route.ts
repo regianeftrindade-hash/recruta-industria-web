@@ -27,28 +27,19 @@ import { billingCountryFromProfile } from '@/lib/payment/market';
 import { prisma } from '@/lib/db';
 import { paymentSandboxSnapshot } from '@/lib/payment/sandbox-guards';
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   const provider = getPaymentProvider();
   const configured = isPaymentGatewayConfigured();
-  const session = await getServerSession(authOptions);
-  const isDev = process.env.NODE_ENV === 'development';
-  const canVerifyGateway = isDev || Boolean(session?.user);
-  const verification = canVerifyGateway && configured ? await verifyGatewayCredentials() : null;
-  const plansEnabled = configured && (canVerifyGateway ? (verification?.ok ?? false) : true);
+  const verification = configured ? await verifyGatewayCredentials() : null;
+  const plansEnabled = configured && (verification?.ok ?? false);
   const asaasConfig = getAsaasConfig();
-  const asaasVerification = !canVerifyGateway
-    ? null
-    : provider === 'asaas'
-      ? verification
-      : asaasConfig.apiKey
-        ? await verifyAsaasCredentials()
-        : null;
-  const professionalReady = canVerifyGateway
-    ? Boolean(asaasConfig.apiKey) && Boolean(asaasVerification?.ok)
-    : Boolean(asaasConfig.apiKey);
-  const professionalMessage = canVerifyGateway
-    ? (asaasVerification?.message ?? 'ASAAS_API_KEY não definida')
-    : 'Disponível após o login.';
+  const asaasVerification = provider === 'asaas'
+    ? verification
+    : asaasConfig.apiKey
+      ? await verifyAsaasCredentials()
+      : null;
+  const professionalReady = Boolean(asaasConfig.apiKey) && Boolean(asaasVerification?.ok);
+  const professionalMessage = asaasVerification?.message ?? 'ASAAS_API_KEY não definida';
   const professionalPremiumOffering = isProfessionalPremiumOfferingEnabled();
 
   const stripeEnabled = isStripeEnabled();
@@ -62,6 +53,8 @@ export async function GET(_request: NextRequest) {
     ['STRIPE_PRICE_COMPANY_BASIC_YEARLY', 'STRIPE_PRICE_COMPANY_PREMIUM_YEARLY', 'STRIPE_PRICE_COMPANY_EMPRESARIAL_YEARLY']
       .every((name) => (process.env[name] || '').trim());
 
+  const session = await getServerSession(authOptions);
+  const isDev = process.env.NODE_ENV === 'development';
   const sandboxSnapshot = paymentSandboxSnapshot();
 
   let billingCountry: string | null = null;
