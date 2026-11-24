@@ -34,8 +34,17 @@ const nextConfig = {
     imageSizes: [96, 128, 256, 384],
     minimumCacheTTL: 2592000,
   },
-  // Mantém pdfjs/unpdf fora do bundle para cMaps e fontes padrão no disco (Vercel)
-  serverExternalPackages: ["unpdf", "pdfjs-dist", "mammoth", "word-extractor"],
+  // Prisma fora do bundle: senão o build pode “congelar” DATABASE_URL vazio
+  // e o runtime Production deixa de ver a env (500 em /api/vagas, 401 no login).
+  // pdfjs/unpdf fora do bundle para cMaps e fontes padrão no disco (Vercel).
+  serverExternalPackages: [
+    "@prisma/client",
+    "prisma",
+    "unpdf",
+    "pdfjs-dist",
+    "mammoth",
+    "word-extractor",
+  ],
   // Sem isso a Vercel omite cmaps/standard_fonts e PDFs do Word saem sem texto
   outputFileTracingIncludes: {
     "/api/professional/curriculum/extract": [

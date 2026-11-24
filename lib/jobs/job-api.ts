@@ -49,6 +49,15 @@ export function jsonError(error: unknown, fallback: string) {
       { status: 500 },
     );
   }
+  const message = error && typeof error === "object" && "message" in error
+    ? String((error as { message?: unknown }).message || "")
+    : "";
+  if (/Environment variable not found:\s*DATABASE_URL/i.test(message)) {
+    return NextResponse.json(
+      { error: fallback, code: "DATABASE_URL_MISSING" },
+      { status: 500 },
+    );
+  }
   return NextResponse.json({ error: fallback }, { status: 500 });
 }
 
