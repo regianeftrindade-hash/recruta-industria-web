@@ -53,7 +53,9 @@ export function resolveDatabaseUrl(): string | undefined {
   const url = env.DATABASE_URL?.trim()
   if (!url) return undefined
 
-  if (vercelEnv === 'preview' && url.includes(PRODUCTION_SUPABASE_PROJECT_REF)) {
+  const looksLikeProduction =
+    url.includes(PRODUCTION_SUPABASE_PROJECT_REF) || url.includes('us-east-2')
+  if (vercelEnv === 'preview' && looksLikeProduction) {
     console.error(
       '[db] Preview recusou DATABASE_URL do projeto Production. ' +
         'Configure STAGING_DATABASE_URL ou DATABASE_URL do Staging somente no ambiente Preview.',

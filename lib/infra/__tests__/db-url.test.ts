@@ -65,6 +65,14 @@ describe("resolveDatabaseUrl", () => {
     expect(resolveDatabaseUrl()).toBe(PREVIEW_PRODUCTION_BLOCK_URL);
   });
 
+  it("em Preview bloqueia host us-east-2 mesmo sem ref no username", () => {
+    env.VERCEL_ENV = "preview";
+    delete env.STAGING_DATABASE_URL;
+    env.DATABASE_URL =
+      "postgresql://postgres:pass@aws-1-us-east-2.pooler.supabase.com:6543/postgres?pgbouncer=true";
+    expect(resolveDatabaseUrl()).toBe(PREVIEW_PRODUCTION_BLOCK_URL);
+  });
+
   it("em Production continua usando DATABASE_URL do projeto Production", () => {
     env.VERCEL_ENV = "production";
     delete env.STAGING_DATABASE_URL;
