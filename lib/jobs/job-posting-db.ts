@@ -479,9 +479,19 @@ export async function updateAdminApplicationStage(
   return { id: saved.id, stage: saved.stage };
 }
 
+async function ensurePublicJobSchema(): Promise<void> {
+  // Espelha o authorize: DDL de runtime não pode derrubar listagem/login públicos.
+  // Se a coluna faltar de verdade, o findMany abaixo surface SCHEMA_DRIFT.
+  try {
+    await ensureInternationalDefaultsColumns();
+    await ensureJobApplicationWhatsappColumn();
+  } catch (error) {
+    console.error("[jobs] ensurePublicJobSchema", error);
+  }
+}
+
 export async function searchPublicJobs(filters: JobSearchFilters): Promise<PublicJob[]> {
-  await ensureInternationalDefaultsColumns();
-  await ensureJobApplicationWhatsappColumn();
+  await ensurePublicJobSchema();
   const rows = await prisma.jobPosting.findMany({
     where: publicJobWhere(filters),
     orderBy: byNewestPublication,
