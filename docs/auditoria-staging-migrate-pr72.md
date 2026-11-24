@@ -121,3 +121,22 @@ Se o staging for **banco novo vazio**, rode o histórico completo (`migrate depl
 | Prova de ref staging neste agente | **Insuficiente para autorizar migrate** |
 
 *Nenhuma migration foi aplicada. Nenhum registro de produção foi modificado. Nenhum secret foi impresso.*
+
+---
+
+## 10. Nova tentativa — STAGING_* no Cloud Agent (interrompido de novo)
+
+Pedido do usuário: usar `STAGING_DATABASE_URL` e `STAGING_DIRECT_URL` exclusivas; nunca `DATABASE_URL`/`DIRECT_URL`.
+
+| Verificação | Resultado |
+|-------------|-----------|
+| `STAGING_DATABASE_URL` no ambiente do agente | **AUSENTE** |
+| `STAGING_DIRECT_URL` no ambiente do agente | **AUSENTE** |
+| Extração de project ref | **Não possível** |
+| Comparação com `yxwgjlzzxkitvcduckgk` | **Não possível** |
+| Consulta read-only no staging | **Não executada** |
+| `prisma migrate deploy` | **NÃO executado** (gate falhou) |
+
+Globals ainda presentes e apontando para produção — **intencionalmente não usados**.
+
+Foi solicitada a inclusão dos secrets `STAGING_DATABASE_URL` e `STAGING_DIRECT_URL` no ambiente deste Cloud Agent. Após estarem injetados na sessão, repetir o gate (ref ≠ produção, ambas iguais) e só então o migrate.
