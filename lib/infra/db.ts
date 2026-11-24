@@ -4,7 +4,18 @@ import { env } from 'node:process'
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
 /**
- * Lê DATABASE_URL em runtime via `node:process.env` (import de `node:process`).
+ * Ref do projeto Supabase de Production (us-east-2).
+ * Preview nunca deve conectar neste projeto.
+ */
+export const PRODUCTION_SUPABASE_PROJECT_REF = 'yxwgjlzzxkitvcduckgk'
+
+/**
+ * Ref do projeto Supabase de Staging (sa-east-1).
+ */
+export const STAGING_SUPABASE_PROJECT_REF = 'gshhznyretzrdnmkgmgj'
+
+/**
+ * Lê a URL do banco em runtime via `node:process.env` (import de `node:process`).
  *
  * Causa (Production 428f63d / PR #73): o bundler Next/Vercel pode substituir
  * `process.env.DATABASE_URL` pelo valor do *build* (vazio). O Prisma Client
@@ -15,12 +26,33 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient }
  * Mitigação: `datasourceUrl` explícito + `@prisma/client` em
  * `serverExternalPackages` (next.config.js) + query engine no file tracing.
  *
+ * Separação Preview/Staging:
+ * - Em `VERCEL_ENV=preview`, prefere `STAGING_DATABASE_URL` quando presente.
+ * - Em Preview, recusa URL que ainda aponte para o projeto Production
+ *   (fail-closed — melhor 500 controlado do que escrever em Production).
+ *
  * Pooler Supabase (porta 6543): garante `pgbouncer=true` para evitar
  * `prepared statement already exists` (42P05) no Session/Transaction pooler.
  */
 export function resolveDatabaseUrl(): string | undefined {
+  const vercelEnv = env.VERCEL_ENV?.trim()
+
+  if (vercelEnv === 'preview') {
+    const staging = env.STAGING_DATABASE_URL?.trim()
+    if (staging) return ensurePgBouncerParam(staging)
+  }
+
   const url = env.DATABASE_URL?.trim()
   if (!url) return undefined
+
+  if (vercelEnv === 'preview' && url.includes(PRODUCTION_SUPABASE_PROJECT_REF)) {
+    console.error(
+      '[db] Preview recusou DATABASE_URL do projeto Production. ' +
+        'Configure STAGING_DATABASE_URL ou DATABASE_URL do Staging somente no ambiente Preview.',
+    )
+    return undefined
+  }
+
   return ensurePgBouncerParam(url)
 }
 
