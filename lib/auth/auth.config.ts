@@ -199,6 +199,10 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (dbUser) {
+            // Google OAuth coloca o `sub` do provedor no JWT; ACL de storage
+            // (professional-videos/{cuid}/) e session.user.id precisam do cuid Prisma.
+            token.sub = dbUser.id;
+            token.id = dbUser.id;
             if (matchesCompanyTestBypass({ email: normalizedEmail, userName: dbUser.name })) {
               await ensureCompanyTestBypassReady(dbUser.id);
               token.userType = 'COMPANY';

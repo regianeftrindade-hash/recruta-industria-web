@@ -1,138 +1,139 @@
 # Auditoria geral — Recruta Indústria
 
-Data: 23/11/2026. Base lida: `origin/main` em `b320fed` (PR #69). Branch desta auditoria: `auditoria-geral-20261123`.
+**Rodada 1:** 23/11/2026 — branch `auditoria-geral-20261123` (PR #70).  
+**Rodada 2:** 23–24/11/2026 (America/Sao_Paulo) — branch `cursor/auditoria-geral-rodada2-06b8`.
 
-Produção e banco não foram alterados. Não houve `migrate`, `db push`, `DROP`, `TRUNCATE`, `DELETE`, rotação de segredo, mudança de variável na Vercel nem deploy.
+Produção e banco **não** foram alterados nesta rodada. Não houve `migrate deploy`, `db push`, `DROP`, `TRUNCATE`, exclusão de usuários/vagas/pagamentos, rotação de segredos, mudança na Vercel nem deploy.
 
-## O que já estava concluído
+Base da rodada 2: `origin/main` (`e9eed47`, pós PR #71) + merge do PR #70 (ainda aberto).
 
-Não foi reaberto o que os PRs #57–#69 e os relatórios `docs/conformidade-lgpd-auditoria-final.md` e `docs/auditoria-fornecedores-lgpd.md` já fecharam: colunas `countryCode`, `locale`, `currency` e `timeZone`, cookie de idioma, aceite nos cadastros e a separação do banco de testes.
+---
 
-Leitura somente de `SELECT` no Postgres de produção, com a URL da aplicação (pooler, papel `postgres`), não com a API pg-meta:
+## 1. Estado inicial (pós PR #70 + #71)
 
-- PostgreSQL 17.6, banco `postgres`, projeto Supabase `yxwgjlzzxkitvcduckgk`, pooler `aws-1-us-east-2`.
-- 1.096 vagas `PUBLISHED`, igual ao `GET /api/vagas` (HTTP 200).
-- Migration `20261116130000_international_defaults` concluída em 23/11/2026 11:23:42 UTC, sem rollback.
-- `ProfileMessage` já tem `senderRole` e `replyToId` neste banco.
-- Nenhuma tabela em `public` está com `relrowsecurity = true`.
-- 27 migrations concluídas. Duas linhas antigas estão marcadas como rollback (`20260105235359_marketplace_vitrine` em 08/09/2026 e `20260106001446_add_password_and_last_login` em 08/09/2026). O site autentica e lista vagas, então o efeito útil dessas migrations foi coberto por migrations posteriores. Não foi reexecutado nada.
+Já resolvido na rodada 1 (código no PR #70): bypass empresarial por substring, `POST /api/auth/login` 410, IP via `x-vercel-forwarded-for`, Pix/boleto com Stripe bloqueado, filtros de vagas, `payment/config` sem Asaas anônimo, cadastro sem `error.message` interno, analytics visit 500.
 
-## Escopo que não foi executado
+Já validado em auditorias anteriores: 1.096 vagas, migration `international_defaults`, login na home, Ads com consentimento, LGPD cookies/exclusão técnica parcial.
 
-| Verificação | Motivo |
-|---|---|
-| Painel Vercel (Production/Preview, variáveis, domínios) | Não há `VERCEL_TOKEN` nem projeto vinculado. A CLI não baixou (`UNABLE_TO_VERIFY_LEAF_SIGNATURE` no registro npm). |
-| Stripe, Asaas e PagSeguro no painel | Sem acesso ao painel. Nenhuma chave foi lida nem classificada como test/live. |
-| SMTP Hostinger e entrega real | Sem envio de e-mail. |
-| Google Cloud / OAuth no console | Sem acesso ao console. |
-| Backup do Supabase | Sem acesso ao painel. |
-| RLS e políticas de Storage no painel | No banco, RLS está desligado nas tabelas `public`. Policies de Storage não foram lidas. |
-| Suíte Vitest inteira, E2E, build de produção, lint | Lint não existe em `package.json`. E2E logado grava na produção e não foi executado. O build de produção não foi rodado. |
-| Páginas bloqueadas (home, login, dashboards, cadastros) | Nenhuma foi editada nem percorrida no navegador nesta auditoria. |
+---
 
-DNS público conferido: `recrutaindustria.com` resolve para `76.76.21.21` e `www` aponta para `cname.vercel-dns.com`.
+## 2. Vulnerabilidades / problemas — rodada 2
 
-A cópia local de 26/09/2026 (fora deste repositório) ainda autentica no mesmo banco. Nela, `DATABASE_URL` é o pooler na porta 6543 com `pgbouncer=true`, e `DIRECT_URL` é o mesmo host na porta 5432 (pooler de sessão, não o host `db.<projeto>.supabase.co`). Isso não prova que a Vercel esteja idêntica hoje. A Vercel não foi lida.
+### Corrigidos no código
 
-## Problemas
+| ID | Sev. | Problema | Correção |
+|----|------|----------|----------|
+| R2-1 | **ALTO** | Reset de senha: one-time só em memória | Tabela `password_reset_tokens` + emissão/consumo atômico (hash SHA-256). Migration criada, **não aplicada em prod**. |
+| R2-2 | **ALTO** | Sessão Google usava `sub` do Google ≠ cuid Prisma (vídeos 403) | `jwt` grava `token.sub = dbUser.id`; `/api/media/sign` resolve cuid por e-mail para `professional-videos/`. |
+| R2-3 | **MÉDIO** | Webhook Asaas/PagSeguro aceitava segredo na query | Headers obrigatórios em produção; query só com `WEBHOOK_ALLOW_QUERY_SECRET=true` ou em dev. |
+| R2-4 | **MÉDIO** | Upload anônimo em pastas sensíveis | Pastas empresa/CNH/certificados exigem login; pré-cadastro (`documents`/`curriculos`/`avatars`/…) permanece anônimo com limite 5 MB e rate menor. |
+| R2-5 | **MÉDIO** | JSON-LD: `directApply: true` sempre; salário sem valor | `directApply` só `INTERNAL`; `baseSalary` só com número parseável; senão salário vai na description. |
+| R2-6 | **MÉDIO** | hreflang falso (12 locales → mesma URL) | Sitemap/layout/vaga/termos: só `pt-BR` + `x-default`. |
+| R2-7 | **MÉDIO** | Exclusão deixava chat/entrevistas/convites/vídeo/telemetria | Scrub explícito + redação de PII em `PaymentRecord.customer` (registro financeiro retido). |
+| R2-8 | **MÉDIO** | Convite de equipe aceitava senha de 6 chars | Mínimo 8. |
+| R2-9 | **BAIXO** | Datas de UI no fuso do processo (UTC na Vercel) | `formatUiDate`/`DateTime` default `America/Sao_Paulo`. |
+| R2-10 | **BAIXO** | `ProfileMessage.senderRole`/`replyToId` sem migration | Migration idempotente criada (não aplicada em prod). |
+| R2-11 | **BAIXO** | pt-PT com frases longas iguais ao pt-BR | Helper `europeanizePtPt` + overrides editoriais onde ainda eram cópia literal; superfície auth/home já estava europeia. |
+| R2-12 | **BAIXO** | CSP `object-src` / revisão unsafe-inline | Revisado: `unsafe-inline` permanece (Next/Ads/JSON-LD) até nonce; documentado. Sem remoção abrupta. |
 
-### CRÍTICO — RESOLVIDO no código, ainda publicado o comportamento antigo
+### Pendentes (exigem ação externa ou risco)
 
-**Bypass empresarial por substring.** `lib/company/company-test-bypass-shared.ts` tratava como conta de teste qualquer e-mail, nome ou razão social que *contivesse* a chave `paizaonacozinha`, e lia `NEXT_PUBLIC_COMPANY_TEST_BYPASS_KEYS` (vai para o bundle). No login, `ensureCompanyTestBypassReady` gravava `planTier = EMPRESARIAL`.
+| ID | Sev. | Pendência |
+|----|------|-----------|
+| P-1 | **ALTO** (só intl) | Stripe ainda em test mode em produção (não alterado — secrets). |
+| P-2 | **MÉDIO** | Aplicar migrations `20261124020000_password_reset_tokens` e `20261124021000_profile_message_reply_columns` no Postgres **quando autorizado** (não feito aqui). Até lá, reset de senha **quebra em runtime** se o código for deployado sem a tabela. |
+| P-3 | **MÉDIO** | No painel Asaas/PagSeguro: cadastrar webhook com **header**, não `?token=`. Se URL antiga com query, setar temporariamente `WEBHOOK_ALLOW_QUERY_SECRET=true`. |
+| P-4 | **MÉDIO** | Fechamento jurídico LGPD (DPO/DPAs/retenção Art.11). |
+| P-5 | **BAIXO** | CSP sem nonce (`unsafe-inline` necessário para Next/Ads). |
+| P-6 | **BAIXO** | Upload anônimo ainda existe para pré-cadastro (mitigado). Melhoria futura: ticket assinado no formulário de cadastro. |
+| P-7 | **INFO** | Migrations Jan `20260105235359` / `20260106001446` marcadas rollback em 08/09/2026: eram SQLite-era; efeito útil coberto pelo schema Postgres atual + migrations posteriores. **Não reaplicar.** |
 
-Correção: comparação exata do e-mail ou do nome normalizado. No nome, só o sufixo societário `ltda`, `me`, `mei`, `eireli` ou `sa` continua válido, para manter “Paizao Na Cozinha LTDA”. A variável `NEXT_PUBLIC_*` deixou de entrar na lista. Contas que já estão `EMPRESARIAL` no banco não foram reescritas.
+---
 
-Teste: `lib/company/__tests__/company-test-bypass-shared.test.ts` e `lib/admin/__tests__/admin-exclude-test-accounts.test.ts`.
+## 3. Arquivos alterados (rodada 2)
 
-### ALTO — RESOLVIDO no código
+Principais:
 
-**`POST /api/auth/login` conferia senha e não abria sessão.** A rota não é chamada pelo front. Em produção, um `POST` com corpo `{}` ainda responde HTTP 400 (rota antiga, antes deste PR). A rota passou a responder 410, sem ler senha nem usuário.
+- `lib/security/password-reset-token.ts`, `security.server.ts`, `webhook-auth.ts`
+- `app/api/auth/password-reset/route.ts`
+- `lib/auth/auth.config.ts`, `app/api/media/sign/route.ts`
+- `app/api/asaas/webhook/route.ts`, `app/api/pagseguro/webhook/route.ts`
+- `app/api/upload/route.ts`
+- `lib/account/delete-own-account.ts`
+- `app/vagas/[id]/page.tsx`, `app/sitemap.ts`, `app/layout.tsx`, `app/termos/[slug]/page.tsx`
+- `lib/i18n/format-ui.ts`, `pt-pt-europeanize.ts`, `messages/catalogs/pt-PT.json`
+- `lib/company/company-team.ts`, `lib/security/security.ts`
+- `prisma/schema.prisma` + migrations novas
+- `.env.example`
+- Testes em `lib/security/__tests__/*`, `lib/account/__tests__/*`, `lib/i18n/__tests__/pt-pt-europeanize.test.ts`
+- Inclui alterações herdadas do PR #70 (bypass, login 410, filtros, gateway, etc.)
 
-**Limite por IP usava o primeiro `X-Forwarded-For`.** O cliente pode prefixar esse header. `clientIpFromHeaders` passa a preferir `x-vercel-forwarded-for`, depois `x-real-ip`, e só então o último salto de `x-forwarded-for`. Usado no NextAuth, nos dois cadastros e no proxy, que já chamava `getClientIp`.
+---
 
-Teste: `lib/security/__tests__/api-guard.test.ts`.
+## 4. Migrations criadas (não executadas em produção)
 
-**Pix/boleto com `PAYMENT_PROVIDER=stripe` ia para o Asaas.** `createGatewayPayment` tratava todo provedor que não fosse PagSeguro como Asaas. Agora Stripe lança erro e a compra de assentos extras responde 501, sem chamar o Asaas. Cobrança brasileira com Asaas configurado segue igual. Nenhuma chave foi alterada.
+| Migration | Justificativa |
+|-----------|---------------|
+| `20261124020000_password_reset_tokens` | Persistência multi-instância do reset (indispensável para R2-1). |
+| `20261124021000_profile_message_reply_columns` | Alinha schema com colunas já existentes em prod via DDL runtime; idempotente. |
 
-Teste: `lib/payment/__tests__/gateway-provider.test.ts`.
+**Ordem sugerida (manual, após review):** `prisma migrate deploy` em staging → smoke reset → produção em janela controlada. Até aplicar, **não fazer merge/deploy** desta branch para produção sem a tabela.
 
-### MÉDIO — RESOLVIDO no código
+---
 
-**Períodos de vaga usavam relógios diferentes.** `24h` filtrava `publishedAt`; `7`, `15` e `30` filtravam `publicationDate`. Os quatro passam a usar `publishedAt` em janela contínua.
+## 5. Testes executados (resultados reais)
 
-**“A combinar” ignorava a moeda.** Com `moeda` e `salario=negociavel`, o filtro de moeda voltou a ser aplicado.
+| Comando | Resultado |
+|---------|-----------|
+| `npx prisma generate` | OK |
+| `npm run typecheck` | OK (exit 0) |
+| `npm test` (Vitest) | **535 passed**, 3 skipped |
+| Foco rodada 2 (reset, webhook, upload, delete scrub, pt-PT, + suite PR #70) | 40/40 no lote intermediário |
+| `npm run build` | **OK** (exit 0) |
+| E2E Playwright / login real / cobrança | **Não executados** (sem mutação em prod) |
+| `npm run lint` | Script inexistente — não aprovado |
 
-**UF brasileira com outro país.** `estado` só entra quando o país está vazio ou é `BR`.
+---
 
-Testes em `lib/jobs/__tests__/job-search.test.ts`.
+## 6. Migrations rollback (investigação)
 
-**`GET /api/payment/config` consultava o Asaas sem sessão.** A verificação remota e a mensagem do gateway ficam restritas a desenvolvimento ou usuário logado. Visitante recebe “Disponível após o login.” e não dispara `verifyAsaasCredentials`.
+| Migration | Marcação | Estado real |
+|-----------|----------|-------------|
+| `20260105235359_marketplace_vitrine` | rollback 08/09/2026 | Bootstrap SQLite (`User`/`Company` iniciais). Schema Postgres atual veio de migrations 2026-06+ e unificações 09/2026. |
+| `20260106001446_add_password_and_last_login` | rollback 08/09/2026 | Adicionava `passwordHash`/`lastLogin` em SQLite. Colunas existem hoje no Postgres (app autentica). **Não reexecutar** o SQL SQLite. |
 
-**Cadastro devolvia `error.message`.** O `POST /api/auth/register` responde a mensagem genérica já traduzida.
+Conclusão: histórico cosmético; sem ação destrutiva.
 
-**Visita com falha respondia HTTP 200.** `POST /api/analytics/visit` passa a responder 500 quando a gravação falha.
+---
 
-### ALTO — em aberto
+## 7. Configurações externas necessárias
 
-**Token de redefinição de senha é de uso único só na memória do processo.** `lib/security/security.server.ts` guarda o nonce num `Set`. Outra instância da Vercel aceita o mesmo link até o fim da hora. Correção segura exige Redis ou coluna nova. Não foi criada migration nem foi escrito nada no banco.
+1. **Antes do deploy desta branch:** aplicar migration `password_reset_tokens` (e opcionalmente ProfileMessage columns).
+2. **Asaas:** webhook com header `asaas-access-token` = token; remover `?token=` da URL quando possível.
+3. **PagSeguro/PagBank:** header `x-webhook-secret` (ou `x-pagseguro-secret`).
+4. **Vercel (opcional migração):** `WEBHOOK_ALLOW_QUERY_SECRET=true` só enquanto a URL antiga existir.
+5. **Stripe live** se go-live internacional.
+6. **Google OAuth:** usuários já logados recebem cuid no próximo sync JWT (≤5 min) ou novo login.
 
-**Sessão Google usa o `sub` da conta Google, não o id do Prisma.** `lib/auth/auth.config.ts` faz `allowDangerousEmailAccountLinking` e não grava `token.sub` com o `cuid`. A ACL de vídeo em `professional-videos/{userId}/` compara com o id errado e nega o dono. Não foi alterado nesta branch para não mudar o formato da sessão sem um teste de login real.
+---
 
-### MÉDIO — em aberto
+## 8. Riscos residuais
 
-**Segredo de webhook Asaas/PagSeguro também é aceito na query string.** Mudar isso pode derrubar o webhook se o painel estiver cadastrado com `?token=`. Não foi alterado.
+- Deploy do código de reset **sem** migration → falha ao pedir nova senha.
+- Webhook com URL `?token=` e sem `WEBHOOK_ALLOW_QUERY_SECRET` → 401 e assinaturas desatualizadas.
+- Upload anônimo de pré-cadastro ainda permite pasta `anon/` se o form não enviar e-mail.
+- PaymentRecord retido (legal) com customer redigido na exclusão — revisão jurídica da política.
+- CSP `unsafe-inline` permanece.
 
-**Upload anônimo aceita documento em pasta pré-cadastro.** Restringir a pasta quebra o cadastro atual, cuja página está bloqueada. Não foi alterado.
+---
 
-**JSON-LD da vaga** (`app/vagas/[id]/page.tsx`) coloca o salário como texto e `directApply: true` também para WhatsApp, e-mail e site externo.
+## 9. Situação
 
-**`hreflang` repete a mesma URL** para os 12 idiomas em `app/sitemap.ts` e na página da vaga. O idioma é cookie, não caminho.
+**Código da rodada 2 pronto para review/merge após aplicar migrations em ambiente controlado.**  
+**Não apto a deploy cego em produção** até P-2 (migration reset) e alinhamento de webhooks (P-3).
 
-**pt-PT reutiliza frases longas do pt-BR.** Não foi reescrito catálogo sem revisão humana.
+Núcleo público já auditado (vagas, home, i18n, Asaas config) permanece operacional; esta branch endurece auth, arquivos, pagamentos webhook e LGPD de exclusão.
 
-**Datas de interface usam o fuso do processo** (`lib/i18n/format-ui.ts`), que na Vercel é UTC.
+---
 
-**Exclusão de conta não apaga mensagens de chat, entrevistas e convites de vídeo** sem FK (`lib/account/delete-own-account.ts`). Não foi executada exclusão.
-
-**Convite de equipe aceita senha de 6 caracteres** (`lib/company/company-team.ts`), abaixo da regra do restante do site.
-
-**`ProfileMessage.senderRole` e `replyToId` não estão numa migration**, embora existam neste banco (DDL de runtime já rodou). Um banco novo só com `migrate deploy` e `DISABLE_RUNTIME_DDL=true` quebra a listagem. Não foi adicionada migration para não sugerir execução em produção neste PR.
-
-### BAIXO
-
-**CSP de produção inclui `script-src 'unsafe-inline'`.** Tirar isso sem medir Google Ads e o Next pode quebrar a home. HSTS está presente nas respostas de produção.
-
-**Duas migrations constam como rollback desde setembro.** Não impedem o tráfego atual. Não foram reaplicadas.
-
-### DEPENDÊNCIA EXTERNA
-
-1. Confirmar na Vercel Production e Preview, sem revelar valores: `DATABASE_URL` no pooler 6543 com `pgbouncer=true`; `DIRECT_URL` na 5432; `PAYMENT_PROVIDER` coerente com Asaas no Brasil e Stripe fora; chaves Stripe test/live não misturadas; `ASAAS_API_URL` coerente com a chave; `DISABLE_RUNTIME_DDL` só depois do migrate.
-2. Confirmar no painel Asaas/PagSeguro se o webhook usa header e não `?token=`.
-3. Decidir se o token de reset passa a ser persistido (Redis já usado no rate limit, ou tabela nova).
-4. Ligar RLS no Supabase só com uma política revisada. Hoje o Prisma usa um papel que ignora RLS; ligar no escuro derruba a API.
-5. Revisar backup e região do projeto `yxwgjlzzxkitvcduckgk` no painel.
-6. Conferir SPF/DKIM/DMARC da Hostinger com um envio real (`docs/dns-spf-dmarc-hostinger.md`).
-7. No Google Cloud, conferir origens autorizadas de `https://www.recrutaindustria.com` e se a conta Google exige e-mail verificado antes de vincular.
-
-## Testes executados
-
-Aprovados em 23/11/2026, nesta branch, 31 testes em 6 arquivos:
-
-- `lib/company/__tests__/company-test-bypass-shared.test.ts`
-- `lib/company/__tests__/corporate-and-seats.test.ts`
-- `lib/admin/__tests__/admin-exclude-test-accounts.test.ts`
-- `lib/security/__tests__/api-guard.test.ts`
-- `lib/payment/__tests__/gateway-provider.test.ts`
-- `lib/jobs/__tests__/job-search.test.ts`
-
-`tsc --noEmit` terminou sem erro.
-
-Smoke público, sem corpo gravado:
-
-- `GET /api/vagas` → 200
-- `GET /robots.txt` → 200
-- `GET /sitemap.xml` → 200
-- `GET /api/auth/login` → 405
-- `POST /api/auth/login` com `{}` → 400 (produção ainda na rota antiga)
-
-Não executados: Vitest completo, testes de integração que gravam, Playwright, build `next build`, lint (não há script), login real, cadastro real, candidatura real, webhook de pagamento.
+*Fim da rodada 2. Nenhum dado de produção foi modificado.*

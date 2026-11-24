@@ -1,17 +1,18 @@
 import type { MetadataRoute } from "next";
 import { listPublicJobs } from "@/lib/jobs/job-posting-db";
-import { SUPPORTED_LOCALES } from "@/lib/i18n/locales";
 
 const SITE = "https://www.recrutaindustria.com";
 
-/** Preferência de idioma via cookie / Accept-Language (sem prefixo de rota). */
+/**
+ * Sem prefixo de rota por idioma (cookie ri-locale).
+ * Emitir hreflang idêntico para 12 locales engana crawlers — só x-default + pt-BR.
+ */
 function languageAlternates(path: string): Record<string, string> {
   const url = `${SITE}${path === "/" ? "/" : path}`;
-  const languages: Record<string, string> = { "x-default": url };
-  for (const locale of SUPPORTED_LOCALES) {
-    languages[locale] = url;
-  }
-  return languages;
+  return {
+    "pt-BR": url,
+    "x-default": url,
+  };
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     const user = await findUserByEmail(normalized)
 
     if (user) {
-      const token = generatePasswordResetToken(normalized)
+      const token = await generatePasswordResetToken(normalized)
       const resetUrl = `${appBaseUrl(request)}/reset-password?token=${encodeURIComponent(token)}`
       const locale = localeForReset(request, (user as { locale?: string | null }).locale)
       logAudit('password_reset_requested', normalized, ip, userAgent, 'success', 'Token generated')
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Token obrigatório' }, { status: 400 })
     }
 
-    const email = verifyPasswordResetToken(token)
+    const email = await verifyPasswordResetToken(token)
 
     if (!email) {
       return NextResponse.json({ error: 'Token inválido ou expirado' }, { status: 400 })
@@ -155,7 +155,8 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    const email = verifyPasswordResetToken(token)
+    // Consome atomicamente antes de gravar a senha — impede reuso em corrida multi-instância.
+    const email = await consumePasswordResetToken(token)
 
     if (!email) {
       logAudit('password_reset_failed', 'unknown', ip, userAgent, 'failure', 'Invalid token')
@@ -170,7 +171,6 @@ export async function PATCH(request: NextRequest) {
 
     const hashedPassword = await hashPassword(newPassword)
     await updateUserPassword(user.id, hashedPassword)
-    consumePasswordResetToken(token)
 
     logAudit('password_reset_success', email, ip, userAgent, 'success', 'Password reset completed')
 

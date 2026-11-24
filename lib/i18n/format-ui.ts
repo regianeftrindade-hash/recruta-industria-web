@@ -11,13 +11,18 @@ export function uiIntlLocale(): string {
   return locale;
 }
 
+const DEFAULT_UI_TIME_ZONE = "America/Sao_Paulo";
+
 export function formatUiDate(
   value: Date | string | number,
   options?: Intl.DateTimeFormatOptions,
 ): string {
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleDateString(uiIntlLocale(), options);
+  return date.toLocaleDateString(uiIntlLocale(), {
+    timeZone: options?.timeZone || DEFAULT_UI_TIME_ZONE,
+    ...options,
+  });
 }
 
 export function formatUiDateTime(
@@ -26,7 +31,10 @@ export function formatUiDateTime(
 ): string {
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleString(uiIntlLocale(), options);
+  return date.toLocaleString(uiIntlLocale(), {
+    timeZone: options?.timeZone || DEFAULT_UI_TIME_ZONE,
+    ...options,
+  });
 }
 
 export function formatUiNumber(value: number): string {
