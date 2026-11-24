@@ -49,7 +49,39 @@ export function jsonError(error: unknown, fallback: string) {
       { status: 500 },
     );
   }
-  return NextResponse.json({ error: fallback }, { status: 500 });
+  const message = error && typeof error === "object" && "message" in error
+    ? String((error as { message?: unknown }).message || "")
+    : "";
+  const prismaCode =
+    error && typeof error === "object" && typeof (error as { code?: unknown }).code === "string"
+      ? String((error as { code: string }).code)
+      : null;
+  if (/Environment variable not found:\s*DATABASE_URL/i.test(message)) {
+    return NextResponse.json(
+      { error: fallback, code: "DATABASE_URL_MISSING" },
+      { status: 500 },
+    );
+  }
+  if (prismaCode && /^P\d{4}$/.test(prismaCode)) {
+    return NextResponse.json(
+      { error: fallback, code: "PRISMA_ERROR", prismaCode },
+      { status: 500 },
+    );
+  }
+  if (/Can't reach database server/i.test(message)) {
+    return NextResponse.json(
+      { error: fallback, code: "DB_UNREACHABLE" },
+      { status: 500 },
+    );
+  }
+  return NextResponse.json(
+    {
+      error: fallback,
+      code: "INTERNAL",
+      errorName: error instanceof Error ? error.name : null,
+    },
+    { status: 500 },
+  );
 }
 
 export async function requireAdminUser(request: NextRequest) {

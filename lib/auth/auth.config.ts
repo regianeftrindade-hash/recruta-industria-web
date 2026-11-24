@@ -72,42 +72,50 @@ export const authOptions: NextAuthOptions = {
           console.error('[auth] ensureInternationalDefaultsColumns', schemaError);
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            role: true,
-            passwordHash: true,
-          },
-        });
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              role: true,
+              passwordHash: true,
+            },
+          });
 
-        if (!user || !user.passwordHash) {
+          if (!user || !user.passwordHash) {
+            incrementRateLimitCounter(rateKey);
+            incrementFailedAttempts(email);
+            logAudit('login_failed', email, ip, userAgent, 'failure', 'User not found or no password');
+            return null;
+          }
+
+          const isValid = await verifyPassword(password, user.passwordHash);
+          if (!isValid) {
+            incrementRateLimitCounter(rateKey);
+            incrementFailedAttempts(email);
+            logAudit('login_failed', email, ip, userAgent, 'failure', 'Invalid password');
+            return null;
+          }
+
+          resetRateLimit(rateKey);
+          resetFailedAttempts(email);
+          logAudit('login_success', email, ip, userAgent, 'success', 'Credentials OK');
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            userType: user.role,
+          };
+        } catch (dbError) {
+          // Nunca devolver mensagem Prisma/env ao cliente (vira query string no NextAuth).
+          console.error('[auth] credentials authorize db', dbError);
           incrementRateLimitCounter(rateKey);
-          incrementFailedAttempts(email);
-          logAudit('login_failed', email, ip, userAgent, 'failure', 'User not found or no password');
+          logAudit('login_failed', email, ip, userAgent, 'failure', 'Database unavailable');
           return null;
         }
-
-        const isValid = await verifyPassword(password, user.passwordHash);
-        if (!isValid) {
-          incrementRateLimitCounter(rateKey);
-          incrementFailedAttempts(email);
-          logAudit('login_failed', email, ip, userAgent, 'failure', 'Invalid password');
-          return null;
-        }
-
-        resetRateLimit(rateKey);
-        resetFailedAttempts(email);
-        logAudit('login_success', email, ip, userAgent, 'success', 'Credentials OK');
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          userType: user.role,
-        };
       },
     }),
   ],
