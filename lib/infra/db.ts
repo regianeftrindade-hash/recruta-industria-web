@@ -14,10 +14,31 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient }
  *
  * Mitigação: `datasourceUrl` explícito + `@prisma/client` em
  * `serverExternalPackages` (next.config.js) + query engine no file tracing.
+ *
+ * Pooler Supabase (porta 6543): garante `pgbouncer=true` para evitar
+ * `prepared statement already exists` (42P05) no Session/Transaction pooler.
  */
 export function resolveDatabaseUrl(): string | undefined {
   const url = env.DATABASE_URL?.trim()
-  return url || undefined
+  if (!url) return undefined
+  return ensurePgBouncerParam(url)
+}
+
+/** Pooler :6543 precisa desligar prepared statements do Prisma. */
+export function ensurePgBouncerParam(url: string): string {
+  try {
+    const parsed = new URL(url)
+    const port = parsed.port || (parsed.protocol === 'postgresql:' ? '5432' : '')
+    const isPoolerPort = port === '6543'
+    const hostLooksPooler = parsed.hostname.includes('pooler.supabase.com')
+    if (!isPoolerPort && !hostLooksPooler) return url
+    if (port && port !== '6543') return url
+    if (parsed.searchParams.get('pgbouncer') === 'true') return url
+    parsed.searchParams.set('pgbouncer', 'true')
+    return parsed.toString()
+  } catch {
+    return url
+  }
 }
 
 function createPrismaClient(): PrismaClient {
