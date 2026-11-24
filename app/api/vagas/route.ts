@@ -6,7 +6,12 @@ import { jsonError } from "@/lib/jobs/job-api";
 
 export async function GET(request: Request) {
   try {
-    await bindJobInterfaceLocale();
+    try {
+      await bindJobInterfaceLocale();
+    } catch (localeError) {
+      // Idioma da interface não pode derrubar a listagem pública.
+      console.error("[api/vagas] locale", localeError);
+    }
     const filters = parseJobSearch(new URL(request.url).searchParams);
     const jobs = await searchPublicJobs(filters);
     return NextResponse.json({ jobs, total: jobs.length });
