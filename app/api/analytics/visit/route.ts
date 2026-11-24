@@ -21,6 +21,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('Erro ao registrar visita:', error);
-    return NextResponse.json({ ok: false }, { status: 200 });
+    return NextResponse.json({ ok: false }, { status: 500 });
   }
 }

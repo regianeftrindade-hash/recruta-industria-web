@@ -47,10 +47,25 @@ export async function GET(request: NextRequest) {
       if (!auth) {
         return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
       }
+      // Preferir cuid Prisma no JWT; se sessão Google antiga ainda tiver sub do provedor,
+      // resolver pelo e-mail (mesmo padrão do upload de vídeo).
+      let prismaUserId = typeof token?.sub === "string" ? token.sub : null;
+      if (auth.email && path.startsWith("professional-videos/")) {
+        try {
+          const { prisma } = await import("@/lib/db");
+          const dbUser = await prisma.user.findUnique({
+            where: { email: auth.email.toLowerCase().trim() },
+            select: { id: true },
+          });
+          if (dbUser?.id) prismaUserId = dbUser.id;
+        } catch {
+          // mantém token.sub
+        }
+      }
       let allowed = canSignMediaPath({
         path,
         email: auth.email,
-        userId: typeof token?.sub === "string" ? token.sub : null,
+        userId: prismaUserId,
         role: typeof token?.userType === "string" ? token.userType : null,
         isAdmin,
       });

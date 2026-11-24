@@ -1,5 +1,4 @@
 import { NextRequest } from 'next/server';
-import { timingSafeEqual } from 'crypto';
 import { prisma } from '@/lib/db';
 import {
   extractGatewayReference,
@@ -11,6 +10,7 @@ import {
   syncPaymentStatusFromGateway,
 } from '@/lib/payment-activation';
 import { enforceApiRateLimit, getClientIp } from '@/lib/security/api-guard';
+import { matchWebhookSecret } from '@/lib/security/webhook-auth';
 
 function mapWebhookStatus(status?: string): string {
   const normalized = (status || 'PENDING').toUpperCase();
@@ -21,27 +21,14 @@ function mapWebhookStatus(status?: string): string {
 }
 
 function isValidWebhookSecret(request: NextRequest): boolean {
-  const expected = process.env.PAGSEGURO_WEBHOOK_SECRET?.trim()
-    || process.env.PAGBANK_WEBHOOK_SECRET?.trim();
-
-  // Em desenvolvimento, permite sem secret se não configurado
-  if (!expected) {
-    return process.env.NODE_ENV !== 'production';
-  }
-
-  const provided =
-    request.headers.get('x-webhook-secret')
-    || request.headers.get('x-pagseguro-secret')
-    || new URL(request.url).searchParams.get('secret')
-    || '';
-
-  try {
-    const a = Buffer.from(provided);
-    const b = Buffer.from(expected);
-    return a.length === b.length && timingSafeEqual(a, b);
-  } catch {
-    return false;
-  }
+  return matchWebhookSecret({
+    request,
+    expected:
+      process.env.PAGSEGURO_WEBHOOK_SECRET?.trim()
+      || process.env.PAGBANK_WEBHOOK_SECRET?.trim(),
+    headerNames: ['x-webhook-secret', 'x-pagseguro-secret'],
+    queryParam: 'secret',
+  });
 }
 
 export async function POST(req: NextRequest) {

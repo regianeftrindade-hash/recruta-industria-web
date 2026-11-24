@@ -41,25 +41,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const social = jobSocialMetadata(view.job);
     const path = `/vagas/${view.job.id}`;
     const absolute = publicJobUrl(view.job.id);
-    const jobLocale = (view.job.locale || "pt-BR").replace("-", "_");
+    const jobLocaleTag = view.job.locale || "pt-BR";
+    const jobLocale = jobLocaleTag.replace("-", "_");
     return {
       title: social.title,
       description: social.description,
+      // Idioma da UI é cookie — sem URLs distintas. hreflang só x-default + locale da vaga.
       alternates: {
         canonical: path,
         languages: {
-          "pt-BR": path,
-          en: path,
-          es: path,
-          fr: path,
-          de: path,
-          it: path,
-          "pt-PT": path,
-          "zh-CN": path,
-          ja: path,
-          ko: path,
-          ar: path,
-          hi: path,
+          [jobLocaleTag]: path,
           "x-default": path,
         },
       },
@@ -93,6 +84,13 @@ function Fact({ label, value }: { label: string; value: string | null }) {
   );
 }
 
+function parseSalaryNumber(label: string | null | undefined): number | null {
+  if (!label) return null;
+  const digits = label.replace(/[^\d,.]/g, "").replace(/\./g, "").replace(",", ".");
+  const value = Number(digits);
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
+
 function jobPostingJsonLd(job: {
   id: string;
   title: string;
@@ -105,17 +103,25 @@ function jobPostingJsonLd(job: {
   countryCode?: string;
   currency?: string;
   salaryLabel?: string | null;
+  applicationMode?: string;
   timeZone?: string;
   locale?: string;
 }) {
   const country = (job.countryCode || "BR").toUpperCase();
   const currency = (job.currency || "BRL").toUpperCase();
   const datePosted = job.publicationDateIso || undefined;
+  const mode = (job.applicationMode || "INTERNAL").toUpperCase();
+  const directApply = mode === "INTERNAL";
+  const salaryNumber = parseSalaryNumber(job.salaryLabel);
+  const description =
+    job.salaryLabel && salaryNumber == null
+      ? `${job.description}\n\nRemuneração: ${job.salaryLabel}`
+      : job.description;
   const data = {
     "@context": "https://schema.org",
     "@type": "JobPosting",
     title: job.title,
-    description: job.description,
+    description,
     ...(datePosted ? { datePosted } : {}),
     hiringOrganization: {
       "@type": "Organization",
@@ -129,13 +135,14 @@ function jobPostingJsonLd(job: {
         ...(job.workplace ? { addressLocality: job.workplace } : {}),
       },
     },
-    ...(job.salaryLabel
+    ...(salaryNumber != null
       ? {
           baseSalary: {
             "@type": "MonetaryAmount",
             currency,
             value: {
               "@type": "QuantitativeValue",
+              value: salaryNumber,
               unitText: "MONTH",
             },
           },
@@ -143,7 +150,7 @@ function jobPostingJsonLd(job: {
       : {}),
     employmentType: job.contractLabel || undefined,
     url: publicJobUrl(job.id),
-    directApply: true,
+    directApply,
     inLanguage: job.locale || "pt-BR",
   };
   return JSON.stringify(data).replace(/</g, "\\u003c");

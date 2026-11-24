@@ -1,5 +1,4 @@
 import { NextRequest } from 'next/server';
-import { timingSafeEqual } from 'crypto';
 import {
   extractAsaasPaymentId,
   extractAsaasPaymentStatus,
@@ -10,28 +9,17 @@ import {
   syncPaymentStatusFromGateway,
 } from '@/lib/payment-activation';
 import { enforceApiRateLimit, getClientIp } from '@/lib/security/api-guard';
+import { matchWebhookSecret } from '@/lib/security/webhook-auth';
 
 function isValidAsaasWebhookToken(request: NextRequest): boolean {
-  const expected =
-    process.env.ASAAS_WEBHOOK_TOKEN?.trim() || process.env.ASAAS_WEBHOOK_SECRET?.trim();
-
-  if (!expected) {
-    return process.env.NODE_ENV !== 'production';
-  }
-
-  const provided =
-    request.headers.get('asaas-access-token')
-    || request.headers.get('x-asaas-access-token')
-    || new URL(request.url).searchParams.get('token')
-    || '';
-
-  try {
-    const a = Buffer.from(provided);
-    const b = Buffer.from(expected);
-    return a.length === b.length && timingSafeEqual(a, b);
-  } catch {
-    return false;
-  }
+  return matchWebhookSecret({
+    request,
+    expected:
+      process.env.ASAAS_WEBHOOK_TOKEN?.trim() || process.env.ASAAS_WEBHOOK_SECRET?.trim(),
+    headerNames: ['asaas-access-token', 'x-asaas-access-token'],
+    // Compat temporária: só se WEBHOOK_ALLOW_QUERY_SECRET=true em produção.
+    queryParam: 'token',
+  });
 }
 
 export async function POST(req: NextRequest) {
