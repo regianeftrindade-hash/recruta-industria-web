@@ -110,15 +110,17 @@ Se o staging for **banco novo vazio**, rode o histórico completo (`migrate depl
 
 ---
 
-## 9. Veredito
+## 9. Veredito (atualizado §12)
 
 | Item | Estado |
 |------|--------|
+| Ref staging `gshhznyretzrdnmkgmgj` nas duas `STAGING_*` | **OK** |
+| Isolamento ≠ produção `yxwgjlzzxkitvcduckgk` | **OK** |
+| Auth read-only staging | **FALHA** (senha rejeitada / secret possivelmente stale na VM) |
+| Identidade / schema | **Não verificados** |
 | Migrate staging | **Interrompido — não executado** |
 | Migrate produção | **Não executado** (proibido) |
 | Merge / deploy Production | **Não feito** |
-| Preview parece ≠ produção (vagas) | Sim (500 vs 1096) |
-| Prova de ref staging neste agente | **Insuficiente para autorizar migrate** |
 
 *Nenhuma migration foi aplicada. Nenhum registro de produção foi modificado. Nenhum secret foi impresso.*
 
@@ -167,3 +169,47 @@ A senha configurada nas URLs de staging foi rejeitada pelo pooler Supabase (`FAT
 2. Atualizar `STAGING_DATABASE_URL` e `STAGING_DIRECT_URL` no Cloud Agent com a senha correta (URL-encode de caracteres especiais).  
 3. Para este agente, preferir `DIRECT_URL` de staging como pooler sessão `:5432` (o host `db.*` está inacessível por IPv6 aqui).  
 4. Pedir novamente o migrate após o gate de auth passar.
+
+---
+
+## 12. Re-verificação após atualização de senha (24/11/2026 ~00:04 America/Sao_Paulo)
+
+Pedido: senha atualizada no Supabase staging e em `STAGING_DATABASE_URL` / `STAGING_DIRECT_URL`; repetir gates; migrar só se auth OK.
+
+### 12.1 Isolamento de project ref (GATE_OK)
+
+| Checagem | Resultado |
+|----------|-----------|
+| `STAGING_DATABASE_URL` host/user | `aws-1-sa-east-1.pooler.supabase.com:6543` / `postgres.gshhznyretzrdnmkgmgj` |
+| `STAGING_DIRECT_URL` host/user | `db.gshhznyretzrdnmkgmgj.supabase.co:5432` / `postgres` |
+| Ambas → `gshhznyretzrdnmkgmgj` | **Sim** |
+| Nenhuma → produção `yxwgjlzzxkitvcduckgk` | **Confirmado** |
+| Globals `DATABASE_URL`/`DIRECT_URL` usadas no teste | **Não** (apenas fingerprint; migrate não usou) |
+
+### 12.2 Autenticação somente leitura (GATE_FAIL)
+
+Testes com Prisma e `psql`, senha decodificada da URL e re-encodada (`[`, `]`, `-`), nos alvos:
+
+| Alvo | Resultado |
+|------|-----------|
+| Pooler sessão `:5432` (`postgres.<ref>`) | **FAIL** — `password authentication failed` |
+| Pooler transaction `:6543` (`postgres.<ref>`) | **FAIL** — `password authentication failed` |
+| Direct `db.<ref>.supabase.co:5432` | **FAIL** — host unreachable (IPv6); sem auth válida |
+
+Fingerprint da senha presente nesta sessão do agente (não é o valor): `sha256_12=445f8cf1ca3f`, `pw_len=24`, especiais `['-', '[', ']']` — **igual** à tentativa anterior à “atualização”, o que indica que **esta VM ainda pode estar com o secret antigo** (secrets do Cloud Agent costumam ser injetados no boot e não hot-reload).
+
+### 12.3 Identidade / schema / migrations
+
+**Não executados** — auth falhou antes de qualquer `SELECT` de identidade.
+
+### 12.4 Migrate
+
+**NÃO EXECUTADO** (regra: qualquer falha → interromper).  
+Merge / deploy: **não feitos**.
+
+### 12.5 O que falta
+
+1. Garantir que a senha no Supabase **Database settings** do projeto `gshhznyretzrdnmkgmgj` é a mesma embutida em `STAGING_*`.  
+2. Atualizar `STAGING_DATABASE_URL` e `STAGING_DIRECT_URL` nos **secrets do Cloud Agent / ambiente** (não só Vercel Preview).  
+3. **Reiniciar o agente** (ou nova sessão) para a VM receber os valores novos — conferir se o fingerprint `sha256_12` muda.  
+4. Pedir de novo: gate → auth → migrate só em staging.
