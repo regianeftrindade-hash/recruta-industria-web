@@ -110,19 +110,20 @@ Se o staging for **banco novo vazio**, rode o histórico completo (`migrate depl
 
 ---
 
-## 9. Veredito (atualizado §12)
+## 9. Veredito (atualizado §13 — 24/11/2026 ~01:20 America/Sao_Paulo)
 
 | Item | Estado |
 |------|--------|
-| Ref staging `gshhznyretzrdnmkgmgj` nas duas `STAGING_*` | **OK** |
+| Ref staging `gshhznyretzrdnmkgmgj` | **OK** |
 | Isolamento ≠ produção `yxwgjlzzxkitvcduckgk` | **OK** |
-| Auth read-only staging | **FALHA** (senha rejeitada / secret possivelmente stale na VM) |
-| Identidade / schema | **Não verificados** |
-| Migrate staging | **Interrompido — não executado** |
-| Migrate produção | **Não executado** (proibido) |
+| Auth staging (pooler `:6543` + session `:5432`) | **OK** |
+| Schema staging alinhado a `schema.prisma` | **OK** (57 tabelas) |
+| Histórico Prisma staging | **up to date** (29 applied) |
+| Migrate produção | **Não executado** |
 | Merge / deploy Production | **Não feito** |
+| Secrets globais `DATABASE_URL`/`DIRECT_URL` | **Não alterados** |
 
-*Nenhuma migration foi aplicada. Nenhum registro de produção foi modificado. Nenhum secret foi impresso.*
+*Operações de schema só no projeto `gshhznyretzrdnmkgmgj`. Nenhum secret impresso no relatório.*
 
 ---
 
@@ -213,3 +214,54 @@ Merge / deploy: **não feitos**.
 2. Atualizar `STAGING_DATABASE_URL` e `STAGING_DIRECT_URL` nos **secrets do Cloud Agent / ambiente** (não só Vercel Preview).  
 3. **Reiniciar o agente** (ou nova sessão) para a VM receber os valores novos — conferir se o fingerprint `sha256_12` muda.  
 4. Pedir de novo: gate → auth → migrate só em staging.
+
+---
+
+## 13. Migrate staging executado (24/11/2026 ~01:18–01:22 America/Sao_Paulo)
+
+### 13.1 Gate pré-execução
+
+| Checagem | Resultado |
+|----------|-----------|
+| Alvo | `gshhznyretzrdnmkgmgj` (sa-east-1 pooler) |
+| `DATABASE_URL` do comando | staging pooler `:6543` + `pgbouncer=true` (override local) |
+| `DIRECT_URL` do comando | `STAGING_DIRECT_URL` session pooler `:5432` (override local) |
+| Produção `yxwgjlzzxkitvcduckgk` | **não** usada |
+| Secrets globais alterados | **Não** |
+
+### 13.2 Pendências antes do deploy
+
+`prisma migrate status` no staging: **29 migrations** não aplicadas (banco vazio).
+
+### 13.3 `prisma migrate deploy` (primeira tentativa)
+
+**Falhou** em `20260105235359_marketplace_vitrine` com `ERROR: type "datetime" does not exist` (SQL legado SQLite).  
+Estado: 1 linha em `_prisma_migrations` (failed). Tabelas de app: nenhuma.
+
+Recuperação no **staging apenas**: `prisma migrate resolve --rolled-back 20260105235359_marketplace_vitrine`.
+
+### 13.4 Baseline seguro (banco Postgres verde)
+
+Como as 2 primeiras migrations são SQLite e `init_postgres` é só `SELECT 1`, `migrate deploy` sozinho **não** cria o schema em banco novo.
+
+Procedimento aplicado **somente no staging**:
+
+1. `prisma db push --accept-data-loss` → schema sincronizado com `schema.prisma`  
+2. `prisma migrate resolve --applied` para as 29 migrations  
+3. `prisma migrate status` → **Database schema is up to date!**
+
+### 13.5 Validação pós-baseline
+
+| Item | Resultado |
+|------|-----------|
+| Identidade | `postgres` / PG **17.12** |
+| Tabelas public | **57** |
+| `password_reset_tokens` | Existe (`id`, `email`, `tokenHash`, `expiresAt`, `usedAt`, `createdAt`) |
+| `ProfileMessage.senderRole` / `replyToId` | Existem |
+| FKs amostradas | `Company/Professional/Profile → User`; `ProfileMessage → Profile`; `job_applications/favorites → job_postings/User/Profile` |
+| Contagens | todas **0** (staging vazio de dados) |
+| Migrações applied | **29** (inclui `20261124020000_password_reset_tokens` e `20261124021000_profile_message_reply_columns`) |
+
+### 13.6 Produção / merge / deploy
+
+**Não tocados.** Globals de produção permanecem nos secrets do agente; overrides foram só no shell do comando.
