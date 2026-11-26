@@ -63,8 +63,8 @@ A plataforma coleta dados pessoais extensos (incluindo categorias sensíveis no 
 
 ## 5. Termos — o que a empresa / advogado devem fornecer
 
-1. Razão social, CNPJ, endereço da controladora  
-2. Nome e contato do encarregado (DPO)  
+1. CNPJ e endereço da controladora (forma informada: Empresário Individual / ME — ver `docs/lgpd-dispensa-encarregado-anpd-2-2022.md`)  
+2. Encarregado: dispensa art. 11 Res. CD/ANPD nº 2/2022; canal `contato@recrutaindustria.com` 
 3. Foro e lei aplicável  
 4. Tabela de retenção por categoria de dado  
 5. Lista oficial de subprocessadores + países  
@@ -124,7 +124,7 @@ A plataforma coleta dados pessoais extensos (incluindo categorias sensíveis no 
 ## O que você precisa fornecer (lista objetiva)
 
 1. Dados societários oficiais (razão social, CNPJ, endereço).  
-2. Contato do DPO/encarregado.  
+2. Canal de titulares (`contato@`) — DPO dispensado operacionalmente (ME).  
 3. Preferência de foro/lei.  
 4. Prazos de retenção desejados por tipo de dado.  
 5. Confirmação da região do projeto Supabase e se há DPA.  

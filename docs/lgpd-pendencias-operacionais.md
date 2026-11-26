@@ -1,10 +1,10 @@
-# LGPD — pendências operacionais e jurídicas (pós-auditoria 8,0)
+# LGPD — pendências operacionais e jurídicas (atualizado 26/11/2026)
 
 **Data:** 26/11/2026 (America/São Paulo)  
 **Escopo:** checklist para elevar conformidade operacional.  
 **Isto NÃO é parecer jurídico e NÃO declara conformidade LGPD/GDPR.**
 
-Documentos técnicos relacionados: `conformidade-lgpd-auditoria-final.md`, `auditoria-fornecedores-lgpd.md`.
+Documentos relacionados: `lgpd-dispensa-encarregado-anpd-2-2022.md`, `conformidade-lgpd-auditoria-final.md`, `auditoria-fornecedores-lgpd.md`.
 
 ---
 
@@ -22,19 +22,26 @@ Documentos técnicos relacionados: `conformidade-lgpd-auditoria-final.md`, `audi
 
 ---
 
-## 2. Encarregado (DPO) — depende de decisão humana
+## 2. Controladora e encarregado — estado atual
 
-Preencher **somente** com dados reais da empresa (não inventar):
+### Controladora (informado pela empresa)
 
-| Campo | Valor (empresa) | Status |
-|-------|-----------------|--------|
-| Nome do encarregado / DPO | _a definir_ | Pendente |
-| E-mail de contato titular | hoje: `contato@recrutaindustria.com` (operacional) | Confirmar canal exclusivo |
-| Razão social da controladora | _a definir_ | Pendente |
-| CNPJ | _a definir_ | Pendente |
-| Endereço da controladora | _a definir_ | Pendente |
+| Campo | Valor | Status |
+|-------|-------|--------|
+| Forma | Empresário Individual | Informado |
+| Porte | ME (Microempresa) | Informado |
+| CNPJ | _não informado nesta rodada_ | Pendente (não inventar) |
+| Endereço | _não informado nesta rodada_ | Pendente (não inventar) |
 
-Após preenchimento por responsável + revisão de advogado, publicar nos textos de `/termos/privacidade` e `/termos/lgpd` (alteração de conteúdo jurídico exige autorização explícita).
+### Encarregado (DPO)
+
+| Campo | Valor | Status |
+|-------|-------|--------|
+| Indicação de encarregado | **Dispensada** (posição operacional) | Ver `docs/lgpd-dispensa-encarregado-anpd-2-2022.md` — art. 11 da Resolução CD/ANPD nº 2/2022 |
+| Canal com titulares (art. 11, § 1º) | `contato@recrutaindustria.com` | **Mantido** |
+| Autoavaliação art. 3º / 4º (alto risco, receita, grupo) | Dever contínuo da controladora | Ressalva — comprovar à ANPD se solicitado (art. 5º) |
+
+Publicar CNPJ/endereço nos textos de `/termos/privacidade` e `/termos/lgpd` **somente** após a empresa fornecer os dados e com autorização explícita para alterar conteúdo jurídico.
 
 ---
 
@@ -55,11 +62,11 @@ Registrar região de processamento e mecanismo de transferência internacional q
 
 ---
 
-## 4. Templates preparados nesta rodada
+## 4. Templates e canais
 
 - `docs/politica-retencao-template.md` — tabela de retenção (prazos em branco para advogado).  
-- Canal de titulares sugerido: `contato@recrutaindustria.com` até existir e-mail do DPO.  
-- `public/.well-known/security.txt` — contato técnico de vulnerabilidades (não substitui DPO).
+- Canal de titulares: **`contato@recrutaindustria.com`** (canal da dispensa de encarregado — art. 11, § 1º).  
+- `public/.well-known/security.txt` — contato técnico de vulnerabilidades (não substitui o canal LGPD).
 
 ## 5. Retenção e exclusão — decisões pendentes
 
@@ -69,7 +76,7 @@ Registrar região de processamento e mecanismo de transferência internacional q
 | `SecurityAuditLog` | Pode permanecer | Prazo de retenção |
 | Backups Vercel/Supabase | Fora do app | Processo de purge sob pedido |
 | Campos Art. 11 (sensíveis) | Coleta opcional no cadastro completo | Manter, minimizar ou restringir |
-| Storage >1000 objetos/pasta | Paginação na exclusão (melhoria técnica desta rodada) | Validar em staging |
+| Storage >1000 objetos/pasta | Paginação na exclusão | Validar em staging |
 
 ---
 
@@ -83,19 +90,16 @@ Registrar região de processamento e mecanismo de transferência internacional q
 
 ## 7. Minimização e acesso
 
-Recomendações técnicas (já alinhadas ao código; mudanças de produto exigem pedido explícito):
-
 1. Evitar logs com corpo de request de pagamento/documentos.  
-2. Sentry com scrubbing de e-mail/tokens/chaves (melhoria desta rodada).  
+2. Sentry com scrubbing de e-mail/tokens/chaves.  
 3. Empresa só acessa documentos após desbloqueio individual.  
 4. Não expor secrets em `/api/payment/config` (já true).
 
 ---
 
-## 8. O que esta rodada de código NÃO faz
+## 8. O que esta atualização NÃO faz
 
-- Não inventa nome/e-mail de DPO.  
-- Não altera textos comerciais nem páginas de termos sem autorização jurídica.  
-- Não assina DPAs.  
-- Não declara o produto “em conformidade LGPD”.  
-- Não muda Stripe LIVE, Asaas, planos ou banco de Production.
+- Não inventa CNPJ, endereço ou nome de DPO.  
+- Não declara conformidade LGPD integral.  
+- Não altera funcionalidades, Stripe LIVE, Asaas, planos ou banco.  
+- Não altera páginas de termos sem autorização jurídica explícita.

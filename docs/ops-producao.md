@@ -77,4 +77,4 @@ Lint (`npm run lint`) é job obrigatório no workflow CI.
 5. [ ] Actions: lint + testes + E2E empresa/profissional verdes  
 6. [ ] Evento de teste visível no Sentry (se DSN configurado)  
 7. [ ] `/manifest.webmanifest` HTTP 200  
-8. [ ] Pendências DPO/DPAs em `docs/lgpd-pendencias-operacionais.md`  
+8. [ ] Pendências LGPD (DPAs, CNPJ/endereço; DPO com dispensa ME) em `docs/lgpd-pendencias-operacionais.md` / `docs/lgpd-dispensa-encarregado-anpd-2-2022.md`  

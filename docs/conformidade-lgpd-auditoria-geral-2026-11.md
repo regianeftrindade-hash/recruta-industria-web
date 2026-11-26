@@ -28,16 +28,24 @@
 - Sem CNPJ/DPO inventados nos termos  
 - Template de retenção e checklist DPA/DPO em `docs/`  
 
+## Controladora / encarregado (atualização 26/11/2026)
+
+- Controladora informada: **Empresário Individual** enquadrado como **ME**.  
+- **Dispensa de indicação de encarregado** registrada com fundamento no art. 11 da Resolução CD/ANPD nº 2/2022 — ver `docs/lgpd-dispensa-encarregado-anpd-2-2022.md`.  
+- Canal de titulares mantido: `contato@recrutaindustria.com` (art. 11, § 1º).  
+- Ressalva: autoavaliação contínua das exclusões do art. 3º (alto risco art. 4º, receita, grupo econômico). **Não é parecer nem declaração de conformidade integral.**
+
 ## Depende de decisão jurídica ou da empresa
 
-1. Identificação do encarregado (DPO), razão social, CNPJ, endereço  
+1. ~~Identificação obrigatória de DPO~~ — dispensa operacional registrada (ME/EI); publicação de **CNPJ** e **endereço** ainda pendente (não inventar)  
 2. Tabela de retenção com prazos aprovados (PaymentRecord, logs, backups)  
 3. DPAs / contratos com Vercel, Supabase, Stripe, Asaas, Hostinger, Google, Upstash, Sentry  
-4. Bases legais Art. 11 para campos sensíveis opcionais do cadastro completo  
+4. Bases legais Art. 11 (LGPD) para campos sensíveis opcionais do cadastro completo  
 5. Política de cookies detalhada (inventário)  
 6. Traduções oficiais dos textos jurídicos além do fallback pt-BR  
 7. Procedimento interno e prazos de atendimento a titulares  
 8. Manter ou desligar Google Ads (hoje: opt-in)  
+9. Revisão periódica da autoavaliação de “alto risco” (Resolução CD/ANPD nº 2/2022, arts. 3º–5º) 
 
 ## Riscos remanescentes
 

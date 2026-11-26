@@ -18,11 +18,11 @@ Preencher a coluna “Prazo aprovado” com advogado + controladora.
 
 ## Procedimento sugerido (operacional)
 
-1. Titular solicita via `contato@recrutaindustria.com` (ou canal DPO quando existir).  
+1. Titular solicita via `contato@recrutaindustria.com` (canal da dispensa de encarregado — art. 11 Res. CD/ANPD nº 2/2022).  
 2. Verificar identidade do solicitante.  
 3. Classificar pedido (acesso, correção, exclusão, portabilidade, oposição).  
 4. Executar fluxo de produto quando disponível (ex.: exclusão de conta).  
 5. Registrar atendimento e prazo de resposta.  
 6. Se envolver PaymentRecord/backups, seguir retenção aprovada — **não apagar sem base**.
 
-Encarregado (DPO), razão social e DPAs: ver `docs/lgpd-pendencias-operacionais.md`.
+Controladora (EI/ME), dispensa de encarregado e DPAs: ver `docs/lgpd-pendencias-operacionais.md` e `docs/lgpd-dispensa-encarregado-anpd-2-2022.md`.
