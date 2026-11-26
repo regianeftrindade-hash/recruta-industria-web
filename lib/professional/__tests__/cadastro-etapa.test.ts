@@ -117,6 +117,30 @@ describe("validarCamposObrigatoriosCadastro", () => {
     expect(faltando).toEqual([]);
   });
 
+  it("bloqueia menor de 18 pela data de nascimento", () => {
+    const faltando = validarCamposObrigatoriosCadastro(
+      base({
+        nome: "Menor Teste",
+        dataNascimentoValue: "01/01/2012",
+        dataNascimento: "2012-01-01",
+        email: "menor@email.com",
+        telefone: "(41) 99999-8877",
+        whatsapp: "Sim",
+        estado: "PR",
+        cidade: "Curitiba",
+        escolaridade: "Médio completo",
+        situacaoProfissional: "Estudante",
+        cargoDesejado: "Aprendiz",
+        pretensaoSalarial: "1500",
+        autorizoDados: true,
+        declaroVerdadeiro: true,
+        aceitoLGPD: true,
+        exigeSenha: false,
+      }),
+    );
+    expect(faltando.some((c) => c.id === "dataNascimento")).toBe(true);
+  });
+
   it("não exige CNH nem área de interesse", () => {
     const faltando = validarCamposObrigatoriosCadastro(base({ exigeSenha: false }));
     const ids = faltando.map((c) => c.id);

@@ -34,4 +34,11 @@ describe("age-gate (cadastro profissional 18+)", () => {
     expect(ageFromBirthDate(new Date(2008, 10, 26), now)).toBe(18);
     expect(ageFromBirthDate(new Date(2008, 10, 27), now)).toBe(17);
   });
+
+  it("usa a data de nascimento, não um número de idade digitado", () => {
+    // Idade "digitada" 25 não entra na API — só a data real.
+    const underageBirth = "2012-01-01";
+    expect(isProfessionalAgeAllowed(underageBirth, 18, now).ok).toBe(false);
+    expect(isProfessionalAgeAllowed("2000-06-15", 18, now).ok).toBe(true);
+  });
 });

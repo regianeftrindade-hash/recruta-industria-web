@@ -1,4 +1,5 @@
 import { t } from '@/lib/i18n/translate';
+import { isProfessionalAgeAllowed } from '@/lib/privacy/age-gate';
 import { isValidEmail } from '@/lib/security';
 import { isValidPhone, normalizeCountryCode } from '@/lib/identity/registration-documents';
 
@@ -120,6 +121,18 @@ export function validarCamposObrigatoriosCadastro(input: ValidacaoCadastroInput)
   if (campoVazio(input.nome)) add('nome', t("registration.simple.fullName"));
   if (!dataNascimentoValida(input.dataNascimentoValue, input.dataNascimento)) {
     add('dataNascimento', t("registration.ui.nascimento"));
+  } else {
+    const ageGate = isProfessionalAgeAllowed(
+      input.dataNascimento || input.dataNascimentoValue,
+    );
+    if (!ageGate.ok) {
+      add(
+        'dataNascimento',
+        ageGate.reason === 'underage'
+          ? t('privacy.professionalMinAge')
+          : t('registration.ui.nascimento'),
+      );
+    }
   }
 
   if (campoVazio(input.email)) add('email', t("registration.simple.email"));

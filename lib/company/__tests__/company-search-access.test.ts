@@ -8,6 +8,7 @@ const completo = {
   responsavelCpf: "123.456.789-09",
   telefone: "11999999999",
   endereco: "Rua A, 10",
+  countryCode: "BR",
 };
 
 describe("companyCanSearchProfessionals", () => {
@@ -21,10 +22,51 @@ describe("companyCanSearchProfessionals", () => {
     expect(companyCanSearchProfessionals({}, true)).toBe(true);
   });
 
-  it("exige cadastro completo quando não é conta de teste", () => {
+  it("exige cadastro completo BR quando não é conta de teste", () => {
     expect(companyCanSearchProfessionals(completo, false)).toBe(true);
     expect(companyCanSearchProfessionals({ ...completo, telefone: "  " }, false)).toBe(false);
     expect(companyCanSearchProfessionals({ ...completo, endereco: "Rua" }, false)).toBe(false);
     expect(companyCanSearchProfessionals({ ...completo, cnpj: "123" }, false)).toBe(false);
+  });
+
+  it("empresa internacional não exige CNPJ/CPF", () => {
+    expect(
+      companyCanSearchProfessionals(
+        {
+          name: "Global Steel",
+          responsavelNome: "John",
+          telefone: "+1 555 0100",
+          endereco: "100 Main St",
+          countryCode: "US",
+        },
+        false,
+      ),
+    ).toBe(true);
+    expect(
+      companyCanSearchProfessionals(
+        {
+          name: "Global Steel",
+          responsavelNome: "John",
+          telefone: "+1 555 0100",
+          endereco: "100 Main St",
+          countryCode: "US",
+          cnpj: "",
+          responsavelCpf: "",
+        },
+        false,
+      ),
+    ).toBe(true);
+    expect(
+      companyCanSearchProfessionals(
+        {
+          name: "Global Steel",
+          responsavelNome: "John",
+          telefone: "",
+          endereco: "100 Main St",
+          countryCode: "US",
+        },
+        false,
+      ),
+    ).toBe(false);
   });
 });
