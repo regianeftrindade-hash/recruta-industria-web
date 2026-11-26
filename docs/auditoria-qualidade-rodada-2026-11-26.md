@@ -41,10 +41,11 @@ Não é 10: faltam nomeação real do DPO, DPAs assinados, validação jurídica
 | Item | Detalhe |
 |------|---------|
 | Helper único hreflang | `lib/seo/language-alternates.ts` (12 locales + x-default) |
-| Layout + sitemap | Passam a usar o helper |
-| robots / sitemap | Mantidos; sem inventar rotas de conteúdo |
+| Layout + sitemap + vagas + termos | Usam o helper; canonical em `/vagas` |
+| robots / noindex | Disallow ampliado (login/auth/pagamento/dashboards); noindex em layouts privados |
+| Sitemap | Removidos `/login` e `?tipo=*` |
+| Job OG | Imagem de marca em `/vagas/[id]` |
 | Playbook Search Console | `docs/seo-search-console-playbook.md` (passos humanos) |
-| Docs | `docs/seo-tecnico.md`, `docs/dependencias-seguranca.md`, checklist a11y |
 
 ### Testes locais desta rodada
 - `tsc --noEmit` OK  

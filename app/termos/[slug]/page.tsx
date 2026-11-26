@@ -11,6 +11,7 @@ import { bindLocale } from "@/lib/i18n/active-locale";
 import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
 import { t } from "@/lib/i18n/translate";
 import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
+import { languageAlternatesRelative } from "@/lib/seo/language-alternates";
 import styles from "../termo.module.css";
 
 type Props = {
@@ -32,35 +33,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (publicDoc) {
     const titleKey = publicTitleKey(slug);
     const title = titleKey ? t(titleKey, locale) : publicDoc.titlePtBR;
+    const path = `/termos/${slug}`;
     return {
       title,
       description: publicDoc.paragraphsByLocale["pt-BR"][0]?.slice(0, 160),
       robots: { index: true, follow: true },
       alternates: {
-        canonical: `/termos/${slug}`,
-        languages: {
-          "pt-BR": `/termos/${slug}`,
-          en: `/termos/${slug}`,
-          es: `/termos/${slug}`,
-          fr: `/termos/${slug}`,
-          de: `/termos/${slug}`,
-          it: `/termos/${slug}`,
-          "pt-PT": `/termos/${slug}`,
-          "zh-CN": `/termos/${slug}`,
-          ja: `/termos/${slug}`,
-          ko: `/termos/${slug}`,
-          ar: `/termos/${slug}`,
-          hi: `/termos/${slug}`,
-          "x-default": `/termos/${slug}`,
-        },
+        canonical: path,
+        languages: languageAlternatesRelative(path),
       },
     };
   }
 
   const termo = getTermoBySlug(slug);
+  const path = `/termos/${slug}`;
   return {
     title: termo?.titulo || "Termos",
     robots: termo ? { index: true, follow: true } : { index: false, follow: false },
+    ...(termo
+      ? {
+          alternates: {
+            canonical: path,
+            languages: languageAlternatesRelative(path),
+          },
+        }
+      : {}),
   };
 }
 

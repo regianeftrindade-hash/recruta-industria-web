@@ -6,8 +6,9 @@
 
 | Item | Estado |
 |------|--------|
-| `robots.txt` | Allow `/`; disallow api/admin/dashboards (`app/robots.ts`) |
-| `sitemap.xml` | Páginas estáticas + vagas públicas (até 5k) + hreflang |
+| `robots.txt` | Allow `/`; disallow api/admin/login/auth/pagamento/dashboards (`app/robots.ts`) |
+| `noindex` metadata | Pagamento, checkout, assinatura, esqueci/reset senha, admin-2fa |
+| `sitemap.xml` | Páginas públicas + vagas (até 5k) + hreflang; **sem** `/login` nem query `?tipo=` |
 | `hreflang` / `alternates.languages` | 12 idiomas + `x-default` na **mesma** URL (`lib/seo/language-alternates.ts`) |
 | `metadataBase` / canonical | `https://www.recrutaindustria.com` |
 | Open Graph / Twitter | Presentes no layout raiz |

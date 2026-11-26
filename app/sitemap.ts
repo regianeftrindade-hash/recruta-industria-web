@@ -12,9 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: MetadataRoute.Sitemap[0]["changeFrequency"];
   }> = [
     { path: "/", priority: 1, changeFrequency: "weekly" },
-    { path: "/login", priority: 0.9, changeFrequency: "monthly" },
-    { path: "/login?tipo=profissional", priority: 0.8, changeFrequency: "monthly" },
-    { path: "/login?tipo=empresa", priority: 0.8, changeFrequency: "monthly" },
+    // /login fica em robots disallow (auth); não entra no sitemap.
     { path: "/professional/register", priority: 0.85, changeFrequency: "monthly" },
     { path: "/company/cadastro", priority: 0.85, changeFrequency: "monthly" },
     { path: "/company/register", priority: 0.7, changeFrequency: "monthly" },

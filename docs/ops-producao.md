@@ -53,7 +53,7 @@ Checklist LGPD de DPA do Upstash: ver `docs/lgpd-pendencias-operacionais.md`.
 | `NEXT_PUBLIC_SENTRY_DSN` | **o mesmo** DSN |
 
 Sem DSN o site sobe normalmente; erros só vão para o console.  
-O SDK usa `sendDefaultPii: false` e `beforeSend` com scrubbing de e-mail/tokens/chaves (não envia senhas/documentos de propósito).
+O SDK (@sentry/nextjs 11.x) usa `dataCollection` restritiva (equivalente ao antigo `sendDefaultPii: false`) e `beforeSend` com scrubbing de e-mail/tokens/chaves (não envia senhas/documentos de propósito).
 
 Upgrade para `@sentry/nextjs` 11.x (advisory moderate da cadeia glob): **adiado** — breaking no plugin de build; planejar janela própria.
 
