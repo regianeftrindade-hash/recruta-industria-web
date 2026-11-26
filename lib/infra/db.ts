@@ -45,7 +45,13 @@ export function resolveDatabaseUrl(): string | undefined {
         console.error('[db] STAGING_DATABASE_URL no Preview aponta para Production — bloqueado.')
         return PREVIEW_PRODUCTION_BLOCK_URL
       }
-      return ensurePgBouncerParam(staging)
+      if (looksLikeSupabaseDirectDbHost(staging)) {
+        console.error(
+          '[db] STAGING_DATABASE_URL usa host db.*.supabase.co (direto/IPv6). ' +
+            'No Preview/Vercel use o Transaction pooler :6543 (pooler.supabase.com).',
+        )
+      }
+      return normalizeSupabasePoolerUrl(staging)
     }
   }
 
@@ -60,7 +66,7 @@ export function resolveDatabaseUrl(): string | undefined {
     return PREVIEW_PRODUCTION_BLOCK_URL
   }
 
-  return ensurePgBouncerParam(url)
+  return normalizeSupabasePoolerUrl(url)
 }
 
 /**
@@ -78,7 +84,7 @@ export function resolveDirectUrl(): string | undefined {
         console.error('[db] STAGING_DIRECT_URL no Preview aponta para Production — bloqueado.')
         return PREVIEW_PRODUCTION_BLOCK_URL
       }
-      return staging
+      return ensureSslModeRequire(staging)
     }
   }
 
@@ -93,7 +99,7 @@ export function resolveDirectUrl(): string | undefined {
     return PREVIEW_PRODUCTION_BLOCK_URL
   }
 
-  return url
+  return ensureSslModeRequire(url)
 }
 
 /**
@@ -112,6 +118,22 @@ export function applyPreviewStagingOverrides(): void {
   if (direct) env.DIRECT_URL = direct
 }
 
+/** Garante sslmode=require em hosts Supabase (evita falha TLS no Prisma/Vercel). */
+export function ensureSslModeRequire(url: string): string {
+  try {
+    const parsed = new URL(url)
+    const isSupabase =
+      parsed.hostname.includes('supabase.com') || parsed.hostname.includes('supabase.co')
+    if (!isSupabase) return url
+    if (!parsed.searchParams.get('sslmode')) {
+      parsed.searchParams.set('sslmode', 'require')
+    }
+    return parsed.toString()
+  } catch {
+    return url
+  }
+}
+
 /** Pooler :6543 precisa desligar prepared statements do Prisma. */
 export function ensurePgBouncerParam(url: string): string {
   try {
@@ -126,6 +148,20 @@ export function ensurePgBouncerParam(url: string): string {
     return parsed.toString()
   } catch {
     return url
+  }
+}
+
+/** Pooler :6543 + sslmode para URLs de runtime (DATABASE / STAGING_DATABASE). */
+export function normalizeSupabasePoolerUrl(url: string): string {
+  return ensureSslModeRequire(ensurePgBouncerParam(url))
+}
+
+/** Detecta host direto db.*.supabase.co (IPv6) — frágil no Preview/Vercel. */
+export function looksLikeSupabaseDirectDbHost(url: string): boolean {
+  try {
+    return new URL(url).hostname.startsWith('db.') && url.includes('supabase.co')
+  } catch {
+    return false
   }
 }
 

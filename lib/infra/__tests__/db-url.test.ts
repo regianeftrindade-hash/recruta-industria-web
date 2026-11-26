@@ -3,6 +3,8 @@ import { env } from "node:process";
 import {
   applyPreviewStagingOverrides,
   ensurePgBouncerParam,
+  ensureSslModeRequire,
+  normalizeSupabasePoolerUrl,
   PREVIEW_PRODUCTION_BLOCK_URL,
   PRODUCTION_SUPABASE_PROJECT_REF,
   resolveDatabaseUrl,
@@ -183,7 +185,7 @@ describe("applyPreviewStagingOverrides", () => {
   });
 });
 
-describe("ensurePgBouncerParam", () => {
+describe("ensurePgBouncerParam / sslmode", () => {
   it("não altera URL direta :5432 sem pooler", () => {
     const url = "postgresql://user:pass@db.example.com:5432/postgres?sslmode=require";
     expect(ensurePgBouncerParam(url)).toBe(url);
@@ -199,5 +201,19 @@ describe("ensurePgBouncerParam", () => {
     const url =
       "postgresql://user:pass@aws-1-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require";
     expect(ensurePgBouncerParam(url)).toBe(url);
+  });
+
+  it("normalizeSupabasePoolerUrl injeta pgbouncer e sslmode", () => {
+    const url =
+      "postgresql://user:pass@aws-1-sa-east-1.pooler.supabase.com:6543/postgres";
+    const normalized = normalizeSupabasePoolerUrl(url);
+    expect(normalized).toContain("pgbouncer=true");
+    expect(normalized).toContain("sslmode=require");
+  });
+
+  it("ensureSslModeRequire em DIRECT :5432 supabase", () => {
+    const url =
+      "postgresql://user:pass@aws-1-sa-east-1.pooler.supabase.com:5432/postgres";
+    expect(ensureSslModeRequire(url)).toContain("sslmode=require");
   });
 });

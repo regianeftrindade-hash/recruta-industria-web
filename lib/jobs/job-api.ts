@@ -74,6 +74,19 @@ export function jsonError(error: unknown, fallback: string) {
       { status: 500 },
     );
   }
+  const errorName = error instanceof Error ? error.name : "";
+  if (
+    errorName === "PrismaClientInitializationError" ||
+    /PrismaClientInitializationError/i.test(message) ||
+    /Error opening a TLS connection/i.test(message) ||
+    /P1001|P1011/i.test(message)
+  ) {
+    // Não vaza nome/mensagem Prisma ao cliente; logs do servidor já registram.
+    return NextResponse.json(
+      { error: fallback, code: "DB_INIT_FAILED" },
+      { status: 500 },
+    );
+  }
   return NextResponse.json(
     {
       error: fallback,

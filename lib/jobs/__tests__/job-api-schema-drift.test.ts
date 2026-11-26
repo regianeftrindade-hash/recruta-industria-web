@@ -53,4 +53,19 @@ describe("jsonError DATABASE_URL", () => {
     expect(body.prismaCode).toBe("P1001");
     expect(JSON.stringify(body)).not.toMatch(/secret-host/);
   });
+
+  it("mapeia PrismaClientInitializationError sem vazar errorName", async () => {
+    const err = new Error("Can't reach database server at `127.0.0.1:1`");
+    err.name = "PrismaClientInitializationError";
+    // Mensagem sem P-code para exercitar o ramo DB_INIT quando não é P####
+    const tls = new Error("Error opening a TLS connection: self-signed certificate");
+    tls.name = "PrismaClientInitializationError";
+    const res = jsonError(tls, "Não foi possível carregar as vagas.");
+    const body = await res.json();
+    expect(body).toEqual({
+      error: "Não foi possível carregar as vagas.",
+      code: "DB_INIT_FAILED",
+    });
+    expect(body.errorName).toBeUndefined();
+  });
 });
