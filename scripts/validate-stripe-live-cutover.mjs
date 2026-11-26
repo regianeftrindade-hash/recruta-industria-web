@@ -41,12 +41,18 @@ async function stripeGet(secret, path) {
 }
 
 async function main() {
-  const secret = (process.env.STRIPE_SECRET_KEY || "").trim();
+  const secret = (
+    process.env.STRIPE_SECRET_KEY_LIVE
+    || process.env.STRIPE_SECRET_KEY
+    || ""
+  ).trim();
   if (!secret.startsWith("sk_live_")) {
-    fail("STRIPE_SECRET_KEY precisa ser sk_live_ para validar LIVE (não execute cutover com sk_test_).");
+    fail(
+      "Informe STRIPE_SECRET_KEY_LIVE (ou STRIPE_SECRET_KEY=sk_live_) para validar LIVE — não use sk_test_.",
+    );
     return;
   }
-  ok("STRIPE_SECRET_KEY em modo LIVE");
+  ok("Secret key em modo LIVE");
 
   const pub = (process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "").trim();
   if (pub && !pub.startsWith("pk_live_")) {
