@@ -92,6 +92,7 @@ export function CompanyDashboardNav({
 
   return (
     <nav
+      role="tablist"
       aria-label={t("fix.aria.dashboardPages")}
       style={{
         display: "flex",

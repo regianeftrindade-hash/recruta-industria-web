@@ -1,5 +1,6 @@
 "use client";
 import { exactUi } from "@/lib/i18n/exact-ui";
+import { t } from "@/lib/i18n/translate";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -19,7 +20,6 @@ import {
 } from "@/components/professional/ProfessionalOpportunityBoard";
 import CompanyEntrevistaCard from "@/components/company/CompanyEntrevistaCard";
 import { useCompanyDashboardDataOptional } from "@/components/company/CompanyDashboardDataContext";
-import { VIDEO_INTERVIEW_PAID_ONLY } from "@/lib/company/company-premium-plans";
 
 const rowStyle: React.CSSProperties = {
   display: "flex",
@@ -96,7 +96,7 @@ export default function CompanyEntrevistasBoard() {
           text:
             typeof data.error === "string" && data.error
               ? data.error
-              : "Falha ao carregar oportunidades",
+              : t("rest.entrevistas.loadFailed"),
         });
         return;
       }
@@ -160,23 +160,19 @@ export default function CompanyEntrevistasBoard() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao atualizar" });
+        setFeedback({ tone: "err", text: data.error || t("rest.entrevistas.updateFailed") });
         return;
       }
       await reload();
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao atualizar acompanhamento" });
+      setFeedback({ tone: "err", text: t("rest.entrevistas.updateCatch") });
     } finally {
       setBusyId(null);
     }
   };
 
   const excluir = async (id: string) => {
-    if (
-      !confirm(
-        "Excluir esta proposta? Ela some também para o profissional. Use isso se a empresa se arrependeu de enviar.",
-      )
-    ) {
+    if (!confirm(t("rest.entrevistas.deleteConfirm"))) {
       return;
     }
     setBusyId(id);
@@ -188,13 +184,13 @@ export default function CompanyEntrevistasBoard() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao excluir" });
+        setFeedback({ tone: "err", text: data.error || t("rest.entrevistas.deleteFailed") });
         return;
       }
       await reload();
-      setFeedback({ tone: "ok", text: "Proposta excluída." });
+      setFeedback({ tone: "ok", text: t("rest.entrevistas.deleted") });
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao excluir" });
+      setFeedback({ tone: "err", text: t("rest.entrevistas.deleteFailed") });
     } finally {
       setBusyId(null);
     }
@@ -216,7 +212,7 @@ export default function CompanyEntrevistasBoard() {
   const cancelarComJustificativa = async (proposalId: string) => {
     const motivo = justification.trim();
     if (!motivo) {
-      setFeedback({ tone: "err", text: "Informe a justificativa do cancelamento." });
+      setFeedback({ tone: "err", text: t("rest.entrevistas.cancelNeedReason") });
       return;
     }
     setBusyId(proposalId);
@@ -233,14 +229,14 @@ export default function CompanyEntrevistasBoard() {
       );
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao cancelar" });
+        setFeedback({ tone: "err", text: data.error || t("rest.entrevistas.cancelFailed") });
         return;
       }
       fecharCancelar();
       await reload();
-      setFeedback({ tone: "ok", text: "Entrevista cancelada." });
+      setFeedback({ tone: "ok", text: t("rest.entrevistas.cancelled") });
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao cancelar entrevista" });
+      setFeedback({ tone: "err", text: t("rest.entrevistas.cancelCatch") });
     } finally {
       setBusyId(null);
     }
@@ -248,11 +244,11 @@ export default function CompanyEntrevistasBoard() {
 
   const reagendar = async (proposalId: string) => {
     if (!rescheduleForm.date || !rescheduleForm.time) {
-      setFeedback({ tone: "err", text: "Preencha data e horário." });
+      setFeedback({ tone: "err", text: t("rest.entrevistas.needDateTime") });
       return;
     }
     if (rescheduleForm.locationType === "PLATFORM" && !videoEntrevistaLiberada) {
-      setFeedback({ tone: "err", text: VIDEO_INTERVIEW_PAID_ONLY });
+      setFeedback({ tone: "err", text: t("rest.entrevistas.videoPaidOnly") });
       return;
     }
     setBusyId(proposalId);
@@ -273,7 +269,7 @@ export default function CompanyEntrevistasBoard() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setFeedback({ tone: "err", text: data.error || "Erro ao reagendar" });
+        setFeedback({ tone: "err", text: data.error || t("rest.entrevistas.rescheduleFailed") });
         return;
       }
       fecharCancelar();
@@ -286,9 +282,9 @@ export default function CompanyEntrevistasBoard() {
         observacoes: "",
       });
       await reload();
-      setFeedback({ tone: "ok", text: "Entrevista reagendada." });
+      setFeedback({ tone: "ok", text: t("rest.entrevistas.rescheduled") });
     } catch {
-      setFeedback({ tone: "err", text: "Erro ao reagendar entrevista" });
+      setFeedback({ tone: "err", text: t("rest.entrevistas.rescheduleCatch") });
     } finally {
       setBusyId(null);
     }
@@ -307,7 +303,8 @@ export default function CompanyEntrevistasBoard() {
     flexShrink: 0,
   };
 
-  const nomeProf = (p: JobProposalDTO) => p.professionalName || "Profissional";
+  const nomeProf = (p: JobProposalDTO) =>
+    p.professionalName || t("rest.entrevistas.professionalFallback");
 
   const renderProposta = (p: JobProposalDTO) => {
     const busy = busyId === p.id;
@@ -357,7 +354,7 @@ export default function CompanyEntrevistasBoard() {
             onClick={() => router.push(`/company/professional/${encodeURIComponent(p.profileId)}`)}
             style={{ ...btnGold, padding: "5px 8px", fontSize: 10 }}
           >
-            Perfil
+            {t("rest.entrevistas.profile")}
           </button>
         </div>
       </article>
@@ -366,18 +363,18 @@ export default function CompanyEntrevistasBoard() {
 
   const renderArquivada = (p: JobProposalDTO) => {
     const busy = busyId === p.id;
-    const t = trackingOf(p);
-    const motivo = t.contratado
-      ? "Contratado"
-      : t.naoContratado
+    const track = trackingOf(p);
+    const motivo = track.contratado
+      ? t("rest.entrevistas.statusHired")
+      : track.naoContratado
         ? exactUi("Não contratado")
-        : t.entrevistaCancelada || p.status === "INTERVIEW_CANCELLED"
-          ? "Entrevista cancelada"
+        : track.entrevistaCancelada || p.status === "INTERVIEW_CANCELLED"
+          ? t("rest.entrevistas.statusInterviewCancelled")
           : p.status === "DECLINED"
-            ? "Proposta recusada"
+            ? t("rest.entrevistas.statusProposalDeclined")
             : p.status === "INTERVIEW_DECLINED"
-              ? "Entrevista recusada"
-              : "Arquivada";
+              ? t("rest.entrevistas.statusInterviewDeclined")
+              : t("rest.entrevistas.statusArchived");
 
     return (
       <article key={p.id} style={rowStyle}>
@@ -440,7 +437,7 @@ export default function CompanyEntrevistasBoard() {
           onClick={() => router.push(`/company/professional/${encodeURIComponent(p.profileId)}`)}
           style={{ ...btnGhost, flexShrink: 0 }}
         >
-          Perfil
+          {t("rest.entrevistas.profile")}
         </button>
       </article>
     );
@@ -449,7 +446,7 @@ export default function CompanyEntrevistasBoard() {
   if (loading) {
     return (
       <div style={{ padding: 24, display: "flex", justifyContent: "center" }}>
-        <AmpulhetaLoading label="Carregando entrevistas..." size={32} color={DASH.gold} />
+        <AmpulhetaLoading label={t("rest.entrevistas.loading")} size={32} color={DASH.gold} />
       </div>
     );
   }
@@ -458,10 +455,10 @@ export default function CompanyEntrevistasBoard() {
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <section className="dash-card" style={{ ...dashCard, padding: 14, boxShadow: DASH.shadow }}>
         <h3 style={{ ...dashSectionTitle, color: DASH.gold, margin: "0 0 6px", fontSize: 14, fontWeight: 400 }}>
-          📅 Entrevistas e acompanhamento
+          📅 {t("rest.entrevistas.title")}
         </h3>
         <p style={{ margin: "0 0 12px", fontSize: 10, color: DASH.muted, lineHeight: 1.45 }}>
-          {AVISO_RETENCAO_PROPOSTAS} Após marcar Contratado ou Não contratado, o item vai para Arquivadas.
+          {AVISO_RETENCAO_PROPOSTAS} {t("rest.entrevistas.hintAfterMark")}
         </p>
 
         {feedback && (
@@ -481,7 +478,7 @@ export default function CompanyEntrevistasBoard() {
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={nestedCard}>
             <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 400, color: DASH.gold }}>
-              Propostas ativas ({listas.propostas.length})
+              {t("rest.entrevistas.activeProposals").replace("{count}", String(listas.propostas.length))}
             </h4>
             {listas.propostas.length === 0 ? (
               <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{exactUi("Nenhuma proposta ativa.")}</p>
@@ -494,7 +491,7 @@ export default function CompanyEntrevistasBoard() {
 
           <div style={nestedCard}>
             <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 400, color: DASH.gold }}>
-              Entrevistas agendadas ({listas.entrevistas.length})
+              {t("rest.entrevistas.scheduled").replace("{count}", String(listas.entrevistas.length))}
             </h4>
             {listas.entrevistas.length === 0 ? (
               <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{exactUi("Quando você agendar entrevistas a partir de propostas, elas aparecerão aqui.")}</p>
@@ -528,7 +525,7 @@ export default function CompanyEntrevistasBoard() {
 
           <div style={nestedCard}>
             <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 400, color: DASH.gold }}>
-              Arquivadas ({listas.arquivadas.length})
+              {t("rest.entrevistas.archived").replace("{count}", String(listas.arquivadas.length))}
             </h4>
             {listas.arquivadas.length === 0 ? (
               <p style={{ margin: 0, fontSize: 12, color: DASH.muted }}>{exactUi("Nenhum item arquivado.")}</p>

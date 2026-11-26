@@ -40,15 +40,12 @@ import ProfileCompletionBar from '@/app/components/ProfileCompletionBar';
 import RegisterSectionHeader from '@/app/components/RegisterSectionHeader';
 import { LabelMarcador, TextoMarcador } from './RegisterLabelMarcador';
 import RegisterTermoItem from './RegisterTermoItem';
-import RegisterSobreMimFields from './RegisterSobreMimFields';
 import { SOBRE_MIM_VAZIO, truncarSobreMim, type SobreMimData } from '@/lib/sobre-mim';
 import { validarCamposObrigatoriosCadastro, validarCamposObrigatoriosEtapa, type CampoObrigatorioFalta, type ValidacaoCadastroInput } from '@/lib/professional/cadastro-obrigatorios';
 import { useCampoObrigatorioErro } from './useCampoObrigatorioErro';
-import RegisterExtendedSections from './RegisterExtendedSections';
 import { focarCampoCadastro } from '@/lib/ui/focar-campo-cadastro';
 import RegisterWizardChrome, { REGISTER_WIZARD_STEPS } from './RegisterWizardChrome';
 import RegisterCollapsibleSection from '@/components/ui/RegisterCollapsibleSection';
-import ResumeToolkit from '@/components/curriculum/ResumeToolkit';
 import { sanitizeResumeDraft, type ResumeDraft } from '@/lib/curriculum/resume-draft';
 import { buildResumeFormApplyPatch, matchCidadeIbge } from '@/lib/curriculum/apply-resume-to-form';
 import { parseResumePatterns } from '@/lib/curriculum/parse-resume-patterns';
@@ -77,13 +74,24 @@ import {
   type IdiomaEntry,
 } from '@/lib/professional-form-config';
 import { isArquivoAnexado, isArquivoNoServidor, nomeArquivoAnexado } from '@/lib/arquivo-anexo';
-import CertificadoCursoUpload from '@/components/professional/CertificadoCursoUpload';
-import VideoApresentacaoCadastro from '@/components/professional/VideoApresentacaoCadastro';
 import { AuthAtmosphere } from '@/components/shared/AuthAtmosphere';
 import LogoRecruta from '@/app/components/LogoRecruta';
 import { reportProfessionalSignupConversion } from '@/lib/analytics/google-ads';
 import type { ResumeStructuredFields } from '@/lib/curriculum/types';
 import { caminhoFotoPerfil, fotoPerfilSrc } from '@/lib/professional/foto-perfil';
+
+/** Blocos pesados — carregam sob demanda para reduzir o JS inicial do cadastro. */
+const RegisterSobreMimFields = dynamic(() => import('./RegisterSobreMimFields'), { ssr: false });
+const RegisterExtendedSections = dynamic(() => import('./RegisterExtendedSections'), { ssr: false });
+const ResumeToolkit = dynamic(() => import('@/components/curriculum/ResumeToolkit'), { ssr: false });
+const CertificadoCursoUpload = dynamic(
+  () => import('@/components/professional/CertificadoCursoUpload'),
+  { ssr: false },
+);
+const VideoApresentacaoCadastro = dynamic(
+  () => import('@/components/professional/VideoApresentacaoCadastro'),
+  { ssr: false },
+);
 
 const BACKUP_STORAGE_KEY = 'dadosFormularioBackup';
 const FORM_STORAGE_KEY = 'dadosFormularioCompleto';

@@ -31,7 +31,7 @@ export default function InstallAppPrompt({ variant = "banner", className }: Prop
         className={`${styles.installBtnInline} ${className ?? ""}`}
         onClick={handleClick}
         title={isIos ? t("surface.pwa.titleIos") : t("surface.pwa.titleAndroid")}
-        aria-label={t("surface.pwa.download")}
+        aria-label={t("surface.pwa.downloadShort")}
       >
         {t("surface.pwa.downloadShort")}
       </button>
