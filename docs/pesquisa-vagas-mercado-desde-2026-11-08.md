@@ -52,11 +52,19 @@ Total PUBLISHED após ambos: **1.374**. Validar sempre no anúncio original; an�
 ---
 
 ## Pós-importação (26/11/2026)
-- Script idempotente: `node scripts/import-market-jobs-2026-11-26.mjs`
+
+### Varredura geral (23)
+- Script: `node scripts/import-market-jobs-2026-11-26.mjs`
 - BR: Tecnoval (4), Montarsul (3), Torfresma (3), MSM (1), KAEFER (6 especialidades).
-- Internacional: Philip Global, Teupe, Machado & Silveira, emprego.com DE, RIGHT LEVEL, Northern Beaches Council.
-- **Omitida:** MECTON (entrevistas 25–30/10/2026, fora da janela ≥08/11).
-- Cada vaga traz contato (e-mail / WhatsApp / link) e aviso de fonte externa nas observações.
+- Internacional: Philip Global, Teupe, Machado & Silveira, emprego.com DE, RIGHT LEVEL, Northern Beaches.
+- **Omitida:** MECTON (fora da janela ≥08/11).
+
+### Emprega Campinas (255)
+- Fonte: https://empregacampinas.com.br/ (WP API `after=2026-11-08`).
+- Script: `node scripts/import-empregacampinas-since-2026-11-08.mjs` (idempotente; `DRY_RUN=1` lista sem gravar).
+- Critérios: título industrial; e-mail de candidatura; prazo ≥26/11/2026 ou sem prazo; dedupe por e-mail+cargo+empresa.
+- Excluídos: prazos vencidos, food/salgados, oficina automotiva leve, predial/civil genérico, admin/vendas/farmácia etc.
+- Cada vaga: `applicationMode=EMAIL`, link original em `externalApplyUrl`, aviso de fonte nas observações.
 
 ## Cuidados
 - Não republicar sem checagem de autenticidade (golpes de “pague para se candidatar”).  
