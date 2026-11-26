@@ -19,6 +19,11 @@ export default function CookieConsentBanner() {
 
   useEffect(() => {
     setVisible(readBrowserCookieConsent() == null);
+    function onReopen() {
+      setVisible(true);
+    }
+    window.addEventListener("ri-open-cookie-settings", onReopen);
+    return () => window.removeEventListener("ri-open-cookie-settings", onReopen);
   }, []);
 
   function choose(level: CookieConsentLevel) {

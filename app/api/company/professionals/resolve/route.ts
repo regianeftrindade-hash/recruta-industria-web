@@ -1,16 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 /**
  * Endpoint legado — não usar.
- * Mantido só para clientes antigos em cache não quebrarem com 500.
+ * Não ecoa IDs de perfil (evita enumeração). Clientes antigos recebem 410.
  */
-export async function GET(request: NextRequest) {
-  const ref = (request.nextUrl.searchParams.get("ref") || "").trim();
-  if (/^c[a-z0-9]{20,}$/i.test(ref)) {
-    return NextResponse.json({ profileId: ref, slug: ref });
-  }
+export async function GET() {
   return NextResponse.json(
-    { error: "Abra o perfil pela vitrine novamente.", profileId: null },
-    { status: 404 },
+    { error: "Gone", profileId: null },
+    { status: 410 },
   );
 }

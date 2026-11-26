@@ -91,7 +91,13 @@ export default function CompanyEntrevistasBoard() {
       const res = await fetch("/api/company/proposals/opportunities", { credentials: "include" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        console.error(data.error || "Falha ao carregar oportunidades");
+        setFeedback({
+          tone: "err",
+          text:
+            typeof data.error === "string" && data.error
+              ? data.error
+              : "Falha ao carregar oportunidades",
+        });
         return;
       }
       setProposals(data.proposals || []);

@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import LogoRecruta from "@/app/components/LogoRecruta";
+import { exactUi } from "@/lib/i18n/exact-ui";
+import { t } from "@/lib/i18n/translate";
 import { safeJobReturnPath } from "@/lib/jobs/public-job-link";
 import styles from "../../vagas.module.css";
 
@@ -20,12 +22,12 @@ export default function AnexarCurriculoPage() {
     const input = event.currentTarget.elements.namedItem("curriculo");
     const file = input instanceof HTMLInputElement ? input.files?.[0] : null;
     if (!file) {
-      setError("Selecione o currículo em PDF ou DOCX.");
+      setError(t("rest.jobs.resume.selectFile"));
       return;
     }
     const name = file.name.toLowerCase();
     if (!name.endsWith(".pdf") && !name.endsWith(".docx")) {
-      setError("Envie um arquivo PDF ou DOCX.");
+      setError(t("rest.jobs.resume.pdfDocxOnly"));
       return;
     }
 
@@ -48,7 +50,7 @@ export default function AnexarCurriculoPage() {
         return;
       }
       if (!uploaded.ok || !uploadData.file?.path) {
-        setError(uploadData.error || "Não foi possível enviar o currículo.");
+        setError(exactUi(uploadData.error || t("rest.jobs.resume.uploadFailed")));
         return;
       }
 
@@ -64,13 +66,13 @@ export default function AnexarCurriculoPage() {
         return;
       }
       if (!saved.ok) {
-        setError(savedData.error || "Não foi possível anexar o currículo ao seu perfil.");
+        setError(exactUi(savedData.error || t("rest.jobs.resume.attachFailed")));
         return;
       }
 
       router.replace(back);
     } catch {
-      setError("Não foi possível anexar o currículo. Tente novamente.");
+      setError(t("rest.jobs.resume.retry"));
     } finally {
       setBusy(false);
     }
@@ -79,27 +81,26 @@ export default function AnexarCurriculoPage() {
   return (
     <main className={styles.page}>
       <div className={styles.top}>
-        <Link href="/" className={styles.brandLink} aria-label="Página inicial">
+        <Link href="/" className={styles.brandLink} aria-label={t("rest.jobs.resume.homeAria")}>
           <LogoRecruta size="sm" as="div" />
         </Link>
-        <Link href={back} className={styles.backLink}>Voltar à vaga</Link>
+        <Link href={back} className={styles.backLink}>{t("rest.jobs.resume.backToJob")}</Link>
       </div>
       <article className={styles.article}>
-        <h1 className={styles.title}>Anexar currículo</h1>
-        <p className={styles.note}>
-          Envie o currículo em PDF ou DOCX. O arquivo fica no seu perfil e substitui o anterior somente quando você confirma o envio. Depois você volta para a vaga.
-        </p>
+        <h1 className={styles.title}>{t("rest.jobs.resume.title")}</h1>
+        <p className={styles.note}>{t("rest.jobs.resume.note")}</p>
         <form className={styles.resumeForm} onSubmit={(event) => void onSubmit(event)}>
           <input
             className={styles.file}
             name="curriculo"
             type="file"
             accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            aria-label={t("rest.jobs.resume.title")}
           />
           <button type="submit" className="ri-btn-3d-gold" disabled={busy}>
-            {busy ? "Enviando..." : "Anexar currículo e voltar à vaga"}
+            {busy ? t("rest.jobs.resume.sending") : t("rest.jobs.resume.submit")}
           </button>
-          {error ? <p className={styles.error}>{error}</p> : null}
+          {error ? <p className={styles.error} role="alert">{error}</p> : null}
         </form>
       </article>
     </main>

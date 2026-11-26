@@ -95,7 +95,7 @@ export default function CadastroRapidoProfissionalPage() {
         return;
       }
     } else if (cpfLimpo) {
-      setErrorMessage("CPF só é aceito em cadastros do Brasil.");
+      setErrorMessage(t("rest.cadastro.cpfBrazilOnly"));
       return;
     }
     if (!emailTrim.includes("@")) {
@@ -109,7 +109,7 @@ export default function CadastroRapidoProfissionalPage() {
           return;
         }
       } else if (!telefone.trim().startsWith("+")) {
-        setErrorMessage("Informe o telefone com o código internacional, começando com +.");
+        setErrorMessage(t("rest.cadastro.phoneIntl"));
         return;
       }
     }

@@ -141,7 +141,7 @@ function buildSummary(profile: ProfileRow, industrial: ProfileIndustrialData, co
     experiencia: profile.tempoExperiencia || '—',
     recolocacao: profile.recolocacao || '—',
     habilidades,
-    avatar: fotoGravada(profile.avatar, profile.formDataJSON),
+    avatar: null,
     bloqueado: true,
     unlocked: false,
     compatibilidade,

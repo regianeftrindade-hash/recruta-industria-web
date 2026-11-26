@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import BandeiraFavoritoIcon from "@/components/company/BandeiraFavoritoIcon";
+import { t } from "@/lib/i18n/translate";
 
 export default function JobFavoriteButton({
   jobId,
@@ -57,20 +58,20 @@ export default function JobFavoriteButton({
       }
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setAviso(typeof data.error === "string" && data.error ? data.error : "Não foi possível salvar o favorito.");
+        setAviso(typeof data.error === "string" && data.error ? data.error : t("rest.jobs.favoriteFailed"));
         return;
       }
       const salvo = Boolean(data.favorited);
       if (proximo && !salvo) {
         setMarcado(false);
         onChange?.(false);
-        setAviso("Esta vaga não está disponível para favoritar.");
+        setAviso(t("rest.jobs.favoriteUnavailable"));
         return;
       }
       setMarcado(salvo);
       onChange?.(salvo);
     } catch {
-      setAviso("Não foi possível salvar o favorito.");
+      setAviso(t("rest.jobs.favoriteFailed"));
     } finally {
       setBusy(false);
     }
@@ -82,8 +83,8 @@ export default function JobFavoriteButton({
         type="button"
         className="ri-btn-3d-gold"
         aria-pressed={marcado}
-        aria-label={marcado ? "Remover dos favoritos" : "Marcar como favorito"}
-        title={marcado ? "Remover dos favoritos" : "Marcar como favorito"}
+        aria-label={marcado ? t("rest.jobs.removeFavorite") : t("rest.jobs.addFavorite")}
+        title={marcado ? t("rest.jobs.removeFavorite") : t("rest.jobs.addFavorite")}
         disabled={busy}
         onClick={() => void alternar()}
         style={{
@@ -95,7 +96,7 @@ export default function JobFavoriteButton({
         }}
       >
         <BandeiraFavoritoIcon ativo={marcado} size={16} />
-        {marcado ? "Favorito" : "Favoritar"}
+        {marcado ? t("rest.jobs.favorite") : t("rest.jobs.favoritar")}
       </button>
       {aviso ? (
         <span role="alert" style={{ color: "#414141", fontSize: 12, fontWeight: 700, maxWidth: 220 }}>

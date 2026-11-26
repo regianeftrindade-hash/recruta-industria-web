@@ -28,13 +28,19 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
+    const locale = await resolveInterfaceLocale();
     const { id } = await params;
     const view = await getPublicJobView(id);
-    if (!view) return { title: "Vaga", robots: { index: false, follow: false } };
+    if (!view) {
+      return {
+        title: t("surface.jobs.title", locale),
+        robots: { index: false, follow: false },
+      };
+    }
     if (view.availability === "unavailable") {
       return {
         title: view.title,
-        description: "Esta vaga não está mais disponível para candidatura.",
+        description: t("surface.jobs.unavailable", locale),
         robots: { index: false, follow: false },
       };
     }

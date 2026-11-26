@@ -1,5 +1,6 @@
 "use client";
 import { exactUi } from "@/lib/i18n/exact-ui";
+import { t } from "@/lib/i18n/translate";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -41,7 +42,7 @@ export default function JobShareButton({ jobId, shareText }: { jobId: string; sh
 
   async function copyLink(message: string) {
     const ok = await copyText(shareText);
-    setNotice(ok ? message : "Não foi possível copiar o resumo da vaga.");
+    setNotice(ok ? message : t("rest.share.copyFailed"));
   }
 
   const shareClass = `${styles.shareButton} ri-btn-3d-gold`;
@@ -58,15 +59,15 @@ export default function JobShareButton({ jobId, shareText }: { jobId: string; sh
         type="button"
         className={shareClass}
         onClick={() => {
-          void copyLink("Resumo da vaga copiado. Cole no Instagram.");
+          void copyLink(t("rest.share.copiedInstagram"));
           window.open(INSTAGRAM_SHARE_URL, "_blank", "noopener,noreferrer");
         }}
       >
         Instagram
       </button>
-      <button type="button" className={shareClass} onClick={() => void copyLink("Resumo e link da vaga copiados.")}>{exactUi("Copiar link")}</button>
+      <button type="button" className={shareClass} onClick={() => void copyLink(t("rest.share.copiedLink"))}>{exactUi("Copiar link")}</button>
       <Link className={shareClass} href="/vagas">
-        Visualizar vagas
+        {t("rest.share.viewJobs")}
       </Link>
       <span className={styles.live} aria-live="polite">{notice}</span>
     </div>
