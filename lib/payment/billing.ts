@@ -7,7 +7,12 @@ export type BillingPeriod = 'monthly' | 'annual';
 export type BillingMode = 'one_time' | 'recurring';
 
 export function parseBillingPeriod(value: unknown): BillingPeriod {
-  return String(value || '').toLowerCase() === 'annual' ? 'annual' : 'monthly';
+  const raw = String(value || '').trim().toLowerCase();
+  // UI usa "annual"; aceitar aliases comuns para não cair no mensal por engano.
+  if (raw === 'annual' || raw === 'yearly' || raw === 'year' || raw === 'anual' || raw === 'ano') {
+    return 'annual';
+  }
+  return 'monthly';
 }
 
 export function parseBillingMode(value: unknown): BillingMode {

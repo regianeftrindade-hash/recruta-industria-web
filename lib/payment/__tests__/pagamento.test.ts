@@ -21,6 +21,8 @@ import { validateCompanyPaymentForActivation } from "@/lib/payment/company-payme
 describe("billing", () => {
   it("parseia período e modo com fallback seguro", () => {
     expect(parseBillingPeriod("annual")).toBe("annual");
+    expect(parseBillingPeriod("yearly")).toBe("annual");
+    expect(parseBillingPeriod("ano")).toBe("annual");
     expect(parseBillingPeriod("foo")).toBe("monthly");
     expect(parseBillingMode("recurring")).toBe("recurring");
     expect(parseBillingMode("")).toBe("one_time");
