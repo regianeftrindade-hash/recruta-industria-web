@@ -18,6 +18,7 @@ import {
   publicLoginHomeHref,
   safePostLoginPath,
 } from '@/lib/auth/public-login-home';
+import { applyRelativeRedirect } from '@/lib/auth/apply-relative-redirect';
 
 export async function proxy(request: NextRequest) {
   const ip = getClientIp(request);
@@ -159,30 +160,15 @@ export async function proxy(request: NextRequest) {
     });
 
     if (decision.action === 'unauthenticated') {
-      const url = request.nextUrl.clone();
-      if (decision.redirectPath.startsWith('/login')) {
-        const [pathOnly, query = ''] = decision.redirectPath.split('?');
-        url.pathname = pathOnly;
-        url.search = '';
-        if (query) {
-          const params = new URLSearchParams(query);
-          params.forEach((v, k) => url.searchParams.set(k, v));
-        }
-        if (decision.preserveRedirectQuery) {
-          url.searchParams.set('redirect', pathname);
-        }
-        return NextResponse.redirect(url);
-      }
-      url.pathname = decision.redirectPath;
-      url.search = '';
-      return NextResponse.redirect(url);
+      // redirectPath pode ser "/?acesso=empresa" — não usar url.pathname=href
+      // (isso virava "/%3Facesso=empresa" e quebrava o retorno do Stripe).
+      return applyRelativeRedirect(request, decision.redirectPath, {
+        preserveRedirectFrom: decision.preserveRedirectQuery ? pathname : null,
+      });
     }
 
     if (decision.action === 'wrong_role') {
-      const url = request.nextUrl.clone();
-      url.pathname = decision.redirectPath;
-      url.search = '';
-      return NextResponse.redirect(url);
+      return applyRelativeRedirect(request, decision.redirectPath);
     }
   }
 

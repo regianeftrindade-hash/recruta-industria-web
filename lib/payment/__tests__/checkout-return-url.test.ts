@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
   isVercelPreviewRuntime,
+  resolveCheckoutBaseUrl,
   stripeCheckoutReturnUrls,
   withPreviewProtectionBypass,
 } from "@/lib/payment/checkout-return-url";
@@ -51,5 +52,13 @@ describe("checkout-return-url Preview bypass", () => {
     expect(successUrl).toContain("x-vercel-protection-bypass=secret_preview");
     expect(cancelUrl).toContain("canceled=1");
     expect(cancelUrl).toContain("x-vercel-protection-bypass=secret_preview");
+  });
+
+  it("resolveCheckoutBaseUrl prioriza NEXTAUTH_URL estável", () => {
+    process.env.NEXTAUTH_URL = "https://recruta-industria-preview-stripe.vercel.app/";
+    delete process.env.APP_URL;
+    expect(resolveCheckoutBaseUrl()).toBe(
+      "https://recruta-industria-preview-stripe.vercel.app",
+    );
   });
 });

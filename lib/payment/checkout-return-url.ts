@@ -35,6 +35,23 @@ export function withPreviewProtectionBypass(url: string): string {
   }
 }
 
+/**
+ * Base pública do checkout. Em Preview use NEXTAUTH_URL no alias estável
+ * (ex.: recruta-industria-preview-stripe.vercel.app) — nunca o host efêmero
+ * do deploy, senão o cookie de sessão/SSO não acompanha o retorno do Stripe.
+ */
+export function resolveCheckoutBaseUrl(): string {
+  const explicit = (
+    process.env.NEXTAUTH_URL
+    || process.env.APP_URL
+    || ""
+  )
+    .trim()
+    .replace(/\/$/, "");
+  if (explicit) return explicit;
+  return "https://www.recrutaindustria.com";
+}
+
 export function stripeCheckoutReturnUrls(input: {
   baseUrl: string;
   successPath: string;
