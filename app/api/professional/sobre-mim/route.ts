@@ -7,6 +7,7 @@ import {
   type SobreMimData,
 } from "@/lib/sobre-mim";
 import { lerCampoJsonDoPerfil, salvarCampoJsonNoPerfil } from "@/lib/profile-json-fields";
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 function normalizeBody(body: unknown): SobreMimData | null {
   if (!body || typeof body !== "object") return null;
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
   try {
     const auth = await resolveAuthEmail(request);
     if (!auth) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const user = await prisma.user.findUnique({
@@ -52,7 +53,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const auth = await resolveAuthEmail(request);
     if (!auth) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     let body: unknown;

@@ -1,3 +1,7 @@
+import { t } from "@/lib/i18n/translate";
+import { resolveLocale } from "@/lib/i18n/locales";
+import { uiIntlLocale } from "@/lib/i18n/format-ui";
+
 export type ResumeExperience = {
   empresa: string;
   cargo: string;
@@ -67,7 +71,7 @@ function clipList(value: unknown, maxItems: number, maxLen: number): string[] {
   for (const item of source) {
     const text = clip(item, maxLen);
     if (!text) continue;
-    const key = text.toLocaleLowerCase("pt-BR");
+    const key = text.toLocaleLowerCase(uiIntlLocale());
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(text);
@@ -119,7 +123,18 @@ export type ResumeBlock = {
   lines: string[];
 };
 
-export function resumeBlocks(draft: ResumeDraft): { heading: string[]; blocks: ResumeBlock[] } {
+function fillTemplate(template: string, vars: Record<string, string>): string {
+  return Object.entries(vars).reduce(
+    (out, [key, value]) => out.split(`{${key}}`).join(value),
+    template,
+  );
+}
+
+export function resumeBlocks(
+  draft: ResumeDraft,
+  locale?: string | null,
+): { heading: string[]; blocks: ResumeBlock[] } {
+  const lang = resolveLocale(locale);
   const data = sanitizeResumeDraft(draft);
   const heading: string[] = [];
   if (data.nome) heading.push(data.nome);
@@ -133,8 +148,8 @@ export function resumeBlocks(draft: ResumeDraft): { heading: string[]; blocks: R
     if (filled.length) blocks.push({ title, lines: filled });
   };
 
-  add("Objetivo", [data.objetivo]);
-  add("Resumo profissional", [data.resumo]);
+  add(t("internal.resume.objective", lang), [data.objetivo]);
+  add(t("internal.resume.summary", lang), [data.resumo]);
 
   const jobs = sortExperiences(data.experiencias).map((job) => {
     const role = [job.cargo, job.empresa].filter(Boolean).join(" — ");
@@ -142,25 +157,59 @@ export function resumeBlocks(draft: ResumeDraft): { heading: string[]; blocks: R
     const extra = [job.segmento, period].filter(Boolean).join(" · ");
     return [role, extra, job.atividades].filter(Boolean).join("\n");
   });
-  add("Experiência profissional", jobs);
+  add(t("internal.resume.sectionExperience", lang), jobs);
 
   const formacao = [
     data.escolaridade,
     [data.curso, data.instituicao].filter(Boolean).join(" — "),
-    data.ano ? `Conclusão: ${data.ano}` : "",
+    data.ano
+      ? fillTemplate(t("internal.resume.graduation", lang), { year: data.ano })
+      : "",
   ];
-  add("Formação", formacao);
-  add("Cursos e qualificações", data.cursos);
-  add("Habilidades", data.habilidades);
-  add("Idiomas", data.idiomas);
-  if (data.cnh && !/prefiro não informar/i.test(data.cnh)) {
-    add("CNH", [`Categoria ${data.cnh.replace(/^categoria\s+/i, "")}`]);
+  add(t("internal.resume.sectionFormation", lang), formacao);
+  add(t("internal.resume.sectionCourses", lang), data.cursos);
+  add(t("internal.resume.sectionSkills", lang), data.habilidades);
+  add(t("internal.resume.sectionLanguages", lang), data.idiomas);
+  const preferNot = t("internal.resume.preferNotSay", lang);
+  if (data.cnh && !new RegExp(preferNot.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i").test(data.cnh)
+    && !/prefiro não informar/i.test(data.cnh)) {
+    const category = data.cnh.replace(/^categoria\s+/i, "");
+    add(
+      t("internal.resume.sectionCnh", lang),
+      [fillTemplate(t("internal.resume.cnhCategory", lang), { category })],
+    );
   }
 
   return { heading, blocks };
 }
 
+/** Rodapé padrão (pt-BR). Prefira `resumeFooter(locale)` em PDFs com idioma da interface. */
 export const RESUME_FOOTER = "Currículo gerado pelo site Recruta Indústria";
+
+export function resumeFooter(locale?: string | null): string {
+  return t("internal.resume.footer", resolveLocale(locale));
+}
+
+export function resumeModels(locale?: string | null) {
+  const lang = resolveLocale(locale);
+  return [
+    {
+      id: "classico" as const,
+      label: t("internal.resume.modelClassicLabel", lang),
+      hint: t("internal.resume.modelClassicHint", lang),
+    },
+    {
+      id: "moderno" as const,
+      label: t("internal.resume.modelModernLabel", lang),
+      hint: t("internal.resume.modelModernHint", lang),
+    },
+    {
+      id: "compacto" as const,
+      label: t("internal.resume.modelCompactLabel", lang),
+      hint: t("internal.resume.modelCompactHint", lang),
+    },
+  ];
+}
 
 export const RESUME_MODELS = [
   {
@@ -399,8 +448,9 @@ function lineHeight(line: FlowLine, style: ModelStyle): number {
   return Math.max(line.size * style.leading, line.size + 2) + (line.rule ? 5 : 0);
 }
 
-function flowLines(draft: ResumeDraft, style: ModelStyle): FlowLine[] {
-  const { heading, blocks } = resumeBlocks(draft);
+function flowLines(draft: ResumeDraft, style: ModelStyle, locale?: string | null): FlowLine[] {
+  const lang = resolveLocale(locale);
+  const { heading, blocks } = resumeBlocks(draft, lang);
   const width = PAGE_W - style.marginX * 2;
   const lines: FlowLine[] = [];
   heading.forEach((text, index) => {
@@ -420,7 +470,9 @@ function flowLines(draft: ResumeDraft, style: ModelStyle): FlowLine[] {
   });
 
   for (const block of blocks) {
-    const title = block.title.toLocaleUpperCase("pt-BR");
+    const intlLocale =
+      lang === "ar" ? "ar-u-nu-latn" : lang === "hi" ? "hi-u-nu-latn" : lang;
+    const title = block.title.toLocaleUpperCase(intlLocale);
     const titleLines = wrapText(title, style.titleSize, width);
     titleLines.forEach((line, lineIndex) => {
       lines.push({
@@ -450,13 +502,17 @@ function flowLines(draft: ResumeDraft, style: ModelStyle): FlowLine[] {
   return lines;
 }
 
-export function inspectResumeLayout(draft: ResumeDraft, model: ResumeModelId = "classico"): {
+export function inspectResumeLayout(
+  draft: ResumeDraft,
+  model: ResumeModelId = "classico",
+  locale?: string | null,
+): {
   pageCount: number;
   footerY: number;
   contentFloor: number;
   lines: ResumeLayoutLine[];
 } {
-  const draws = layoutResume(draft, normalizeResumeModel(model));
+  const draws = layoutResume(draft, normalizeResumeModel(model), locale);
   const lines = draws.flatMap((draw) => (
     draw.kind === "text"
       ? [{ page: draw.page, x: draw.x, y: draw.y, text: draw.text, role: draw.role, size: draw.size }]
@@ -466,9 +522,11 @@ export function inspectResumeLayout(draft: ResumeDraft, model: ResumeModelId = "
   return { pageCount, footerY: FOOTER_Y, contentFloor: CONTENT_FLOOR, lines };
 }
 
-function layoutResume(draft: ResumeDraft, model: ResumeModelId): Draw[] {
+function layoutResume(draft: ResumeDraft, model: ResumeModelId, locale?: string | null): Draw[] {
   const style = MODEL_STYLE[model];
-  const lines = flowLines(draft, style);
+  const lang = resolveLocale(locale);
+  const lines = flowLines(draft, style, lang);
+  const footer = resumeFooter(lang);
   const top = PAGE_H - style.marginTop;
   const draws: Draw[] = [];
   let page = 0;
@@ -516,7 +574,7 @@ function layoutResume(draft: ResumeDraft, model: ResumeModelId): Draw[] {
   }
 
   const lastPage = lines.length ? page : 0;
-  const footerWidth = resumeTextWidth(RESUME_FOOTER, FOOTER_SIZE);
+  const footerWidth = resumeTextWidth(footer, FOOTER_SIZE);
   const footerX = (PAGE_W - footerWidth) / 2;
   for (let index = 0; index <= lastPage; index += 1) {
     draws.push({
@@ -526,7 +584,7 @@ function layoutResume(draft: ResumeDraft, model: ResumeModelId): Draw[] {
       y: FOOTER_Y,
       font: "F1",
       size: FOOTER_SIZE,
-      text: RESUME_FOOTER,
+      text: footer,
       gray: 0.45,
       role: "footer",
     });
@@ -557,8 +615,12 @@ function pdfNum(value: number): string {
 }
 
 /** PDF A4 de uma coluna. O modelo muda só a apresentação; o rodapé entra em todas as páginas. */
-export function renderResumePdf(draft: ResumeDraft, model?: ResumeModelId): Uint8Array {
-  const draws = layoutResume(draft, normalizeResumeModel(model));
+export function renderResumePdf(
+  draft: ResumeDraft,
+  model?: ResumeModelId,
+  locale?: string | null,
+): Uint8Array {
+  const draws = layoutResume(draft, normalizeResumeModel(model), locale);
   const pageCount = draws.reduce((max, draw) => Math.max(max, draw.page), 0) + 1;
   const objects: Uint8Array[] = [];
   const ids: number[] = [];

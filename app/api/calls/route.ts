@@ -5,6 +5,7 @@ import { resolveCompanyActor } from "@/lib/company/company-team";
 import { createVideoCallInvite, getIncomingCallForProfile } from "@/lib/video-calls";
 import { getCompanyPlanContext } from "@/lib/company-plan";
 import { VIDEO_INTERVIEW_PAID_ONLY } from "@/lib/company/company-premium-plans";
+import { apiUnauthorizedResponse, apiErrorResponse } from "@/lib/i18n/api-response";
 
 async function getAuthUser(request: NextRequest) {
   const auth = await resolveAuthEmail(request);
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser(request);
     if (!user) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     if (user.role === "PROFESSIONAL") {
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser(request);
     if (!user || user.role !== "COMPANY") {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const body = await request.json();

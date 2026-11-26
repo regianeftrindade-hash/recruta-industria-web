@@ -5,6 +5,7 @@ import {
   getUserNotificationPreferences,
   updateUserNotificationPreferences,
 } from "@/lib/notifications";
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 async function requireUser(request: NextRequest) {
   const auth = await resolveAuthEmail(request);
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await requireUser(request);
     if (!user) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
     const prefs = await getUserNotificationPreferences(user.id);
     return NextResponse.json({
@@ -44,7 +45,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const user = await requireUser(request);
     if (!user) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
     const patch: Parameters<typeof updateUserNotificationPreferences>[1] = {};

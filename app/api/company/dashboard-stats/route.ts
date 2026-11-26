@@ -10,14 +10,14 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+      return await apiUnauthorizedResponse()
     }
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email.toLowerCase().trim() },
     })
     if (!user || user.role !== 'COMPANY') {
-      return NextResponse.json({ error: 'Acesso restrito a empresas' }, { status: 403 })
+      return await apiErrorResponse("rest.api.companyOnly", 403)
     }
 
     const planContext = await getCompanyPlanContext(user.id)
@@ -51,3 +51,5 @@ export async function GET() {
     return NextResponse.json({ error: 'Erro ao buscar estatísticas' }, { status: 500 })
   }
 }
+
+import { apiUnauthorizedResponse, apiErrorResponse } from "@/lib/i18n/api-response";

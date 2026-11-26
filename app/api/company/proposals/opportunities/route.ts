@@ -6,13 +6,14 @@ import {
   listOpportunitiesForCompany,
 } from "@/lib/company/job-proposals";
 import { resolveCompanyOwnerUserId } from "@/lib/company/company-team";
+import { apiUnauthorizedResponse, apiErrorResponse } from "@/lib/i18n/api-response";
 
 /** Lista propostas/entrevistas/arquivadas + histórico do funil da empresa. */
 export async function GET(request: NextRequest) {
   try {
     const auth = await resolveAuthEmail(request);
     if (!auth) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const user = await prisma.user.findUnique({
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
       select: { id: true, role: true },
     });
     if (!user || user.role !== "COMPANY") {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const ownerUserId = (await resolveCompanyOwnerUserId(user.id)) || user.id;

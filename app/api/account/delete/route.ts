@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { resolveAuthEmail } from '@/lib/auth/api-auth';
 import { deleteOwnAccount } from '@/lib/account/delete-own-account';
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 const CONFIRM_WORD = 'EXCLUIR';
 
@@ -9,7 +10,7 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await resolveAuthEmail(request);
     if (!auth) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const body = await request.json().catch(() => ({}));

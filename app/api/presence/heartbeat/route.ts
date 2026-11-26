@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { resolveAuthEmail } from "@/lib/api-auth";
 import { clearUserPresence, touchUserPresence } from "@/lib/presence";
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 async function resolveUserId(request: NextRequest): Promise<string | null> {
   const auth = await resolveAuthEmail(request);
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
   try {
     const userId = await resolveUserId(request);
     if (!userId) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     let offline = false;
@@ -47,7 +48,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const userId = await resolveUserId(request);
     if (!userId) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
     await clearUserPresence(userId);
     return NextResponse.json({ ok: true, online: false });

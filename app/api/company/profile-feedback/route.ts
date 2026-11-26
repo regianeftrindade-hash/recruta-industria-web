@@ -6,6 +6,7 @@ import {
   deleteProfileFeedback,
   listProfileFeedbacks,
 } from "@/lib/company/company-profile-feedback";
+import { apiErrorResponse } from "@/lib/i18n/api-response";
 
 async function getCompanyUser(request: NextRequest) {
   const auth = await resolveAuthEmail(request);
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCompanyUser(request);
     if (!user || user.role !== "COMPANY") {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const profileId = String(request.nextUrl.searchParams.get("profileId") || "").trim();
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getCompanyUser(request);
     if (!user || user.role !== "COMPANY") {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const body = await request.json().catch(() => ({}));
@@ -80,7 +81,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const user = await getCompanyUser(request);
     if (!user || user.role !== "COMPANY") {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const body = await request.json().catch(() => ({}));

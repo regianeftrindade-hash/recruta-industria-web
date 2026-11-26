@@ -68,17 +68,21 @@ function FeatureSection({
 }) {
   return (
     <div style={blockStyle}>
-      <p style={titleStyle}>{emoji} {title}</p>
-      {description && <p style={textStyle}>{description}</p>}
-      {subtitle && <p style={textStyle}>{subtitle}</p>}
+      <p style={titleStyle}>{emoji} {exactUi(title)}</p>
+      {description && <p style={textStyle}>{exactUi(description)}</p>}
+      {subtitle && <p style={textStyle}>{exactUi(subtitle)}</p>}
       {items.length > 0 && (
         <ul style={listStyle}>
           {items.map((item) => (
-            <li key={item} style={{ margin: 0, padding: 0 }}>{item}</li>
+            <li key={item} style={{ margin: 0, padding: 0 }}>{exactUi(item)}</li>
           ))}
         </ul>
       )}
-      {plano && <span style={planTag}>Plano: {plano}</span>}
+      {plano && (
+        <span style={planTag}>
+          {exactUi("Plano:")} {exactUi(plano)}
+        </span>
+      )}
     </div>
   );
 }
@@ -112,8 +116,9 @@ export default function CompanyExclusiveFeatures({
         {exactUi("Recursos do Recruta Indústria")}
       </h3>
       <p style={{ color: DASH.text, margin: "0 0 0.5cm", fontSize: horizontal ? 11 : 10, lineHeight: 1.3 }}>
-        Ferramentas disponíveis hoje na plataforma para buscar e analisar profissionais da indústria.
-        Os planos acumulam: Basic inclui o Free; Premium inclui o Basic; Empresarial inclui o Premium.
+        {exactUi(
+          "Ferramentas disponíveis hoje na plataforma para buscar e analisar profissionais da indústria. Os planos acumulam: Basic inclui o Free; Premium inclui o Basic; Empresarial inclui o Premium.",
+        )}
       </p>
 
       <div

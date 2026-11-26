@@ -26,6 +26,7 @@ import {
   resolveProfessionalStripePriceKey,
   envNameForStripePriceKey,
 } from '@/lib/payment/stripe-client';
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
 
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const user = await prisma.user.findUnique({

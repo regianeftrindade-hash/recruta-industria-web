@@ -288,6 +288,23 @@ html[dir="rtl"] {
   direction: rtl;
 }
 
+/* RTL: alinhamento e espaçamento com propriedades lógicas (páginas públicas/globais). */
+html[dir="rtl"] body {
+  text-align: start;
+}
+
+html[dir="rtl"] nav,
+html[dir="rtl"] header,
+html[dir="rtl"] main,
+html[dir="rtl"] form {
+  text-align: start;
+}
+
+html[dir="rtl"] .site-locale-bar,
+html[dir="rtl"] [data-locale-switch] {
+  inset-inline: auto 0;
+}
+
 html[lang="ja"] button,
 html[lang="zh-CN"] button,
 html[lang="ko"] button,
@@ -327,4 +344,17 @@ html[dir="rtl"] input[type="url"],
 html[dir="rtl"] input[type="number"] {
   direction: ltr;
   unicode-bidi: plaintext;
+  text-align: start;
+}
+
+html[dir="rtl"] ul,
+html[dir="rtl"] ol {
+  padding-inline-start: 1.25rem;
+  padding-inline-end: 0;
+}
+
+html[dir="rtl"] menu,
+html[dir="rtl"] nav ul,
+html[dir="rtl"] nav ol {
+  text-align: start;
 }

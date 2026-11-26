@@ -5,6 +5,7 @@ import { getProposalById } from "@/lib/company/job-proposals";
 import { upsertProposalFunnel } from "@/lib/company/proposal-funnel";
 import { resolveCompanyOwnerUserId } from "@/lib/company/company-team";
 import { parseProposalFunnelPatch } from "@/lib/company/job-proposals-shared";
+import { apiErrorResponse } from "@/lib/i18n/api-response";
 
 async function getCompanyOwner(request: NextRequest) {
   const auth = await resolveAuthEmail(request);
@@ -25,7 +26,7 @@ export async function PATCH(
   try {
     const company = await getCompanyOwner(request);
     if (!company) {
-      return NextResponse.json({ error: "Acesso restrito a empresas" }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const { id: proposalId } = await params;

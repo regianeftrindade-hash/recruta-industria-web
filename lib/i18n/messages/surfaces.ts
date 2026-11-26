@@ -86,6 +86,58 @@ export const surfaceMessages = {
   "surface.auth.wrongAdmin": "Este e-mail não tem permissão de admin. Confira ADMIN_EMAILS no .env e entre com o e-mail correto.",
   "surface.auth.processError": "Erro ao processar login.",
 
+  "surface.auth.pitch.pro.title": "🚀 Sua experiência pode ser encontrada pelas empresas",
+  "surface.auth.pitch.pro.p1":
+    "No Recruta Indústria, você não precisa ficar procurando oportunidades e enviando currículo para cada empresa. Você cria sua Vitrine Profissional e fica disponível para empresas que procuram profissionais com o seu perfil.",
+  "surface.auth.pitch.pro.p2":
+    "Diferente de uma plataforma comum de empregos, o Recruta Indústria foi pensado para aproximar profissionais e empresas de forma mais direta, desde a apresentação do perfil até o contato e o processo de seleção.",
+  "surface.auth.pitch.pro.subtitle": "⭐ Tudo em um só lugar",
+  "surface.auth.pitch.pro.li1":
+    "Cadastro completo: apresente sua experiência, formação, cursos, habilidades e qualificações.",
+  "surface.auth.pitch.pro.li2":
+    "Vídeo de apresentação: mostre quem você é e destaque sua experiência profissional.",
+  "surface.auth.pitch.pro.li3":
+    "Busca por empresas: seu perfil pode ser encontrado por empresas através de filtros profissionais.",
+  "surface.auth.pitch.pro.li4":
+    "Contato direto: converse com empresas interessadas no seu perfil pela própria plataforma.",
+  "surface.auth.pitch.pro.li5":
+    "Entrevistas online: participe de entrevistas sem precisar baixar outros aplicativos.",
+  "surface.auth.pitch.pro.li6":
+    "Agendamento de entrevistas: receba e organize convites para entrevistas diretamente pela plataforma.",
+  "surface.auth.pitch.pro.li7":
+    "Propostas profissionais: receba propostas de empresas interessadas no seu perfil.",
+  "surface.auth.pitch.pro.li8":
+    "Dicas das empresas: receba informações e orientações sobre seu perfil profissional.",
+  "surface.auth.pitch.pro.highlight": "✨ E para o profissional, é gratuito.",
+  "surface.auth.pitch.pro.closing":
+    "Crie sua Vitrine Profissional e tenha em um só lugar as ferramentas para apresentar sua experiência, ser encontrado por empresas e acompanhar novas oportunidades de contato profissional.",
+
+  "surface.auth.pitch.company.title": "🏭 Encontre profissionais industriais na Vitrine",
+  "surface.auth.pitch.company.p1":
+    "No Recruta Indústria, sua empresa não precisa depender só de anúncios e currículos soltos. Você acessa a Vitrine de profissionais, filtra por perfil industrial e encontra talentos alinhados à sua operação.",
+  "surface.auth.pitch.company.p2":
+    "A plataforma foi pensada para aproximar empresas e profissionais de forma mais direta, da busca ao contato, propostas e entrevistas.",
+  "surface.auth.pitch.company.subtitle": "⭐ Tudo em um só lugar",
+  "surface.auth.pitch.company.li1":
+    "Busca com filtros: localização, cargo, experiência, escolaridade e mais.",
+  "surface.auth.pitch.company.li2":
+    "Perfis completos: formação, cursos, habilidades e vídeo de apresentação.",
+  "surface.auth.pitch.company.li3":
+    "Contato direto: converse com profissionais pela própria plataforma.",
+  "surface.auth.pitch.company.li4": "Propostas: envie propostas alinhadas à sua necessidade.",
+  "surface.auth.pitch.company.li5":
+    "Entrevistas online: agende e realize entrevistas sem outros apps.",
+  "surface.auth.pitch.company.li6":
+    "Dicas ao profissional: oriente o perfil com feedbacks objetivos.",
+  "surface.auth.pitch.company.li7":
+    "Histórico de recrutamento: acompanhe o funil na operação.",
+  "surface.auth.pitch.company.li8":
+    "Verificação da empresa: segurança para liberar contatos e dados sensíveis.",
+  "surface.auth.pitch.company.highlight":
+    "✨ Complete o cadastro e a verificação para visualizar os perfis.",
+  "surface.auth.pitch.company.closing":
+    "Crie a conta da sua empresa, finalize o cadastro e, após a verificação, acesse a vitrine para encontrar profissionais industriais com o perfil que você precisa.",
+
   "surface.reset.title": "Esqueci a senha",
   "surface.reset.help": "Digite o e-mail da sua conta. Enviaremos um link para criar uma nova senha.",
   "surface.reset.emailRequired": "Informe o e-mail da conta.",
@@ -423,4 +475,37 @@ export const surfaceMessages = {
   "mail.passwordReset.rateIp": "Muitas tentativas. Tente novamente em 15 minutos.",
   "mail.passwordReset.emailRequired": "Email é obrigatório",
   "mail.passwordReset.error": "Erro ao processar solicitação",
+
+  "mail.verification.subject": "Seu código de verificação — Recruta Indústria",
+  "mail.verification.intro": "Use o código abaixo para verificar seu e-mail:",
+  "mail.verification.expiry": "Este código expira em 10 minutos.",
+  "mail.verification.ignore": "Se você não solicitou este código, pode ignorar esta mensagem.",
+  "mail.verification.text": "Seu código de verificação é: {code}\n\nEle expira em 10 minutos.\n\nSe você não solicitou este código, ignore este e-mail.",
+  "mail.verification.sent": "Código de verificação enviado para seu e-mail.",
+  "mail.verification.devMode": "Código gerado (modo desenvolvimento).",
+  "mail.verification.emailRequired": "E-mail é obrigatório",
+  "mail.verification.emailInvalid": "E-mail inválido",
+  "mail.verification.rateLimit": "Muitas tentativas. Aguarde alguns minutos.",
+  "mail.verification.waitResend": "Aguarde um minuto antes de solicitar um novo código",
+  "mail.verification.generateError": "Erro ao gerar código de verificação",
+  "mail.verification.smtpMissing": "Configure SMTP no .env para enviar o código por e-mail.",
+  "mail.verification.smtpUnavailable": "Serviço de e-mail indisponível. Tente novamente mais tarde.",
+  "mail.verification.sendError": "Erro ao enviar código",
+  "mail.verification.emailAndCodeRequired": "Email e código são obrigatórios",
+  "mail.verification.invalidOrExpired": "Código inválido ou expirado",
+  "mail.verification.expired": "Código expirado. Solicite um novo.",
+  "mail.verification.verifyError": "Erro ao verificar email",
+
+  "mail.twoFactor.subject": "Código de verificação — Recruta Indústria",
+  "mail.twoFactor.text": "Seu código de verificação é: {code}\nVálido por 5 minutos.",
+  "mail.twoFactor.html": "Seu código de verificação é: <strong>{code}</strong><br/>Válido por 5 minutos.",
+  "mail.twoFactor.sent": "Código 2FA enviado. Válido por 5 minutos.",
+  "mail.twoFactor.disabled": "2FA não habilitado neste ambiente",
+  "mail.twoFactor.rateLimit": "Muitas tentativas. Tente novamente em 5 minutos.",
+  "mail.twoFactor.unauthorized": "Não autenticado",
+  "mail.twoFactor.codeRequired": "Código obrigatório",
+  "mail.twoFactor.invalid": "Código inválido ou expirado",
+  "mail.twoFactor.generateError": "Erro ao gerar código 2FA",
+  "mail.twoFactor.verified": "Autenticação 2FA validada com sucesso",
+  "mail.twoFactor.verifyError": "Erro ao verificar código 2FA",
 } as const;

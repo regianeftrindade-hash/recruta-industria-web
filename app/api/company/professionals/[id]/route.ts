@@ -32,6 +32,7 @@ import {
   looksLikeProfileCuid,
 } from '@/lib/profile/public-slug';
 import { companyDocumentHref } from '@/lib/storage/private-uploads';
+import { apiErrorResponse } from "@/lib/i18n/api-response";
 
 function parseSkills(skills: string | null): string[] {
   if (!skills) return [];
@@ -108,7 +109,7 @@ export async function GET(
 ) {
   try {
     const companyUser = await getCompanyUser(request);    if (!companyUser) {
-      return NextResponse.json({ error: 'Acesso restrito a empresas' }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const { id: rawId } = await params;
@@ -313,7 +314,7 @@ export async function PATCH(
 ) {
   try {
     const companyUser = await getCompanyUser(request);    if (!companyUser) {
-      return NextResponse.json({ error: 'Acesso restrito a empresas' }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const { id: rawId } = await params;

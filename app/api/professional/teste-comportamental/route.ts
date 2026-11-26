@@ -9,12 +9,13 @@ import {
   validarRespostas,
 } from "@/lib/teste-comportamental";
 import { lerCampoJsonDoPerfil, salvarCampoJsonNoPerfil } from "@/lib/profile-json-fields";
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 export async function GET(request: NextRequest) {
   try {
     const auth = await resolveAuthEmail(request);
     if (!auth) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const user = await prisma.user.findUnique({
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await resolveAuthEmail(request);
     if (!auth) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const user = await prisma.user.findUnique({

@@ -18,6 +18,7 @@ import {
   uploadProfessionalVideo,
 } from '@/lib/professional/professional-video-storage';
 import { streamVideoResponse } from '@/lib/professional/video-stream';
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 export const runtime = 'nodejs';
 
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
   try {
     const userId = await resolveProfessionalUserId(request);
     if (!userId) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const path = await getVideoApresentacaoPath(userId);
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
   try {
     const userId = await resolveProfessionalUserId(request);
     if (!userId) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const formData = await request.formData();
@@ -143,7 +144,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const userId = await resolveProfessionalUserId(request);
     if (!userId) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
 
     const path = await getVideoApresentacaoPath(userId);

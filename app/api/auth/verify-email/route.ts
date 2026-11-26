@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import crypto from 'crypto';
+import { resolveInterfaceLocale } from '@/lib/i18n/resolve-interface-locale';
+import { t } from '@/lib/i18n/translate';
 
 export async function POST(req: NextRequest) {
   try {
+    const locale = await resolveInterfaceLocale();
     const { email, code } = await req.json();
 
     if (!email || !code) {
       return NextResponse.json(
-        { error: 'Email e código são obrigatórios' },
+        { error: t('mail.verification.emailAndCodeRequired', locale) },
         { status: 400 },
       );
     }
@@ -23,7 +26,7 @@ export async function POST(req: NextRequest) {
 
     if (!verification || verification.code !== normalizedCode) {
       return NextResponse.json(
-        { error: 'Código inválido ou expirado' },
+        { error: t('mail.verification.invalidOrExpired', locale) },
         { status: 401 },
       );
     }
@@ -31,7 +34,7 @@ export async function POST(req: NextRequest) {
     if (verification.expiresAt < new Date()) {
       await prisma.emailVerification.deleteMany({ where: { email: normalizedEmail } });
       return NextResponse.json(
-        { error: 'Código expirado. Solicite um novo.' },
+        { error: t('mail.verification.expired', locale) },
         { status: 401 },
       );
     }
@@ -47,8 +50,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('Error verifying email:', error);
+    const locale = await resolveInterfaceLocale().catch(() => 'pt-BR' as const);
     return NextResponse.json(
-      { error: 'Erro ao verificar email' },
+      { error: t('mail.verification.verifyError', locale) },
       { status: 500 },
     );
   }

@@ -5,6 +5,7 @@ import { getVideoApresentacaoPathByProfileId } from '@/lib/professional/professi
 import { streamVideoResponse } from '@/lib/professional/video-stream';
 import { isCompanyVerified } from '@/lib/company-storage';
 import { resolveCompanyOwnerUserId } from '@/lib/company/company-team';
+import { apiErrorResponse } from "@/lib/i18n/api-response";
 
 export const runtime = 'nodejs';
 
@@ -24,7 +25,7 @@ export async function GET(
   try {
     const companyUser = await getCompanyUser(request);
     if (!companyUser) {
-      return NextResponse.json({ error: 'Acesso restrito a empresas' }, { status: 403 });
+      return await apiErrorResponse("rest.api.companyOnly", 403);
     }
 
     const { id: profileId } = await params;

@@ -13,6 +13,7 @@ import {
   removeCallParticipant,
   respondVideoCall,
 } from "@/lib/video-calls";
+import { apiUnauthorizedResponse, apiErrorResponse } from "@/lib/i18n/api-response";
 
 async function getAuthUser(request: NextRequest) {
   const auth = await resolveAuthEmail(request);
@@ -42,7 +43,7 @@ export async function GET(
   try {
     const user = await getAuthUser(request);
     if (!user) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
     const { id } = await params;
     const call = await getVideoCallById(id);
@@ -53,7 +54,7 @@ export async function GET(
       user.role === "COMPANY" && (await canAccessCompanyCall(user.id, call));
     const isProfessional = user.role === "PROFESSIONAL" && call.profileId === user.profile?.id;
     if (!isCompany && !isProfessional) {
-      return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+      return await apiErrorResponse("rest.api.denied", 403);
     }
     const participants = await listCallParticipants(id);
     return NextResponse.json({ call, participants });
@@ -70,7 +71,7 @@ export async function POST(
   try {
     const user = await getAuthUser(request);
     if (!user) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return await apiUnauthorizedResponse();
     }
     const { id } = await params;
     const body = await request.json();
@@ -145,7 +146,7 @@ export async function POST(
       return NextResponse.json({ error: "A chamada já tem 4 participantes da empresa" }, { status: 400 });
     }
     if (msg === "FORBIDDEN") {
-      return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+      return await apiErrorResponse("rest.api.denied", 403);
     }
     console.error("Erro ao responder chamada:", error);
     return NextResponse.json({ error: "Erro ao atualizar chamada" }, { status: 500 });

@@ -2,6 +2,7 @@
 
 import React, { useLayoutEffect, useRef } from "react";
 import styles from "@/app/login/login.module.css";
+import { t } from "@/lib/i18n/translate";
 
 /** Texto de vitrine na login/cadastro da empresa — mesma altura do card, expande lateral se precisar. */
 export default function CompanyVitrinePitch() {
@@ -67,62 +68,29 @@ export default function CompanyVitrinePitch() {
     >
       <div className={styles.vitrinePitchInner}>
         <h2 id="company-vitrine-pitch-title" className={styles.vitrinePitchTitle}>
-          🏭 Encontre profissionais industriais na Vitrine
+          {t("surface.auth.pitch.company.title")}
         </h2>
-        <p className={styles.vitrinePitchText}>
-          No <strong>Recruta Indústria</strong>, sua empresa não precisa depender só de
-          anúncios e currículos soltos. Você acessa a{" "}
-          <strong>Vitrine de profissionais</strong>, filtra por perfil industrial e
-          encontra talentos alinhados à sua operação.
-        </p>
-        <p className={styles.vitrinePitchText}>
-          A plataforma foi pensada para aproximar{" "}
-          <strong>empresas e profissionais de forma mais direta</strong>, da busca ao
-          contato, propostas e entrevistas.
-        </p>
+        <p className={styles.vitrinePitchText}>{t("surface.auth.pitch.company.p1")}</p>
+        <p className={styles.vitrinePitchText}>{t("surface.auth.pitch.company.p2")}</p>
 
-        <h3 className={styles.vitrinePitchSubtitle}>⭐ Tudo em um só lugar</h3>
+        <h3 className={styles.vitrinePitchSubtitle}>
+          {t("surface.auth.pitch.company.subtitle")}
+        </h3>
         <ul className={styles.vitrinePitchList}>
-          <li>
-            <strong>Busca com filtros:</strong> localização, cargo, experiência,
-            escolaridade e mais.
-          </li>
-          <li>
-            <strong>Perfis completos:</strong> formação, cursos, habilidades e vídeo de
-            apresentação.
-          </li>
-          <li>
-            <strong>Contato direto:</strong> converse com profissionais pela própria
-            plataforma.
-          </li>
-          <li>
-            <strong>Propostas:</strong> envie propostas alinhadas à sua necessidade.
-          </li>
-          <li>
-            <strong>Entrevistas online:</strong> agende e realize entrevistas sem outros
-            apps.
-          </li>
-          <li>
-            <strong>Dicas ao profissional:</strong> oriente o perfil com feedbacks
-            objetivos.
-          </li>
-          <li>
-            <strong>Histórico de recrutamento:</strong> acompanhe o funil na operação.
-          </li>
-          <li>
-            <strong>Verificação da empresa:</strong> segurança para liberar contatos e
-            dados sensíveis.
-          </li>
+          <li>{t("surface.auth.pitch.company.li1")}</li>
+          <li>{t("surface.auth.pitch.company.li2")}</li>
+          <li>{t("surface.auth.pitch.company.li3")}</li>
+          <li>{t("surface.auth.pitch.company.li4")}</li>
+          <li>{t("surface.auth.pitch.company.li5")}</li>
+          <li>{t("surface.auth.pitch.company.li6")}</li>
+          <li>{t("surface.auth.pitch.company.li7")}</li>
+          <li>{t("surface.auth.pitch.company.li8")}</li>
         </ul>
 
         <p className={styles.vitrinePitchHighlight}>
-          ✨ Complete o cadastro e a verificação para visualizar os perfis.
+          {t("surface.auth.pitch.company.highlight")}
         </p>
-        <p className={styles.vitrinePitchText}>
-          Crie a conta da sua empresa, finalize o cadastro e, após a verificação, acesse
-          a vitrine para encontrar profissionais industriais com o perfil que você
-          precisa.
-        </p>
+        <p className={styles.vitrinePitchText}>{t("surface.auth.pitch.company.closing")}</p>
       </div>
     </section>
   );

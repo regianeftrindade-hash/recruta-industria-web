@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import LogoRecruta from "@/app/components/LogoRecruta";
 import PageLoader from "@/app/components/PageLoader";
 import { AuthAtmosphere } from "@/components/shared/AuthAtmosphere";
+import { exactUi } from "@/lib/i18n/exact-ui";
 import styles from "@/app/login/login.module.css";
 
 function AdminVerify2faContent() {
@@ -28,13 +29,13 @@ function AdminVerify2faContent() {
       const res = await fetch("/api/admin/2fa", { method: "POST", credentials: "include" });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Não foi possível enviar o código.");
+        setError(exactUi(data.error || "Não foi possível enviar o código."));
         return;
       }
-      setInfo(data.message || "Código enviado.");
+      setInfo(exactUi(data.message || "Código enviado."));
       if (data.code) setDevCode(String(data.code));
     } catch {
-      setError("Erro de rede ao enviar código.");
+      setError(exactUi("Erro de rede ao enviar código."));
     } finally {
       setSending(false);
     }
@@ -74,12 +75,12 @@ function AdminVerify2faContent() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Código inválido.");
+        setError(exactUi(data.error || "Código inválido."));
         return;
       }
       router.replace(nextPath.startsWith("/admin") ? nextPath : "/admin");
     } catch {
-      setError("Erro ao validar código.");
+      setError(exactUi("Erro ao validar código."));
     } finally {
       setLoading(false);
     }

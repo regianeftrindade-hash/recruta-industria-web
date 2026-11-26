@@ -10,6 +10,7 @@ import {
   extractStoragePath,
   isPublicMediaFolder,
 } from "@/lib/storage/private-uploads";
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 /**
  * Renova URL assinada de um arquivo no storage.
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
 
     if (!isPublicMediaFolder(path)) {
       if (!auth) {
-        return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+        return await apiUnauthorizedResponse();
       }
       let allowed = canSignMediaPath({
         path,

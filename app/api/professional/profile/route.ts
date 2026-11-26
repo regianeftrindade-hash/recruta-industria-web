@@ -18,6 +18,7 @@ import { isProfessionalRegistrationComplete } from '@/lib/professional-registrat
 import { getVideoApresentacaoPath } from '@/lib/professional/professional-video-db';
 import { caminhoFotoPerfil, patchFotoNoSnapshot } from '@/lib/professional/foto-perfil';
 import type { User, Prisma } from '@prisma/client';
+import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 const userAuthSelect = {
   id: true,
@@ -117,10 +118,7 @@ export async function GET(request: NextRequest) {
     const auth = await resolveAuthEmail(request);
 
     if (!auth) {
-      return NextResponse.json(
-        { error: 'Não autenticado' },
-        { status: 401 }
-      );
+      return await apiUnauthorizedResponse();
     }
 
     let user = await prisma.user.findUnique({
@@ -248,10 +246,7 @@ export async function POST(request: NextRequest) {
     const auth = await resolveAuthEmail(request);
 
     if (!auth) {
-      return NextResponse.json(
-        { error: 'Não autenticado' },
-        { status: 401 }
-      );
+      return await apiUnauthorizedResponse();
     }
 
     const body = await request.json();
