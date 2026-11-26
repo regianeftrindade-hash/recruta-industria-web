@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { resolveCompanyOwnerUserId } from "@/lib/company/company-team";
+import { getCompanyVerificationInfo } from "@/lib/company-storage";
 import { mediaPathMatchesStoredFile } from "@/lib/storage/private-uploads";
 
 const DOCUMENT_KEYS = ["curriculo", "atestado", "certificados", "cnhDocumento"] as const;
@@ -32,6 +33,9 @@ export async function companyMayReadUnlockedFile(email: string, requestedPath: s
   if (!user || user.role !== "COMPANY") return false;
 
   const ownerUserId = (await resolveCompanyOwnerUserId(user.id)) || user.id;
+  const verification = await getCompanyVerificationInfo(ownerUserId);
+  if (!verification.canAccessSensitiveProfiles) return false;
+
   const unlocks = await prisma.accessRecord.findMany({
     where: {
       companyUserId: ownerUserId,

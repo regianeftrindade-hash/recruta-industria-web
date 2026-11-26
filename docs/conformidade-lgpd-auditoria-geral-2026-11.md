@@ -16,7 +16,7 @@
 | Canal oficial | `contato@recrutaindustria.com` na Política de Privacidade e termo LGPD de cadastro |
 | Exclusão de conta no painel | Já existia (`DeleteAccountControl`); mantido |
 | PaymentRecord | Continua **retido** na exclusão; helper de minimização de PII para respostas/logs; stats admin não devolve `customer` ao cliente |
-| Acesso a candidatos | Mantido: desbloqueio + empresa verificada (`canAccessSensitiveProfiles`) + sanitização Art. 11 |
+| Acesso a candidatos | Desbloqueio + cadastro completo + empresa verificada; PATCH tracking exige unlock; mídia assinada exige verificação; sanitize no unlock POST |
 | Textos legais públicos | Privacidade/Uso: 18+, marketing opcional, canal LGPD |
 | i18n (12 idiomas + RTL) | Novas chaves `privacy.*` em pt-BR, en e catálogos (incl. `ar`) |
 

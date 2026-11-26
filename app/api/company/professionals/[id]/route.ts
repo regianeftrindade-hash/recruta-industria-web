@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { resolveAuthEmail } from '@/lib/api-auth';
-import { getCompanyPlanContext } from '@/lib/company-plan';
 import { listCompanyFavoriteProfileIds } from '@/lib/company-storage';
+import {
+  assertCompanyCandidateAccess,
+  companyHasActiveUnlock,
+} from '@/lib/company/company-candidate-access';
 import {
   calculateCompatibilityScore,
   parseProfileIndustrial,
@@ -137,29 +140,16 @@ export async function GET(
       state: profile.estado,
     });
 
-    const planContext = await getCompanyPlanContext(companyUser.id);
-    const dataUserId = planContext.ownerUserId || companyUser.id;
+    const access = await assertCompanyCandidateAccess(companyUser.id, {
+      actorUserId: companyUser.id,
+    });
+    if (!access.ok) {
+      return NextResponse.json(access.body, { status: access.status });
+    }
+    const { planContext, dataUserId } = access;
     const { features, tier, verification } = planContext;
 
-    if (!verification.canAccessSensitiveProfiles) {
-      return NextResponse.json(
-        {
-          error:
-            'Conclua a verificação da empresa para visualizar o perfil do profissional.',
-          requiresVerification: true,
-        },
-        { status: 403 },
-      );
-    }
-
-    const unlocked = await prisma.accessRecord.findFirst({
-      where: {
-        profileId,
-        companyUserId: dataUserId,
-        status: 'ACTIVE',
-        expiresAt: { gt: new Date() },
-      },
-    });
+    const unlocked = await companyHasActiveUnlock(dataUserId, profileId);
 
     const bloqueado = !unlocked || !verification.canAccessSensitiveProfiles;
     const industrial = parseProfileIndustrial(profile);
@@ -335,8 +325,21 @@ export async function PATCH(
       return NextResponse.json({ error: 'Perfil não encontrado' }, { status: 404 });
     }
 
-    const planContext = await getCompanyPlanContext(companyUser.id);
-    const dataUserId = planContext.ownerUserId || companyUser.id;
+    const access = await assertCompanyCandidateAccess(companyUser.id, {
+      actorUserId: companyUser.id,
+    });
+    if (!access.ok) {
+      return NextResponse.json(access.body, { status: access.status });
+    }
+    const { dataUserId } = access;
+
+    const hasUnlock = await companyHasActiveUnlock(dataUserId, profileId);
+    if (!hasUnlock) {
+      return NextResponse.json(
+        { error: 'Desbloqueie o perfil para registrar acompanhamento.' },
+        { status: 403 },
+      );
+    }
 
     const body = await request.json();
     const patch: Partial<CompanyProfileTrackingData> = {};
