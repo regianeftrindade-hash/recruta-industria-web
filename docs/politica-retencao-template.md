@@ -25,4 +25,4 @@ Preencher a coluna “Prazo aprovado” com advogado + controladora.
 5. Registrar atendimento e prazo de resposta.  
 6. Se envolver PaymentRecord/backups, seguir retenção aprovada — **não apagar sem base**.
 
-Encarregado (DPO), razão social e DPAs: ver `docs/lgpd-pendencias-operacionais.md`.
+Encarregado (DPO), razão social e DPAs: ver `docs/lgpd-pendencias-operacionais.md`, `docs/lgpd-dpo-nomeacao-template.md` e `docs/lgpd-dpa-fornecedores-checklist.md`.

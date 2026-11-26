@@ -2,26 +2,28 @@
 
 **Data:** 26/11/2026 · Estratégia: URLs únicas (sem prefixo `/en/...`); idioma via cookie / `Accept-Language`.
 
-## Já em produção
+## Já em produção / código
 
 | Item | Estado |
 |------|--------|
-| `robots.txt` | Allow `/`; disallow api/admin/dashboards |
-| `sitemap.xml` | Páginas estáticas + vagas públicas (até 5k) |
-| `hreflang` / `alternates.languages` | 12 idiomas + `x-default` na **mesma** URL |
+| `robots.txt` | Allow `/`; disallow api/admin/login/auth/pagamento/dashboards (`app/robots.ts`) |
+| `noindex` metadata | Pagamento, checkout, assinatura, esqueci/reset senha, admin-2fa |
+| `sitemap.xml` | Páginas públicas + vagas (até 5k) + hreflang; **sem** `/login` nem query `?tipo=` |
+| `hreflang` / `alternates.languages` | 12 idiomas + `x-default` na **mesma** URL (`lib/seo/language-alternates.ts`) |
 | `metadataBase` / canonical | `https://www.recrutaindustria.com` |
 | Open Graph / Twitter | Presentes no layout raiz |
 | PWA manifest | `/manifest.json` e `/manifest.webmanifest` |
+| Search Console | Playbook humano: `docs/seo-search-console-playbook.md` |
 
 ## Não fazer sem pedido
 
 - Não inventar vagas, reviews ou conteúdo falso para SEO.  
 - Não mudar URLs públicas sem redirect 301 planejado.  
-- Não alterar home/login/dashboards (congelados).
+- Não alterar layout visual de home/login/dashboards (congelados), salvo a11y autorizada.
 
-## Melhorias de discovery (conteúdo / marca — fora desta rodada de código)
+## Melhorias de discovery (conteúdo / marca — humanos)
 
-- Página institucional / blog com casos reais.  
-- Google Search Console + Bing Webmaster.  
+- Página institucional / blog com casos **reais** e autorizados.  
+- Google Search Console + Bing Webmaster (ver playbook).  
 - Perfil LinkedIn oficial alinhado ao domínio.  
-- Revisar rich results JobPosting nas páginas `/vagas/[id]` (já há schema no app — validar no Rich Results Test após deploy).
+- Validar rich results JobPosting em `/vagas/[id]` no Rich Results Test após deploy.

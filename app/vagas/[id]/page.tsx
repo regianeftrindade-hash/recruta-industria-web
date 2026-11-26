@@ -17,6 +17,7 @@ import { bindLocale } from "@/lib/i18n/active-locale";
 import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
 import { t } from "@/lib/i18n/translate";
 import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
+import { languageAlternatesRelative } from "@/lib/seo/language-alternates";
 import styles from "../vagas.module.css";
 
 export const dynamic = "force-dynamic";
@@ -53,21 +54,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: social.description,
       alternates: {
         canonical: path,
-        languages: {
-          "pt-BR": path,
-          en: path,
-          es: path,
-          fr: path,
-          de: path,
-          it: path,
-          "pt-PT": path,
-          "zh-CN": path,
-          ja: path,
-          ko: path,
-          ar: path,
-          hi: path,
-          "x-default": path,
-        },
+        languages: languageAlternatesRelative(path),
       },
       openGraph: {
         type: "website",
@@ -76,11 +63,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description: social.description,
         siteName: "Recruta Indústria",
         locale: jobLocale,
+        images: [{ url: "/logo-recruta.png", width: 512, height: 512, alt: "Recruta Indústria" }],
       },
       twitter: {
-        card: "summary_large_image",
+        card: "summary",
         title: social.title,
         description: social.description,
+        images: ["/logo-recruta.png"],
       },
       robots: { index: true, follow: true },
     };

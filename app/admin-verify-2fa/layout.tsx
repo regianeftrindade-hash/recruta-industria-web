@@ -4,7 +4,10 @@ import { t } from "@/lib/i18n/translate";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await resolveInterfaceLocale();
-  return { title: t("seo.layout.admin2fa", locale) };
+  return {
+    title: t("seo.layout.admin2fa", locale),
+    robots: { index: false, follow: false },
+  };
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {

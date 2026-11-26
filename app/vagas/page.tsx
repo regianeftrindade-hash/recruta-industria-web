@@ -23,6 +23,7 @@ import { bindLocale } from "@/lib/i18n/active-locale";
 import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
 import { t } from "@/lib/i18n/translate";
 import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
+import { languageAlternatesRelative } from "@/lib/seo/language-alternates";
 import styles from "./vagas.module.css";
 
 export const dynamic = "force-dynamic";
@@ -33,21 +34,8 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t("surface.jobs.title", locale),
     description: t("surface.jobs.description", locale),
     alternates: {
-      languages: {
-        "pt-BR": "/vagas",
-        en: "/vagas",
-        es: "/vagas",
-        fr: "/vagas",
-        de: "/vagas",
-        it: "/vagas",
-        "pt-PT": "/vagas",
-        "zh-CN": "/vagas",
-        ja: "/vagas",
-        ko: "/vagas",
-        ar: "/vagas",
-        hi: "/vagas",
-        "x-default": "/vagas",
-      },
+      canonical: "/vagas",
+      languages: languageAlternatesRelative("/vagas"),
     },
   };
 }
