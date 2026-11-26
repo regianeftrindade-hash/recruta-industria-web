@@ -2513,5 +2513,16 @@
   "rest.entrevistas.activeProposals": "进行中的提议（{count}）",
   "rest.entrevistas.scheduled": "已安排的面试（{count}）",
   "rest.entrevistas.archived": "已归档（{count}）",
-  "rest.entrevistas.videoPaidOnly": "视频面试仅在付费方案中提供。"
+  "rest.entrevistas.videoPaidOnly": "视频面试仅在付费方案中提供。",
+  "surface.admin.accounts": "账户",
+  "rest.billing.periodMonth": "/月",
+  "rest.billing.periodYear": "/年",
+  "rest.billing.periodMonthUsd": "/mo",
+  "rest.billing.periodYearUsd": "/year",
+  "rest.billing.periodMonthly": "按月",
+  "rest.billing.periodAnnual": "按年",
+  "rest.billing.modeRecurring": "自动续订订阅",
+  "rest.billing.modeOneTime": "一次性付款（Pix 或 Boleto）",
+  "rest.billing.savingsMonths": "节省 {amount}（免两个月）",
+  "rest.billing.savingsMonthsUsd": "Save {amount} (2 months free)"
 }

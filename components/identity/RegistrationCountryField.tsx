@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { registrationCountryChoices } from "@/lib/identity/registration-region";
+import { getBoundLocale } from "@/lib/i18n/active-locale";
 import { t } from "@/lib/i18n/translate";
 
 type RegistrationCountryFieldProps = {
@@ -26,7 +27,11 @@ export default function RegistrationCountryField({
   const [choices, setChoices] = useState([{ code: "BR", name: t("registration.country.brazil") }]);
 
   useEffect(() => {
-    setChoices(registrationCountryChoices());
+    const locale =
+      typeof document !== "undefined" && document.documentElement.lang
+        ? document.documentElement.lang
+        : getBoundLocale();
+    setChoices(registrationCountryChoices(locale));
   }, []);
 
   return (
@@ -49,7 +54,7 @@ export default function RegistrationCountryField({
       </select>
       {value !== "BR" ? (
         <p className={hintClassName} role="status">
-          Cadastro internacional: CPF/CNPJ não são exigidos. Use telefone com código do país (+).
+          {t("registration.company.intlDocumentsHint")}
         </p>
       ) : null}
     </div>

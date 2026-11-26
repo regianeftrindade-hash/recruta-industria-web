@@ -2513,5 +2513,16 @@
   "rest.entrevistas.activeProposals": "सक्रिय प्रस्ताव ({count})",
   "rest.entrevistas.scheduled": "निर्धारित साक्षात्कार ({count})",
   "rest.entrevistas.archived": "संग्रहीत ({count})",
-  "rest.entrevistas.videoPaidOnly": "वीडियो साक्षात्कार भुगतान योजनाओं में उपलब्ध है।"
+  "rest.entrevistas.videoPaidOnly": "वीडियो साक्षात्कार भुगतान योजनाओं में उपलब्ध है।",
+  "surface.admin.accounts": "खाते",
+  "rest.billing.periodMonth": "/माह",
+  "rest.billing.periodYear": "/वर्ष",
+  "rest.billing.periodMonthUsd": "/mo",
+  "rest.billing.periodYearUsd": "/year",
+  "rest.billing.periodMonthly": "मासिक",
+  "rest.billing.periodAnnual": "वार्षिक",
+  "rest.billing.modeRecurring": "स्वचालित आवर्ती सदस्यता",
+  "rest.billing.modeOneTime": "एकमुश्त भुगतान (Pix या Boleto)",
+  "rest.billing.savingsMonths": "{amount} बचाएँ (2 महीने मुफ़्त)",
+  "rest.billing.savingsMonthsUsd": "Save {amount} (2 months free)"
 }

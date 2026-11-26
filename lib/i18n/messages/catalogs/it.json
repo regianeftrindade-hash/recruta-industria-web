@@ -2513,5 +2513,16 @@
   "rest.entrevistas.activeProposals": "Proposte attive ({count})",
   "rest.entrevistas.scheduled": "Colloqui programmati ({count})",
   "rest.entrevistas.archived": "Archiviate ({count})",
-  "rest.entrevistas.videoPaidOnly": "Il colloquio video è disponibile nei piani a pagamento."
+  "rest.entrevistas.videoPaidOnly": "Il colloquio video è disponibile nei piani a pagamento.",
+  "surface.admin.accounts": "Account",
+  "rest.billing.periodMonth": "/mese",
+  "rest.billing.periodYear": "/anno",
+  "rest.billing.periodMonthUsd": "/mo",
+  "rest.billing.periodYearUsd": "/year",
+  "rest.billing.periodMonthly": "Mensile",
+  "rest.billing.periodAnnual": "Annuale",
+  "rest.billing.modeRecurring": "Abbonamento ricorrente automatico",
+  "rest.billing.modeOneTime": "Pagamento unico (Pix o boleto)",
+  "rest.billing.savingsMonths": "Risparmia {amount} (2 mesi gratis)",
+  "rest.billing.savingsMonthsUsd": "Save {amount} (2 months free)"
 }

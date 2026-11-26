@@ -1,5 +1,6 @@
 import { formatCNPJ, formatCPF, isValidCNPJ, isValidCPF, isValidPhoneBR } from "@/lib/security/security";
 import { normalizePhoneE164 } from "@/lib/notifications/sanitize";
+import { t } from "@/lib/i18n/translate";
 
 /** País do cadastro quando o formulário não informa outro. */
 export const DEFAULT_COUNTRY_CODE = "BR";
@@ -61,8 +62,8 @@ export function registrationDocumentError(
   const check = checkIdentityDocument(value, kind, countryCode);
   if (!check.supported) {
     return kind === "CPF"
-      ? "CPF só é aceito em cadastros do Brasil."
-      : "CNPJ só é aceito em cadastros do Brasil.";
+      ? t("registration.simple.cpfBrazilOnly")
+      : t("registration.simple.cnpjBrazilOnly");
   }
   return check.valid ? null : invalidMessage;
 }
@@ -75,7 +76,5 @@ export function registrationPhoneError(
 ): string | null {
   const country = normalizeCountryCode(countryCode);
   if (country === "BR") return isValidPhoneBR(phone) ? null : brazilianMessage;
-  return isValidPhone(phone, country)
-    ? null
-    : "Informe o telefone com o código internacional, começando com +.";
+  return isValidPhone(phone, country) ? null : t("rest.cadastro.phoneIntl");
 }

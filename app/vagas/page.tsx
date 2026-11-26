@@ -27,10 +27,30 @@ import styles from "./vagas.module.css";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Vagas",
-  description: "Vagas industriais publicadas no Recruta Indústria.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await resolveInterfaceLocale();
+  return {
+    title: t("surface.jobs.title", locale),
+    description: t("surface.jobs.description", locale),
+    alternates: {
+      languages: {
+        "pt-BR": "/vagas",
+        en: "/vagas",
+        es: "/vagas",
+        fr: "/vagas",
+        de: "/vagas",
+        it: "/vagas",
+        "pt-PT": "/vagas",
+        "zh-CN": "/vagas",
+        ja: "/vagas",
+        ko: "/vagas",
+        ar: "/vagas",
+        hi: "/vagas",
+        "x-default": "/vagas",
+      },
+    },
+  };
+}
 
 const CONTRATO: Record<string, MessageKey> = {
   CLT: "surface.jobs.clt",
