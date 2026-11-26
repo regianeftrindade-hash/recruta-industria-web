@@ -18,7 +18,7 @@ export const SUPPORTED_LOCALES = [
 
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
-/** Nome do idioma na própria escrita. Não muda com o idioma da tela. */
+/** Nome do idioma na própria escrita (referência / acessibilidade). */
 export const LOCALE_NATIVE_NAMES: Record<SupportedLocale, string> = {
   "pt-BR": "Português (Brasil)",
   en: "English",
@@ -32,6 +32,25 @@ export const LOCALE_NATIVE_NAMES: Record<SupportedLocale, string> = {
   ko: "한국어",
   ar: "العربية",
   hi: "हिन्दी",
+};
+
+/**
+ * Rótulos do seletor de idiomas — sempre em português (pedido de produto).
+ * As traduções da interface continuam pelos catálogos; só o nome na lista muda.
+ */
+export const LOCALE_SELECTOR_LABELS_PT: Record<SupportedLocale, string> = {
+  "pt-BR": "Português (Brasil)",
+  en: "Inglês",
+  es: "Espanhol",
+  fr: "Francês",
+  de: "Alemão",
+  it: "Italiano",
+  "pt-PT": "Português (Portugal)",
+  "zh-CN": "Chinês (simplificado)",
+  ja: "Japonês",
+  ko: "Coreano",
+  ar: "Árabe",
+  hi: "Hindi",
 };
 
 export function isSupportedLocale(value: string): value is SupportedLocale {

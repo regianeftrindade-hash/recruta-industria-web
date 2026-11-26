@@ -52,6 +52,10 @@ import { parseResumePatterns } from '@/lib/curriculum/parse-resume-patterns';
 import { CurriculoAnexadoSemLeituraError, requestResumeExtract } from '@/lib/curriculum/resume-read-error';
 import PageLoader from '@/app/components/PageLoader';
 import {
+  isProfessionalAgeAllowed,
+  professionalAgeGateErrorMessage,
+} from '@/lib/privacy/age-gate';
+import {
   calculateProfileCompletion,
   PREFIRO_NAO_INFORMAR,
   ESCOLARIDADES_OPCOES,
@@ -1535,11 +1539,13 @@ export default function CadastroProfissional({
     }
 
     {
-      const idadeNum = Number.parseInt(String(formData.idade || ''), 10);
-      if (Number.isFinite(idadeNum) && idadeNum < 18) {
+      const birthForGate = formData.dataNascimento || dataNascimentoValue || '';
+      const ageGate = isProfessionalAgeAllowed(birthForGate);
+      if (!ageGate.ok) {
         setEmailError(
-          t("privacy.professionalMinAge") ||
-            "O cadastro profissional é permitido apenas para maiores de 18 anos.",
+          ageGate.reason === 'underage'
+            ? t('privacy.professionalMinAge')
+            : professionalAgeGateErrorMessage(ageGate.reason),
         );
         requestAnimationFrame(() => {
           document.getElementById('dataNascimento')?.focus();
@@ -2069,10 +2075,9 @@ export default function CadastroProfissional({
                   inputMode="numeric"
                   className={styles.input}
                   value={formData.idade}
-                  onChange={(e) => {
-                    const onlyDigits = e.target.value.replace(/\D/g, '').slice(0, 3);
-                    setFormData((prev) => ({ ...prev, idade: onlyDigits }));
-                  }}
+                  readOnly
+                  aria-readonly="true"
+                  title={t('privacy.birthDateHint')}
                 />
               </div>
 

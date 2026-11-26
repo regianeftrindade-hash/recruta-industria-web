@@ -4,19 +4,29 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { t } from "@/lib/i18n/translate";
 import { requestLocaleChange } from "@/lib/i18n/locale-switch";
-import { LOCALE_NATIVE_NAMES, SUPPORTED_LOCALES, matchSupportedLocale, textDirection, type SupportedLocale } from "@/lib/i18n/locales";
+import {
+  LOCALE_NATIVE_NAMES,
+  LOCALE_SELECTOR_LABELS_PT,
+  SUPPORTED_LOCALES,
+  matchSupportedLocale,
+  textDirection,
+  type SupportedLocale,
+} from "@/lib/i18n/locales";
 
 export default function LanguageSwitch({ current }: { current: SupportedLocale }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const options = SUPPORTED_LOCALES.map((locale) => ({
     locale,
-    label: LOCALE_NATIVE_NAMES[locale],
+    label: LOCALE_SELECTOR_LABELS_PT[locale],
   }));
 
   async function choose(raw: string) {
     const locale = matchSupportedLocale(raw)
-      ?? SUPPORTED_LOCALES.find((item) => LOCALE_NATIVE_NAMES[item] === raw)
+      ?? SUPPORTED_LOCALES.find(
+        (item) =>
+          LOCALE_SELECTOR_LABELS_PT[item] === raw || LOCALE_NATIVE_NAMES[item] === raw,
+      )
       ?? null;
     if (!locale) {
       setError(t("locale.invalid"));

@@ -6,12 +6,14 @@ const {
   getCompanyExtraData,
   isCompanyTestBypassUserId,
   accessFindFirst,
+  userFindUnique,
 } = vi.hoisted(() => ({
   getCompanyPlanContext: vi.fn(),
   loadCompanyRowByUserId: vi.fn(),
   getCompanyExtraData: vi.fn(),
   isCompanyTestBypassUserId: vi.fn(),
   accessFindFirst: vi.fn(),
+  userFindUnique: vi.fn(),
 }));
 
 vi.mock("@/lib/company-plan", () => ({ getCompanyPlanContext }));
@@ -25,6 +27,7 @@ vi.mock("@/lib/company/company-test-bypass", () => ({
 vi.mock("@/lib/db", () => ({
   prisma: {
     accessRecord: { findFirst: accessFindFirst },
+    user: { findUnique: userFindUnique },
   },
 }));
 
@@ -40,6 +43,8 @@ describe("assertCompanyCandidateAccess", () => {
     getCompanyExtraData.mockReset();
     isCompanyTestBypassUserId.mockReset();
     accessFindFirst.mockReset();
+    userFindUnique.mockReset();
+    userFindUnique.mockResolvedValue({ countryCode: "BR" });
   });
 
   it("nega cadastro incompleto", async () => {
@@ -98,6 +103,26 @@ describe("assertCompanyCandidateAccess", () => {
       responsavelCpf: "52998224725",
       telefone: "11999999999",
       endereco: "Rua Teste 100",
+    });
+    isCompanyTestBypassUserId.mockResolvedValue(false);
+
+    const result = await assertCompanyCandidateAccess("owner1");
+    expect(result.ok).toBe(true);
+  });
+
+  it("libera empresa internacional verificada sem CNPJ", async () => {
+    userFindUnique.mockResolvedValue({ countryCode: "US" });
+    getCompanyPlanContext.mockResolvedValue({
+      ownerUserId: "owner1",
+      verification: { canAccessSensitiveProfiles: true },
+    });
+    loadCompanyRowByUserId.mockResolvedValue({ name: "Global Co" });
+    getCompanyExtraData.mockResolvedValue({
+      cnpj: "",
+      responsavelNome: "Alex",
+      responsavelCpf: "",
+      telefone: "+15550100",
+      endereco: "100 Main Street",
     });
     isCompanyTestBypassUserId.mockResolvedValue(false);
 

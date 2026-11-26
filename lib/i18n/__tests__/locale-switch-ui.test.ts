@@ -7,7 +7,7 @@ import {
   homeLocaleSlotMode,
   showsGlobalLocaleBar,
 } from "@/lib/i18n/locale-switch-placement";
-import { LOCALE_NATIVE_NAMES, SUPPORTED_LOCALES, textDirection } from "@/lib/i18n/locales";
+import { LOCALE_SELECTOR_LABELS_PT, SUPPORTED_LOCALES, textDirection } from "@/lib/i18n/locales";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: () => undefined }),
@@ -15,19 +15,21 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("seletor de idioma visível", () => {
-  it("oferece os 12 idiomas pelo nome nativo", () => {
+  it("oferece os 12 idiomas com nomes em português", () => {
     const html = renderToStaticMarkup(
       createElement(LanguageSwitch, { current: "pt-BR" }),
     );
     expect(SUPPORTED_LOCALES).toHaveLength(12);
     for (const locale of SUPPORTED_LOCALES) {
       expect(html).toContain(`value="${locale}"`);
-      expect(html).toContain(LOCALE_NATIVE_NAMES[locale]);
+      expect(html).toContain(LOCALE_SELECTOR_LABELS_PT[locale]);
     }
     expect(html).toContain('data-locale-switch=""');
     expect(html).toContain("Português (Brasil)");
-    expect(html).toContain("English");
-    expect(html).toContain("العربية");
+    expect(html).toContain("Inglês");
+    expect(html).toContain("Árabe");
+    expect(html).not.toContain("English");
+    expect(html).not.toContain("العربية");
   });
 
   it("coloca o seletor no cabeçalho da home e na faixa das outras rotas públicas", () => {

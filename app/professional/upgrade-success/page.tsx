@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { t } from "@/lib/i18n/translate";
 
 /** Esta página não confirma pagamento. O Premium só aparece depois da cobrança validada. */
 export default function UpgradeSuccessPage() {
@@ -12,7 +13,7 @@ export default function UpgradeSuccessPage() {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F3E6C8", color: "#414141" }}>
-      Conferindo a assinatura...
+      {t("ui.checkingSubscription")}
     </div>
   );
 }

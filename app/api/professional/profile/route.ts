@@ -328,13 +328,40 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const existingProfile = await prisma.profile.findUnique({
+      where: { userId: user.id },
+    });
+
     {
-      const birthRaw =
-        (body as Record<string, unknown>).dataNascimento ??
-        (body as Record<string, unknown>).dataNascimentoDisplay ??
-        (body as Record<string, unknown>).birthDate;
-      if (birthRaw != null && String(birthRaw).trim() !== "") {
-        const ageGate = isProfessionalAgeAllowed(birthRaw);
+      const bodyRec = body as Record<string, unknown>;
+      const birthFromBody =
+        bodyRec.dataNascimento ?? bodyRec.dataNascimentoDisplay ?? bodyRec.birthDate;
+      const registrationComplete = isProfessionalRegistrationComplete(
+        existingProfile as Parameters<typeof isProfessionalRegistrationComplete>[0],
+      );
+
+      let birthToCheck: unknown = birthFromBody;
+      if (
+        (birthToCheck == null || String(birthToCheck).trim() === "") &&
+        !registrationComplete &&
+        existingProfile?.formDataJSON?.trim()
+      ) {
+        try {
+          const snap = JSON.parse(existingProfile.formDataJSON) as Record<string, unknown>;
+          birthToCheck = snap.dataNascimento ?? snap.dataNascimentoDisplay ?? snap.birthDate;
+        } catch {
+          /* ignora snapshot inválido */
+        }
+      }
+
+      // Conta nova/incompleta: exige 18+ pela data real.
+      // Conta já completa: só revalida se a data vier no payload (não trava adultos
+      // nem reescreve cadastros antigos só por abrir o painel).
+      const mustEnforceAge =
+        !registrationComplete ||
+        (birthFromBody != null && String(birthFromBody).trim() !== "");
+      if (mustEnforceAge) {
+        const ageGate = isProfessionalAgeAllowed(birthToCheck);
         if (!ageGate.ok) {
           return NextResponse.json(
             { error: professionalAgeGateErrorMessage(ageGate.reason) },
@@ -348,10 +375,6 @@ export async function POST(request: NextRequest) {
       body,
       user.email
     );
-
-    const existingProfile = await prisma.profile.findUnique({
-      where: { userId: user.id },
-    });
     const mergedData = keepExistingProfileFields(
       profileData as Record<string, unknown>,
       existingProfile as unknown as Record<string, unknown> | null,

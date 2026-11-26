@@ -3,6 +3,7 @@ import { internalMessages } from "@/lib/i18n/messages/internal";
 import { fixMessages } from "@/lib/i18n/messages/fix";
 import { restMessages } from "@/lib/i18n/messages/rest";
 import { surfaceMessages } from "@/lib/i18n/messages/surfaces";
+import { completionMessages } from "@/lib/i18n/messages/completion";
 import { registrationUiMessages } from "@/lib/i18n/messages/registration-ui";
 import { sharedOptionMessages } from "@/lib/i18n/messages/shared-options";
 
@@ -65,6 +66,7 @@ export const messagesPtBR = {
   ...sharedOptionMessages,
   ...localeUiMessages,
   ...surfaceMessages,
+  ...completionMessages,
   ...internalMessages,
   ...restMessages,
   ...fixMessages,

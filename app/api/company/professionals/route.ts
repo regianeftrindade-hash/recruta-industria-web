@@ -225,6 +225,15 @@ export async function GET(request: NextRequest) {
     const extra = await getCompanyExtraData(dataUserId)
     const bypass = await isCompanyTestBypassUserId(dataUserId)
       || (dataUserId !== companyUser.id && await isCompanyTestBypassUserId(companyUser.id))
+    const ownerCountry =
+      dataUserId === companyUser.id
+        ? companyUser.countryCode
+        : (
+            await prisma.user.findUnique({
+              where: { id: dataUserId },
+              select: { countryCode: true },
+            })
+          )?.countryCode
     const registrationComplete = companyCanSearchProfessionals({
       name: companyRow?.name,
       cnpj: extra.cnpj,
@@ -232,6 +241,7 @@ export async function GET(request: NextRequest) {
       responsavelCpf: extra.responsavelCpf,
       telefone: extra.telefone,
       endereco: extra.endereco,
+      countryCode: ownerCountry || undefined,
     }, bypass)
 
     if (!registrationComplete || !verification.canAccessSensitiveProfiles) {

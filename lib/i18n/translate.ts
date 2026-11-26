@@ -4,6 +4,7 @@ import { internalEn } from "@/lib/i18n/messages/internal.en";
 import { fixEn } from "@/lib/i18n/messages/fix.en";
 import { restEn } from "@/lib/i18n/messages/rest.en";
 import { surfacesEn } from "@/lib/i18n/messages/surfaces.en";
+import { completionMessagesEn } from "@/lib/i18n/messages/completion.en";
 import es from "@/lib/i18n/messages/catalogs/es.json";
 import fr from "@/lib/i18n/messages/catalogs/fr.json";
 import de from "@/lib/i18n/messages/catalogs/de.json";
@@ -25,7 +26,14 @@ export const esCatalog: Partial<Record<MessageKey, string>> = es as Partial<
 
 const catalogs: Record<SupportedLocale, Partial<Record<MessageKey, string>>> = {
   "pt-BR": messagesPtBR,
-  en: { ...messagesEn, ...surfacesEn, ...internalEn, ...restEn, ...fixEn },
+  en: {
+    ...messagesEn,
+    ...surfacesEn,
+    ...completionMessagesEn,
+    ...internalEn,
+    ...restEn,
+    ...fixEn,
+  },
   es: esCatalog,
   fr,
   de,

@@ -1,4 +1,6 @@
 "use client";
+
+import { t } from "@/lib/i18n/translate";
 import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { useEffect, useRef, useState } from "react";
@@ -81,7 +83,7 @@ export default function Pagamento() {
 
   const startPolling = (chargeId: string) => {
     clearPoll();
-    setStatusMessage("Aguardando confirmação do Pix...");
+    setStatusMessage(t("pay.status.waitingPix"));
     pollRef.current = setInterval(async () => {
       try {
         const res = await fetch(`/api/pagseguro/status?chargeId=${chargeId}`);
@@ -89,17 +91,17 @@ export default function Pagamento() {
         const status = data?.status as string;
 
         if (status === "PAID") {
-          setStatusMessage("Pagamento confirmado. Liberando Premium...");
+          setStatusMessage(t("pay.status.confirmedPremium"));
           clearPoll();
           finishSuccess();
         } else if (["DECLINED", "CANCELED"].includes(status)) {
-          setStatusMessage("Pagamento não aprovado. Tente novamente.");
+          setStatusMessage(t("pay.status.notApprovedRetry"));
           clearPoll();
           setProcessing(false);
         }
       } catch (error) {
         clearPoll();
-        setStatusMessage("Erro ao verificar status. Tente de novo.");
+        setStatusMessage(t("pay.status.verifyError"));
         setProcessing(false);
       }
     }, 4000);
@@ -107,13 +109,13 @@ export default function Pagamento() {
 
   const handlePixCheckout = async () => {
     if (!nome || !email) {
-      setStatusMessage("Preencha nome e e-mail.");
+      setStatusMessage(t("pay.status.fillNameEmail"));
       return;
     }
 
     try {
       setProcessing(true);
-      setStatusMessage("Gerando cobrança Pix...");
+      setStatusMessage(t("pay.status.generatingPix"));
 
       const res = await fetch("/api/pagseguro/create-payment", {
         method: "POST",
@@ -124,7 +126,7 @@ export default function Pagamento() {
       const data = await res.json();
       if (!res.ok || data?.error) {
         setProcessing(false);
-        setStatusMessage(data?.error || "Erro ao gerar Pix.");
+        setStatusMessage(data?.error || t("pay.status.pixError"));
         return;
       }
 
@@ -138,12 +140,12 @@ export default function Pagamento() {
         expiresAt: data.expiresAt,
       });
 
-      setStatusMessage(method === 'pix' ? 'Pix gerado. Pague e aguardamos confirmação...' : method === 'boleto' ? 'Boleto gerado. Aguardando pagamento...' : 'Checkout criado.');
+      setStatusMessage(method === 'pix' ? t("pay.status.pixGenerated") : method === 'boleto' ? t("pay.status.boletoGenerated") : t("pay.status.checkoutCreated"));
       startPolling((data.chargeId || data.id) as string);
       setProcessing(false);
     } catch (error) {
       setProcessing(false);
-      setStatusMessage("Erro inesperado ao iniciar o pagamento.");
+      setStatusMessage(t("pay.status.unexpected"));
     }
   };
 
@@ -155,8 +157,8 @@ export default function Pagamento() {
           <h1 style={{ margin: "0 0 12px", fontSize: 24, color: COLORS.dourado }}>{exactUi("Plano profissional")}</h1>
           <p style={{ margin: "0 0 18px", lineHeight: 1.5 }}>
             {offering === null
-              ? "Carregando..."
-              : "Novas contratações do Premium estão pausadas. O plano gratuito continua disponível."}
+              ? t("ui.loadingShort")
+              : t("pay.premium.paused")}
           </p>
           <button type="button" onClick={() => router.push("/")} style={{ ...BTN_GOLD, padding: "12px 20px" }}>
             Voltar
@@ -171,9 +173,9 @@ export default function Pagamento() {
       <AuthAtmosphere />
       <div style={{ position: "relative", zIndex: 1, maxWidth: "1100px", margin: "0 auto", display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "24px" }}>
         <div style={{ background: "#E8D5A3", borderRadius: "16px", padding: "28px", boxShadow: "0 16px 40px rgba(0,0,0,0.45)", border: "1px solid rgba(200,155,60,0.7)" }}>
-          <span style={{ display: "inline-block", fontWeight: 900, color: COLORS.dourado, background: "rgba(200, 155, 60, 0.15)", padding: "8px 14px", borderRadius: "999px", marginBottom: "12px", fontSize: "12px", border: `2px solid ${COLORS.douradoEscuro}` }}>PREMIUM PROFISSIONAL</span>
+          <span style={{ display: "inline-block", fontWeight: 900, color: COLORS.dourado, background: "rgba(200, 155, 60, 0.15)", padding: "8px 14px", borderRadius: "999px", marginBottom: "12px", fontSize: "12px", border: `2px solid ${COLORS.douradoEscuro}` }}>{t("pay.premium.badge")}</span>
           <h1 style={{ margin: "0 0 8px 0", fontSize: "28px", color: COLORS.dourado }}>Plano completo do profissional</h1>
-          <p style={{ margin: "0 0 18px 0", color: "rgba(242,242,242,0.82)", lineHeight: 1.6 }}>Acesse todas as funcionalidades do site, desbloqueie dicas premium, histórico de visitas e visibilidade ampliada para empresas.</p>
+          <p style={{ margin: "0 0 18px 0", color: "rgba(242,242,242,0.82)", lineHeight: 1.6 }}>{t("pay.premium.blurb")}</p>
 
             <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "16px" }}>
             <span style={{ fontSize: "18px", color: COLORS.textoSuave }}>R$</span>
@@ -183,12 +185,12 @@ export default function Pagamento() {
 
           <div style={{ display: "grid", gap: "10px", marginBottom: "22px" }}>
             {[
-              "Todas as funcionalidades do site liberadas",
-              "Veja quais empresas viram seu perfil e todas as dicas para o teu perfil",
-              "Dicas premium sem bloqueio",
-              "Histórico de visitas detalhado",
-              "Perfil em destaque para empresas",
-              "Suporte prioritário"
+              t("pay.premium.feature1"),
+              t("pay.premium.feature2"),
+              t("pay.premium.feature3"),
+              t("pay.premium.feature4"),
+              t("pay.premium.feature5"),
+              t("pay.premium.feature6")
             ].map((item) => (
               <div key={item} style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(200, 155, 60, 0.08)", padding: "10px 12px", borderRadius: "10px", border: `2px solid ${COLORS.douradoEscuro}` }}>
                 <span style={{ color: COLORS.branco, fontWeight: "bold" }}>✓</span>
@@ -208,7 +210,7 @@ export default function Pagamento() {
 
         <div style={{ background: "#E8D5A3", borderRadius: "16px", padding: "24px", boxShadow: "0 16px 40px rgba(0,0,0,0.45)", border: "1px solid rgba(200,155,60,0.7)" }}>
           <h2 style={{ margin: "0 0 12px 0", color: COLORS.dourado, fontSize: "20px" }}>{exactUi("Pagamento")}</h2>
-          <p style={{ margin: "0 0 18px 0", color: "rgba(242,242,242,0.82)", fontSize: "14px" }}>Escolha o método e conclua a assinatura Premium.</p>
+          <p style={{ margin: "0 0 18px 0", color: "rgba(242,242,242,0.82)", fontSize: "14px" }}>{t("pay.chooseMethod")}</p>
 
           <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
             <button
@@ -281,7 +283,19 @@ export default function Pagamento() {
                 disabled={processing}
                 style={{ ...BTN_GOLD, fontWeight: 900, padding: "14px", borderRadius: "12px", border: "none", fontSize: "16px", cursor: processing ? "not-allowed" : "pointer", boxShadow: "0 10px 25px rgba(200, 155, 60, 0.25)", opacity: processing ? 0.6 : 1 }}
               >
-                {processing ? "Processando..." : paymentData ? (method === 'pix' ? 'Regerar Pix' : method === 'boleto' ? 'Regerar Boleto' : 'Abrir Checkout') : (method === 'pix' ? 'Gerar Pix com PagSeguro' : method === 'boleto' ? 'Gerar Boleto' : 'Iniciar Checkout')}
+                {processing
+                  ? t("pay.cta.processing")
+                  : paymentData
+                    ? (method === "pix"
+                        ? t("pay.cta.regeneratePix")
+                        : method === "boleto"
+                          ? t("pay.cta.regenerateBoleto")
+                          : t("pay.cta.openCheckout"))
+                    : (method === "pix"
+                        ? t("pay.cta.generatePixPagseguro")
+                        : method === "boleto"
+                          ? t("pay.cta.generateBoletoSimple")
+                          : t("pay.cta.startCheckout"))}
               </button>
 
               {statusMessage && (

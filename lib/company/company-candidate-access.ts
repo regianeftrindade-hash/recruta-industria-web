@@ -44,6 +44,11 @@ export async function assertCompanyCandidateAccess(
     (await isCompanyTestBypassUserId(dataUserId)) ||
     (dataUserId !== actorUserId && (await isCompanyTestBypassUserId(actorUserId)));
 
+  const ownerCountry = await prisma.user.findUnique({
+    where: { id: dataUserId },
+    select: { countryCode: true },
+  });
+
   const registrationComplete = companyCanSearchProfessionals(
     {
       name: companyRow?.name,
@@ -52,6 +57,7 @@ export async function assertCompanyCandidateAccess(
       responsavelCpf: extra.responsavelCpf,
       telefone: extra.telefone,
       endereco: extra.endereco,
+      countryCode: ownerCountry?.countryCode || "BR",
     },
     bypass,
   );

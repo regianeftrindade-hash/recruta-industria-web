@@ -7,6 +7,7 @@ import {
   isPublicTermSlug,
   resolvePublicTermParagraphs,
 } from "@/lib/legal/public-terms";
+import { legalBodyIsOfficial } from "@/lib/legal/legal-locale-status";
 import { bindLocale } from "@/lib/i18n/active-locale";
 import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
 import { t } from "@/lib/i18n/translate";
@@ -74,7 +75,7 @@ export default async function TermoPage({ params }: Props) {
     const titleKey = publicTitleKey(slug);
     const title = titleKey ? t(titleKey, locale) : publicDoc.titlePtBR;
     const paragraphs = resolvePublicTermParagraphs(publicDoc, locale);
-    const bodyIsFallback = !publicDoc.paragraphsByLocale[locale];
+    const bodyIsFallback = !legalBodyIsOfficial(locale) || !publicDoc.paragraphsByLocale[locale];
 
     return (
       <div className={styles.container}>
@@ -82,7 +83,12 @@ export default async function TermoPage({ params }: Props) {
           <h1 className={styles.title}>{title}</h1>
           {bodyIsFallback && locale !== "pt-BR" ? (
             <p className={styles.paragraph}>
-              {t("legal.bodyFallbackNotice", locale)}
+              {t("legal.officialTranslationPending", locale)}
+            </p>
+          ) : null}
+          {locale !== "pt-BR" ? (
+            <p className={styles.paragraph}>
+              {t("legal.structureReadyNotice", locale)}
             </p>
           ) : null}
           <div className={styles.body}>
