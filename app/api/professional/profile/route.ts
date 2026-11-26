@@ -18,7 +18,7 @@ import { isProfessionalRegistrationComplete } from '@/lib/professional-registrat
 import { getVideoApresentacaoPath } from '@/lib/professional/professional-video-db';
 import { caminhoFotoPerfil, patchFotoNoSnapshot } from '@/lib/professional/foto-perfil';
 import type { User, Prisma } from '@prisma/client';
-import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
+import { apiErrorResponse, apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 const userAuthSelect = {
   id: true,
@@ -146,6 +146,11 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Dados exclusivos do profissional — empresa/admin não leem este endpoint.
+    if (user.role !== 'PROFESSIONAL') {
+      return await apiErrorResponse("rest.api.professionalOnly", 403);
+    }
+
     let profile = null;
     try {
       profile = await prisma.profile.findUnique({
@@ -265,6 +270,10 @@ export async function POST(request: NextRequest) {
         },
         select: userAuthSelect,
       });
+    }
+
+    if (user.role !== 'PROFESSIONAL') {
+      return await apiErrorResponse("rest.api.professionalOnly", 403);
     }
 
     if (body.nome && typeof body.nome === 'string' && body.nome.trim()) {

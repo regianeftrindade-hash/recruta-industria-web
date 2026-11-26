@@ -33,7 +33,7 @@ import {
 } from '@/lib/profile/public-slug';
 import { companyDocumentHref } from '@/lib/storage/private-uploads';
 import { apiErrorResponse } from "@/lib/i18n/api-response";
-import { stripSensitiveCompanyFormEdit } from "@/lib/privacy/company-profile-sanitize";
+import { sanitizeUnlockedCompanyPayload } from "@/lib/privacy/company-unlocked-payload";
 
 function parseSkills(skills: string | null): string[] {
   if (!skills) return [];
@@ -267,11 +267,6 @@ export async function GET(
         }
       }
     }
-    // Minimização LGPD Art. 11: dados sensíveis não vão ao painel da empresa.
-    stripSensitiveCompanyFormEdit(
-      formEdit as Record<string, unknown> | null,
-    );
-
     const sobreMimRaw = bloqueado ? null : await lerCampoJsonDoPerfil(profile.userId, 'sobreMimJSON');
     const testeRaw = bloqueado ? null : await lerCampoJsonDoPerfil(profile.userId, 'testeComportamentalJSON');
     const sobreMim = bloqueado ? null : parseSobreMimJSON(sobreMimRaw);
@@ -282,7 +277,7 @@ export async function GET(
 
     const videoPath = bloqueado ? null : await getVideoApresentacaoPathByProfileId(profileId);
 
-    return NextResponse.json({
+    const payload = {
       resumo,
       formEdit,
       tracking,
@@ -300,7 +295,12 @@ export async function GET(
         bloqueado
         && features.canUnlockContacts
         && (planContext.usage.unlocksRemaining === null || planContext.usage.unlocksRemaining > 0),
-    });
+    };
+
+    // Minimização LGPD Art. 11 também após desbloqueio (contatos autorizados permanecem).
+    return NextResponse.json(
+      bloqueado ? payload : sanitizeUnlockedCompanyPayload(payload as Record<string, unknown>),
+    );
   } catch (error) {
     console.error('Erro ao carregar perfil:', error);
     const detail = error instanceof Error ? error.message : 'Erro desconhecido';
