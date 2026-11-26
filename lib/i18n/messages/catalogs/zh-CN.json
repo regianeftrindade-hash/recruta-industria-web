@@ -2472,5 +2472,18 @@
   "rest.jobs.favoriteUnavailable": "此职位无法加入收藏。",
   "rest.jobs.accessSite": "Open website",
   "privacy.cookieSettings": "Cookie 设置",
-  "privacy.resolveGone": "Open the profile from the showcase again."
+  "privacy.resolveGone": "Open the profile from the showcase again.",
+  "rest.notFound.title": "页面未找到",
+  "rest.notFound.body": "此地址不存在或已移动。请返回首页继续。",
+  "rest.password.crackSeconds": "秒",
+  "rest.password.crackMinutes": "分钟",
+  "rest.password.crackDays": "天",
+  "rest.password.crackMonths": "月",
+  "rest.password.crackCenturies": "世纪",
+  "rest.password.tipLen16": "至少使用 16 个字符",
+  "rest.password.tipUpper": "添加大写字母",
+  "rest.password.tipLower": "添加小写字母",
+  "rest.password.tipNumber": "添加数字",
+  "rest.password.tipSymbol": "添加特殊符号",
+  "rest.password.tipRepeat": "避免重复字符"
 }

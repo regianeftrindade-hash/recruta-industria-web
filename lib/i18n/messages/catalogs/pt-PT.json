@@ -2472,5 +2472,18 @@
   "rest.jobs.favoriteUnavailable": "Esta vaga não está disponível para favoritar.",
   "rest.jobs.accessSite": "Acessar site",
   "privacy.cookieSettings": "Configurar cookies",
-  "privacy.resolveGone": "Abra o perfil pela vitrine novamente."
+  "privacy.resolveGone": "Abra o perfil pela vitrine novamente.",
+  "rest.notFound.title": "Página não encontrada",
+  "rest.notFound.body": "Este endereço não existe ou foi movido. Volte à página inicial para continuar.",
+  "rest.password.crackSeconds": "Segundos",
+  "rest.password.crackMinutes": "Minutos",
+  "rest.password.crackDays": "Dias",
+  "rest.password.crackMonths": "Meses",
+  "rest.password.crackCenturies": "Séculos",
+  "rest.password.tipLen16": "Use pelo menos 16 caracteres",
+  "rest.password.tipUpper": "Adicione letras maiúsculas",
+  "rest.password.tipLower": "Adicione letras minúsculas",
+  "rest.password.tipNumber": "Adicione números",
+  "rest.password.tipSymbol": "Adicione símbolos especiais",
+  "rest.password.tipRepeat": "Evite caracteres repetidos"
 }

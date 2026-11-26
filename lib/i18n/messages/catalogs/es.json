@@ -2472,5 +2472,18 @@
   "rest.jobs.favoriteUnavailable": "Esta oferta no está disponible para marcar como favorita.",
   "rest.jobs.accessSite": "Acceder al sitio",
   "privacy.cookieSettings": "Configurar cookies",
-  "privacy.resolveGone": "Abra el perfil desde la vitrina otra vez."
+  "privacy.resolveGone": "Abra el perfil desde la vitrina otra vez.",
+  "rest.notFound.title": "Página no encontrada",
+  "rest.notFound.body": "Esta dirección no existe o se ha movido. Vuelva a la página de inicio para continuar.",
+  "rest.password.crackSeconds": "Segundos",
+  "rest.password.crackMinutes": "Minutos",
+  "rest.password.crackDays": "Días",
+  "rest.password.crackMonths": "Meses",
+  "rest.password.crackCenturies": "Siglos",
+  "rest.password.tipLen16": "Use al menos 16 caracteres",
+  "rest.password.tipUpper": "Añada letras mayúsculas",
+  "rest.password.tipLower": "Añada letras minúsculas",
+  "rest.password.tipNumber": "Añada números",
+  "rest.password.tipSymbol": "Añada símbolos especiales",
+  "rest.password.tipRepeat": "Evite caracteres repetidos"
 }

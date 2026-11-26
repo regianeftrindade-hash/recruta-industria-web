@@ -2472,5 +2472,18 @@
   "rest.jobs.favoriteUnavailable": "هذه الوظيفة غير متاحة للإضافة إلى المفضلة.",
   "rest.jobs.accessSite": "Open website",
   "privacy.cookieSettings": "إعدادات ملفات تعريف الارتباط",
-  "privacy.resolveGone": "Open the profile from the showcase again."
+  "privacy.resolveGone": "Open the profile from the showcase again.",
+  "rest.notFound.title": "الصفحة غير موجودة",
+  "rest.notFound.body": "هذا العنوان غير موجود أو تم نقله. عد إلى الصفحة الرئيسية للمتابعة.",
+  "rest.password.crackSeconds": "ثوانٍ",
+  "rest.password.crackMinutes": "دقائق",
+  "rest.password.crackDays": "أيام",
+  "rest.password.crackMonths": "أشهر",
+  "rest.password.crackCenturies": "قرون",
+  "rest.password.tipLen16": "استخدم 16 حرفاً على الأقل",
+  "rest.password.tipUpper": "أضف أحرفاً كبيرة",
+  "rest.password.tipLower": "أضف أحرفاً صغيرة",
+  "rest.password.tipNumber": "أضف أرقاماً",
+  "rest.password.tipSymbol": "أضف رموزاً خاصة",
+  "rest.password.tipRepeat": "تجنب الأحرف المتكررة"
 }

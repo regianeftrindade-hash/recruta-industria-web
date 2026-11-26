@@ -218,5 +218,18 @@ export const restEn: Partial<Record<MessageKey, string>> = {
   "rest.jobs.accessSite": "Open website",
   "privacy.cookieSettings": "Cookie settings",
   "privacy.resolveGone": "Open the profile from the showcase again.",
+  "rest.notFound.title": "Page not found",
+  "rest.notFound.body": "This address does not exist or was moved. Go back to the home page to continue.",
+  "rest.password.crackSeconds": "Seconds",
+  "rest.password.crackMinutes": "Minutes",
+  "rest.password.crackDays": "Days",
+  "rest.password.crackMonths": "Months",
+  "rest.password.crackCenturies": "Centuries",
+  "rest.password.tipLen16": "Use at least 16 characters",
+  "rest.password.tipUpper": "Add uppercase letters",
+  "rest.password.tipLower": "Add lowercase letters",
+  "rest.password.tipNumber": "Add numbers",
+  "rest.password.tipSymbol": "Add special symbols",
+  "rest.password.tipRepeat": "Avoid repeated characters",
 
 };

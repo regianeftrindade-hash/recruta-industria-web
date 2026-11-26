@@ -2472,5 +2472,18 @@
   "rest.jobs.favoriteUnavailable": "यह नौकरी पसंदीदा में नहीं जोड़ी जा सकती।",
   "rest.jobs.accessSite": "Open website",
   "privacy.cookieSettings": "कुकी सेटिंग्स",
-  "privacy.resolveGone": "Open the profile from the showcase again."
+  "privacy.resolveGone": "Open the profile from the showcase again.",
+  "rest.notFound.title": "पृष्ठ नहीं मिला",
+  "rest.notFound.body": "यह पता मौजूद नहीं है या स्थानांतरित हो गया है। जारी रखने के लिए होम पर वापस जाएँ।",
+  "rest.password.crackSeconds": "सेकंड",
+  "rest.password.crackMinutes": "मिनट",
+  "rest.password.crackDays": "दिन",
+  "rest.password.crackMonths": "महीने",
+  "rest.password.crackCenturies": "सदियाँ",
+  "rest.password.tipLen16": "कम से कम 16 अक्षर उपयोग करें",
+  "rest.password.tipUpper": "बड़े अक्षर जोड़ें",
+  "rest.password.tipLower": "छोटे अक्षर जोड़ें",
+  "rest.password.tipNumber": "संख्याएँ जोड़ें",
+  "rest.password.tipSymbol": "विशेष प्रतीक जोड़ें",
+  "rest.password.tipRepeat": "दोहराए गए अक्षरों से बचें"
 }

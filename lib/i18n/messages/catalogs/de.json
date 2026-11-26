@@ -2472,5 +2472,18 @@
   "rest.jobs.favoriteUnavailable": "Diese Stelle kann nicht als Favorit gespeichert werden.",
   "rest.jobs.accessSite": "Website öffnen",
   "privacy.cookieSettings": "Cookie-Einstellungen",
-  "privacy.resolveGone": "Öffnen Sie das Profil erneut über die Vitrine."
+  "privacy.resolveGone": "Öffnen Sie das Profil erneut über die Vitrine.",
+  "rest.notFound.title": "Seite nicht gefunden",
+  "rest.notFound.body": "Diese Adresse existiert nicht oder wurde verschoben. Kehren Sie zur Startseite zurück.",
+  "rest.password.crackSeconds": "Sekunden",
+  "rest.password.crackMinutes": "Minuten",
+  "rest.password.crackDays": "Tage",
+  "rest.password.crackMonths": "Monate",
+  "rest.password.crackCenturies": "Jahrhunderte",
+  "rest.password.tipLen16": "Verwenden Sie mindestens 16 Zeichen",
+  "rest.password.tipUpper": "Großbuchstaben hinzufügen",
+  "rest.password.tipLower": "Kleinbuchstaben hinzufügen",
+  "rest.password.tipNumber": "Zahlen hinzufügen",
+  "rest.password.tipSymbol": "Sonderzeichen hinzufügen",
+  "rest.password.tipRepeat": "Wiederholte Zeichen vermeiden"
 }

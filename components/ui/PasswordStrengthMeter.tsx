@@ -11,7 +11,7 @@ interface PasswordStrengthMeterProps {
 export default function PasswordStrengthMeter({ password }: PasswordStrengthMeterProps) {
   if (!password) return null;
 
-  const { percentage, crackTime, feedback } = calculatePasswordScore(password);
+  const { percentage, feedback } = calculatePasswordScore(password);
 
   const getColor = () => {
     if (percentage < 30) return "#ef4444";
@@ -27,6 +27,23 @@ export default function PasswordStrengthMeter({ password }: PasswordStrengthMete
     if (percentage < 70) return t("rest.password.medium");
     if (percentage < 85) return t("rest.password.strong");
     return t("rest.password.veryStrong");
+  };
+
+  const crackTimeLabel = () => {
+    if (percentage < 30) return t("rest.password.crackSeconds");
+    if (percentage < 50) return t("rest.password.crackMinutes");
+    if (percentage < 70) return t("rest.password.crackDays");
+    if (percentage < 85) return t("rest.password.crackMonths");
+    return t("rest.password.crackCenturies");
+  };
+
+  const tipMap: Record<string, string> = {
+    "Use pelo menos 16 caracteres": t("rest.password.tipLen16"),
+    "Adicione letras maiúsculas": t("rest.password.tipUpper"),
+    "Adicione letras minúsculas": t("rest.password.tipLower"),
+    "Adicione números": t("rest.password.tipNumber"),
+    "Adicione símbolos especiais": t("rest.password.tipSymbol"),
+    "Evite caracteres repetidos": t("rest.password.tipRepeat"),
   };
 
   const color = getColor();
@@ -71,7 +88,7 @@ export default function PasswordStrengthMeter({ password }: PasswordStrengthMete
           {getLabel()} ({percentage}%)
         </span>
         <span style={{ fontSize: "11px", color: "#6b7280", fontWeight: "600" }}>
-          {t("rest.password.crackTime")} {crackTime}
+          {t("rest.password.crackTime")} {crackTimeLabel()}
         </span>
       </div>
 
@@ -104,7 +121,7 @@ export default function PasswordStrengthMeter({ password }: PasswordStrengthMete
           >
             {feedback.map((item, index) => (
               <li key={index} style={{ marginBottom: "3px" }}>
-                {item}
+                {tipMap[item] || item}
               </li>
             ))}
           </ul>

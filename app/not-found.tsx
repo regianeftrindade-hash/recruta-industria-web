@@ -19,10 +19,10 @@ export default async function NotFound() {
     >
       <div style={{ maxWidth: 420, textAlign: "center" }}>
         <h1 style={{ color: "#C89B3C", fontSize: 22, margin: "0 0 12px" }}>
-          {t("error.global.title", locale)}
+          {t("rest.notFound.title", locale)}
         </h1>
         <p style={{ margin: "0 0 20px", fontSize: 14, lineHeight: 1.5 }}>
-          {t("error.global.body", locale)}
+          {t("rest.notFound.body", locale)}
         </p>
         <Link href="/" className="ri-btn-3d-gold">
           {t("surface.jobs.home", locale)}

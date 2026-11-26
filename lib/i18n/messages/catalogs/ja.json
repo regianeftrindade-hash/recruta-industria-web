@@ -2472,5 +2472,18 @@
   "rest.jobs.favoriteUnavailable": "この求人はお気に入りに追加できません。",
   "rest.jobs.accessSite": "Open website",
   "privacy.cookieSettings": "Cookie設定",
-  "privacy.resolveGone": "Open the profile from the showcase again."
+  "privacy.resolveGone": "Open the profile from the showcase again.",
+  "rest.notFound.title": "ページが見つかりません",
+  "rest.notFound.body": "このアドレスは存在しないか移動しました。ホームに戻って続行してください。",
+  "rest.password.crackSeconds": "秒",
+  "rest.password.crackMinutes": "分",
+  "rest.password.crackDays": "日",
+  "rest.password.crackMonths": "月",
+  "rest.password.crackCenturies": "世紀",
+  "rest.password.tipLen16": "16文字以上を使用してください",
+  "rest.password.tipUpper": "大文字を追加",
+  "rest.password.tipLower": "小文字を追加",
+  "rest.password.tipNumber": "数字を追加",
+  "rest.password.tipSymbol": "特殊記号を追加",
+  "rest.password.tipRepeat": "繰り返し文字を避けてください"
 }
