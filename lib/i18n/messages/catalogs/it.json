@@ -2413,5 +2413,19 @@
   "fix.u.720": "Profilo creato con successo.",
   "fix.u.721": "Vedi la mia dashboard",
   "fix.u.722": "Suggerimento:",
-  "fix.u.723": "Puoi modificare profilo e preferenze nella dashboard."
+  "fix.u.723": "Puoi modificare profilo e preferenze nella dashboard.",
+  "rest.completion.title": "⭐ Profilo completo",
+  "rest.completion.percent": "{percent}% Completo",
+  "rest.completion.priority": "✅ Il tuo profilo ha priorità nelle ricerche delle aziende!",
+  "rest.completion.hint80": "I profili compilati oltre l’80% compaiono per primi nei risultati di ricerca.",
+  "seo.site.titleDefault": "Recruta Indústria | Offerte e talenti del settore industriale",
+  "seo.site.titleTemplate": "%s | Recruta Indústria",
+  "seo.site.description": "Recruiting industriale: collega aziende e professionisti. Crea un profilo o trova talenti di produzione.",
+  "seo.site.ogDescription": "Recruiting industriale per aziende e professionisti: offerte, talenti e connessioni con focus sulla produzione.",
+  "seo.site.twitterDescription": "Recruiting industriale per aziende e professionisti. Registrati e connettiti al settore.",
+  "seo.layout.professionalArea": "Area professionale",
+  "seo.layout.professionalDashboard": "Dashboard professionale",
+  "seo.layout.companyInvite": "Invito del team",
+  "seo.layout.admin2fa": "Verifica in due passaggi",
+  "seo.layout.welcome": "Benvenuto"
 }

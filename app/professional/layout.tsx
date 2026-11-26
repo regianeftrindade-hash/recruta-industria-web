@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import AuthSessionProvider from "@/components/auth/AuthSessionProvider";
+import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
+import { t } from "@/lib/i18n/translate";
 
-export const metadata: Metadata = {
-  title: "Área profissional",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await resolveInterfaceLocale();
+  return { title: t("seo.layout.professionalArea", locale) };
+}
 
 export const dynamic = "force-dynamic";
 

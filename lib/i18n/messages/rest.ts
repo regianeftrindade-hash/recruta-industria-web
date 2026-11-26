@@ -100,6 +100,25 @@ export const restMessages = {
   "rest.admin2fa.invalid": "Código inválido.",
   "rest.admin2fa.validateError": "Erro ao validar código.",
 
+  "rest.completion.title": "⭐ Perfil completo",
+  "rest.completion.percent": "{percent}% Completo",
+  "rest.completion.priority": "✅ Seu perfil tem prioridade nas buscas das empresas!",
+  "rest.completion.hint80": "Perfis com mais de 80% de preenchimento aparecem primeiro nas pesquisas.",
+
+  "seo.site.titleDefault": "Recruta Indústria | Vagas e talentos do setor industrial",
+  "seo.site.titleTemplate": "%s | Recruta Indústria",
+  "seo.site.description":
+    "Recrutamento industrial: conecte empresas e profissionais. Cadastre perfil ou encontre talentos no chão de fábrica.",
+  "seo.site.ogDescription":
+    "Recrutamento industrial para empresas e profissionais: vagas, talentos e conexões com foco no chão de fábrica.",
+  "seo.site.twitterDescription":
+    "Recrutamento industrial para empresas e profissionais. Cadastre-se e conecte-se ao setor.",
+  "seo.layout.professionalArea": "Área profissional",
+  "seo.layout.professionalDashboard": "Painel profissional",
+  "seo.layout.companyInvite": "Convite de equipe",
+  "seo.layout.admin2fa": "Verificação em duas etapas",
+  "seo.layout.welcome": "Boas-vindas",
+
   "rest.cert.readError": "Erro ao ler arquivo localmente",
   "rest.cert.sendError": "Erro ao enviar certificado",
   "rest.cert.attach": "Anexar certificado (Opcional)",

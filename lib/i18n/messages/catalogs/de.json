@@ -2413,5 +2413,19 @@
   "fix.u.720": "Profil erfolgreich erstellt.",
   "fix.u.721": "Mein Dashboard ansehen",
   "fix.u.722": "Tipp:",
-  "fix.u.723": "Sie können Profil und Einstellungen im Dashboard bearbeiten."
+  "fix.u.723": "Sie können Profil und Einstellungen im Dashboard bearbeiten.",
+  "rest.completion.title": "⭐ Vollständiges Profil",
+  "rest.completion.percent": "{percent}% Vollständig",
+  "rest.completion.priority": "✅ Ihr Profil hat Priorität in Unternehmenssuchen!",
+  "rest.completion.hint80": "Profile mit mehr als 80% Ausfüllung erscheinen zuerst in den Suchergebnissen.",
+  "seo.site.titleDefault": "Recruta Indústria | Stellen und Talente der Industrie",
+  "seo.site.titleTemplate": "%s | Recruta Indústria",
+  "seo.site.description": "Industrielles Recruiting: verbinden Sie Unternehmen und Fachkräfte. Profil anlegen oder Shopfloor-Talente finden.",
+  "seo.site.ogDescription": "Industrielles Recruiting für Unternehmen und Fachkräfte: Stellen, Talente und Verbindungen mit Fokus auf den Shopfloor.",
+  "seo.site.twitterDescription": "Industrielles Recruiting für Unternehmen und Fachkräfte. Registrieren und mit dem Sektor verbinden.",
+  "seo.layout.professionalArea": "Fachkräftebereich",
+  "seo.layout.professionalDashboard": "Fachkräfte-Dashboard",
+  "seo.layout.companyInvite": "Teameinladung",
+  "seo.layout.admin2fa": "Zwei-Schritt-Verifizierung",
+  "seo.layout.welcome": "Willkommen"
 }

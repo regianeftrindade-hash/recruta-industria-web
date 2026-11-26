@@ -2413,5 +2413,19 @@
   "fix.u.720": "Perfil criado com sucesso.",
   "fix.u.721": "Ver meu painel",
   "fix.u.722": "Dica:",
-  "fix.u.723": "Você pode editar seu perfil e preferências no painel."
+  "fix.u.723": "Você pode editar seu perfil e preferências no painel.",
+  "rest.completion.title": "⭐ Perfil completo",
+  "rest.completion.percent": "{percent}% Completo",
+  "rest.completion.priority": "✅ O seu perfil tem prioridade nas pesquisas das empresas!",
+  "rest.completion.hint80": "Perfis com mais de 80% de preenchimento aparecem primeiro nas pesquisas.",
+  "seo.site.titleDefault": "Recruta Indústria | Vagas e talentos do setor industrial",
+  "seo.site.titleTemplate": "%s | Recruta Indústria",
+  "seo.site.description": "Recrutamento industrial: ligue empresas e profissionais. Crie um perfil ou encontre talentos de chão de fábrica.",
+  "seo.site.ogDescription": "Recrutamento industrial para empresas e profissionais: vagas, talentos e ligações com foco no chão de fábrica.",
+  "seo.site.twitterDescription": "Recrutamento industrial para empresas e profissionais. Registe-se e ligue-se ao setor.",
+  "seo.layout.professionalArea": "Área profissional",
+  "seo.layout.professionalDashboard": "Painel profissional",
+  "seo.layout.companyInvite": "Convite de equipa",
+  "seo.layout.admin2fa": "Verificação em duas etapas",
+  "seo.layout.welcome": "Boas-vindas"
 }

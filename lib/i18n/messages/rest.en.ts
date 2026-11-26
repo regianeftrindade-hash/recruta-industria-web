@@ -99,6 +99,23 @@ export const restEn: Partial<Record<MessageKey, string>> = {
   "rest.admin2fa.sendNetwork": "Network error while sending the code.",
   "rest.admin2fa.invalid": "Invalid code.",
   "rest.admin2fa.validateError": "Could not validate the code.",
+  "rest.completion.title": "⭐ Full profile",
+  "rest.completion.percent": "{percent}% Complete",
+  "rest.completion.priority": "✅ Your profile is prioritized in company searches!",
+  "rest.completion.hint80": "Profiles with more than 80% completion appear first in search results.",
+  "seo.site.titleDefault": "Recruta Indústria | Industrial jobs and talent",
+  "seo.site.titleTemplate": "%s | Recruta Indústria",
+  "seo.site.description":
+    "Industrial recruiting: connect companies and professionals. Create a profile or find shop-floor talent.",
+  "seo.site.ogDescription":
+    "Industrial recruiting for companies and professionals: jobs, talent, and connections focused on the shop floor.",
+  "seo.site.twitterDescription":
+    "Industrial recruiting for companies and professionals. Sign up and connect with the sector.",
+  "seo.layout.professionalArea": "Professional area",
+  "seo.layout.professionalDashboard": "Professional dashboard",
+  "seo.layout.companyInvite": "Team invitation",
+  "seo.layout.admin2fa": "Two-step verification",
+  "seo.layout.welcome": "Welcome",
   "rest.cert.readError": "Could not read the file locally",
   "rest.cert.sendError": "Could not upload the certificate",
   "rest.cert.attach": "Attach certificate (optional)",

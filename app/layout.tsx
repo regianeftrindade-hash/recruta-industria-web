@@ -4,6 +4,7 @@ import "@/lib/i18n/active-locale.server";
 import { bindLocale } from "@/lib/i18n/active-locale";
 import { htmlLang, textDirection, type SupportedLocale } from "@/lib/i18n/locales";
 import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
+import { t } from "@/lib/i18n/translate";
 import { Geist, Geist_Mono, Oswald } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegister from "@/components/app-shell/ServiceWorkerRegister";
@@ -41,107 +42,113 @@ const oswald = Oswald({
   adjustFontFallback: true,
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://www.recrutaindustria.com"),
-  title: {
-    default: "Recruta Indústria | Vagas e talentos do setor industrial",
-    template: "%s | Recruta Indústria",
-  },
-  description:
-    "Recrutamento industrial: conecte empresas e profissionais. Cadastre perfil ou encontre talentos no chão de fábrica.",
-  applicationName: "Recruta Indústria",
-  keywords: [
-    "recrutamento industrial",
-    "vagas indústria",
-    "profissional industrial",
-    "soldador",
-    "CNC",
-    "chão de fábrica",
-    "Recruta Indústria",
-  ],
-  authors: [{ name: "Recruta Indústria" }],
-  creator: "Recruta Indústria",
-  publisher: "Recruta Indústria",
-  alternates: {
-    canonical: "/",
-    // Mesma URL para todos os idiomas (preferência em cookie / Accept-Language; sem prefixo de rota).
-    languages: {
-      "pt-BR": "/",
-      en: "/",
-      es: "/",
-      fr: "/",
-      de: "/",
-      it: "/",
-      "pt-PT": "/",
-      "zh-CN": "/",
-      ja: "/",
-      ko: "/",
-      ar: "/",
-      hi: "/",
-      "x-default": "/",
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await resolveInterfaceLocale();
+  const titleDefault = t("seo.site.titleDefault", locale);
+  const description = t("seo.site.description", locale);
+  const ogDescription = t("seo.site.ogDescription", locale);
+  const twitterDescription = t("seo.site.twitterDescription", locale);
+  const ogLocale = locale === "pt-BR" ? "pt_BR" : locale.replace("-", "_");
+
+  return {
+    metadataBase: new URL("https://www.recrutaindustria.com"),
+    title: {
+      default: titleDefault,
+      template: t("seo.site.titleTemplate", locale),
     },
-  },
-  openGraph: {
-    type: "website",
-    locale: "pt_BR",
-    url: "https://www.recrutaindustria.com/",
-    siteName: "Recruta Indústria",
-    title: "Recruta Indústria | Vagas e talentos do setor industrial",
-    description:
-      "Recrutamento industrial para empresas e profissionais: vagas, talentos e conexões com foco no chão de fábrica.",
-    images: [
-      {
-        url: "/logo-recruta.png",
-        width: 512,
-        height: 512,
-        alt: "Recruta Indústria",
-      },
+    description,
+    applicationName: "Recruta Indústria",
+    keywords: [
+      "recrutamento industrial",
+      "vagas indústria",
+      "profissional industrial",
+      "soldador",
+      "CNC",
+      "chão de fábrica",
+      "Recruta Indústria",
     ],
-  },
-  twitter: {
-    card: "summary",
-    title: "Recruta Indústria | Vagas e talentos do setor industrial",
-    description:
-      "Recrutamento industrial para empresas e profissionais. Cadastre-se e conecte-se ao setor.",
-    images: ["/logo-recruta.png"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+    authors: [{ name: "Recruta Indústria" }],
+    creator: "Recruta Indústria",
+    publisher: "Recruta Indústria",
+    alternates: {
+      canonical: "/",
+      // Mesma URL para todos os idiomas (preferência em cookie / Accept-Language; sem prefixo de rota).
+      languages: {
+        "pt-BR": "/",
+        en: "/",
+        es: "/",
+        fr: "/",
+        de: "/",
+        it: "/",
+        "pt-PT": "/",
+        "zh-CN": "/",
+        ja: "/",
+        ko: "/",
+        ar: "/",
+        hi: "/",
+        "x-default": "/",
+      },
+    },
+    openGraph: {
+      type: "website",
+      locale: ogLocale,
+      url: "https://www.recrutaindustria.com/",
+      siteName: "Recruta Indústria",
+      title: titleDefault,
+      description: ogDescription,
+      images: [
+        {
+          url: "/logo-recruta.png",
+          width: 512,
+          height: 512,
+          alt: "Recruta Indústria",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary",
+      title: titleDefault,
+      description: twitterDescription,
+      images: ["/logo-recruta.png"],
+    },
+    robots: {
       index: true,
       follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
-  },
-  manifest: "/manifest.json",
-  icons: {
-    icon: [
-      { url: "/favicon-ri.ico", sizes: "48x48" },
-      { url: "/icons/ri-16.png", sizes: "16x16", type: "image/png" },
-      { url: "/icons/ri-32.png", sizes: "32x32", type: "image/png" },
-      { url: "/icons/ri-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/ri-512.png", sizes: "512x512", type: "image/png" },
-    ],
-    apple: [{ url: "/icons/ri-apple-touch.png", sizes: "180x180", type: "image/png" }],
-    shortcut: ["/icons/ri-192.png"],
-  },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "Recruta Indústria",
-  },
-  formatDetection: {
-    telephone: false,
-  },
-  other: {
-    "format-detection": "telephone=no, date=no, email=no, address=no",
-    "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "apple-mobile-web-app-title": "Recruta Indústria",
-  },
-};
+    manifest: "/manifest.json",
+    icons: {
+      icon: [
+        { url: "/favicon-ri.ico", sizes: "48x48" },
+        { url: "/icons/ri-16.png", sizes: "16x16", type: "image/png" },
+        { url: "/icons/ri-32.png", sizes: "32x32", type: "image/png" },
+        { url: "/icons/ri-192.png", sizes: "192x192", type: "image/png" },
+        { url: "/icons/ri-512.png", sizes: "512x512", type: "image/png" },
+      ],
+      apple: [{ url: "/icons/ri-apple-touch.png", sizes: "180x180", type: "image/png" }],
+      shortcut: ["/icons/ri-192.png"],
+    },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: "Recruta Indústria",
+    },
+    formatDetection: {
+      telephone: false,
+    },
+    other: {
+      "format-detection": "telephone=no, date=no, email=no, address=no",
+      "apple-mobile-web-app-capable": "yes",
+      "apple-mobile-web-app-status-bar-style": "black-translucent",
+      "apple-mobile-web-app-title": "Recruta Indústria",
+    },
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
