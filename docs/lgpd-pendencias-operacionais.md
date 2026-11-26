@@ -55,7 +55,13 @@ Registrar região de processamento e mecanismo de transferência internacional q
 
 ---
 
-## 4. Retenção e exclusão — decisões pendentes
+## 4. Templates preparados nesta rodada
+
+- `docs/politica-retencao-template.md` — tabela de retenção (prazos em branco para advogado).  
+- Canal de titulares sugerido: `contato@recrutaindustria.com` até existir e-mail do DPO.  
+- `public/.well-known/security.txt` — contato técnico de vulnerabilidades (não substitui DPO).
+
+## 5. Retenção e exclusão — decisões pendentes
 
 | Ativo | Comportamento atual | Decisão necessária |
 |-------|---------------------|-------------------|
@@ -67,7 +73,7 @@ Registrar região de processamento e mecanismo de transferência internacional q
 
 ---
 
-## 5. Marketing / Google Ads
+## 6. Marketing / Google Ads
 
 - Consentimento: cookie `ri_cookie_consent=marketing` antes de carregar tags.  
 - Decisão empresarial: manter Ads com opt-in **ou** desligar completamente.  
@@ -75,7 +81,7 @@ Registrar região de processamento e mecanismo de transferência internacional q
 
 ---
 
-## 6. Minimização e acesso
+## 7. Minimização e acesso
 
 Recomendações técnicas (já alinhadas ao código; mudanças de produto exigem pedido explícito):
 
@@ -86,7 +92,7 @@ Recomendações técnicas (já alinhadas ao código; mudanças de produto exigem
 
 ---
 
-## 7. O que esta rodada de código NÃO faz
+## 8. O que esta rodada de código NÃO faz
 
 - Não inventa nome/e-mail de DPO.  
 - Não altera textos comerciais nem páginas de termos sem autorização jurídica.  

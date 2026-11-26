@@ -22,6 +22,10 @@ const config = [
   },
   ...nextVitals,
   {
+    linterOptions: {
+      // Directives legadas em UI congelada — não editar componentes só para limpar avisos.
+      reportUnusedDisableDirectives: "off",
+    },
     rules: {
       "react/no-unescaped-entities": "off",
       "@next/next/no-img-element": "off",
