@@ -21,7 +21,7 @@ Há aviso ao carregar a fonte padrão Liberation Sans. Os testes de texto, de PD
 
 ## Sentry
 
-A linha 10, inclusive a 10.78.0, ainda puxa glob e minimatch no plugin de build. A correção oferecida pelo audit é `@sentry/nextjs` 11.13.0. Não mudei de linha. O aplicativo não usa `tunnelRoute`. O build usa Turbopack.
+A linha 10, inclusive a 10.78.0, ainda puxa glob e minimatch no plugin de build. A correção oferecida pelo audit é `@sentry/nextjs` 11.x. **Upgrade adiado de propósito** (breaking no plugin; risco de build). Scrubbing de PII/`beforeSend` foi reforçado em `lib/observability/sentry-privacy.ts` sem subir major. O aplicativo não usa `tunnelRoute`. O build usa Turbopack.
 
 ## Vitest
 

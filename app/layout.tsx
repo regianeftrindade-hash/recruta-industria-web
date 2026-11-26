@@ -121,7 +121,7 @@ export async function generateMetadata(): Promise<Metadata> {
         "max-snippet": -1,
       },
     },
-    manifest: "/manifest.json",
+    manifest: "/manifest.webmanifest",
     icons: {
       icon: [
         { url: "/favicon-ri.ico", sizes: "48x48" },

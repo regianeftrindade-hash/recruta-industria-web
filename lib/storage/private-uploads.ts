@@ -216,21 +216,35 @@ export async function removePrivateFilesByPrefixes(
 
     for (const prefix of cleanedPrefixes) {
       const folder = prefix;
-      const { data, error } = await supabase.storage.from(bucket).list(folder, {
-        limit: 1000,
-      });
-      if (error) {
-        failed.push(prefix);
-        continue;
+      // Pagina até esgotar (limite da API Storage = 1000 por chamada).
+      let offset = 0;
+      const pageSize = 1000;
+      let sawError = false;
+      for (;;) {
+        const { data, error } = await supabase.storage.from(bucket).list(folder, {
+          limit: pageSize,
+          offset,
+        });
+        if (error) {
+          failed.push(prefix);
+          sawError = true;
+          break;
+        }
+        const page = data || [];
+        const paths = page
+          .map((row) => row?.name)
+          .filter((name): name is string => Boolean(name))
+          .map((name) => `${folder}/${name}`);
+        if (paths.length === 0) break;
+        const { error: removeError } = await supabase.storage.from(bucket).remove(paths);
+        if (removeError) failed.push(...paths);
+        else removed.push(...paths);
+        if (page.length < pageSize) break;
+        offset += pageSize;
+        // Segurança: evita loop infinito em listagens inconsistentes.
+        if (offset > 100_000) break;
       }
-      const paths = (data || [])
-        .map((row) => row?.name)
-        .filter((name): name is string => Boolean(name))
-        .map((name) => `${folder}/${name}`);
-      if (paths.length === 0) continue;
-      const { error: removeError } = await supabase.storage.from(bucket).remove(paths);
-      if (removeError) failed.push(...paths);
-      else removed.push(...paths);
+      if (sawError) continue;
     }
   } catch {
     failed.push(...cleanedPrefixes);

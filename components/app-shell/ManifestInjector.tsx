@@ -8,7 +8,8 @@ export default function ManifestInjector() {
     if (!existingLink) {
       const link = document.createElement("link");
       link.rel = "manifest";
-      link.href = "/manifest.json";
+      // .webmanifest é o tipo preferido; /manifest.json permanece como fallback estático.
+      link.href = "/manifest.webmanifest";
       document.head.appendChild(link);
     }
 

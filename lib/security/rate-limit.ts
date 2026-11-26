@@ -1,8 +1,11 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-/** Fallback em memória (Edge-safe, sem Prisma). */
+/** Fallback em memória (Edge-safe, sem Prisma). Sempre protege — nunca “abre” o endpoint. */
 const memoryLimits = new Map<string, { count: number; resetTime: number }>();
+
+let warnedMissingUpstash = false;
+let warnedUpstashFailure = false;
 
 function memoryRateLimit(identifier: string, limit: number, windowMs: number): boolean {
   const now = Date.now();
@@ -32,6 +35,11 @@ function getRedis(): Redis | null {
     redis = new Redis({ url, token });
   }
   return redis;
+}
+
+/** Backend efetivo do rate-limit (sem expor credenciais). */
+export function getRateLimitBackend(): "upstash" | "memory" {
+  return isUpstashRateLimitConfigured() ? "upstash" : "memory";
 }
 
 function getLimiter(limit: number, windowMs: number): Ratelimit | null {
@@ -64,6 +72,12 @@ export async function enforceApiRateLimitAsync(
 ): Promise<boolean> {
   const limiter = getLimiter(limit, windowMs);
   if (!limiter) {
+    if (!warnedMissingUpstash && process.env.NODE_ENV === "production") {
+      warnedMissingUpstash = true;
+      console.warn(
+        "[rate-limit] UPSTASH_REDIS_REST_* ausente — usando memória (ainda limitado; não é fail-open)",
+      );
+    }
     return memoryRateLimit(identifier, limit, windowMs);
   }
 
@@ -71,9 +85,19 @@ export async function enforceApiRateLimitAsync(
     const result = await limiter.limit(identifier);
     return result.success;
   } catch (error) {
-    console.warn("[rate-limit] Upstash falhou — usando memória:", error);
+    if (!warnedUpstashFailure) {
+      warnedUpstashFailure = true;
+      console.warn("[rate-limit] Upstash falhou — fallback memória (ainda limitado):", error);
+    }
     return memoryRateLimit(identifier, limit, windowMs);
   }
+}
+
+/** Só testes — limpa mapa em memória. */
+export function __resetMemoryRateLimitsForTests(): void {
+  memoryLimits.clear();
+  warnedMissingUpstash = false;
+  warnedUpstashFailure = false;
 }
 
 export function isUpstashRateLimitConfigured(): boolean {
