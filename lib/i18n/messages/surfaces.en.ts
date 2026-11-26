@@ -32,6 +32,13 @@ export const surfacesEn: Partial<Record<MessageKey, string>> = {
   "privacy.cookieAcceptMarketing": "Accept marketing",
   "privacy.acceptPrefix": "I have read and accept the",
   "privacy.acceptRequired": "Accept the Terms of Use and Privacy Policy to continue.",
+  "privacy.professionalMinAge":
+    "Professional registration is allowed only for people aged 18 or older.",
+  "privacy.marketingConsentOptional":
+    "I agree to receive marketing communications from Recruta Indústria (optional). I can withdraw this consent later.",
+  "privacy.marketingConsentRecordedAt": "Last recorded:",
+  "privacy.birthDateLabel": "Date of birth",
+  "privacy.birthDateHint": "Required. Professional registration is only for adults aged 18+.",
   "surface.home.login": "SIGN IN",
   "surface.home.email": "EMAIL",
   "surface.home.emailLabel": "Email",

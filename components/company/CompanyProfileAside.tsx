@@ -5,6 +5,7 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AmpulhetaLoading from "@/components/ui/AmpulhetaLoading";
 import DeleteAccountControl from "@/components/shared/DeleteAccountControl";
+import MarketingConsentControl from "@/components/shared/MarketingConsentControl";
 import { useCompanyDashboardData } from "@/components/company/CompanyDashboardDataContext";
 import type { CompanyChromeProfile } from "@/components/company/CompanyDashboardDataContext";
 import { btnGoldStyle as btnGold } from "@/lib/button-3d";
@@ -231,15 +232,26 @@ export default function CompanyProfileAside({ compact = false }: { compact?: boo
             </div>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, flexWrap: "wrap", margin: "0 0 12px" }}>
-            {dash.planReady && dash.isOwner ? (
-              <button
-                type="button"
-                onClick={() => router.push("/company/register?edit=1")}
-                style={{ ...btnGold, padding: "6px 10px", fontSize: 10, flexShrink: 0 }}
-              >{exactUi("Atualizar cadastro")}</button>
-            ) : null}
-            <DeleteAccountControl variant="compact" />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              gap: 6,
+              margin: "0 0 12px",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, flexWrap: "wrap" }}>
+              {dash.planReady && dash.isOwner ? (
+                <button
+                  type="button"
+                  onClick={() => router.push("/company/register?edit=1")}
+                  style={{ ...btnGold, padding: "6px 10px", fontSize: 10, flexShrink: 0 }}
+                >{exactUi("Atualizar cadastro")}</button>
+              ) : null}
+              <DeleteAccountControl variant="compact" />
+            </div>
+            <MarketingConsentControl />
           </div>
 
           <div

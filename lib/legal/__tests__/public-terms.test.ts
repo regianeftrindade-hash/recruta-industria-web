@@ -49,6 +49,8 @@ describe("public-terms", () => {
     expect(body).toMatch(/correção de dados/i);
     expect(body).toMatch(/exclusão \(eliminação\) de dados, quando legalmente cabível/i);
     expect(body).toMatch(/informações sobre o tratamento/i);
+    expect(body).toMatch(/maiores de 18 anos/i);
+    expect(body).toMatch(/comunicações de marketing/i);
     // Não inventar prazo numérico de atendimento
     expect(body).not.toMatch(/\d+\s*(dias?|horas?)\s*(úteis|corridos)?\s*(para\s+)?(responder|atender|prazo)/i);
   });

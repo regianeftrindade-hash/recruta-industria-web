@@ -2524,5 +2524,10 @@
   "rest.billing.modeRecurring": "اشتراك متكرر تلقائي",
   "rest.billing.modeOneTime": "دفعة لمرة واحدة (Pix أو Boleto)",
   "rest.billing.savingsMonths": "وفّر {amount} (شهران مجانًا)",
-  "rest.billing.savingsMonthsUsd": "Save {amount} (2 months free)"
+  "rest.billing.savingsMonthsUsd": "Save {amount} (2 months free)",
+  "privacy.professionalMinAge": "التسجيل المهني مسموح فقط لمن تبلغ أعمارهم 18 عامًا فأكثر.",
+  "privacy.marketingConsentOptional": "أوافق على تلقي رسائل تسويقية من Recruta Indústria (اختياري). يمكنني سحب هذه الموافقة لاحقًا.",
+  "privacy.marketingConsentRecordedAt": "آخر تسجيل:",
+  "privacy.birthDateLabel": "تاريخ الميلاد",
+  "privacy.birthDateHint": "إلزامي. التسجيل المهني فقط لمن تبلغ أعمارهم 18 عامًا فأكثر."
 }

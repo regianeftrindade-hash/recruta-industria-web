@@ -38,7 +38,8 @@ export const CADASTRO_TERMOS: CadastroTermo[] = [
       'São tratados, conforme sua navegação e cadastro, dados como identificação, contato, dados profissionais, formação, experiência, documentos enviados por você e demais informações necessárias à operação da plataforma de recrutamento industrial.',
       'As bases legais do tratamento incluem execução de contrato ou procedimentos preliminares, legítimo interesse na operação da plataforma, cumprimento de obrigação legal e consentimento, quando aplicável.',
       'Você tem direito de confirmar a existência de tratamento, acessar, corrigir, anonimizar, bloquear ou eliminar dados desnecessários, solicitar portabilidade e obter informações sobre compartilhamento, nos termos da LGPD.',
-      'O tratamento observa medidas de segurança compatíveis com a natureza dos dados. Dúvidas ou solicitações relacionadas à privacidade podem ser encaminhadas pelos canais de contato informados na plataforma.',
+      'O tratamento observa medidas de segurança compatíveis com a natureza dos dados. Dúvidas ou solicitações relacionadas à privacidade e à LGPD podem ser encaminhadas ao canal oficial contato@recrutaindustria.com.',
+      'O cadastro de profissionais é permitido apenas para maiores de 18 anos. Comunicações de marketing são opcionais e dependem de consentimento explícito, que pode ser retirado no painel da conta.',
     ],
   },
 ];
