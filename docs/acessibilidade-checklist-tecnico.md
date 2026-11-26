@@ -1,23 +1,29 @@
 # Acessibilidade — checklist técnico (WCAG 2.2 AA)
 
-**Escopo:** verificação sem redesenho visual (UI congelada).  
+**Escopo:** verificação com axe; correções só quando autorizadas e sem redesenho.  
 **Data:** 26/11/2026.
 
-## Já observado / coberto indiretamente
+## Tooling
 
 | Item | Evidência |
 |------|-----------|
-| Contraste / tema dashboard | Tokens em `lib/ui/dashboard-theme` (não alterado nesta rodada) |
-| E2E a11y tooling | `@axe-core/playwright` no projeto |
+| E2E axe | `e2e/a11y-axe.spec.ts` — tags `wcag2a/aa`, `wcag21a/aa`, **`wcag22aa`** |
+| Alvo | Home, login, cadastros, vagas, painéis profissional/empresa (com secrets E2E) |
 | Idioma / RTL | `htmlLang` + `textDirection("ar")="rtl"` testados |
-| Captcha / formulários | Fluxos existentes preservados |
+| Contraste / tema dashboard | Tokens em `lib/ui/dashboard-theme` (não reestilizar sem pedido) |
 
-## Pendências que exigiriam mudança de UI (não executadas)
+## Política de correção
 
-- Auditoria axe completa em todas as páginas autenticadas  
-- Ajustes de foco visível / order tab em componentes congelados  
-- Revisão de `alt` em imagens de marketing da home (página bloqueada)
+- Preferir atributos ARIA / labels / `alt` / ordem de foco **sem** mudar CSS visual.  
+- Home, login e dashboards: alterar JSX/CSS **somente** para eliminar violações serious/critical do axe, preservando layout.  
+- Não “melhorar” UX de passagem.
+
+## Resultado desta rodada (26/11/2026)
+
+- Produção (antes do fix): home/`/login`→home com `target-size` no botão “Mostrar senha” (22×22).  
+- Correção: override inline em `app/page.tsx` → **24×24** (sem redesenho).  
+- Revalidação local: `e2e/a11y-axe.spec.ts` **7/7 passed** (home, login, cadastros, vagas, painéis).
 
 ## Critério para nota 10 em a11y
 
-Só após: varredura axe em smoke + dashboards, correções autorizadas de UI, e contraste validado em light/dark sem regressão visual.
+Varredura axe sem serious/critical nas rotas críticas + contraste light/dark validado sem regressão visual + revisão humana de teclado/leitor de tela.

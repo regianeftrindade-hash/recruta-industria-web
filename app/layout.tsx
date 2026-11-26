@@ -5,6 +5,7 @@ import { bindLocale } from "@/lib/i18n/active-locale";
 import { htmlLang, textDirection, type SupportedLocale } from "@/lib/i18n/locales";
 import { resolveInterfaceLocale } from "@/lib/i18n/resolve-interface-locale";
 import { t } from "@/lib/i18n/translate";
+import { languageAlternatesRelative } from "@/lib/seo/language-alternates";
 import { Geist, Geist_Mono, Oswald } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegister from "@/components/app-shell/ServiceWorkerRegister";
@@ -72,22 +73,8 @@ export async function generateMetadata(): Promise<Metadata> {
     publisher: "Recruta Indústria",
     alternates: {
       canonical: "/",
-      // Mesma URL para todos os idiomas (preferência em cookie / Accept-Language; sem prefixo de rota).
-      languages: {
-        "pt-BR": "/",
-        en: "/",
-        es: "/",
-        fr: "/",
-        de: "/",
-        it: "/",
-        "pt-PT": "/",
-        "zh-CN": "/",
-        ja: "/",
-        ko: "/",
-        ar: "/",
-        hi: "/",
-        "x-default": "/",
-      },
+      // Mesma URL para todos os idiomas (cookie / Accept-Language; sem prefixo de rota).
+      languages: languageAlternatesRelative("/"),
     },
     openGraph: {
       type: "website",

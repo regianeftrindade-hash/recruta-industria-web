@@ -1,18 +1,8 @@
 import type { MetadataRoute } from "next";
 import { listPublicJobs } from "@/lib/jobs/job-posting-db";
-import { SUPPORTED_LOCALES } from "@/lib/i18n/locales";
+import { absoluteSiteUrl, languageAlternates, SEO_SITE_ORIGIN } from "@/lib/seo/language-alternates";
 
-const SITE = "https://www.recrutaindustria.com";
-
-/** Preferência de idioma via cookie / Accept-Language (sem prefixo de rota). */
-function languageAlternates(path: string): Record<string, string> {
-  const url = `${SITE}${path === "/" ? "/" : path}`;
-  const languages: Record<string, string> = { "x-default": url };
-  for (const locale of SUPPORTED_LOCALES) {
-    languages[locale] = url;
-  }
-  return languages;
-}
+const SITE = SEO_SITE_ORIGIN;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
@@ -38,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   const staticEntries: MetadataRoute.Sitemap = pages.map((p) => ({
-    url: `${SITE}${p.path}`,
+    url: absoluteSiteUrl(p.path),
     lastModified: now,
     changeFrequency: p.changeFrequency,
     priority: p.priority,
@@ -55,7 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const lastModified =
         parsed && !Number.isNaN(parsed.getTime()) ? parsed : now;
       return {
-        url: `${SITE}${path}`,
+        url: absoluteSiteUrl(path),
         lastModified,
         changeFrequency: "daily" as const,
         priority: 0.7,

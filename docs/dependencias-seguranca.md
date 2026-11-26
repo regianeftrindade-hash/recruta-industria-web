@@ -1,36 +1,31 @@
-# Dependências e segurança — 16/11/2026
+# Dependências e segurança — 26/11/2026
 
-Prisma permanece 5.22.0. Next.js 16.4.6, NextAuth 4.24.15 e Sentry 10.78.0 continuam nas versões da rodada anterior.
+Prisma permanece 5.22.0. Next.js 16.4.6, NextAuth 4.24.15. **Sentry `@sentry/nextjs` 11.19.0** (upgrade controlado nesta rodada).
 
 | Pacote | Antes | Agora |
 |---|---|---|
+| @sentry/nextjs | 10.78.0 | **11.19.0** |
 | nodemailer | 7.0.13 | 10.6.0 |
 | pdfjs-dist | 5.6.205 | 6.2.108 |
 | unpdf | 1.7.0 | 2.2.1 |
 | vitest | 3.2.7 | 4.1.12 |
 
-## E-mail
+## Sentry 11 (controlado)
 
-Nodemailer 10 exige Node 20 ou mais. `createTransport`, `sendMail` e `MailComposer` seguem iguais. O override `nodemailer@10.6.0` vale também para o NextAuth 4.24.15, o mailparser e o imapflow. `@types/nodemailer` saiu porque a versão 10 já inclui os tipos. O SMTP, o remetente e os anexos não mudaram. Nenhum e-mail real foi enviado.
+- `sendDefaultPii` removido no SDK → `dataCollection` explícita **restritiva** em `lib/observability/sentry-options.ts` (equivalente ao v10 com PII off).
+- Scrubbing adicional mantido em `beforeSend` (`sentry-privacy.ts`).
+- Projeto **não** usa `withSentryConfig` / `tunnelRoute` no `next.config.js` — superfície de breaking menor.
+- Replays: sessão 0; erro 0.1 (cliente).
+- Requer Node ≥20.19 (CI/Vercel: alinhar com `engines`).
 
-## PDF
+## E-mail / PDF / Vitest
 
-O unpdf 2.2.1 usa o PDF.js 6.2.108. A leitura de currículo continua. Essa versão do PDF.js não expõe mais `isEvalSupported`: a execução de script do documento saiu da API. O PDF.js 6 consulta `Iterator`, que o Node 20 não tem; `lib/curriculum/pdfjs-iterator-polyfill.ts` cobre isso. O Node 24 do projeto já tem a classe.
-
-Há aviso ao carregar a fonte padrão Liberation Sans. Os testes de texto, de PDF gerado pelo site e de PDF com JavaScript passaram mesmo assim.
-
-## Sentry
-
-A linha 10, inclusive a 10.78.0, ainda puxa glob e minimatch no plugin de build. A correção oferecida pelo audit é `@sentry/nextjs` 11.x. **Upgrade adiado de propósito** (breaking no plugin; risco de build). Scrubbing de PII/`beforeSend` foi reforçado em `lib/observability/sentry-privacy.ts` sem subir major. O aplicativo não usa `tunnelRoute`. O build usa Turbopack.
-
-## Vitest
-
-A falha crítica do tinypool era só da ferramenta de teste, não do servidor. O Vitest 4.1.12 fecha esse alerta. Os testes desta rodada passaram. O Vite avisa que `vitest.config.ts` está em CommonJS; isso não interrompe a execução.
+Sem mudança nesta rodada (ver histórico anterior). Nodemailer 10 + unpdf 2 / PDF.js 6 permanecem.
 
 ## Audit
 
-Produção: 0 críticas, 0 altas, 5 moderadas, todas no plugin de build do Sentry.
+Após upgrade Sentry 11.19.0: `npm audit` → **0 vulnerabilities** (nesta máquina, 26/11/2026).
 
-## Teste visual
+## Teste
 
-Playwright e Cypress estão no projeto. Não foram executados, para não subir o app com o `.env.local`.
+Unitários de `sentry-options` / `sentry-privacy` / SEO hreflang. Build/typecheck/lint na rodada de qualidade.

@@ -55,8 +55,10 @@ Registrar região de processamento e mecanismo de transferência internacional q
 
 ---
 
-## 4. Templates preparados nesta rodada
+## 4. Templates preparados (documentação — sem inventar dados)
 
+- `docs/lgpd-dpo-nomeacao-template.md` — campos para nomeação do DPO + o que exige assinatura/advogado.  
+- `docs/lgpd-dpa-fornecedores-checklist.md` — DPAs por operador (status Pendente até assinatura real).  
 - `docs/politica-retencao-template.md` — tabela de retenção (prazos em branco para advogado).  
 - Canal de titulares sugerido: `contato@recrutaindustria.com` até existir e-mail do DPO.  
 - `public/.well-known/security.txt` — contato técnico de vulnerabilidades (não substitui DPO).
