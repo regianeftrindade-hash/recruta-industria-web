@@ -142,12 +142,16 @@ const TIMEZONE_BY_COUNTRY: Record<string, string> = {
   SA: "Asia/Riyadh",
 };
 
-let cachedChoices: { code: string; name: string }[] | null = null;
+const cachedChoicesByLocale = new Map<string, { code: string; name: string }[]>();
 
-/** Brasil primeiro. Demais nomes via DisplayNames pt-BR. */
-export function registrationCountryChoices(): { code: string; name: string }[] {
-  if (cachedChoices) return cachedChoices;
-  const names = new Intl.DisplayNames(["pt-BR"], { type: "region" });
+/** Brasil primeiro. Demais nomes via DisplayNames no idioma da interface. */
+export function registrationCountryChoices(
+  locale = "pt-BR",
+): { code: string; name: string }[] {
+  const displayLocale = locale.trim() || "pt-BR";
+  const cached = cachedChoicesByLocale.get(displayLocale);
+  if (cached) return cached;
+  const names = new Intl.DisplayNames([displayLocale], { type: "region" });
   const options = ISO_ALPHA2.map((code) => ({
     code,
     name: names.of(code) || code,
@@ -155,9 +159,9 @@ export function registrationCountryChoices(): { code: string; name: string }[] {
   options.sort((a, b) => {
     if (a.code === "BR") return -1;
     if (b.code === "BR") return 1;
-    return a.name.localeCompare(b.name, "pt-BR");
+    return a.name.localeCompare(b.name, displayLocale);
   });
-  cachedChoices = options;
+  cachedChoicesByLocale.set(displayLocale, options);
   return options;
 }
 

@@ -2513,5 +2513,16 @@
   "rest.entrevistas.activeProposals": "Propostas ativas ({count})",
   "rest.entrevistas.scheduled": "Entrevistas agendadas ({count})",
   "rest.entrevistas.archived": "Arquivadas ({count})",
-  "rest.entrevistas.videoPaidOnly": "Entrevista por vídeo disponível nos planos pagos."
+  "rest.entrevistas.videoPaidOnly": "Entrevista por vídeo disponível nos planos pagos.",
+  "surface.admin.accounts": "Contas",
+  "rest.billing.periodMonth": "/mês",
+  "rest.billing.periodYear": "/ano",
+  "rest.billing.periodMonthUsd": "/mo",
+  "rest.billing.periodYearUsd": "/year",
+  "rest.billing.periodMonthly": "Mensal",
+  "rest.billing.periodAnnual": "Anual",
+  "rest.billing.modeRecurring": "Subscrição recorrente automática",
+  "rest.billing.modeOneTime": "Pagamento único (Pix ou Boleto)",
+  "rest.billing.savingsMonths": "Poupe {amount} (2 meses grátis)",
+  "rest.billing.savingsMonthsUsd": "Save {amount} (2 months free)"
 }

@@ -1,5 +1,6 @@
 import { formatMoney } from '@/lib/money/format-money';
 import { uiIntlLocale } from '@/lib/i18n/format-ui';
+import { t } from '@/lib/i18n/translate';
 import { PAYMENT_CONFIG } from '@/lib/payment-config';
 
 export type BillingPeriod = 'monthly' | 'annual';
@@ -55,27 +56,29 @@ export function formatPlanPriceLabel(
     const savings = fullYear - annual;
     return {
       price: formatPriceBRL(annual),
-      period: '/ano',
+      period: t('rest.billing.periodYear'),
       savings: savings > 0
-        ? `Economize ${formatPriceBRL(savings)} (2 meses grátis)`
+        ? t('rest.billing.savingsMonths').replace('{amount}', formatPriceBRL(savings))
         : undefined,
     };
   }
 
   return {
     price: formatPriceBRL(monthlyCentavos),
-    period: '/mês',
+    period: t('rest.billing.periodMonth'),
   };
 }
 
 export function billingPeriodLabel(period: BillingPeriod): string {
-  return period === 'annual' ? 'Anual' : 'Mensal';
+  return period === 'annual'
+    ? t('rest.billing.periodAnnual')
+    : t('rest.billing.periodMonthly');
 }
 
 export function billingModeLabel(mode: BillingMode): string {
   return mode === 'recurring'
-    ? 'Assinatura recorrente automática'
-    : 'Pagamento único (Pix ou Boleto)';
+    ? t('rest.billing.modeRecurring')
+    : t('rest.billing.modeOneTime');
 }
 
 /** Preços de referência Stripe em centavos de USD (alinhados aos Price IDs do Dashboard). */
@@ -114,7 +117,10 @@ export function formatStripePlanPriceLabel(
 ): { price: string; period: string; savings?: string } {
   const monthly = getStripeCompanyMonthlyUsdCents(planTier);
   if (monthly == null) {
-    return { price: '—', period: period === 'annual' ? '/year' : '/mo' };
+    return {
+      price: '—',
+      period: period === 'annual' ? t('rest.billing.periodYearUsd') : t('rest.billing.periodMonthUsd'),
+    };
   }
   if (period === 'annual') {
     const annual = monthly * 10;
@@ -122,14 +128,14 @@ export function formatStripePlanPriceLabel(
     const savings = fullYear - annual;
     return {
       price: formatPriceUSD(annual),
-      period: '/year',
+      period: t('rest.billing.periodYearUsd'),
       savings: savings > 0
-        ? `Save ${formatPriceUSD(savings)} (2 months free)`
+        ? t('rest.billing.savingsMonthsUsd').replace('{amount}', formatPriceUSD(savings))
         : undefined,
     };
   }
   return {
     price: formatPriceUSD(monthly),
-    period: '/mo',
+    period: t('rest.billing.periodMonthUsd'),
   };
 }
