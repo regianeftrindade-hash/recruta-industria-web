@@ -16,11 +16,17 @@ const RESET_TTL_MS = 60 * 60 * 1000;
 const consumedResetTokens = new Set<string>();
 
 function resetSecret(): string {
-  return (
+  const secret =
     process.env.NEXTAUTH_SECRET?.trim() ||
     process.env.PASSWORD_RESET_SECRET?.trim() ||
-    "dev-only-insecure-reset"
-  );
+    "";
+  if (secret) return secret;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "NEXTAUTH_SECRET ou PASSWORD_RESET_SECRET é obrigatório em production para reset de senha.",
+    );
+  }
+  return "dev-only-insecure-reset";
 }
 
 function signResetBody(body: string): string {

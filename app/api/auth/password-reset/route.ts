@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       const locale = localeForReset(request, (user as { locale?: string | null }).locale)
       logAudit('password_reset_requested', normalized, ip, userAgent, 'success', 'Token generated')
 
-      await sendEmail({
+      const sent = await sendEmail({
         to: normalized,
         subject: t('mail.passwordReset.subject', locale),
         text: t('mail.passwordReset.text', locale).replace('{url}', resetUrl),
@@ -81,6 +81,14 @@ export async function POST(request: NextRequest) {
           <p style="font-size:13px;color:#555;">${t('mail.passwordReset.validity', locale)}</p>
         `,
       })
+
+      if (!sent) {
+        logAudit('password_reset_request', normalized, ip, userAgent, 'failure', 'SMTP send failed')
+        return NextResponse.json(
+          { error: t('mail.passwordReset.error', locale) },
+          { status: 502 },
+        )
+      }
 
       return NextResponse.json({
         success: true,

@@ -1,7 +1,17 @@
+/** Só em desenvolvimento/testes. Em Production use COMPANY_TEST_BYPASS_KEYS. */
 const DEFAULT_TEST_KEYS = ['paizaonacozinha'];
 
 export function normalizeCompanyTestKey(value: string): string {
   return value.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+}
+
+function allowHardcodedBypassDefaults(): boolean {
+  if (typeof process === 'undefined') return false;
+  const flag = (process.env.ALLOW_COMPANY_TEST_BYPASS_DEFAULTS || '').trim().toLowerCase();
+  if (flag === 'true' || flag === '1') return true;
+  if (flag === 'false' || flag === '0') return false;
+  // Production Vercel (e NODE_ENV=production local) não embute chave de teste.
+  return process.env.NODE_ENV !== 'production';
 }
 
 export function getCompanyTestBypassKeys(): string[] {
@@ -15,10 +25,11 @@ export function getCompanyTestBypassKeys(): string[] {
     .map((item) => normalizeCompanyTestKey(item))
     .filter(Boolean);
 
-  return [...new Set([
-    ...DEFAULT_TEST_KEYS.map(normalizeCompanyTestKey),
-    ...fromEnv,
-  ])];
+  const defaults = allowHardcodedBypassDefaults()
+    ? DEFAULT_TEST_KEYS.map(normalizeCompanyTestKey)
+    : [];
+
+  return [...new Set([...defaults, ...fromEnv])];
 }
 
 /** Conta de teste empresarial (ex.: paizaonacozinha@gmail.com) — sem cadastro obrigatório */
