@@ -26,6 +26,11 @@ import {
   resolveProfessionalStripePriceKey,
   envNameForStripePriceKey,
 } from '@/lib/payment/stripe-client';
+import {
+  resolveCheckoutBaseUrl,
+  stripeCheckoutReturnUrls,
+} from '@/lib/payment/checkout-return-url';
+
 import { apiUnauthorizedResponse } from "@/lib/i18n/api-response";
 
 export async function POST(req: NextRequest) {
@@ -95,7 +100,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const baseUrl = (process.env.NEXTAUTH_URL || 'https://www.recrutaindustria.com').replace(/\/$/, '');
+      const baseUrl = resolveCheckoutBaseUrl();
       const paymentReference = `stripe_pro_${user.id}_${Date.now()}`;
 
       const meta = {
@@ -122,13 +127,20 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      const { successUrl, cancelUrl } = stripeCheckoutReturnUrls({
+        baseUrl,
+        successPath: '/professional/pagamento',
+        cancelPath: '/professional/pagamento',
+        paymentReference,
+      });
+
       const checkout = await createStripeCheckoutSession({
         priceId,
         customerEmail: email,
         customerName: name,
         mode: 'subscription',
-        successUrl: `${baseUrl}/professional/pagamento?success=1&ref=${encodeURIComponent(paymentReference)}`,
-        cancelUrl: `${baseUrl}/professional/pagamento?canceled=1`,
+        successUrl,
+        cancelUrl,
         clientReferenceId: paymentReference,
         metadata: {
           paymentReference,

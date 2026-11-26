@@ -155,25 +155,45 @@ export async function syncPaymentStatusFromGateway(
 }
 
 export async function findPaymentRecordByGatewayRef(ref: string) {
+  const trimmed = (ref || "").trim();
+  if (!trimmed) return null;
+
   let payment = await prisma.paymentRecord.findFirst({
-    where: { OR: [{ reference: ref }, { externalId: ref }] },
+    where: { OR: [{ reference: trimmed }, { externalId: trimmed }] },
+    orderBy: { createdAt: "desc" },
   });
 
-  if (!payment && ref.startsWith('pay_')) {
+  // Assinaturas Stripe: também procura gatewaySubscriptionId / id gravado no meta.
+  if (!payment && trimmed.startsWith("sub_")) {
     payment = await prisma.paymentRecord.findFirst({
-      where: { OR: [{ reference: ref }, { externalId: ref }] },
+      where: {
+        OR: [
+          { externalId: trimmed },
+          { meta: { contains: `"gatewaySubscriptionId":"${trimmed}"` } },
+          { meta: { contains: trimmed } },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
     });
   }
 
-  if (!payment && ref.startsWith('SUBS_')) {
+  if (!payment && (trimmed.startsWith("cs_") || trimmed.startsWith("in_") || trimmed.startsWith("pi_"))) {
     payment = await prisma.paymentRecord.findFirst({
-      where: { OR: [{ reference: ref }, { externalId: ref }] },
+      where: {
+        OR: [
+          { reference: trimmed },
+          { externalId: trimmed },
+          { meta: { contains: trimmed } },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
     });
   }
 
-  if (!payment && (ref.startsWith('cs_') || ref.startsWith('sub_') || ref.startsWith('in_') || ref.startsWith('pi_'))) {
+  if (!payment && (trimmed.startsWith("pay_") || trimmed.startsWith("SUBS_"))) {
     payment = await prisma.paymentRecord.findFirst({
-      where: { OR: [{ reference: ref }, { externalId: ref }] },
+      where: { OR: [{ reference: trimmed }, { externalId: trimmed }] },
+      orderBy: { createdAt: "desc" },
     });
   }
 

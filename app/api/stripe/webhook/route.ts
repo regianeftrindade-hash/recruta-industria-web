@@ -258,23 +258,61 @@ async function handleSubscriptionChange(event: StripeEvent) {
   const obj = event.data.object;
   const subscriptionId = String(obj.id || "");
   const status = String(obj.status || "");
-  const payment = subscriptionId
+  const metadata = (obj.metadata || {}) as Record<string, string>;
+
+  let payment = subscriptionId
     ? await findPaymentRecordByGatewayRef(subscriptionId)
     : null;
 
-  if (!payment) {
-    return json({ ok: true, not_found: true });
+  // Fallback: paymentReference no metadata da assinatura (sem inventar registros).
+  if (!payment && metadata.paymentReference) {
+    payment = await findPaymentRecordByGatewayRef(metadata.paymentReference);
   }
 
-  if (
+  // Idempotente: evento órfão (sem PaymentRecord) não é erro nem reprocessamento.
+  if (!payment) {
+    console.info(
+      "[stripe/webhook] subscription change sem PaymentRecord — ignorado",
+      event.type,
+      subscriptionId || "(sem id)",
+    );
+    return json({
+      ok: true,
+      ignored: true,
+      reason: "no_payment_record",
+      eventType: event.type,
+      subscriptionId: subscriptionId || null,
+    });
+  }
+
+  const shouldCancel =
     event.type === "customer.subscription.deleted" ||
     status === "canceled" ||
-    status === "unpaid"
-  ) {
+    status === "unpaid";
+
+  if (shouldCancel) {
+    if (payment.status === "CANCELED") {
+      return json({
+        ok: true,
+        duplicate: true,
+        status: "CANCELED",
+        subscriptionStatus: status,
+      });
+    }
     await prisma.paymentRecord.update({
       where: { id: payment.id },
-      data: { status: "CANCELED" },
+      data: {
+        status: "CANCELED",
+        meta: JSON.stringify({
+          ...(parsePaymentMeta(payment.meta) || {}),
+          gatewaySubscriptionId: subscriptionId || undefined,
+          stripeEventId: event.id,
+          provider: "stripe",
+          canceledVia: event.type,
+        }),
+      },
     });
+    return json({ ok: true, status: "CANCELED", subscriptionStatus: status });
   }
 
   return json({ ok: true, subscriptionStatus: status });
