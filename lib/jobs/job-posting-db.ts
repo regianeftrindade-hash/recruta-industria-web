@@ -479,12 +479,38 @@ export async function updateAdminApplicationStage(
   return { id: saved.id, stage: saved.stage };
 }
 
-export async function searchPublicJobs(filters: JobSearchFilters): Promise<PublicJob[]> {
+export type PublicJobSearchPage = {
+  skip?: number;
+  take?: number;
+};
+
+export async function countPublicJobs(filters: JobSearchFilters): Promise<number> {
   await ensureInternationalDefaultsColumns();
   await ensureJobApplicationWhatsappColumn();
+  return prisma.jobPosting.count({
+    where: publicJobWhere(filters),
+  });
+}
+
+export async function searchPublicJobs(
+  filters: JobSearchFilters,
+  page?: PublicJobSearchPage,
+): Promise<PublicJob[]> {
+  await ensureInternationalDefaultsColumns();
+  await ensureJobApplicationWhatsappColumn();
+  const take =
+    page?.take != null && Number.isFinite(page.take)
+      ? Math.max(1, Math.min(Math.floor(page.take), 200))
+      : undefined;
+  const skip =
+    page?.skip != null && Number.isFinite(page.skip)
+      ? Math.max(0, Math.floor(page.skip))
+      : undefined;
   const rows = await prisma.jobPosting.findMany({
     where: publicJobWhere(filters),
     orderBy: byNewestPublication,
+    ...(skip != null ? { skip } : {}),
+    ...(take != null ? { take } : {}),
   });
   return rows.map((row) => toPublicJob(asRecord(row)));
 }

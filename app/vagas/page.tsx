@@ -1,10 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import LogoRecruta from "@/app/components/LogoRecruta";
-import { searchPublicJobs } from "@/lib/jobs/job-posting-db";
+import { countPublicJobs, searchPublicJobs } from "@/lib/jobs/job-posting-db";
 import { CONTRACT_TYPES, WORK_MODES } from "@/lib/jobs/job-posting";
 import { parseJobSearch } from "@/lib/jobs/job-search";
-import { paginarLista, paginasDaBarra } from "@/lib/jobs/paginate-list";
+import { paginasDaBarra } from "@/lib/jobs/paginate-list";
 import { jobApplicationDeadline } from "@/lib/jobs/public-job-display";
 import {
   FAIXAS_SALARIO_VAGA,
@@ -70,18 +70,35 @@ export default async function VagasPage({
   bindLocale(locale);
   const text = (key: MessageKey) => t(key, locale);
   const params = achatarSearchParams(await searchParams);
-  const paginaPedida = Math.max(1, Number(params.pagina) || 1);
+  const filters = parseJobSearch(aplicarFaixaSalarial(params));
+  let total = 0;
   let jobs: Awaited<ReturnType<typeof searchPublicJobs>> = [];
   let error = "";
 
   try {
-    jobs = await searchPublicJobs(parseJobSearch(aplicarFaixaSalarial(params)));
+    total = await countPublicJobs(filters);
+    const totalPaginas = Math.max(1, Math.ceil(total / VAGAS_POR_PAGINA_PUBLICA) || 1);
+    const paginaPedida = Math.min(
+      Math.max(1, Number(params.pagina) || 1),
+      total === 0 ? 1 : totalPaginas,
+    );
+    jobs = await searchPublicJobs(filters, {
+      skip: (paginaPedida - 1) * VAGAS_POR_PAGINA_PUBLICA,
+      take: VAGAS_POR_PAGINA_PUBLICA,
+    });
   } catch (loadError) {
     console.error("Erro ao listar vagas públicas:", loadError);
     error = text("surface.jobs.loadError");
   }
 
-  const lista = paginarLista(jobs, paginaPedida, VAGAS_POR_PAGINA_PUBLICA);
+  const totalPaginas = Math.ceil(total / VAGAS_POR_PAGINA_PUBLICA);
+  const paginaAtual =
+    totalPaginas === 0 ? 1 : Math.min(Math.max(1, Number(params.pagina) || 1), totalPaginas);
+  const lista = {
+    itens: jobs,
+    pagina: paginaAtual,
+    totalPaginas,
+  };
   const comFiltro = temFiltroDeVaga(params);
   const volta = caminhoDeVolta(params.voltar);
 
