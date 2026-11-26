@@ -2,7 +2,7 @@
 
 **Data da pesquisa:** 26/11/2026 (America/São Paulo)  
 **Critérios:** anúncios com indício de data ≥ 08/11/2026; contato por e-mail, WhatsApp ou link de candidatura; foco industrial; BR + países relevantes aos idiomas/mercados do Recruta.  
-**Importante:** isto é pesquisa externa. **Nenhuma vaga foi inserida no banco** (as 1.096 existentes permanecem intactas). Validar sempre no anúncio original antes de republicar.
+**Importante:** pesquisa externa. Em 26/11/2026 (autorização explícita do usuário) foram publicadas **23 vagas** no Production via `scripts/import-market-jobs-2026-11-26.mjs` (IDs `cmimport20261126*`; MECTON fora da janela — omitida). Total PUBLISHED após import: **1.119**. Validar sempre no anúncio original; anúncios externos podem expirar.
 
 ---
 
@@ -47,7 +47,13 @@
 
 ---
 
-## O que NÃO fazer com esta lista
-- Não importar automaticamente para Production.  
-- Não publicar no Recruta sem autorização do anunciante e checagem de autenticidade (golpes de “pague para se candidatar”).  
-- Não tratar a pesquisa como inventário das 1.096 vagas internas.
+## Pós-importação (26/11/2026)
+- Script idempotente: `node scripts/import-market-jobs-2026-11-26.mjs`
+- BR: Tecnoval (4), Montarsul (3), Torfresma (3), MSM (1), KAEFER (6 especialidades).
+- Internacional: Philip Global, Teupe, Machado & Silveira, emprego.com DE, RIGHT LEVEL, Northern Beaches Council.
+- **Omitida:** MECTON (entrevistas 25–30/10/2026, fora da janela ≥08/11).
+- Cada vaga traz contato (e-mail / WhatsApp / link) e aviso de fonte externa nas observações.
+
+## Cuidados
+- Não republicar sem checagem de autenticidade (golpes de “pague para se candidatar”).  
+- Não tratar a pesquisa como inventário completo das vagas internas do Recruta.
