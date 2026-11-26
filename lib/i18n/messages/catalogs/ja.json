@@ -2524,5 +2524,10 @@
   "rest.billing.modeRecurring": "自動継続サブスクリプション",
   "rest.billing.modeOneTime": "一回払い（PixまたはBoleto）",
   "rest.billing.savingsMonths": "{amount}お得（2か月無料）",
-  "rest.billing.savingsMonthsUsd": "Save {amount} (2 months free)"
+  "rest.billing.savingsMonthsUsd": "Save {amount} (2 months free)",
+  "privacy.professionalMinAge": "専門家登録は18歳以上の方のみ可能です。",
+  "privacy.marketingConsentOptional": "Recruta Indústriaからのマーケティング連絡の受信に同意します（任意）。後から同意を撤回できます。",
+  "privacy.marketingConsentRecordedAt": "最終記録：",
+  "privacy.birthDateLabel": "生年月日",
+  "privacy.birthDateHint": "必須。専門家登録は18歳以上のみです。"
 }

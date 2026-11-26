@@ -98,6 +98,17 @@ export function sqlAndUserIdNotIn(columnSql: Prisma.Sql, userIds: string[]): Pri
   return Prisma.sql`AND ${columnSql} NOT IN (${Prisma.join(userIds)})`;
 }
 
+/** Extrai só o e-mail do JSON customer (sem expor demais PII do PaymentRecord). */
+export function extractPaymentCustomerEmail(customer: string | null | undefined): string {
+  if (!customer) return '';
+  try {
+    const parsed = JSON.parse(customer) as { email?: string };
+    return String(parsed?.email || '').toLowerCase().trim();
+  } catch {
+    return '';
+  }
+}
+
 /** Soma pagamentos PAID ignorando customer.email de contas teste e opcionalmente antes do baseline. */
 export function sumPaidExcludingTestEmails(
   payments: Array<{ amount: number; customer: string | null; createdAt?: Date | string | null }>,
@@ -114,15 +125,7 @@ export function sumPaidExcludingTestEmails(
       const createdMs = new Date(payment.createdAt).getTime();
       if (!Number.isNaN(createdMs) && createdMs < baselineMs) continue;
     }
-    let email = '';
-    if (payment.customer) {
-      try {
-        const parsed = JSON.parse(payment.customer) as { email?: string };
-        email = String(parsed?.email || '').toLowerCase().trim();
-      } catch {
-        email = '';
-      }
-    }
+    const email = extractPaymentCustomerEmail(payment.customer);
     if (email && (emailSet.has(email) || isAdminExcludedTestAccount({ email }))) {
       continue;
     }

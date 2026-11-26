@@ -19,6 +19,10 @@ import { getVideoApresentacaoPath } from '@/lib/professional/professional-video-
 import { caminhoFotoPerfil, patchFotoNoSnapshot } from '@/lib/professional/foto-perfil';
 import type { User, Prisma } from '@prisma/client';
 import { apiErrorResponse, apiUnauthorizedResponse } from "@/lib/i18n/api-response";
+import {
+  isProfessionalAgeAllowed,
+  professionalAgeGateErrorMessage,
+} from "@/lib/privacy/age-gate";
 
 const userAuthSelect = {
   id: true,
@@ -322,6 +326,22 @@ export async function POST(request: NextRequest) {
         profile: mapProfileToDashboard(savedProfile, mappedUser),
         formEdit: mapProfileToFormEdit(savedProfile, mappedUser, savedSnapshot),
       });
+    }
+
+    {
+      const birthRaw =
+        (body as Record<string, unknown>).dataNascimento ??
+        (body as Record<string, unknown>).dataNascimentoDisplay ??
+        (body as Record<string, unknown>).birthDate;
+      if (birthRaw != null && String(birthRaw).trim() !== "") {
+        const ageGate = isProfessionalAgeAllowed(birthRaw);
+        if (!ageGate.ok) {
+          return NextResponse.json(
+            { error: professionalAgeGateErrorMessage(ageGate.reason) },
+            { status: 400 },
+          );
+        }
+      }
     }
 
     const { prismaData: profileData, formDataJSON } = buildProfileUpsertPayload(

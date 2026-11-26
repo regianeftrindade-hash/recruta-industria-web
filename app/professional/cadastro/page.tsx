@@ -13,6 +13,10 @@ import { safeJobReturnPath } from "@/lib/jobs/public-job-link";
 import { isValidCPF, isValidPhoneBR } from "@/lib/security";
 import { t } from "@/lib/i18n/translate";
 import RegistrationCountryField from "@/components/identity/RegistrationCountryField";
+import {
+  isProfessionalAgeAllowed,
+  professionalAgeGateErrorMessage,
+} from "@/lib/privacy/age-gate";
 
 const SIMPLE_STORAGE_KEY = "dadosCadastroSimples";
 
@@ -70,6 +74,8 @@ export default function CadastroRapidoProfissionalPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [aceitoPrivacidade, setAceitoPrivacidade] = useState(false);
+  const [dataNascimento, setDataNascimento] = useState("");
+  const [marketingConsent, setMarketingConsent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +90,12 @@ export default function CadastroRapidoProfissionalPage() {
     const nomeTrim = nome.trim();
     const emailTrim = email.toLowerCase().trim();
     const cpfLimpo = cpf.replace(/\D/g, "");
+
+    const ageGate = isProfessionalAgeAllowed(dataNascimento);
+    if (!ageGate.ok) {
+      setErrorMessage(professionalAgeGateErrorMessage(ageGate.reason));
+      return;
+    }
 
     if (nomeTrim.length < 2) {
       setErrorMessage(t("registration.simple.nameRequired"));
@@ -138,6 +150,8 @@ export default function CadastroRapidoProfissionalPage() {
           telefone,
           password,
           confirmPassword,
+          dataNascimento,
+          marketingConsent: Boolean(marketingConsent),
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -261,6 +275,24 @@ export default function CadastroRapidoProfissionalPage() {
             )}
 
             <div className={loginStyles.fieldGroup}>
+              <label className={loginStyles.fieldLabel} htmlFor="cadastro-nascimento">
+                {t("privacy.birthDateLabel")}
+              </label>
+              <input
+                id="cadastro-nascimento"
+                className={loginStyles.input}
+                type="date"
+                autoComplete="bday"
+                value={dataNascimento}
+                onChange={(e) => setDataNascimento(e.target.value)}
+                required
+              />
+              <p className={loginStyles.error} style={{ marginTop: 4, opacity: 0.85 }}>
+                {t("privacy.birthDateHint")}
+              </p>
+            </div>
+
+            <div className={loginStyles.fieldGroup}>
               <label className={loginStyles.fieldLabel} htmlFor="cadastro-email">
                 {t("registration.simple.email")}
               </label>
@@ -350,7 +382,7 @@ export default function CadastroRapidoProfissionalPage() {
                 display: "flex",
                 gap: 8,
                 alignItems: "flex-start",
-                margin: "12px 0",
+                margin: "12px 0 4px",
                 fontSize: "0.82rem",
                 lineHeight: 1.4,
                 color: "#414141",
@@ -369,6 +401,26 @@ export default function CadastroRapidoProfissionalPage() {
                 {" · "}
                 <a href="/termos/privacidade">{t("legal.linkPrivacy")}</a>
               </span>
+            </label>
+
+            <label
+              style={{
+                display: "flex",
+                gap: 8,
+                alignItems: "flex-start",
+                margin: "4px 0 12px",
+                fontSize: "0.82rem",
+                lineHeight: 1.4,
+                color: "#414141",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={marketingConsent}
+                onChange={(e) => setMarketingConsent(e.target.checked)}
+                style={{ marginTop: 2 }}
+              />
+              <span>{t("privacy.marketingConsentOptional")}</span>
             </label>
 
             <button type="submit" className={loginStyles.btnPrimary} disabled={loading}>

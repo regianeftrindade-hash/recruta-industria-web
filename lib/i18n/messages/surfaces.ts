@@ -31,6 +31,13 @@ export const surfaceMessages = {
   "privacy.cookieAcceptMarketing": "Aceitar marketing",
   "privacy.acceptPrefix": "Li e aceito os",
   "privacy.acceptRequired": "Aceite os Termos de Uso e a Política de Privacidade para continuar.",
+  "privacy.professionalMinAge":
+    "O cadastro profissional é permitido apenas para maiores de 18 anos.",
+  "privacy.marketingConsentOptional":
+    "Aceito receber comunicações de marketing do Recruta Indústria (opcional). Posso retirar este consentimento depois.",
+  "privacy.marketingConsentRecordedAt": "Último registro:",
+  "privacy.birthDateLabel": "Data de nascimento",
+  "privacy.birthDateHint": "Obrigatório. Cadastro profissional somente para maiores de 18 anos.",
   "surface.home.login": "LOGIN",
   "surface.home.email": "EMAIL",
   "surface.home.emailLabel": "E-mail",

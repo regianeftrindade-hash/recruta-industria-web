@@ -2524,5 +2524,10 @@
   "rest.billing.modeRecurring": "自动续订订阅",
   "rest.billing.modeOneTime": "一次性付款（Pix 或 Boleto）",
   "rest.billing.savingsMonths": "节省 {amount}（免两个月）",
-  "rest.billing.savingsMonthsUsd": "Save {amount} (2 months free)"
+  "rest.billing.savingsMonthsUsd": "Save {amount} (2 months free)",
+  "privacy.professionalMinAge": "仅限年满 18 岁的人士进行专业注册。",
+  "privacy.marketingConsentOptional": "我同意接收 Recruta Indústria 的营销信息（可选）。我之后可以撤回此同意。",
+  "privacy.marketingConsentRecordedAt": "最近记录：",
+  "privacy.birthDateLabel": "出生日期",
+  "privacy.birthDateHint": "必填。专业注册仅限年满 18 岁。"
 }

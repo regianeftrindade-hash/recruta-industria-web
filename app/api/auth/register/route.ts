@@ -20,12 +20,29 @@ import { saveProfileFormSnapshot } from '@/lib/profile-snapshot'
 import { saveCompanyExtraData, findCompanyByResponsavelCpf } from '@/lib/company-storage'
 import { corporateEmailError, resolveCompanyRegistrationEmails } from '@/lib/company/corporate-email'
 import { isCorporateEmailVerified } from '@/lib/company/corporate-email-confirmation'
+import {
+  isProfessionalAgeAllowed,
+  professionalAgeGateErrorMessage,
+} from '@/lib/privacy/age-gate'
+import {
+  mergeMarketingConsentIntoFormJson,
+  marketingConsentFromRegisterBody,
+  persistMarketingConsentForUser,
+} from '@/lib/privacy/record-marketing-consent'
 
 async function completarPerfilProfissionalExistente(
   userId: string,
   body: Record<string, unknown>,
   normalizedEmail: string,
+  requestMeta?: { ip?: string; userAgent?: string },
 ) {
+  const ageGate = isProfessionalAgeAllowed(
+    body.dataNascimento ?? body.dataNascimentoDisplay ?? body.birthDate,
+  )
+  if (!ageGate.ok) {
+    throw new Error(professionalAgeGateErrorMessage(ageGate.reason))
+  }
+
   const { prismaData: profileFields, formDataJSON } = buildProfileUpsertPayload(
     body,
     normalizedEmail,
@@ -37,7 +54,16 @@ async function completarPerfilProfissionalExistente(
     create: { userId, ...profileFields },
   })
 
-  await saveProfileFormSnapshot(userId, formDataJSON)
+  const marketingGranted = marketingConsentFromRegisterBody(body)
+  const withMarketing = mergeMarketingConsentIntoFormJson(formDataJSON, marketingGranted)
+  await saveProfileFormSnapshot(userId, withMarketing)
+  await persistMarketingConsentForUser({
+    userId,
+    email: normalizedEmail,
+    granted: marketingGranted,
+    ip: requestMeta?.ip,
+    userAgent: requestMeta?.userAgent,
+  })
 
   await prisma.professional.upsert({
     where: { userId },
@@ -185,6 +211,17 @@ export async function POST(request: NextRequest) {
           }
         }
 
+        const ageGateExisting = isProfessionalAgeAllowed(
+          body.dataNascimento ?? body.dataNascimentoDisplay ?? body.birthDate,
+        )
+        if (!ageGateExisting.ok) {
+          incrementRegisterAttempts(ip)
+          return NextResponse.json(
+            { error: professionalAgeGateErrorMessage(ageGateExisting.reason) },
+            { status: 400 },
+          )
+        }
+
         if (nomeProfissional) {
           await prisma.user.update({
             where: { id: existingUser.id },
@@ -192,7 +229,10 @@ export async function POST(request: NextRequest) {
           })
         }
 
-        await completarPerfilProfissionalExistente(existingUser.id, body, normalizedEmail)
+        await completarPerfilProfissionalExistente(existingUser.id, body, normalizedEmail, {
+          ip,
+          userAgent,
+        })
 
         resetRegisterAttempts(ip)
         return NextResponse.json(
@@ -310,6 +350,19 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (String(userType).toLowerCase() === 'professional') {
+      const ageGatePre = isProfessionalAgeAllowed(
+        body.dataNascimento ?? body.dataNascimentoDisplay ?? body.birthDate,
+      )
+      if (!ageGatePre.ok) {
+        incrementRegisterAttempts(ip)
+        return NextResponse.json(
+          { error: professionalAgeGateErrorMessage(ageGatePre.reason) },
+          { status: 400 },
+        )
+      }
+    }
+
     const hashedPassword = password ? await hashPassword(password) : null
 
     const user = await prisma.user.create({
@@ -388,7 +441,16 @@ export async function POST(request: NextRequest) {
           },
         })
 
-        await saveProfileFormSnapshot(user.id, formDataJSON)
+        const marketingGranted = marketingConsentFromRegisterBody(body as Record<string, unknown>)
+        const withMarketing = mergeMarketingConsentIntoFormJson(formDataJSON, marketingGranted)
+        await saveProfileFormSnapshot(user.id, withMarketing)
+        await persistMarketingConsentForUser({
+          userId: user.id,
+          email: normalizedEmail,
+          granted: marketingGranted,
+          ip,
+          userAgent,
+        })
       } catch (profileError: unknown) {
         const message = profileError instanceof Error ? profileError.message : String(profileError)
         console.error('Erro ao criar Profile para profissional:', profileError)

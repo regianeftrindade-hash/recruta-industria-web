@@ -31,6 +31,7 @@ import ProfessionalRecruitmentHistory, {
 } from "@/components/professional/ProfessionalRecruitmentHistory";
 import PlatformVideoCall from "@/components/shared/PlatformVideoCall";
 import DeleteAccountControl from "@/components/shared/DeleteAccountControl";
+import MarketingConsentControl from "@/components/shared/MarketingConsentControl";
 import type { JobProposalDTO } from "@/lib/company/job-proposals-shared";
 import { caminhoFotoPerfil, fotoPerfilSrc } from "@/lib/professional/foto-perfil";
 
@@ -665,7 +666,12 @@ export default function DashboardProfissional() {
           {abaDireita === "perfil" && (
             <CadastroProfissional
               incorporado
-              acoes={<DeleteAccountControl variant="compact" />}
+              acoes={
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                  <DeleteAccountControl variant="compact" />
+                  <MarketingConsentControl />
+                </div>
+              }
               onSalvo={() => {
                 void fetch("/api/professional/profile", { credentials: "include" })
                   .then((res) => (res.ok ? res.json() : null))

@@ -2524,5 +2524,10 @@
   "rest.billing.modeRecurring": "स्वचालित आवर्ती सदस्यता",
   "rest.billing.modeOneTime": "एकमुश्त भुगतान (Pix या Boleto)",
   "rest.billing.savingsMonths": "{amount} बचाएँ (2 महीने मुफ़्त)",
-  "rest.billing.savingsMonthsUsd": "Save {amount} (2 months free)"
+  "rest.billing.savingsMonthsUsd": "Save {amount} (2 months free)",
+  "privacy.professionalMinAge": "पेशेवर पंजीकरण केवल 18 वर्ष या उससे अधिक आयु के लिए अनुमत है।",
+  "privacy.marketingConsentOptional": "मैं Recruta Indústria से मार्केटिंग संचार प्राप्त करने के लिए सहमत हूँ (वैकल्पिक)। मैं बाद में यह सहमति वापस ले सकता/सकती हूँ।",
+  "privacy.marketingConsentRecordedAt": "अंतिम रिकॉर्ड:",
+  "privacy.birthDateLabel": "जन्म तिथि",
+  "privacy.birthDateHint": "आवश्यक। पेशेवर पंजीकरण केवल 18+ के लिए।"
 }

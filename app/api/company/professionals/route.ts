@@ -33,6 +33,8 @@ import { profilePublicSlugOrBuild } from '@/lib/profile/resolve-profile-ref'
 import { COMPANY_VIEW_ONLY_NOTICE } from '@/lib/company/company-verification'
 import { companyCanSearchProfessionals } from '@/lib/company/company-search-access'
 import { isCompanyTestBypassUserId } from '@/lib/company/company-test-bypass'
+import { assertCompanyCandidateAccess } from '@/lib/company/company-candidate-access'
+import { sanitizeUnlockedCompanyPayload } from '@/lib/privacy/company-unlocked-payload'
 
 function salarySearchTerms(input: string): string[] {
   const trimmed = input.trim()
@@ -485,8 +487,13 @@ export async function POST(request: NextRequest) {
       return await apiErrorResponse("rest.api.companyOnly", 403)
     }
 
-    const planContext = await getCompanyPlanContext(companyUser.id)
-    const dataUserId = planContext.ownerUserId || companyUser.id
+    const access = await assertCompanyCandidateAccess(companyUser.id, {
+      actorUserId: companyUser.id,
+    })
+    if (!access.ok) {
+      return NextResponse.json(access.body, { status: access.status })
+    }
+    const { planContext, dataUserId } = access
     const { features, usage, tier, verification } = planContext
 
     if (!features.canUnlockContacts) {
@@ -533,7 +540,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         alreadyUnlocked: true,
-        profile: buildFull({ ...profile, user: profile.user } as ProfileRow, industrial, compatibilidade, features.canViewContacts, emDestaque),
+        profile: sanitizeUnlockedCompanyPayload(
+          buildFull({ ...profile, user: profile.user } as ProfileRow, industrial, compatibilidade, features.canViewContacts, emDestaque) as Record<string, unknown>,
+        ),
       })
     }
 
@@ -577,7 +586,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      profile: buildFull({ ...profile, user: profile.user } as ProfileRow, industrial, compatibilidade, features.canViewContacts, emDestaque),
+      profile: sanitizeUnlockedCompanyPayload(
+        buildFull({ ...profile, user: profile.user } as ProfileRow, industrial, compatibilidade, features.canViewContacts, emDestaque) as Record<string, unknown>,
+      ),
       unlockedCount: usage.activeUnlocks + 1,
     })
   } catch (error) {

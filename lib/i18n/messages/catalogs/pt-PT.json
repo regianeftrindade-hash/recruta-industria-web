@@ -2524,5 +2524,10 @@
   "rest.billing.modeRecurring": "Subscrição recorrente automática",
   "rest.billing.modeOneTime": "Pagamento único (Pix ou Boleto)",
   "rest.billing.savingsMonths": "Poupe {amount} (2 meses grátis)",
-  "rest.billing.savingsMonthsUsd": "Save {amount} (2 months free)"
+  "rest.billing.savingsMonthsUsd": "Save {amount} (2 months free)",
+  "privacy.professionalMinAge": "O registo profissional é permitido apenas a maiores de 18 anos.",
+  "privacy.marketingConsentOptional": "Aceito receber comunicações de marketing da Recruta Indústria (opcional). Posso retirar este consentimento depois.",
+  "privacy.marketingConsentRecordedAt": "Último registo:",
+  "privacy.birthDateLabel": "Data de nascimento",
+  "privacy.birthDateHint": "Obrigatório. Registo profissional apenas para maiores de 18 anos."
 }

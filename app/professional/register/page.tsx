@@ -618,7 +618,9 @@ export default function CadastroProfissional({
     certificados: null as string | null, cnhDocumento: null as string | null,
     fotoPerfil: null as string | null, curriculo: null as string | null, atestado: null as string | null, possuiAtestadoAntecedentes: false,
     mensagemEmpresas: '',
-    autorizoDados: false, declaroVerdadeiro: false, aceitoLGPD: false
+    autorizoDados: false, declaroVerdadeiro: false, aceitoLGPD: false,
+    /** Marketing opcional — desmarcado por padrão; não bloqueia cadastro. */
+    marketingConsent: false,
   });
 
   const [cidades, setCidades] = useState<string[]>([]);
@@ -1532,6 +1534,20 @@ export default function CadastroProfissional({
       return;
     }
 
+    {
+      const idadeNum = Number.parseInt(String(formData.idade || ''), 10);
+      if (Number.isFinite(idadeNum) && idadeNum < 18) {
+        setEmailError(
+          t("privacy.professionalMinAge") ||
+            "O cadastro profissional é permitido apenas para maiores de 18 anos.",
+        );
+        requestAnimationFrame(() => {
+          document.getElementById('dataNascimento')?.focus();
+        });
+        return;
+      }
+    }
+
     const cpfLimpo = pais === 'BR' ? cpf.replace(/\D/g, '') : '';
 
     const cargoDerivado = buildCargoDesejado({
@@ -1677,6 +1693,7 @@ export default function CadastroProfissional({
           curriculoURL: formData.curriculo || null,
           atestadoURL: formData.atestado || null,
           fotoPerfil: formData.fotoPerfil || null,
+          marketingConsent: Boolean(formData.marketingConsent),
         })
       });
 
@@ -2026,6 +2043,14 @@ export default function CadastroProfissional({
                           const isoDate = `${String(yearNum).padStart(4, '0')}-${String(monthNum).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
 
                           setFormData((prev) => ({ ...prev, dataNascimento: isoDate, idade: finalAge.toString() }));
+                          if (finalAge < 18) {
+                            setEmailError(
+                              t("privacy.professionalMinAge") ||
+                                "O cadastro profissional é permitido apenas para maiores de 18 anos.",
+                            );
+                          } else if (emailError && /18 anos/i.test(emailError)) {
+                            setEmailError('');
+                          }
                           return;
                         }
                       }
@@ -3419,6 +3444,21 @@ export default function CadastroProfissional({
                 onChange={(checked) => setFormData((prev) => ({ ...prev, aceitoLGPD: checked }))}
                 className={termoErro('aceitoLGPD')}
               />
+
+              <label className={styles.checkboxLabel} style={{ marginTop: 12, display: "flex", gap: 8, alignItems: "flex-start" }}>
+                <input
+                  id="marketingConsent"
+                  type="checkbox"
+                  checked={Boolean(formData.marketingConsent)}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, marketingConsent: e.target.checked }))
+                  }
+                />
+                <span>
+                  {t("privacy.marketingConsentOptional") ||
+                    "Aceito receber comunicações de marketing do Recruta Indústria (opcional). Posso retirar este consentimento depois."}
+                </span>
+              </label>
 
               <p className={styles.avisoObrigatoriosTitulo} style={{ marginTop: 12, fontWeight: 500 }}>
                 {t("legal.registrationLinksHint")}{" "}

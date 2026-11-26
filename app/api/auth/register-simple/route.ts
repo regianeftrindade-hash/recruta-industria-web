@@ -26,6 +26,15 @@ import {
 } from "@/lib/company/corporate-email";
 import { isCorporateEmailVerified } from "@/lib/company/corporate-email-confirmation";
 import { saveCompanyExtraData } from "@/lib/company-storage";
+import {
+  isProfessionalAgeAllowed,
+  professionalAgeGateErrorMessage,
+} from "@/lib/privacy/age-gate";
+import {
+  marketingConsentFromRegisterBody,
+  mergeMarketingConsentIntoFormJson,
+  persistMarketingConsentForUser,
+} from "@/lib/privacy/record-marketing-consent";
 
 /**
  * Cadastro simples: profissional (nome) ou empresa (razão social) + e-mail + senha.
@@ -102,6 +111,17 @@ export async function POST(request: NextRequest) {
     const isBrazil = countryCode === "BR";
 
     if (!isCompany) {
+      const ageGate = isProfessionalAgeAllowed(
+        body.dataNascimento ?? body.dataNascimentoDisplay ?? body.birthDate,
+      );
+      if (!ageGate.ok) {
+        incrementRegisterAttempts(ip);
+        return NextResponse.json(
+          { error: professionalAgeGateErrorMessage(ageGate.reason) },
+          { status: 400 },
+        );
+      }
+
       if (isBrazil) {
         const cpfErro = registrationDocumentError(
           cpfLimpo,
@@ -206,6 +226,12 @@ export async function POST(request: NextRequest) {
     const passwordHash = await hashPassword(password);
     const role = isCompany ? "COMPANY" : "PROFESSIONAL";
     const cpfFormatado = cpfLimpo && isBrazil ? formatCPF(cpfLimpo) : "";
+    const marketingGranted = isCompany
+      ? false
+      : marketingConsentFromRegisterBody(body as Record<string, unknown>);
+    const birthRaw = String(
+      body.dataNascimento ?? body.dataNascimentoDisplay ?? body.birthDate ?? "",
+    ).trim();
 
     const user = isCompany
       ? await prisma.user.create({
@@ -227,6 +253,18 @@ export async function POST(request: NextRequest) {
               ...region.region,
             },
           });
+          const formBase = {
+            cadastroRapido: true,
+            nome,
+            email,
+            ...(cpfFormatado ? { cpf: cpfFormatado } : {}),
+            telefone,
+            ...(birthRaw ? { dataNascimento: birthRaw } : {}),
+          };
+          const formDataJSON = mergeMarketingConsentIntoFormJson(
+            JSON.stringify(formBase),
+            marketingGranted,
+          );
           await tx.profile.create({
             data: {
               userId: created.id,
@@ -238,13 +276,7 @@ export async function POST(request: NextRequest) {
               ...(cpfFormatado ? { cpf: cpfFormatado } : {}),
               isVisible: false,
               profileCompletion: 0,
-              formDataJSON: JSON.stringify({
-                cadastroRapido: true,
-                nome,
-                email,
-                ...(cpfFormatado ? { cpf: cpfFormatado } : {}),
-                telefone,
-              }),
+              formDataJSON,
             },
           });
           await tx.professional.create({
@@ -252,6 +284,16 @@ export async function POST(request: NextRequest) {
           });
           return created;
         });
+
+    if (!isCompany) {
+      await persistMarketingConsentForUser({
+        userId: user.id,
+        email,
+        granted: marketingGranted,
+        ip,
+        userAgent,
+      });
+    }
 
     if (isCompany) {
       await prisma.company.create({
