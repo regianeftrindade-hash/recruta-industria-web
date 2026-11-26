@@ -855,6 +855,23 @@ const EXACT: Record<string, MessageKey> = {
   "Ver meu painel": "fix.u.721",
   "Dica:": "fix.u.722",
   "Você pode editar seu perfil e preferências no painel.": "fix.u.723",
+  "Perfil inválido para chamada.": "rest.call.invalidProfile",
+  "Não foi possível iniciar a chamada.": "rest.call.startFailed",
+  "Erro de rede ao iniciar a chamada.": "rest.call.startNetwork",
+  "Não foi possível aceitar.": "rest.call.acceptFailed",
+  "Erro de rede ao aceitar.": "rest.call.acceptNetwork",
+  "Não foi possível entrar na chamada.": "rest.call.joinFailed",
+  "Erro de rede ao entrar na chamada.": "rest.call.joinNetwork",
+  "Erro ao recusar.": "rest.call.declineError",
+  "Não foi possível buscar pessoas da mesma assinatura.": "rest.call.rhLoadFailed",
+  "Erro de rede ao buscar pessoas da mesma assinatura.": "rest.call.rhNetwork",
+  "Você já convidou o máximo de 3 pessoas.": "rest.call.maxInvites",
+  "Colegas do mesmo plano verão o convite se estiverem com este perfil aberto.": "rest.call.inviteHint",
+  "Não foi possível enviar o código.": "rest.admin2fa.sendFailed",
+  "Código enviado.": "rest.admin2fa.sent",
+  "Erro de rede ao enviar código.": "rest.admin2fa.sendNetwork",
+  "Código inválido.": "rest.admin2fa.invalid",
+  "Erro ao validar código.": "rest.admin2fa.validateError",
 };
 
 export function exactMessageKey(value: string): MessageKey | undefined {

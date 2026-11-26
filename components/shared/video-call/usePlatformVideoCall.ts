@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { exactUi } from "@/lib/i18n/exact-ui";
 import type { ApiCall, CallStatus, Participant, RhMember } from "./types";
 
 type Options = {
@@ -234,7 +235,7 @@ export function usePlatformVideoCall({
 
   const handleChamar = async () => {
     if (!profileId) {
-      setError("Perfil inválido para chamada.");
+      setError(exactUi("Perfil inválido para chamada."));
       return;
     }
     setBusy(true);
@@ -248,7 +249,7 @@ export function usePlatformVideoCall({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Não foi possível iniciar a chamada.");
+        setError(exactUi(data.error || "Não foi possível iniciar a chamada."));
         return;
       }
       const newCallId = String(data.call.id);
@@ -257,7 +258,7 @@ export function usePlatformVideoCall({
       setStatus("ringing");
       if (Array.isArray(data.participants)) setParticipants(data.participants);
     } catch {
-      setError("Erro de rede ao iniciar a chamada.");
+      setError(exactUi("Erro de rede ao iniciar a chamada."));
     } finally {
       setBusy(false);
     }
@@ -276,12 +277,12 @@ export function usePlatformVideoCall({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Não foi possível aceitar.");
+        setError(exactUi(data.error || "Não foi possível aceitar."));
         return;
       }
       setStatus("accepted");
     } catch {
-      setError("Erro de rede ao aceitar.");
+      setError(exactUi("Erro de rede ao aceitar."));
     } finally {
       setBusy(false);
     }
@@ -300,14 +301,14 @@ export function usePlatformVideoCall({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Não foi possível entrar na chamada.");
+        setError(exactUi(data.error || "Não foi possível entrar na chamada."));
         return;
       }
       if (Array.isArray(data.participants)) setParticipants(data.participants);
       const call = data.call as ApiCall | undefined;
       setStatus(call?.status === "ACCEPTED" ? "accepted" : "ringing");
     } catch {
-      setError("Erro de rede ao entrar na chamada.");
+      setError(exactUi("Erro de rede ao entrar na chamada."));
     } finally {
       setBusy(false);
     }
@@ -328,7 +329,7 @@ export function usePlatformVideoCall({
       setIncomingCompany("");
       disableOverlay();
     } catch {
-      setError("Erro ao recusar.");
+      setError(exactUi("Erro ao recusar."));
     } finally {
       setBusy(false);
     }
@@ -348,7 +349,7 @@ export function usePlatformVideoCall({
       setCallId(null);
       stopCamera();
     } catch {
-      setError("Erro ao recusar.");
+      setError(exactUi("Erro ao recusar."));
     } finally {
       setBusy(false);
     }
@@ -386,12 +387,12 @@ export function usePlatformVideoCall({
       const res = await fetch("/api/company/rh-members", { credentials: "include" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error || "Não foi possível buscar pessoas da mesma assinatura.");
+        setError(exactUi(data.error || "Não foi possível buscar pessoas da mesma assinatura."));
         return;
       }
       setRhMembers(Array.isArray(data.members) ? data.members : []);
     } catch {
-      setError("Erro de rede ao buscar pessoas da mesma assinatura.");
+      setError(exactUi("Erro de rede ao buscar pessoas da mesma assinatura."));
     } finally {
       setLoadingRhMembers(false);
     }
@@ -399,7 +400,7 @@ export function usePlatformVideoCall({
 
   const handleInviteMember = async (member: RhMember) => {
     if (!podeConvidarMais) {
-      setError("Você já convidou o máximo de 3 pessoas.");
+      setError(exactUi("Você já convidou o máximo de 3 pessoas."));
       return;
     }
     if (!callId || status === "idle") {
@@ -411,7 +412,7 @@ export function usePlatformVideoCall({
       return;
     }
     if (status === "ringing" || status === "accepted") {
-      setError("Colegas do mesmo plano verão o convite se estiverem com este perfil aberto.");
+      setError(exactUi("Colegas do mesmo plano verão o convite se estiverem com este perfil aberto."));
       return;
     }
   };
