@@ -1,5 +1,7 @@
 "use client";
 
+import { t } from "@/lib/i18n/translate";
+
 import { useEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -34,7 +36,7 @@ function RedirectInner() {
   return (
     <DashboardThemeShell>
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <AmpulhetaLoading label="Abrindo perfil..." size={36} color={DASH.gold} />
+        <AmpulhetaLoading label={t("ui.openingProfile")} size={36} color={DASH.gold} />
       </div>
     </DashboardThemeShell>
   );
@@ -46,7 +48,7 @@ export default function CompanyProfissionalSlugRedirect() {
       fallback={
         <DashboardThemeShell>
           <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <AmpulhetaLoading label="Abrindo perfil..." size={36} color={DASH.gold} />
+            <AmpulhetaLoading label={t("ui.openingProfile")} size={36} color={DASH.gold} />
           </div>
         </DashboardThemeShell>
       }

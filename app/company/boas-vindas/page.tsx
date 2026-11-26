@@ -1,5 +1,7 @@
 "use client";
 import { exactUi } from "@/lib/i18n/exact-ui";
+import { t } from "@/lib/i18n/translate";
+import { fillMessage } from "@/lib/i18n/fill";
 
 import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -81,7 +83,7 @@ function BoasVindasEmpresaContent() {
   }, [router, isPreview]);
 
   if (carregando) {
-    return <PageLoader message="Preparando sua boas-vindas..." />;
+    return <PageLoader message={t("welcome.loading")} />;
   }
 
   const saudacao = nome ? `, ${nome}` : "";
@@ -106,23 +108,21 @@ function BoasVindasEmpresaContent() {
             id="boas-vindas-empresa-titulo"
             className={styles.title}
           >
-            Bem-vindo{saudacao}!
+            {fillMessage(t("welcome.company.title"), { name: saudacao })}
           </h1>
 
           <p className={styles.subtitle}>
-            Seu cadastro empresarial foi concluído com sucesso.
+            {t("welcome.company.subtitle")}
           </p>
         </section>
 
         <section className={styles.messageCard}>
           <h2 className={styles.messageTitle}>
-            Sua empresa já pode recrutar na plataforma
+            {t("welcome.company.messageTitle")}
           </h2>
 
           <p className={styles.messageText}>
-            Use a vitrine para buscar profissionais industriais. Contatos e
-            dados sensíveis liberam após confirmar o e-mail corporativo e a
-            aprovação do cartão CNPJ.
+            {t("welcome.company.messageBody")}
           </p>
         </section>
 
@@ -132,10 +132,10 @@ function BoasVindasEmpresaContent() {
               🔍
             </div>
 
-            <h3 className={styles.stepTitle}>Busque talentos</h3>
+            <h3 className={styles.stepTitle}>{t("welcome.company.step1Title")}</h3>
 
             <p className={styles.stepText}>
-              Filtre por região, área e experiência na vitrine industrial.
+              {t("welcome.company.step1Body")}
             </p>
           </article>
 
@@ -144,11 +144,10 @@ function BoasVindasEmpresaContent() {
               ✅
             </div>
 
-            <h3 className={styles.stepTitle}>Confirme e verifique</h3>
+            <h3 className={styles.stepTitle}>{t("welcome.company.step2Title")}</h3>
 
             <p className={styles.stepText}>
-              Confirme o e-mail corporativo e envie o cartão CNPJ para liberar
-              contatos.
+              {t("welcome.company.step2Body")}
             </p>
           </article>
 
@@ -157,10 +156,10 @@ function BoasVindasEmpresaContent() {
               💬
             </div>
 
-            <h3 className={styles.stepTitle}>Entre em contato</h3>
+            <h3 className={styles.stepTitle}>{t("welcome.company.step3Title")}</h3>
 
             <p className={styles.stepText}>
-              Libere perfis e fale com candidatos pelo painel da empresa.
+              {t("welcome.company.step3Body")}
             </p>
           </article>
 
@@ -169,10 +168,10 @@ function BoasVindasEmpresaContent() {
               📊
             </div>
 
-            <h3 className={styles.stepTitle}>Acompanhe o funil</h3>
+            <h3 className={styles.stepTitle}>{t("welcome.company.step4Title")}</h3>
 
             <p className={styles.stepText}>
-              Marque contatados, entrevistados e contratados no acompanhamento.
+              {t("welcome.company.step4Body")}
             </p>
           </article>
         </div>
@@ -193,13 +192,12 @@ function BoasVindasEmpresaContent() {
             className={styles.primaryBtn}
             onClick={() => router.push("/company/dashboard-empresa")}
           >
-            Ir para o painel da empresa
+            {t("welcome.company.cta")}
           </button>
         </div>
 
         <p className={styles.note}>
-          Contatos e propostas pedem verificação (e-mail + CNPJ) e plano pago.
-          Você pode atualizar o cadastro a qualquer momento pelo painel.
+          {t("welcome.company.note")}
         </p>
       </div>
     </div>
@@ -208,7 +206,7 @@ function BoasVindasEmpresaContent() {
 
 export default function BoasVindasEmpresaPage() {
   return (
-    <Suspense fallback={<PageLoader message="Carregando..." />}>
+    <Suspense fallback={<PageLoader message={t("welcome.company.loadingFallback")} />}>
       <BoasVindasEmpresaContent />
     </Suspense>
   );

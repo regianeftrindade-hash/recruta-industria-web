@@ -1,4 +1,7 @@
 "use client";
+
+import { fillMessage } from "@/lib/i18n/fill";
+import { t } from "@/lib/i18n/translate";
 import { localizeServerText } from "@/lib/i18n/server-text";
 import { formatUiDate } from "@/lib/i18n/format-ui";
 import { exactUi } from "@/lib/i18n/exact-ui";
@@ -86,9 +89,9 @@ function PagamentoProfissional() {
     : accessState === "pending"
       ? exactUi("Pagamento pendente")
       : accessState === "declined"
-        ? "Pagamento recusado ou não concluído"
+        ? t("pay.access.declined")
         : accessState === "canceled"
-          ? "Pagamento cancelado ou não concluído"
+          ? t("pay.access.canceled")
           : exactUi("Gratuito");
   const showCheckout = offeringEnabled && subscription !== null && !subscription.isPremium && (
     accessState === "free"
@@ -125,7 +128,7 @@ function PagamentoProfissional() {
       .then((data) => {
         if (!ativo) return;
         if (!data) {
-          setSubscriptionNote("Não foi possível consultar a assinatura. O Premium só é ativado depois da confirmação do pagamento.");
+          setSubscriptionNote(t("pay.status.subscriptionLookupFailed"));
           setSubscription({ isPremium: false, subscriptionExpiresAt: null, autoRenew: false, latestCharge: null });
           return;
         }
@@ -138,7 +141,7 @@ function PagamentoProfissional() {
       })
       .catch(() => {
         if (!ativo) return;
-        setSubscriptionNote("Não foi possível consultar a assinatura. O Premium só é ativado depois da confirmação do pagamento.");
+        setSubscriptionNote(t("pay.status.subscriptionLookupFailed"));
         setSubscription({ isPremium: false, subscriptionExpiresAt: null, autoRenew: false, latestCharge: null });
       });
     return () => {
@@ -156,7 +159,7 @@ function PagamentoProfissional() {
       body: JSON.stringify({ planTier: "PREMIUM" as ProfessionalPlanTier, chargeId }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(localizeServerText(data.error) || "Erro ao ativar plano");
+    if (!res.ok) throw new Error(localizeServerText(data.error) || t("pay.status.activatePlanError"));
     return data;
   };
 
@@ -167,7 +170,7 @@ function PagamentoProfissional() {
       }
       router.push("/professional/dashboard");
     } catch (e) {
-      setStatusMessage(e instanceof Error ? e.message : "Erro ao ativar plano");
+      setStatusMessage(e instanceof Error ? e.message : t("pay.status.activatePlanError"));
       setProcessing(false);
     }
   };
@@ -182,20 +185,20 @@ function PagamentoProfissional() {
   const checkPaymentStatus = async (chargeId: string, opts?: { fromButton?: boolean; isBoleto?: boolean }) => {
     try {
       if (opts?.fromButton) {
-        setStatusMessage("Verificando pagamento...");
+        setStatusMessage(t("pay.status.verifying"));
       }
       const res = await fetch(`/api/pagseguro/status?chargeId=${chargeId}`, {
         credentials: "include",
       });
       const data = await res.json();
       if (data?.status === "PAID") {
-        setStatusMessage("✅ Pagamento confirmado! Ativando Premium...");
+        setStatusMessage(t("pay.status.confirmedActivatingPremium"));
         stopPolling();
         setTimeout(() => finishSuccess(chargeId, Boolean(data.activated)), 1500);
         return "paid" as const;
       }
       if (["DECLINED", "CANCELED"].includes(data?.status)) {
-        setStatusMessage(exactUi("❌ Pagamento não aprovado."));
+        setStatusMessage(t("pay.status.notApproved"));
         stopPolling();
         setProcessing(false);
         return "failed" as const;
@@ -203,14 +206,14 @@ function PagamentoProfissional() {
       if (opts?.fromButton) {
         setStatusMessage(
           opts.isBoleto
-            ? "Ainda não confirmado. Boleto pode levar até 1–2 dias úteis — pode sair; ativamos o plano quando cair."
-            : "Ainda não confirmado. Se já pagou o Pix, aguarde alguns segundos e tente de novo.",
+            ? t("pay.status.notConfirmedBoleto")
+            : t("pay.status.notConfirmedPix"),
         );
       }
       return "pending" as const;
     } catch {
       stopPolling();
-      setStatusMessage("Erro ao verificar pagamento.");
+      setStatusMessage(t("pay.status.verifyPaymentError"));
       setProcessing(false);
       return "error" as const;
     }
@@ -221,8 +224,8 @@ function PagamentoProfissional() {
     pollCountRef.current = 0;
     setStatusMessage(
       isBoleto
-        ? "Aguardando confirmação do boleto. Você pode sair desta página — ativamos o plano quando o pagamento cair."
-        : "Aguardando confirmação do pagamento...",
+        ? t("pay.status.waitingBoletoLeave")
+        : t("pay.status.waitingPayment"),
     );
     pollRef.current = setInterval(async () => {
       pollCountRef.current += 1;
@@ -232,8 +235,8 @@ function PagamentoProfissional() {
         stopPolling();
         setStatusMessage(
           isBoleto
-            ? "Ainda aguardando o boleto. Pode fechar esta página; quando o pagamento for confirmado, o Premium é ativado automaticamente. Use “Verificar agora” se quiser checar de novo."
-            : "Ainda não vimos a confirmação do Pix. Use “Verificar agora” ou escolha outra forma de pagamento.",
+            ? t("pay.status.stillWaitingBoletoPremium")
+            : t("pay.status.stillWaitingPix"),
         );
       }
     }, 4000);
@@ -249,7 +252,7 @@ function PagamentoProfissional() {
 
   const handleCheckout = async () => {
     setProcessing(true);
-    setStatusMessage("Gerando cobrança...");
+    setStatusMessage(t("pay.status.generatingCharge"));
     try {
       const payMethod = billingMode === "one_time" ? method : "boleto";
       const res = await fetch("/api/professional/payments/create", {
@@ -271,8 +274,8 @@ function PagamentoProfissional() {
           /ASAAS_|PAGSEGURO_|PAGBANK_|TOKEN|API_KEY|\.env|Vercel|STRIPE_/i.test(
             `${data?.error || ""} ${data?.detail || ""}`,
           )
-            ? "Pagamento temporariamente indisponível. Tente novamente em alguns minutos ou fale com o suporte."
-            : data?.error || "Não foi possível gerar a cobrança.";
+            ? t("pay.status.temporarilyUnavailable")
+            : data?.error || t("pay.status.couldNotCreateCharge");
         setStatusMessage(
           process.env.NODE_ENV === "development" && data?.detail
             ? `${friendly} (${data.detail})`
@@ -282,7 +285,7 @@ function PagamentoProfissional() {
       }
 
       if (data.provider === "stripe" && data.checkoutUrl) {
-        setStatusMessage("Redirecionando para o checkout seguro...");
+        setStatusMessage(t("ui.redirectingSecureCheckout"));
         window.location.href = data.checkoutUrl;
         return;
       }
@@ -293,7 +296,7 @@ function PagamentoProfissional() {
       if (data.chargeId) startPolling(data.chargeId, isBoleto || payMethod === "boleto");
     } catch {
       setProcessing(false);
-      setStatusMessage("Erro na cobrança. Tente novamente.");
+      setStatusMessage(t("pay.status.chargeError"));
     }
   };
 
@@ -322,7 +325,7 @@ function PagamentoProfissional() {
           </p>
         ) : null}
         <h1 style={{ color: "#C89B3C", margin: "0 0 8px" }}>
-          {offeringEnabled ? `${planDef.emoji} Assinar plano ${planDef.nome}` : exactUi("Plano profissional")}
+          {offeringEnabled ? fillMessage(t("pay.cta.subscribePlan"), { emoji: planDef.emoji, name: planDef.nome }) : exactUi("Plano profissional")}
         </h1>
         {offeringEnabled ? (
           <p style={{ color: "rgba(242,242,242,0.82)", margin: "0 0 12px", lineHeight: 1.5 }}>{planDef.descricao}</p>

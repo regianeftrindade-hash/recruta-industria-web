@@ -95,7 +95,10 @@ Nenhuma correção de runtime. Decisão consciente: não inventar refactors nem 
 1. Stripe **não** está em live mode → cobranças internacionais reais ainda não devem ser tratadas como prontas.  
 2. Advisory moderate no toolchain Sentry.  
 3. Fechamento jurídico LGPD (DPO, DPAs assinados, retenção, Art. 11).  
-4. Histórico de migrations rolled-back (cosmético operacional).
+4. Histórico de migrations rolled-back (cosmético operacional).  
+5. **Tradução jurídica oficial** dos termos nos 11 idiomas ≠ pt-BR (estrutura pronta; corpo só após revisão jurídica — ver `docs/auditoria-final-lancamento-2026-11.md`).  
+
+**Atualização 26/11/2026 (America/Sao_Paulo):** i18n de UI (seletor em português, pagamentos, boas-vindas, Google) fechado nos 12 idiomas nesta entrega.
 
 ---
 

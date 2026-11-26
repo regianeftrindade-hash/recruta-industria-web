@@ -38,7 +38,7 @@ export const privacidadePtBR: PublicTermDocument = {
     "Revisão jurídica do banner de consentimento já implementado na interface",
     "Bases legais e minimização para campos sensíveis (Art. 11) do cadastro completo",
     "Política de retenção de PaymentRecord e logs após exclusão de conta",
-    "Versões oficiais traduzidas para os 12 idiomas da interface",
+    "Versões oficiais traduzidas para os 12 idiomas da interface (estrutura técnica pronta em lib/legal/legal-locale-status.ts; corpo só após revisão jurídica)",
     "Procedimento interno e prazos operacionais de atendimento a titulares",
   ],
 };

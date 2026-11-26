@@ -2,7 +2,7 @@
 
 **Fuso:** America/Sao_Paulo.  
 **Base:** `main` pós #85–#91 (+ esta entrega).  
-**Escopo desta entrega:** correções técnicas seguras (idade 18+ pela data real; gate empresa internacional).  
+**Escopo desta entrega:** correções técnicas seguras (idade 18+ pela data real; gate empresa internacional) **+ fechamento i18n** (seletor em PT, pagamentos/boas-vindas/Google nos 12 idiomas, estrutura jurídica sem tradução oficial inventada).  
 **Isto NÃO é parecer jurídico e NÃO declara conformidade LGPD.**
 
 ## O que estava errado (corrigido no código)
@@ -30,14 +30,23 @@
 | Stripe LIVE / Asaas BR | Roteamento por país coerente; webhooks presentes |
 | Exclusão de conta | Existe; PaymentRecord retido de propósito |
 
-## Débitos conhecidos (não bloqueiam merge desta PR; não “melhorados” à força)
+## i18n — fechado nesta entrega
 
-**i18n (pós-cadastro / pagamento):** boas-vindas profissional, páginas `/pagamento`, checkout/upgrade literais, botão “Entrar com Google”, corpos jurídicos de cadastro e `/termos` (fallback pt-BR). Home/login/cadastros/vagas críticos já usam `t()`.
+| Item | Estado |
+|------|--------|
+| Seletor de idiomas | Rótulos em português (`LOCALE_SELECTOR_LABELS_PT`: Inglês, Espanhol, Francês, Árabe…) |
+| Boas-vindas pro/empresa | `welcome.*` via `t()` + `fillMessage` nos 12 idiomas |
+| Pagamentos / checkout / upgrade | Status, CTAs e erros via `pay.*` / `ui.*` nos 12 idiomas |
+| Google Sign-In | `auth.googleSignIn` |
+| Catálogos es…hi | Chaves `completion` mescladas |
+| Termos jurídicos | Estrutura multi-idioma pronta (`legal-locale-status.ts`); **corpo oficial só pt-BR** até revisão jurídica — avisos `legal.officialTranslationPending` / `legal.structureReadyNotice` (sem inventar tradução legal) |
 
-**Auth / ops:** `allowDangerousEmailAccountLinking` no Google; rate-limit de login em memória sem Upstash frágil em multi-instância; rota legada `/api/auth/login` fora da UI; anti-replay de reset de senha com Set em processo.
+## Débitos restantes (fora de código / humano)
 
-**LGPD / humano:** DPO, CNPJ/endereço, DPAs, tabela de retenção, bases Art. 11, anonimização eventual de `PaymentRecord.customer` após exclusão.
+**Auth / ops:** `allowDangerousEmailAccountLinking` no Google; rate-limit de login em memória sem Upstash em multi-instância; rota legada `/api/auth/login` fora da UI; anti-replay de reset de senha com Set em processo.
+
+**LGPD / humano:** DPO, CNPJ/endereço, DPAs, tabela de retenção, bases Art. 11, anonimização eventual de `PaymentRecord.customer` após exclusão; tradução jurídica oficial dos 11 idiomas restantes.
 
 ## Pronto para operar?
 
-Tecnicamente **sim, com ressalvas jurídicas e débitos i18n não críticos** acima. Sem merge/deploy nesta entrega — aguarda autorização.
+Tecnicamente **sim, com ressalvas jurídicas** (DPO/DPAs/traduções legais oficiais). Sem merge/deploy nesta entrega — aguarda autorização.

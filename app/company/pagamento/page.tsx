@@ -1,4 +1,7 @@
 "use client";
+
+import { fillMessage } from "@/lib/i18n/fill";
+import { t } from "@/lib/i18n/translate";
 import { exactUi } from "@/lib/i18n/exact-ui";
 
 import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
@@ -131,7 +134,7 @@ function PagamentoEmpresa() {
       body: JSON.stringify({ planTier: planDef.id, chargeId }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Erro ao ativar plano");
+    if (!res.ok) throw new Error(data.error || t("pay.status.activatePlanError"));
     return data;
   };
 
@@ -142,7 +145,7 @@ function PagamentoEmpresa() {
       }
       router.push("/company/dashboard-empresa");
     } catch (e) {
-      setStatusMessage(e instanceof Error ? e.message : "Erro ao ativar plano");
+      setStatusMessage(e instanceof Error ? e.message : t("pay.status.activatePlanError"));
       setProcessing(false);
     }
   };
@@ -152,15 +155,13 @@ function PagamentoEmpresa() {
     const canceled = searchParams.get("canceled");
     const ref = searchParams.get("ref");
     if (canceled === "1") {
-      setStatusMessage("Checkout cancelado. Você pode tentar novamente quando quiser.");
+      setStatusMessage(t("pay.status.checkoutCanceled"));
       return;
     }
     if (success === "1" && ref) {
-      setStatusMessage("Pagamento recebido. Confirmando ativação do plano...");
+      setStatusMessage(t("pay.status.receivedConfirming"));
       void finishSuccess(ref, false).catch(() => {
-        setStatusMessage(
-          "Pagamento registrado. A ativação pode levar alguns segundos (webhook). Atualize o dashboard em instantes.",
-        );
+        setStatusMessage(t("pay.status.webhookActivationPending"));
         setProcessing(false);
       });
     }
@@ -177,20 +178,20 @@ function PagamentoEmpresa() {
   const checkPaymentStatus = async (chargeId: string, opts?: { fromButton?: boolean; isBoleto?: boolean }) => {
     try {
       if (opts?.fromButton) {
-        setStatusMessage("Verificando pagamento...");
+        setStatusMessage(t("pay.status.verifying"));
       }
       const res = await fetch(`/api/pagseguro/status?chargeId=${chargeId}`, {
         credentials: "include",
       });
       const data = await res.json();
       if (data?.status === "PAID") {
-        setStatusMessage("✅ Pagamento confirmado! Ativando plano...");
+        setStatusMessage(t("pay.status.confirmedActivatingPlan"));
         stopPolling();
         setTimeout(() => finishSuccess(chargeId, Boolean(data.activated)), 1500);
         return "paid" as const;
       }
       if (["DECLINED", "CANCELED"].includes(data?.status)) {
-        setStatusMessage("❌ Pagamento não aprovado.");
+        setStatusMessage(t("pay.status.notApproved"));
         stopPolling();
         setProcessing(false);
         return "failed" as const;
@@ -205,7 +206,7 @@ function PagamentoEmpresa() {
       return "pending" as const;
     } catch {
       stopPolling();
-      setStatusMessage("Erro ao verificar pagamento.");
+      setStatusMessage(t("pay.status.verifyPaymentError"));
       setProcessing(false);
       return "error" as const;
     }
@@ -216,8 +217,8 @@ function PagamentoEmpresa() {
     pollCountRef.current = 0;
     setStatusMessage(
       isBoleto
-        ? "Aguardando confirmação do boleto. Você pode sair desta página — ativamos o plano quando o pagamento cair."
-        : "Aguardando confirmação do pagamento...",
+        ? t("pay.status.waitingBoletoLeave")
+        : t("pay.status.waitingPayment"),
     );
     pollRef.current = setInterval(async () => {
       pollCountRef.current += 1;
@@ -227,8 +228,8 @@ function PagamentoEmpresa() {
         stopPolling();
         setStatusMessage(
           isBoleto
-            ? "Ainda aguardando o boleto. Pode fechar esta página; quando o pagamento for confirmado, o plano é ativado automaticamente. Use “Verificar agora” se quiser checar de novo."
-            : "Ainda não vimos a confirmação do Pix. Use “Verificar agora” ou escolha outra forma de pagamento.",
+            ? t("pay.status.stillWaitingBoletoPlan")
+            : t("pay.status.stillWaitingPix"),
         );
       }
     }, 4000);
@@ -244,13 +245,11 @@ function PagamentoEmpresa() {
 
   const handleCheckout = async () => {
     setProcessing(true);
-    setStatusMessage("Gerando cobrança...");
+    setStatusMessage(t("pay.status.generatingCharge"));
     try {
       if (useStripe && billingPeriod === "annual" && !stripeAnnualReady) {
         setProcessing(false);
-        setStatusMessage(
-          "Cobrança anual internacional ainda não está disponível. Escolha o plano mensal ou tente mais tarde.",
-        );
+        setStatusMessage(t("pay.status.annualIntlUnavailable"));
         return;
       }
       const payMethod =
@@ -278,8 +277,8 @@ function PagamentoEmpresa() {
           /ASAAS_|PAGSEGURO_|PAGBANK_|TOKEN|API_KEY|\.env|Vercel|STRIPE_/i.test(
             `${data?.error || ""} ${data?.detail || ""}`,
           )
-            ? "Pagamento temporariamente indisponível. Tente novamente em alguns minutos ou fale com o suporte."
-            : data?.error || "Não foi possível gerar a cobrança.";
+            ? t("pay.status.temporarilyUnavailable")
+            : data?.error || t("pay.status.couldNotCreateCharge");
         setStatusMessage(
           process.env.NODE_ENV === "development" && data?.detail
             ? `${friendly} (${data.detail})`
@@ -289,7 +288,7 @@ function PagamentoEmpresa() {
       }
 
       if (data.provider === "stripe" && data.checkoutUrl) {
-        setStatusMessage("Redirecionando para o checkout seguro...");
+        setStatusMessage(t("ui.redirectingSecureCheckout"));
         window.location.href = data.checkoutUrl;
         return;
       }
@@ -300,7 +299,7 @@ function PagamentoEmpresa() {
       if (data.chargeId) startPolling(data.chargeId, isBoleto || payMethod === "boleto");
     } catch {
       setProcessing(false);
-      setStatusMessage("Erro na cobrança. Tente novamente.");
+      setStatusMessage(t("pay.status.chargeError"));
     }
   };
 
@@ -323,7 +322,7 @@ function PagamentoEmpresa() {
         </button>
 
         <h1 style={{ color: "#C89B3C", margin: "0 0 8px" }}>
-          {planDef.emoji} Assinar plano {planDef.nome}
+          {fillMessage(t("pay.cta.subscribePlan"), { emoji: planDef.emoji, name: planDef.nome })}
         </h1>
         <p style={{ color: "rgba(242,242,242,0.82)", margin: "0 0 24px", lineHeight: 1.5 }}>{planDef.descricao}</p>
 
@@ -430,15 +429,15 @@ function PagamentoEmpresa() {
                 >
                   {processing
                     ? useStripe
-                      ? "Abrindo checkout..."
-                      : "Gerando cobrança..."
+                      ? t("ui.openingCheckout")
+                      : t("pay.status.generatingCharge")
                     : useStripe
-                      ? `Pagar com cartão · ${priceLabel.price}${priceLabel.period}`
+                      ? fillMessage(t("pay.cta.payCard"), { price: priceLabel.price, period: priceLabel.period })
                       : billingMode === "recurring" && recurringSupported
-                        ? `Assinar ${priceLabel.price}${priceLabel.period}`
+                        ? fillMessage(t("pay.cta.subscribe"), { price: priceLabel.price, period: priceLabel.period })
                         : method === "pix"
-                          ? `Gerar Pix · ${priceLabel.price}`
-                          : `Gerar boleto · ${priceLabel.price}`}
+                          ? fillMessage(t("pay.cta.generatePix"), { price: priceLabel.price })
+                          : fillMessage(t("pay.cta.generateBoleto"), { price: priceLabel.price })}
                 </button>
                 {statusMessage && (
                   <p style={{ color: "#C89B3C", fontSize: 12, marginTop: 12, lineHeight: 1.45 }}>{statusMessage}</p>

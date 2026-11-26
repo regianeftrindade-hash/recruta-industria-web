@@ -2,6 +2,7 @@
 
 import React from "react";
 import loginStyles from "@/app/login/login.module.css";
+import { t } from "@/lib/i18n/translate";
 
 type GoogleSignInButtonProps = {
   onClick: () => void;
@@ -40,7 +41,7 @@ export default function GoogleSignInButton({
           d="M43.611 20.083H42V20H24v8h11.303c-1.149 3.658-4.675 6.348-8.303 6.348-2.809 0-5.438-1.084-7.409-2.883l-6.522 5.025C9.505 39.556 16.227 44 24 44c5.166 0 9.86-1.977 13.409-5.192l6.19-5.238C42.022 35.091 44 29.964 44 24c0-1.341-.138-2.65-.389-3.917z"
         />
       </svg>
-      Entrar com Google
+      {t("auth.googleSignIn")}
     </button>
   );
 }
