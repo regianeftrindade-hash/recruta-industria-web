@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { t } from "@/lib/i18n/translate";
 import styles from "./vagas.module.css";
 
 async function copyText(value: string): Promise<boolean> {
@@ -67,7 +68,7 @@ export default function CopyTextButton({
         {copied ? copiedLabel : label}
       </button>
       <span className={styles.live} aria-live="polite">
-        {copied ? copiedLabel : failed ? "Não foi possível copiar. Selecione o texto e copie." : ""}
+        {copied ? copiedLabel : failed ? t("rest.copy.failed") : ""}
       </span>
     </span>
   );

@@ -40,6 +40,28 @@ export default function SiteEmailFooter() {
         <Link href="/termos/privacidade" style={{ color: "#414141", textDecoration: "none" }}>
           {t("legal.linkPrivacy")}
         </Link>
+        {" · "}
+        <button
+          type="button"
+          onClick={() => {
+            try {
+              window.dispatchEvent(new Event("ri-open-cookie-settings"));
+            } catch {
+              // ignore
+            }
+          }}
+          style={{
+            color: "#414141",
+            background: "none",
+            border: "none",
+            padding: 0,
+            font: "inherit",
+            cursor: "pointer",
+            textDecoration: "underline",
+          }}
+        >
+          {t("privacy.cookieSettings")}
+        </button>
       </nav>
     </footer>
   );

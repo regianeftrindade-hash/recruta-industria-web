@@ -151,17 +151,19 @@ function CadastroEmpresaForm({ incorporado = false }: { incorporado?: boolean })
           <RegistrationCountryField id="empresa-pais" value={pais} onChange={setPais} />
 
           <label style={label} htmlFor="empresa-razao-social">{t("registration.ui.razao-social")}</label>
-          <input id="empresa-razao-social" style={field} value={nome} onChange={(e) => setNome(e.target.value)} required />
+          <input id="empresa-razao-social" name="organization" autoComplete="organization" style={field} value={nome} onChange={(e) => setNome(e.target.value)} required />
 
           <label style={label} htmlFor="empresa-responsavel">{t("registration.ui.nome-do-responsavel")}</label>
-          <input id="empresa-responsavel" style={field} value={responsavelNome} onChange={(e) => setResponsavelNome(e.target.value)} required />
+          <input id="empresa-responsavel" name="name" autoComplete="name" style={field} value={responsavelNome} onChange={(e) => setResponsavelNome(e.target.value)} required />
 
           <label style={label} htmlFor="empresa-email">{t("registration.simple.email")}</label>
-          <input id="empresa-email" style={field} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input id="empresa-email" name="email" autoComplete="email" style={field} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
 
           <label style={label} htmlFor="empresa-email-corporativo">{t("registration.ui.email-corporativo-label")}</label>
           <input
             id="empresa-email-corporativo"
+            name="email-corporativo"
+            autoComplete="email"
             style={field}
             type="email"
             value={emailCorporativo}
@@ -174,6 +176,8 @@ function CadastroEmpresaForm({ incorporado = false }: { incorporado?: boolean })
           </label>
           <input
             id="empresa-telefone"
+            name="tel"
+            autoComplete="tel"
             style={field}
             value={telefone}
             onChange={(e) => setTelefone(e.target.value)}
@@ -181,28 +185,36 @@ function CadastroEmpresaForm({ incorporado = false }: { incorporado?: boolean })
           />
 
           <label style={label} htmlFor="empresa-endereco">{t("registration.ui.endereco")}</label>
-          <input id="empresa-endereco" style={field} value={endereco} onChange={(e) => setEndereco(e.target.value)} />
+          <input id="empresa-endereco" name="street-address" autoComplete="street-address" style={field} value={endereco} onChange={(e) => setEndereco(e.target.value)} />
 
           {isBrazil && (
             <>
               <label style={label} htmlFor="empresa-cnpj">{t("registration.ui.cnpj")}</label>
-              <input id="empresa-cnpj" style={field} value={cnpj} onChange={(e) => setCnpj(e.target.value)} placeholder="00.000.000/0000-00" />
+              <input id="empresa-cnpj" name="cnpj" autoComplete="off" style={field} value={cnpj} onChange={(e) => setCnpj(e.target.value)} placeholder="00.000.000/0000-00" />
               <label style={label} htmlFor="empresa-cpf">{t("registration.ui.cpf-do-responsavel")}</label>
-              <input id="empresa-cpf" style={field} value={responsavelCpf} onChange={(e) => setResponsavelCpf(e.target.value)} placeholder="000.000.000-00" />
+              <input id="empresa-cpf" name="cpf" autoComplete="off" style={field} value={responsavelCpf} onChange={(e) => setResponsavelCpf(e.target.value)} placeholder="000.000.000-00" />
             </>
           )}
 
           {!isEdit && (
             <>
               <label style={label} htmlFor="empresa-senha">{t("registration.simple.password")}</label>
-              <input id="empresa-senha" style={field} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
+              <input id="empresa-senha" name="new-password" autoComplete="new-password" style={field} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
               <label style={label} htmlFor="empresa-confirma-senha">{t("registration.simple.confirmPassword")}</label>
-              <input id="empresa-confirma-senha" style={field} type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={8} />
+              <input id="empresa-confirma-senha" name="confirm-password" autoComplete="new-password" style={field} type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={8} />
             </>
           )}
 
-          {error && <p style={{ color: "#8B0000", fontSize: 13 }}>{error}</p>}
-          {ok && <p style={{ color: "#2E7D32", fontSize: 13 }}>{ok}</p>}
+          {error && (
+            <p role="alert" aria-live="assertive" style={{ color: "#8B0000", fontSize: 13 }}>
+              {error}
+            </p>
+          )}
+          {ok && (
+            <p role="status" aria-live="polite" style={{ color: "#2E7D32", fontSize: 13 }}>
+              {ok}
+            </p>
+          )}
 
           {!isEdit ? (
             <label style={{ display: "flex", gap: 8, alignItems: "flex-start", margin: "8px 0 4px", fontSize: 12, lineHeight: 1.4 }}>

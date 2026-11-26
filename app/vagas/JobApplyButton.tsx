@@ -353,7 +353,9 @@ export default function JobApplyButton({
                   <ContactLink contact={panel.contact} />
                 </p>
               ) : panel.automatic ? null : (
-                <p className={styles.error}>{t("surface.jobs.missingContact")}</p>
+                <p className={styles.error} role="alert">
+                  {t("surface.jobs.missingContact")}
+                </p>
               )}
               <div className={styles.contactActions}>
                 {panel.contact && panel.copyLabel ? (
@@ -390,9 +392,21 @@ export default function JobApplyButton({
       {!open && currentMode === "INTERNAL" && !manualMessage ? (
         <p className={styles.note}>{panel.detail}</p>
       ) : null}
-      {blocked && state?.blockReason ? <p className={styles.error}>{state.blockReason}</p> : null}
-      {message ? <p className={styles.message}>{message}</p> : null}
-      {error ? <p className={styles.error}>{error}</p> : null}
+      {blocked && state?.blockReason ? (
+        <p className={styles.error} role="alert">
+          {state.blockReason}
+        </p>
+      ) : null}
+      {message ? (
+        <p className={styles.message} role="status" aria-live="polite">
+          {message}
+        </p>
+      ) : null}
+      {error ? (
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

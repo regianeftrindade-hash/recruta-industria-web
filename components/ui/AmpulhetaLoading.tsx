@@ -1,6 +1,7 @@
 'use client';
 
 import type { CSSProperties } from 'react';
+import { t } from '@/lib/i18n/translate';
 
 type AmpulhetaLoadingProps = {
   label?: string;
@@ -27,11 +28,12 @@ const keyframes = `
 `;
 
 export default function AmpulhetaLoading({
-  label = 'Carregando perfil...',
+  label,
   size = 36,
   color = '#C89B3C',
   compact = false,
 }: AmpulhetaLoadingProps) {
+  label = label ?? t('rest.ui.loadingProfile');
   const icon = (
     <span aria-hidden style={spinStyle(size, color)}>
       ⏳

@@ -442,6 +442,20 @@
   font-weight: 700;
 }
 
+@media (max-width: 1024px) {
+  .filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .titleTools {
+    flex-wrap: wrap;
+  }
+
+  .shareRow {
+    flex-wrap: wrap;
+  }
+}
+
 @media (max-width: 720px) {
   .filters {
     grid-template-columns: 1fr;

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { t } from "@/lib/i18n/translate";
 import styles from "./PageLoader.module.css";
 
 interface PageLoaderProps {
@@ -10,9 +11,10 @@ interface PageLoaderProps {
 }
 
 export default function PageLoader({
-  message = "Carregando...",
+  message,
   mode = "page",
 }: PageLoaderProps) {
+  message = message ?? t("rest.ui.loading");
   const wrapperClass = mode === "overlay" ? styles.overlay : styles.page;
 
   return (

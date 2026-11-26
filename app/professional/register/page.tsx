@@ -24,7 +24,11 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { safeJobReturnPath } from '@/lib/jobs/public-job-link';
 import styles from './register.module.css';
-import PasswordStrengthMeter from '../../components/PasswordStrengthMeter';
+import dynamic from 'next/dynamic';
+const PasswordStrengthMeter = dynamic(
+  () => import('../../components/PasswordStrengthMeter'),
+  { ssr: false },
+);
 import { isValidEmail, sanitizeInput } from '../../../lib/security';
 import { t } from '@/lib/i18n/translate';
 import { rotuloOpcao } from '@/lib/i18n/option-label';

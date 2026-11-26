@@ -33,6 +33,7 @@ import {
 } from '@/lib/profile/public-slug';
 import { companyDocumentHref } from '@/lib/storage/private-uploads';
 import { apiErrorResponse } from "@/lib/i18n/api-response";
+import { stripSensitiveCompanyFormEdit } from "@/lib/privacy/company-profile-sanitize";
 
 function parseSkills(skills: string | null): string[] {
   if (!skills) return [];
@@ -220,7 +221,8 @@ export async function GET(
       pretensaoSalarial: bloqueado ? undefined : profile.pretensaoSalarial || '—',
       mensagem: bloqueado ? undefined : profile.mensagemEmpresas || profile.bio || '—',
       habilidades,
-      avatar: fotoGravada(profile.avatar, profile.formDataJSON),
+      // Avatar só após desbloqueio — evita identificação visual com blur CSS.
+      avatar: bloqueado ? null : fotoGravada(profile.avatar, profile.formDataJSON),
       bloqueado,
       unlocked: !bloqueado,
       favorito,
@@ -265,6 +267,10 @@ export async function GET(
         }
       }
     }
+    // Minimização LGPD Art. 11: dados sensíveis não vão ao painel da empresa.
+    stripSensitiveCompanyFormEdit(
+      formEdit as Record<string, unknown> | null,
+    );
 
     const sobreMimRaw = bloqueado ? null : await lerCampoJsonDoPerfil(profile.userId, 'sobreMimJSON');
     const testeRaw = bloqueado ? null : await lerCampoJsonDoPerfil(profile.userId, 'testeComportamentalJSON');

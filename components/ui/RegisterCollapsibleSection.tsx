@@ -4,6 +4,7 @@ import React, { useId, useState } from "react";
 import styles from "@/app/professional/register/register.module.css";
 import RegisterSectionHeader from "@/components/ui/RegisterSectionHeader";
 import type { MarcadorPreenchimento } from "@/app/professional/register/RegisterLabelMarcador";
+import { t } from "@/lib/i18n/translate";
 
 type Props = {
   emoji: string;
@@ -70,7 +71,7 @@ export default function RegisterCollapsibleSection({
             }}
             disabled={editar.aberto}
           >
-            {editar.aberto ? "Editando" : "Editar"}
+            {editar.aberto ? t("rest.ui.editing") : t("rest.ui.edit")}
           </button>
         ) : null}
       </div>

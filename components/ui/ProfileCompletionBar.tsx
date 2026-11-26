@@ -14,15 +14,28 @@ export default function ProfileCompletionBar({ percent }: ProfileCompletionBarPr
   const highlight80 = percent >= 80;
 
   return (
-    <div className={styles.completionWrap}>
+    <div
+      className={styles.completionWrap}
+      role="group"
+      aria-label={t("rest.completion.title")}
+    >
       <div className={styles.completionHeader}>
         <span className={styles.completionTitle}>{t("rest.completion.title")}</span>
-        <span className={styles.completionPercent}>{label}</span>
+        <span className={styles.completionPercent} aria-live="polite">
+          {label}
+        </span>
       </div>
-      <div className={styles.completionTrack}>
+      <div
+        className={styles.completionTrack}
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={safePercent}
+        aria-label={label}
+      >
         <div
           className={styles.completionFill}
-          style={{ width: `${Math.min(100, percent)}%` }}
+          style={{ width: `${safePercent}%` }}
         />
       </div>
       <div className={styles.completionMilestones}>
