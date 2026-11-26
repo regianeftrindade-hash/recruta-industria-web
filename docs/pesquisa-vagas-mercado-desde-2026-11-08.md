@@ -2,7 +2,11 @@
 
 **Data da pesquisa:** 26/11/2026 (America/São Paulo)  
 **Critérios:** anúncios com indício de data ≥ 08/11/2026; contato por e-mail, WhatsApp ou link de candidatura; foco industrial; BR + países relevantes aos idiomas/mercados do Recruta.  
-**Importante:** pesquisa externa. Em 26/11/2026 (autorização explícita do usuário) foram publicadas **23 vagas** no Production via `scripts/import-market-jobs-2026-11-26.mjs` (IDs `cmimport20261126*`; MECTON fora da janela — omitida). Total PUBLISHED após import: **1.119**. Validar sempre no anúncio original; anúncios externos podem expirar.
+**Importante:** pesquisa externa. Em 26/11/2026 (autorização explícita do usuário):
+1. **23 vagas** da varredura geral via `scripts/import-market-jobs-2026-11-26.mjs` (IDs `cmimport20261126*` sem sufixo `ec`; MECTON omitida).
+2. **255 vagas** industriais do [Emprega Campinas](https://empregacampinas.com.br/) (≥08/11, prazo ainda aberto, com e-mail) via `scripts/import-empregacampinas-since-2026-11-08.mjs` (IDs `cmimport20261126ec*`).
+
+Total PUBLISHED após ambos: **1.374**. Validar sempre no anúncio original; anúncios externos podem expirar.
 
 ---
 
