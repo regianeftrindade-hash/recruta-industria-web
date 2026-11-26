@@ -22,8 +22,8 @@ export function getExternalServices(): ExternalService[] {
   const vercel = envUrl('ADMIN_URL_VERCEL', 'https://vercel.com/dashboard');
   const github = envUrl('ADMIN_URL_GITHUB', 'https://github.com');
   const google = envUrl('ADMIN_URL_GOOGLE', 'https://console.cloud.google.com/');
-  // Placeholder: PagBank por enquanto — trocar depois via ADMIN_URL_BANCOS
-  const bancos = envUrl('ADMIN_URL_BANCOS', 'https://minhaconta.pagbank.com.br/');
+  // Asaas (provider atual). Sobrescreva com ADMIN_URL_BANCOS se necessário.
+  const bancos = envUrl('ADMIN_URL_BANCOS', 'https://www.asaas.com/');
 
   return [
     {
@@ -84,15 +84,15 @@ export function getExternalServices(): ExternalService[] {
     },
     {
       slug: 'bancos',
-      label: 'Bancos',
-      title: 'Bancos',
-      description: 'Pagamentos e conciliação (placeholder PagBank — será trocado).',
+      label: 'Asaas',
+      title: 'Asaas',
+      description: 'Cobranças, assinaturas e conciliação (provider de pagamento atual).',
       url: bancos,
       color: '#00a868',
       links: [
-        { label: 'PagBank (temporário)', url: bancos },
-        { label: 'Assinaturas', url: envUrl('ADMIN_URL_BANCOS_ASSINATURAS', 'https://minhaconta.pagbank.com.br/') },
-        { label: 'Extrato', url: envUrl('ADMIN_URL_BANCOS_EXTRATO', 'https://minhaconta.pagbank.com.br/') },
+        { label: 'Painel Asaas', url: bancos },
+        { label: 'Sandbox', url: envUrl('ADMIN_URL_BANCOS_SANDBOX', 'https://sandbox.asaas.com/') },
+        { label: 'Cobranças', url: envUrl('ADMIN_URL_BANCOS_COBRANCAS', 'https://www.asaas.com/') },
       ],
     },
   ];

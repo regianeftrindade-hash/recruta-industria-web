@@ -68,9 +68,11 @@ export function limitesDoPainel(now = new Date(), timeZone = FUSO_BRASILIA) {
   const inicioHoje = inicioDoDia(now, timeZone);
   const fimHoje = somarDiasCivis(inicioHoje, 1, timeZone);
   const inicioSemana = somarDiasCivis(inicioHoje, -6, timeZone);
+  /** Últimos 30 dias civis (hoje + 29 anteriores), alinhado ao checklist operacional. */
+  const inicioUltimos30 = somarDiasCivis(inicioHoje, -29, timeZone);
   const { year, month } = partesNoFuso(now, timeZone);
   const inicioMes = inicioDoDiaCivil(year, month, 1, timeZone);
-  return { inicioHoje, fimHoje, inicioSemana, inicioMes };
+  return { inicioHoje, fimHoje, inicioSemana, inicioUltimos30, inicioMes };
 }
 
 export function ultimosDias(quantidade: number, now = new Date(), timeZone = FUSO_BRASILIA): string[] {

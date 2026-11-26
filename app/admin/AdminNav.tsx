@@ -11,6 +11,7 @@ const LINKS: Array<{ href: string; labelKey: MessageKey; exact: boolean }> = [
   { href: '/admin/vagas', labelKey: 'surface.admin.jobs', exact: false },
   { href: '/admin/candidaturas-manual', labelKey: 'surface.admin.manual', exact: false },
   { href: '/admin/companies', labelKey: 'surface.admin.companies', exact: false },
+  { href: '/admin/contas', labelKey: 'surface.admin.accounts', exact: false },
   { href: '/admin/contato', labelKey: 'surface.admin.inbox', exact: false },
   { href: '/admin/servicos', labelKey: 'surface.admin.services', exact: false },
   { href: '/admin/security', labelKey: 'surface.admin.security', exact: false },

@@ -16,10 +16,11 @@ describe("dia do painel no horário de Brasília", () => {
     expect(inicioDoDia(agora).toISOString()).toBe("2026-10-24T03:00:00.000Z");
   });
 
-  it("a semana e o mês também abrem à meia-noite de Brasília", () => {
+  it("a semana, os 30 dias e o mês também abrem à meia-noite de Brasília", () => {
     const agora = new Date("2026-10-25T02:40:00.000Z");
-    const { inicioSemana, inicioMes } = limitesDoPainel(agora);
+    const { inicioSemana, inicioUltimos30, inicioMes } = limitesDoPainel(agora);
     expect(inicioSemana.toISOString()).toBe("2026-10-18T03:00:00.000Z");
+    expect(inicioUltimos30.toISOString()).toBe("2026-09-25T03:00:00.000Z");
     expect(inicioMes.toISOString()).toBe("2026-10-01T03:00:00.000Z");
     expect(ultimosDias(3, agora)).toEqual(["2026-10-22", "2026-10-23", "2026-10-24"]);
   });

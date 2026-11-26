@@ -414,6 +414,7 @@ export const surfaceMessages = {
   "surface.admin.jobs": "Publicar vagas",
   "surface.admin.manual": "Candidaturas manual",
   "surface.admin.companies": "Empresas",
+  "surface.admin.accounts": "Contas",
   "surface.admin.inbox": "Caixa de e-mail",
   "surface.admin.services": "Serviços",
   "surface.admin.security": "Segurança",

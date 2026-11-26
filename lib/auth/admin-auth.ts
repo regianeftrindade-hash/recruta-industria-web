@@ -5,8 +5,15 @@ import { matchesCompanyTestBypass } from "@/lib/company/company-test-bypass";
 
 const DEV_FALLBACK_KEY = "dev-key-12345";
 
-/** Sempre admin, mesmo se ADMIN_EMAILS não estiver na Vercel. */
-const DEFAULT_ADMIN_EMAILS = ["recrutaindustria26@gmail.com"];
+/**
+ * Sempre admin, mesmo se ADMIN_EMAILS não estiver na Vercel.
+ * Conta operacional oficial: admin@recrutaindustria.com.
+ * Mantém o e-mail legado até a lista ser consolidada só via ADMIN_EMAILS.
+ */
+const DEFAULT_ADMIN_EMAILS = [
+  "admin@recrutaindustria.com",
+  "recrutaindustria26@gmail.com",
+];
 
 /** E-mails com acesso ao painel /admin (lista fixa + ADMIN_EMAILS no ambiente). */
 export function getAdminEmails(): string[] {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { requireAdmin } from '@/lib/admin-auth'
+import { getAdminEmails, isAdminUser, requireAdmin } from '@/lib/admin-auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,6 +20,16 @@ export async function POST(request: NextRequest) {
     // Normalizar email
     const normalizedEmail = email.toLowerCase().trim()
 
+    if (
+      getAdminEmails().includes(normalizedEmail) ||
+      isAdminUser(normalizedEmail)
+    ) {
+      return NextResponse.json(
+        { error: 'Contas administrativas não podem ser excluídas por esta API.' },
+        { status: 403 },
+      )
+    }
+
     // Buscar usuário
     const user = await prisma.user.findUnique({
       where: { email: normalizedEmail },
@@ -34,6 +44,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Usuário não encontrado' },
         { status: 404 }
+      )
+    }
+
+    if (isAdminUser(normalizedEmail, user.role)) {
+      return NextResponse.json(
+        { error: 'Contas administrativas não podem ser excluídas por esta API.' },
+        { status: 403 },
       )
     }
 
