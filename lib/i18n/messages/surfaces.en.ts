@@ -410,6 +410,7 @@ export const surfacesEn: Partial<Record<MessageKey, string>> = {
   "surface.admin.jobs": "Post jobs",
   "surface.admin.manual": "Manual applications",
   "surface.admin.companies": "Companies",
+  "surface.admin.accounts": "Accounts",
   "surface.admin.inbox": "Inbox",
   "surface.admin.services": "Services",
   "surface.admin.security": "Security",

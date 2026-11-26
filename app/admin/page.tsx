@@ -66,6 +66,16 @@ type PlansSummary = {
   totalRevenueLabel: string;
   totalCollectedLabel?: string;
   collectedPayments?: number;
+  paymentsPending?: number;
+  paymentsFailed?: number;
+};
+
+type JobsStats = {
+  total: number;
+  published: number;
+  today: number;
+  week: number;
+  month: number;
 };
 
 type InboxMessage = {
@@ -153,6 +163,7 @@ export default function AdminDashboardPage() {
   const [professionalsStats, setProfessionalsStats] = useState<AudienceStats | null>(null);
   const [companiesStats, setCompaniesStats] = useState<AudienceStats | null>(null);
   const [plans, setPlans] = useState<PlansSummary | null>(null);
+  const [jobsStats, setJobsStats] = useState<JobsStats | null>(null);
   const [series, setSeries] = useState<SeriesPoint[]>([]);
   const [messages, setMessages] = useState<InboxMessage[]>([]);
   const [mailbox, setMailbox] = useState<string | null>(null);
@@ -186,6 +197,7 @@ export default function AdminDashboardPage() {
         setProfessionalsStats(stats.professionals || null);
         setCompaniesStats(stats.companies || null);
         setPlans(stats.plans || null);
+        setJobsStats(stats.jobs || null);
         setSeries(stats.series || []);
       }
 
@@ -481,9 +493,40 @@ IMAP_PASS=sua-senha
               </table>
             </div>
             <p className={styles.brandSub} style={{ marginTop: 10 }}>
-              Google = contas criadas sem senha (login OAuth). Diário = hoje, das 00:00 às 23:59 no horário de Brasília. Semanal = 7 dias. Mensal = mês atual.
+              Google = contas criadas sem senha (login OAuth). Diário = hoje (00:00–23:59 Brasília). Semanal = 7 dias. Mensal = últimos 30 dias civis.
               Contas admin ficam fora das métricas de profissional/empresa.
             </p>
+          </section>
+
+          <section className={`${styles.panel} ${styles.dataCard}`}>
+            <h2 className={styles.sectionTag}>{exactUi('Vagas')}</h2>
+            <div className={styles.tableWrap}>
+              <table className={styles.dataTable}>
+                <thead>
+                  <tr>
+                    <th>{t('internal.admin.indicator')}</th>
+                    <th>{t('internal.admin.total')}</th>
+                    <th>{t('internal.admin.daily')}</th>
+                    <th>{t('internal.admin.weekly')}</th>
+                    <th>{t('internal.admin.monthly')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{exactUi('Cadastros de vagas')}</td>
+                    <td className={styles.dataValue}>{jobsStats?.total ?? '—'}</td>
+                    <td className={styles.dataValue}>{jobsStats?.today ?? '—'}</td>
+                    <td className={styles.dataValue}>{jobsStats?.week ?? '—'}</td>
+                    <td className={styles.dataValue}>{jobsStats?.month ?? '—'}</td>
+                  </tr>
+                  <tr>
+                    <td>{exactUi('Publicadas')}</td>
+                    <td className={styles.dataValue}>{jobsStats?.published ?? '—'}</td>
+                    <td colSpan={3}>{exactUi('Status PUBLISHED')}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </section>
 
           <section className={`${styles.panel} ${styles.dataCard}`}>
@@ -580,6 +623,10 @@ IMAP_PASS=sua-senha
               </strong>
               <span className={styles.revenueTotalHint}>
                 {plans?.collectedPayments ?? 0} pagamento{(plans?.collectedPayments ?? 0) === 1 ? '' : 's'} confirmado{(plans?.collectedPayments ?? 0) === 1 ? '' : 's'}
+                {' · '}
+                {plans?.paymentsPending ?? 0} pendente{(plans?.paymentsPending ?? 0) === 1 ? '' : 's'}
+                {' · '}
+                {plans?.paymentsFailed ?? 0} falha{(plans?.paymentsFailed ?? 0) === 1 ? '' : 's'}/cancelado{(plans?.paymentsFailed ?? 0) === 1 ? '' : 's'}
               </span>
             </div>
             <div className={styles.tableWrap}>

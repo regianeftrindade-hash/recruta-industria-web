@@ -45,9 +45,13 @@ interface AccountLock {
 export default function SecurityDashboard() {
   const [logs, setLogs] = useState<AuditLog[]>([])
   const [locks, setLocks] = useState<AccountLock[]>([])
-  const [activeTab, setActiveTab] = useState<'logs' | 'locks'>('logs')
+  const [activeTab, setActiveTab] = useState<'logs' | 'locks' | 'tools'>('logs')
   const [loading, setLoading] = useState(true)
   const [unauthorized, setUnauthorized] = useState(false)
+  const [toolIp, setToolIp] = useState('')
+  const [toolIdentifier, setToolIdentifier] = useState('')
+  const [toolMsg, setToolMsg] = useState('')
+  const [toolBusy, setToolBusy] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -101,6 +105,33 @@ export default function SecurityDashboard() {
       }
     } catch (err) {
       console.error('Error unlocking account:', err)
+    }
+  }
+
+  const postTool = async (url: string, body: Record<string, string>) => {
+    setToolBusy(true)
+    setToolMsg('')
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.status === 401) {
+        setUnauthorized(true)
+        return
+      }
+      if (!res.ok) {
+        setToolMsg(data.error || exactUi('Falha na operação.'))
+        return
+      }
+      setToolMsg(data.message || exactUi('Operação concluída.'))
+    } catch {
+      setToolMsg(exactUi('Falha na operação.'))
+    } finally {
+      setToolBusy(false)
     }
   }
 
@@ -164,10 +195,70 @@ export default function SecurityDashboard() {
         >
           🚫 Contas Bloqueadas ({locks.filter(l => !l.unlockedAt).length})
         </button>
+        <button
+          onClick={() => setActiveTab('tools')}
+          style={{
+            padding: '12px 20px',
+            background: activeTab === 'tools' ? 'linear-gradient(180deg, #8D6B1F 0%, #D4AF37 45%, #C89B3C 100%)' : 'linear-gradient(180deg, #5a4512 0%, #7a5f1c 45%, #8D6B1F 100%)',
+            color: activeTab === 'tools' ? COLORS.tinta : COLORS.branco,
+            border: 'none',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            borderRadius: '6px 6px 0 0',
+          }}
+        >
+          {exactUi('Ferramentas')}
+        </button>
       </div>
 
       {loading ? (
         <p style={{ color: COLORS.textoSuave }}>{exactUi("Carregando...")}</p>
+      ) : activeTab === 'tools' ? (
+        <div style={{ display: 'grid', gap: 20, maxWidth: 560 }}>
+          <h2 style={{ color: COLORS.dourado, margin: 0 }}>{exactUi('Desbloqueio e rate limit')}</h2>
+          <p style={{ color: COLORS.textoSuave, margin: 0 }}>
+            Usa as APIs administrativas já existentes. Não altera banco.
+          </p>
+          <label style={{ display: 'grid', gap: 8 }}>
+            <span>{exactUi('IP bloqueado')}</span>
+            <input
+              value={toolIp}
+              onChange={(e) => setToolIp(e.target.value)}
+              placeholder="0.0.0.0"
+              style={{ padding: 10, borderRadius: 8, border: `1px solid ${COLORS.douradoEscuro}` }}
+            />
+            <button
+              type="button"
+              disabled={toolBusy || !toolIp.trim()}
+              onClick={() => void postTool('/api/admin/unblock-ip-manual', { ip: toolIp.trim() })}
+              style={{ ...BTN_GOLD, padding: '10px 16px', width: 'fit-content' }}
+            >
+              {exactUi('Desbloquear IP')}
+            </button>
+          </label>
+          <label style={{ display: 'grid', gap: 8 }}>
+            <span>{exactUi('E-mail ou IP (rate limit)')}</span>
+            <input
+              value={toolIdentifier}
+              onChange={(e) => setToolIdentifier(e.target.value)}
+              placeholder="email@exemplo.com"
+              style={{ padding: 10, borderRadius: 8, border: `1px solid ${COLORS.douradoEscuro}` }}
+            />
+            <button
+              type="button"
+              disabled={toolBusy || !toolIdentifier.trim()}
+              onClick={() =>
+                void postTool('/api/admin/reset-rate-limit', {
+                  identifier: toolIdentifier.trim(),
+                })
+              }
+              style={{ ...BTN_GOLD, padding: '10px 16px', width: 'fit-content' }}
+            >
+              {exactUi('Resetar rate limit')}
+            </button>
+          </label>
+          {toolMsg && <p style={{ color: COLORS.dourado }}>{toolMsg}</p>}
+        </div>
       ) : activeTab === 'logs' ? (
         <div>
           <h2 style={{ color: COLORS.dourado, marginBottom: '20px' }}>{exactUi("Logs de Auditoria")}</h2>

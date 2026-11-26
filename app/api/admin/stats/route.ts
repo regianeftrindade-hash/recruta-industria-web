@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
   try {
     bindLocale(await resolveInterfaceLocale());
     const agora = new Date();
-    const { inicioHoje, fimHoje, inicioSemana, inicioMes } = limitesDoPainel(agora);
+    const { inicioHoje, fimHoje, inicioSemana, inicioUltimos30 } = limitesDoPainel(agora);
     const days = ultimosDias(14, agora);
     const seriesWindowStart = somarDiasCivis(inicioHoje, -13);
 
@@ -55,7 +55,9 @@ export async function GET(request: NextRequest) {
 
     const dayFrom = inicioHoje.getTime() > baselineAt.getTime() ? inicioHoje : baselineAt;
     const weekFrom = inicioSemana.getTime() > baselineAt.getTime() ? inicioSemana : baselineAt;
-    const monthFrom = inicioMes.getTime() > baselineAt.getTime() ? inicioMes : baselineAt;
+    // Coluna "mensal" do painel = últimos 30 dias civis (não mês calendário).
+    const monthFrom =
+      inicioUltimos30.getTime() > baselineAt.getTime() ? inicioUltimos30 : baselineAt;
 
     const { userIds: excludedIds, emails: excludedEmails } =
       await getAdminExcludedTestAccounts();
@@ -165,6 +167,12 @@ export async function GET(request: NextRequest) {
       planRows,
       trackingRows,
       paidPayments,
+      jobsTotal,
+      jobsPublished,
+      jobsToday,
+      jobsWeek,
+      jobsMonth,
+      paymentStatusRows,
     ] = await Promise.all([
       countVisits(baselineAt),
       countVisits(dayFrom, true),
@@ -319,6 +327,26 @@ export async function GET(request: NextRequest) {
           () =>
             [] as Array<{ amount: number; customer: string | null; createdAt: Date }>,
         ),
+      prisma.jobPosting.count({ where: { createdAt: { gte: baselineAt } } }).catch(() => 0),
+      prisma.jobPosting
+        .count({ where: { status: 'PUBLISHED', createdAt: { gte: baselineAt } } })
+        .catch(() => 0),
+      prisma.jobPosting
+        .count({ where: { createdAt: criadoNoPeriodo(dayFrom, true) } })
+        .catch(() => 0),
+      prisma.jobPosting
+        .count({ where: { createdAt: criadoNoPeriodo(weekFrom, true) } })
+        .catch(() => 0),
+      prisma.jobPosting
+        .count({ where: { createdAt: criadoNoPeriodo(monthFrom, true) } })
+        .catch(() => 0),
+      prisma.paymentRecord
+        .groupBy({
+          by: ['status'],
+          where: { createdAt: { gte: baselineAt } },
+          _count: { _all: true },
+        })
+        .catch(() => [] as Array<{ status: string; _count: { _all: number } }>),
     ]);
 
     const toMap = (rows: Array<{ day: Date | string; count: bigint }>) => {
@@ -401,6 +429,30 @@ export async function GET(request: NextRequest) {
     );
     const formatBrlFromCentavos = (centavos: number) => formatPriceBRL(centavos);
 
+    const paymentByStatus: Record<string, number> = {};
+    let paymentsPending = 0;
+    let paymentsFailed = 0;
+    let paymentsOther = 0;
+    for (const row of paymentStatusRows) {
+      const status = String(row.status || 'UNKNOWN').toUpperCase();
+      const count = Number(row._count?._all || 0);
+      paymentByStatus[status] = count;
+      if (status === 'PAID') continue;
+      if (status === 'PENDING' || status === 'WAITING' || status === 'OVERDUE') {
+        paymentsPending += count;
+      } else if (
+        status === 'FAILED' ||
+        status === 'REFUSED' ||
+        status === 'CANCELLED' ||
+        status === 'CANCELED' ||
+        status === 'REFUNDED'
+      ) {
+        paymentsFailed += count;
+      } else {
+        paymentsOther += count;
+      }
+    }
+
     return NextResponse.json({
       site: {
         visits: {
@@ -443,12 +495,21 @@ export async function GET(request: NextRequest) {
         profilesActive: companyActiveVerified,
         pendingCnpj: companiesPending,
       },
+      jobs: {
+        total: jobsTotal,
+        published: jobsPublished,
+        today: jobsToday,
+        week: jobsWeek,
+        month: jobsMonth,
+      },
       totals: {
         visits: visitsTotal,
         uniqueSessions: sessionsTotal,
         visitsToday,
         professionals: proTotal,
         companies: companyTotal,
+        jobs: jobsTotal,
+        jobsPublished,
         profilesActive: proProfilesActive,
         companiesPending,
         freeCompanies: planCounts.FREE,
@@ -460,6 +521,7 @@ export async function GET(request: NextRequest) {
         excludedTestAccounts: excludeIds.length,
         adminAccounts: adminEmails.length,
         statsSince: baselineAt.toISOString(),
+        periodNote: 'month=últimos 30 dias civis (Brasília)',
       },
       plans: {
         items: paidPlans,
@@ -469,6 +531,10 @@ export async function GET(request: NextRequest) {
         totalCollectedCentavos: collectedCentavos,
         totalCollectedLabel: formatBrlFromCentavos(collectedCentavos),
         collectedPayments,
+        paymentsPending,
+        paymentsFailed,
+        paymentsOther,
+        paymentsByStatus: paymentByStatus,
         catalog: COMPANY_PLAN_TIERS.filter((p) => p.id !== 'FREE').map((p) => ({
           tier: p.id,
           nome: p.nome,
