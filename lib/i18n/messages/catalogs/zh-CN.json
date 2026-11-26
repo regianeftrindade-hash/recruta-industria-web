@@ -2413,5 +2413,19 @@
   "fix.u.720": "档案创建成功。",
   "fix.u.721": "查看我的仪表板",
   "fix.u.722": "提示：",
-  "fix.u.723": "您可以在仪表板上编辑档案和偏好设置。"
+  "fix.u.723": "您可以在仪表板上编辑档案和偏好设置。",
+  "rest.completion.title": "⭐ 完整档案",
+  "rest.completion.percent": "{percent}% 已完成",
+  "rest.completion.priority": "✅ 您的档案在企业搜索中优先显示！",
+  "rest.completion.hint80": "完成度超过 80% 的档案会优先出现在搜索结果中。",
+  "seo.site.titleDefault": "Recruta Indústria | 工业岗位与人才",
+  "seo.site.titleTemplate": "%s | Recruta Indústria",
+  "seo.site.description": "工业招聘：连接企业与专业人士。创建档案或寻找一线人才。",
+  "seo.site.ogDescription": "面向企业与专业人士的工业招聘：聚焦一线的岗位、人才与连接。",
+  "seo.site.twitterDescription": "面向企业与专业人士的工业招聘。注册并连接行业。",
+  "seo.layout.professionalArea": "专业人士专区",
+  "seo.layout.professionalDashboard": "专业人士面板",
+  "seo.layout.companyInvite": "团队邀请",
+  "seo.layout.admin2fa": "两步验证",
+  "seo.layout.welcome": "欢迎"
 }

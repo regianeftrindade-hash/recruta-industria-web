@@ -2413,5 +2413,19 @@
   "fix.u.720": "Profil de menu a créé avec succès.",
   "fix.u.721": "Mon tableau de bord",
   "fix.u.722": "Conseil :",
-  "fix.u.723": "Vous pouvez modifier votre profil et vos préférences sur le tableau de bord."
+  "fix.u.723": "Vous pouvez modifier votre profil et vos préférences sur le tableau de bord.",
+  "rest.completion.title": "⭐ Profil complet",
+  "rest.completion.percent": "{percent}% Complet",
+  "rest.completion.priority": "✅ Votre profil est prioritaire dans les recherches des entreprises !",
+  "rest.completion.hint80": "Les profils remplis à plus de 80% apparaissent en premier dans les recherches.",
+  "seo.site.titleDefault": "Recruta Indústria | Offres et talents du secteur industriel",
+  "seo.site.titleTemplate": "%s | Recruta Indústria",
+  "seo.site.description": "Recrutement industriel : connectez entreprises et professionnels. Créez un profil ou trouvez des talents d’atelier.",
+  "seo.site.ogDescription": "Recrutement industriel pour entreprises et professionnels : offres, talents et connexions axés sur l’atelier.",
+  "seo.site.twitterDescription": "Recrutement industriel pour entreprises et professionnels. Inscrivez-vous et connectez-vous au secteur.",
+  "seo.layout.professionalArea": "Espace professionnel",
+  "seo.layout.professionalDashboard": "Tableau de bord professionnel",
+  "seo.layout.companyInvite": "Invitation d’équipe",
+  "seo.layout.admin2fa": "Vérification en deux étapes",
+  "seo.layout.welcome": "Bienvenue"
 }

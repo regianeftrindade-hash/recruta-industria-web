@@ -2413,5 +2413,19 @@
   "fix.u.720": "Perfil creado correctamente",
   "fix.u.721": "Mi tablero",
   "fix.u.722": "Consejo:",
-  "fix.u.723": "Puedes editar tu perfil y tus preferencias en el panel de control."
+  "fix.u.723": "Puedes editar tu perfil y tus preferencias en el panel de control.",
+  "rest.completion.title": "⭐ Perfil completo",
+  "rest.completion.percent": "{percent}% Completo",
+  "rest.completion.priority": "✅ ¡Tu perfil tiene prioridad en las búsquedas de empresas!",
+  "rest.completion.hint80": "Los perfiles con más del 80% de completado aparecen primero en las búsquedas.",
+  "seo.site.titleDefault": "Recruta Indústria | Empleos y talentos del sector industrial",
+  "seo.site.titleTemplate": "%s | Recruta Indústria",
+  "seo.site.description": "Reclutamiento industrial: conecta empresas y profesionales. Crea un perfil o encuentra talento de planta.",
+  "seo.site.ogDescription": "Reclutamiento industrial para empresas y profesionales: empleos, talentos y conexiones con foco en la planta.",
+  "seo.site.twitterDescription": "Reclutamiento industrial para empresas y profesionales. Regístrate y conéctate al sector.",
+  "seo.layout.professionalArea": "Área profesional",
+  "seo.layout.professionalDashboard": "Panel profesional",
+  "seo.layout.companyInvite": "Invitación de equipo",
+  "seo.layout.admin2fa": "Verificación en dos pasos",
+  "seo.layout.welcome": "Bienvenida"
 }

@@ -2413,5 +2413,19 @@
   "fix.u.720": "프로필이 성공적으로 생성되었습니다.",
   "fix.u.721": "내 대시보드 보기",
   "fix.u.722": "팁:",
-  "fix.u.723": "대시보드에서 프로필과 설정을 편집할 수 있습니다."
+  "fix.u.723": "대시보드에서 프로필과 설정을 편집할 수 있습니다.",
+  "rest.completion.title": "⭐ 완전한 프로필",
+  "rest.completion.percent": "{percent}% 완료",
+  "rest.completion.priority": "✅ 기업 검색에서 프로필이 우선 표시됩니다!",
+  "rest.completion.hint80": "완성도 80% 이상 프로필이 검색에서 먼저 나타납니다.",
+  "seo.site.titleDefault": "Recruta Indústria | 산업 채용과 인재",
+  "seo.site.titleTemplate": "%s | Recruta Indústria",
+  "seo.site.description": "산업 채용: 기업과 전문가를 연결합니다. 프로필을 만들거나 현장 인재를 찾으세요.",
+  "seo.site.ogDescription": "기업과 전문가를 위한 산업 채용: 현장 중심의 채용, 인재, 연결.",
+  "seo.site.twitterDescription": "기업과 전문가를 위한 산업 채용. 가입하고 산업과 연결하세요.",
+  "seo.layout.professionalArea": "전문가 영역",
+  "seo.layout.professionalDashboard": "전문가 대시보드",
+  "seo.layout.companyInvite": "팀 초대",
+  "seo.layout.admin2fa": "2단계 인증",
+  "seo.layout.welcome": "환영합니다"
 }

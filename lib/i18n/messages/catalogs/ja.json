@@ -2413,5 +2413,19 @@
   "fix.u.720": "プロフィールが正常に作成されました。",
   "fix.u.721": "ダッシュボードを見る",
   "fix.u.722": "ヒント：",
-  "fix.u.723": "ダッシュボードでプロフィールと設定を編集できます。"
+  "fix.u.723": "ダッシュボードでプロフィールと設定を編集できます。",
+  "rest.completion.title": "⭐ プロフィール完成",
+  "rest.completion.percent": "{percent}% 完了",
+  "rest.completion.priority": "✅ 企業検索でプロフィールが優先表示されます！",
+  "rest.completion.hint80": "80%以上入力されたプロフィールが検索で先に表示されます。",
+  "seo.site.titleDefault": "Recruta Indústria | 産業の求人と人材",
+  "seo.site.titleTemplate": "%s | Recruta Indústria",
+  "seo.site.description": "産業採用：企業と専門家をつなぎます。プロフィール作成または現場人材の検索。",
+  "seo.site.ogDescription": "企業と専門家向けの産業採用：現場に焦点を当てた求人・人材・つながり。",
+  "seo.site.twitterDescription": "企業と専門家向けの産業採用。登録して業界とつながりましょう。",
+  "seo.layout.professionalArea": "専門家エリア",
+  "seo.layout.professionalDashboard": "専門家ダッシュボード",
+  "seo.layout.companyInvite": "チーム招待",
+  "seo.layout.admin2fa": "二段階認証",
+  "seo.layout.welcome": "ようこそ"
 }

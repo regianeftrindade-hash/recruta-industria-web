@@ -2413,5 +2413,19 @@
   "fix.u.720": "प्रोफ़ाइल सफलतापूर्वक बनाई गई।",
   "fix.u.721": "मेरा डैशबोर्ड देखें",
   "fix.u.722": "सुझाव:",
-  "fix.u.723": "आप डैशबोर्ड पर प्रोफ़ाइल और प्राथमिकताएँ संपादित कर सकते हैं।"
+  "fix.u.723": "आप डैशबोर्ड पर प्रोफ़ाइल और प्राथमिकताएँ संपादित कर सकते हैं।",
+  "rest.completion.title": "⭐ पूर्ण प्रोफ़ाइल",
+  "rest.completion.percent": "{percent}% पूर्ण",
+  "rest.completion.priority": "✅ कंपनी खोजों में आपकी प्रोफ़ाइल को प्राथमिकता मिलती है!",
+  "rest.completion.hint80": "80% से अधिक भरी प्रोफ़ाइल खोज परिणामों में पहले दिखती हैं।",
+  "seo.site.titleDefault": "Recruta Indústria | औद्योगिक नौकरियाँ और प्रतिभा",
+  "seo.site.titleTemplate": "%s | Recruta Indústria",
+  "seo.site.description": "औद्योगिक भर्ती: कंपनियों और प्रोफ़ेशनल्स को जोड़ें। प्रोफ़ाइल बनाएँ या शॉप-फ़्लोर प्रतिभा खोजें।",
+  "seo.site.ogDescription": "कंपनियों और प्रोफ़ेशनल्स के लिए औद्योगिक भर्ती: शॉप फ़्लोर पर केंद्रित नौकरियाँ, प्रतिभा और कनेक्शन।",
+  "seo.site.twitterDescription": "कंपनियों और प्रोफ़ेशनल्स के लिए औद्योगिक भर्ती। साइन अप करें और क्षेत्र से जुड़ें।",
+  "seo.layout.professionalArea": "प्रोफ़ेशनल क्षेत्र",
+  "seo.layout.professionalDashboard": "प्रोफ़ेशनल डैशबोर्ड",
+  "seo.layout.companyInvite": "टीम आमंत्रण",
+  "seo.layout.admin2fa": "दो-चरणीय सत्यापन",
+  "seo.layout.welcome": "स्वागत है"
 }

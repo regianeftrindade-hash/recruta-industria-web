@@ -2413,5 +2413,19 @@
   "fix.u.720": "تم إنشاء الملف التعريفي بنجاح.",
   "fix.u.721": "التحليل",
   "fix.u.722": "نصيحة:",
-  "fix.u.723": "يمكنك تعديل ملفك الشخصي وتفضيلاتك في لوحة التحكم."
+  "fix.u.723": "يمكنك تعديل ملفك الشخصي وتفضيلاتك في لوحة التحكم.",
+  "rest.completion.title": "⭐ ملف كامل",
+  "rest.completion.percent": "{percent}% مكتمل",
+  "rest.completion.priority": "✅ ملفك له أولوية في عمليات بحث الشركات!",
+  "rest.completion.hint80": "الملفات المكتملة بأكثر من 80% تظهر أولاً في نتائج البحث.",
+  "seo.site.titleDefault": "Recruta Indústria | وظائف ومواهب القطاع الصناعي",
+  "seo.site.titleTemplate": "%s | Recruta Indústria",
+  "seo.site.description": "توظيف صناعي: اربط الشركات والمهنيين. أنشئ ملفاً أو اعثر على مواهب المصنع.",
+  "seo.site.ogDescription": "توظيف صناعي للشركات والمهنيين: وظائف ومواهب وروابط تركز على أرض المصنع.",
+  "seo.site.twitterDescription": "توظيف صناعي للشركات والمهنيين. سجّل وانضم إلى القطاع.",
+  "seo.layout.professionalArea": "منطقة المهنيين",
+  "seo.layout.professionalDashboard": "لوحة المهني",
+  "seo.layout.companyInvite": "دعوة الفريق",
+  "seo.layout.admin2fa": "التحقق بخطوتين",
+  "seo.layout.welcome": "مرحباً"
 }
