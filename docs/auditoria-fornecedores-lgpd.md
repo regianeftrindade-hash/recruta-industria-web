@@ -168,7 +168,8 @@ Há **risco material de transferência internacional** porque: (i) o DPA da Verc
 
 ## 10. Checklist final — futura validação jurídica
 
-- [ ] Controlador identificado (razão social, CNPJ, contato, encarregado) — **fora do escopo técnico; não inventado**  
+- [x] Controladora: forma **Empresário Individual / ME** informada; canal `contato@`; encarregado **dispensado** (art. 11 Res. CD/ANPD nº 2/2022) — ver `docs/lgpd-dispensa-encarregado-anpd-2-2022.md`  
+- [ ] CNPJ e endereço da controladora para publicação — **não inventados**  
 - [ ] Lista de operadores/subprocessadores publicada ou arquivada internamente  
 - [ ] DPAs/contratos aceitos com data/versão para cada fornecedor ativo  
 - [ ] Mapa de transferências internacionais + mecanismo (SCC, cláusulas ANPD, etc.)  

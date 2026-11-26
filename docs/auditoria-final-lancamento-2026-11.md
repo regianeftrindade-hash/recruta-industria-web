@@ -45,8 +45,10 @@
 
 **Auth / ops:** `allowDangerousEmailAccountLinking` no Google; rate-limit de login em memória sem Upstash em multi-instância; rota legada `/api/auth/login` fora da UI; anti-replay de reset de senha com Set em processo.
 
-**LGPD / humano:** DPO, CNPJ/endereço, DPAs, tabela de retenção, bases Art. 11, anonimização eventual de `PaymentRecord.customer` após exclusão; tradução jurídica oficial dos 11 idiomas restantes.
+**LGPD / humano:** CNPJ/endereço da controladora (EI/ME já informados); DPAs; tabela de retenção; bases Art. 11 LGPD; anonimização eventual de `PaymentRecord.customer` após exclusão; tradução jurídica oficial dos 11 idiomas restantes; autoavaliação periódica de alto risco (Res. CD/ANPD nº 2/2022 arts. 3º–5º).
+
+**Encarregado (DPO):** dispensa operacional registrada (art. 11 Res. CD/ANPD nº 2/2022) com canal `contato@recrutaindustria.com` — ver `docs/lgpd-dispensa-encarregado-anpd-2-2022.md`. **Não declara conformidade jurídica integral.**
 
 ## Pronto para operar?
 
-Tecnicamente **sim, com ressalvas jurídicas** (DPO/DPAs/traduções legais oficiais). Sem merge/deploy nesta entrega — aguarda autorização.
+Tecnicamente **sim, com ressalvas jurídicas** (DPAs, dados societários públicos, retenção, traduções legais oficiais). Sem merge/deploy automático nesta nota.

@@ -35,27 +35,28 @@ Data: 23/11/2026 (America/Sao_Paulo). Escopo: `main` com PR #66 publicado + melh
 
 ## Depende da empresa
 
-1. Razão social, CNPJ, endereço da controladora  
+1. CNPJ e endereço da controladora (forma já informada: **Empresário Individual / ME** — ver `docs/lgpd-dispensa-encarregado-anpd-2-2022.md`)  
 2. Confirmar região do projeto Supabase e DPAs (Vercel, Stripe, Asaas, Hostinger, Google, Upstash, Sentry)  
 3. Decidir se Google Ads permanece (opt-in) ou é desligado  
 4. Decidir retenção de `PaymentRecord` / logs após exclusão (hoje **não** apagamos automaticamente)  
 5. Decidir manter, minimizar ou restringir campos sensíveis do cadastro completo  
-6. Canal operacional para pedidos de titulares (além de `contato@recrutaindustria.com`)  
-7. Confirmar se backups (Vercel/Supabase) têm processo de purge sob pedido
+6. Canal de titulares: **`contato@recrutaindustria.com`** (mantido; dispensa de encarregado art. 11 Res. CD/ANPD nº 2/2022)  
+7. Confirmar se backups (Vercel/Supabase) têm processo de purge sob pedido  
+8. Manter autoavaliação das exclusões do art. 3º da Res. CD/ANPD nº 2/2022 (alto risco / receita / grupo)
 
 ---
 
 ## Depende de advogado
 
-1. Identificação do encarregado (DPO) e bases legais completas  
+1. ~~Obrigação de indicar DPO~~ — dispensa operacional registrada para agente de pequeno porte (ME/EI); validar periodicamente art. 3º/4º  
 2. Tabela de retenção por categoria de dado  
-3. Bases Art. 11 / consentimento específico para dados sensíveis  
+3. Bases Art. 11 LGPD / consentimento específico para dados sensíveis  
 4. Lista formal de subprocessadores e mecanismos de transferência internacional  
 5. Política de cookies detalhada (inventário + prazos)  
-6. Revisão do banner e dos textos `/termos/uso` e `/termos/privacidade`  
+6. Revisão do banner e dos textos `/termos/uso` e `/termos/privacidade` (incl. dados societários quando fornecidos)  
 7. Foro, lei aplicável, SLA/reembolso se forem cláusulas contratuais  
 8. Avaliação GDPR / leis dos países atendidos  
-9. **Não declarar conformidade** até parecer especializado  
+9. **Não declarar conformidade** até parecer especializado 
 
 ---
 
@@ -99,16 +100,18 @@ Compartilhamento: API de perfil empresa / export pode incluir atestado e campos 
 | Exclusão de conta na UI | Alinhado (mencionado) |
 | Campos sensíveis | Mencionado; salvaguardas Art. 11 ainda jurídicas |
 | Retenção numérica | Ainda pendente (não inventada) |
-| Controlador/DPO/CNPJ | Ainda ausente (não inventado) |
+| Controladora | EI / ME informado; CNPJ/endereço ainda ausentes (não inventados) |
+| Encarregado | Dispensa art. 11 Res. CD/ANPD nº 2/2022 registrada; canal `contato@` |
 
 ---
 
 ## Decisões que dependem de você (objetivas)
 
-1. Dados societários + DPO  
+1. Fornecer CNPJ + endereço para publicação nos termos (quando autorizar alteração jurídica)  
 2. Prazos de retenção desejados  
 3. Destino de `PaymentRecord` pós-exclusão  
 4. Destino dos campos sensíveis  
 5. Manter ou desligar Google Ads  
 6. Confirmar DPAs/regiões dos subprocessadores  
 7. Encaminhar textos a advogado para validação final  
+8. Revalidar autoavaliação de alto risco (art. 4º da Res. CD/ANPD nº 2/2022) 
