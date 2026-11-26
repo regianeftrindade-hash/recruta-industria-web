@@ -39,4 +39,17 @@ describe("public-terms", () => {
       expect(t("legal.pendingReviewHeading", locale).length).toBeGreaterThan(3);
     }
   });
+
+  it("política de privacidade indica canal oficial LGPD e direitos básicos do titular", () => {
+    const doc = getPublicTerm("privacidade")!;
+    const body = doc.paragraphsByLocale["pt-BR"].join("\n");
+    expect(body).toContain("contato@recrutaindustria.com");
+    expect(body).toMatch(/canal oficial/i);
+    expect(body).toMatch(/acesso aos seus dados pessoais/i);
+    expect(body).toMatch(/correção de dados/i);
+    expect(body).toMatch(/exclusão \(eliminação\) de dados, quando legalmente cabível/i);
+    expect(body).toMatch(/informações sobre o tratamento/i);
+    // Não inventar prazo numérico de atendimento
+    expect(body).not.toMatch(/\d+\s*(dias?|horas?)\s*(úteis|corridos)?\s*(para\s+)?(responder|atender|prazo)/i);
+  });
 });
