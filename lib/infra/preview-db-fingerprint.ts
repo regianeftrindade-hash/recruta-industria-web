@@ -76,10 +76,22 @@ export function buildPreviewDbFingerprintReport(input?: {
   STAGING_DIRECT_URL?: string | null
   resolvedDatabaseUrl?: string | null
 }): PreviewDbFingerprintReport {
-  const vercelEnv = (input?.VERCEL_ENV ?? env.VERCEL_ENV ?? null)?.trim() || null
-  const stagingDb = input?.STAGING_DATABASE_URL ?? env.STAGING_DATABASE_URL ?? null
-  const stagingDirect = input?.STAGING_DIRECT_URL ?? env.STAGING_DIRECT_URL ?? null
-  const resolved = input?.resolvedDatabaseUrl ?? null
+  const vercelEnv = (
+    input && "VERCEL_ENV" in input ? input.VERCEL_ENV : env.VERCEL_ENV ?? null
+  )
+    ?.toString()
+    .trim() || null
+  // Se a chave veio no input (mesmo null), não cair no process.env — testes isolados.
+  const stagingDb =
+    input && "STAGING_DATABASE_URL" in input
+      ? input.STAGING_DATABASE_URL
+      : env.STAGING_DATABASE_URL ?? null
+  const stagingDirect =
+    input && "STAGING_DIRECT_URL" in input
+      ? input.STAGING_DIRECT_URL
+      : env.STAGING_DIRECT_URL ?? null
+  const resolved =
+    input && "resolvedDatabaseUrl" in input ? input.resolvedDatabaseUrl ?? null : null
 
   const dbFp = fingerprintConnectionUrl(stagingDb)
   const directFp = fingerprintConnectionUrl(stagingDirect)
