@@ -59,3 +59,64 @@ const CRITICAL_PAGE_KEYS = [
   "registration.company.brDocumentsHint",
   "registration.company.intlDocumentsHint",
 ] as const satisfies readonly MessageKey[];
+
+function loadCatalog(locale: string): Partial<Record<MessageKey, string>> {
+  if (locale === "pt-BR") return messagesPtBR;
+  if (locale === "en") return messagesEn;
+  const raw = JSON.parse(
+    readFileSync(resolve(__dirname, `../messages/catalogs/${locale}.json`), "utf8"),
+  ) as Partial<Record<MessageKey, string>>;
+  return {
+    ...raw,
+    ...(brazilOnlyDocumentMessages[locale as keyof typeof brazilOnlyDocumentMessages] || {}),
+  };
+}
+
+describe("Etapa A — chaves críticas e resolução de idioma", () => {
+  it("as chaves de home/login/cadastro existem nos 12 catálogos (não vazias)", () => {
+    const missing: string[] = [];
+    for (const locale of SUPPORTED_LOCALES) {
+      const catalog = loadCatalog(locale);
+      for (const key of CRITICAL_PAGE_KEYS) {
+        // t() cai em pt-BR; exigimos resolução não vazia
+        const resolved = (catalog[key] || messagesPtBR[key] || "").trim();
+        if (!resolved) missing.push(`${locale}:${key}`);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it("t() devolve texto distinto de pt-BR para inglês e árabe nas chaves de superfície críticas", () => {
+    expect(t("surface.home.cta", "en")).not.toBe(t("surface.home.cta", "pt-BR"));
+    expect(t("surface.auth.enter", "en")).not.toBe(t("surface.auth.enter", "pt-BR"));
+    expect(t("surface.home.cta", "ar")).not.toBe(t("surface.home.cta", "pt-BR"));
+    expect(t("surface.auth.proAccess", "ar")).not.toBe(t("surface.auth.proAccess", "pt-BR"));
+  });
+
+  it("cookie, Accept-Language e RTL árabe ficam coerentes com html lang/dir", () => {
+    for (const locale of SUPPORTED_LOCALES) {
+      expect(htmlLang(locale)).toBe(locale);
+      expect(textDirection(locale)).toBe(locale === "ar" ? "rtl" : "ltr");
+      expect(
+        selectInterfaceLocale({ authenticated: false, cookieLocale: locale }),
+      ).toBe(locale);
+    }
+
+    expect(negotiateAcceptLanguage("ar,en;q=0.8")).toBe("ar");
+    expect(
+      selectInterfaceLocale({
+        authenticated: false,
+        cookieLocale: null,
+        acceptLanguage: "ar-SA,ar;q=0.9",
+      }),
+    ).toBe("ar");
+    expect(textDirection("ar")).toBe("rtl");
+    expect(
+      selectInterfaceLocale({
+        authenticated: false,
+        cookieLocale: "ar",
+        acceptLanguage: "en-US,en;q=0.9",
+      }),
+    ).toBe("ar");
+  });
+});
