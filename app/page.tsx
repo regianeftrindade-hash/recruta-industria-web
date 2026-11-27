@@ -9,6 +9,7 @@ import { t } from "@/lib/i18n/translate";
 import type { MessageKey } from "@/lib/i18n/messages/pt-BR";
 import { FONT_STACK } from "@/lib/theme";
 import styles from "./home.module.css";
+import commercial from "./home-commercial.module.css";
 
 const taglineFont = Dancing_Script({
   subsets: ["latin"],
@@ -53,37 +54,37 @@ export default async function Home() {
             </div>
           </header>
 
-          <section className={styles.homePitch} aria-labelledby="home-pitch-title">
-            <h1 id="home-pitch-title" className={styles.homePitchTitle}>
+          <section className={commercial.homePitch} aria-labelledby="home-pitch-title">
+            <h1 id="home-pitch-title" className={commercial.homePitchTitle}>
               {text("surface.home.pitchTitle")}
             </h1>
-            <p className={styles.homePitchSubtitle}>{text("surface.home.pitchSubtitle")}</p>
+            <p className={commercial.homePitchSubtitle}>{text("surface.home.pitchSubtitle")}</p>
           </section>
 
-          <section className={styles.homePaths} aria-label={text("surface.home.pathsLabel")}>
-            <article className={styles.homePathCard}>
-              <h2 className={styles.homePathTitle}>{text("surface.home.pathProfessionalTitle")}</h2>
-              <p className={styles.homePathBody}>{text("surface.home.pathProfessionalBody")}</p>
+          <section className={commercial.homePaths} aria-label={text("surface.home.pathsLabel")}>
+            <article className={commercial.homePathCard}>
+              <h2 className={commercial.homePathTitle}>{text("surface.home.pathProfessionalTitle")}</h2>
+              <p className={commercial.homePathBody}>{text("surface.home.pathProfessionalBody")}</p>
               <Link
                 href="/login?tipo=profissional"
-                className={styles.homePathCta}
+                className={commercial.homePathCta}
                 prefetch={false}
               >
                 {text("surface.home.pathAccess")}
               </Link>
             </article>
 
-            <article className={styles.homePathCard}>
-              <h2 className={styles.homePathTitle}>{text("surface.home.pathCompanyTitle")}</h2>
-              <p className={styles.homePathBody}>{text("surface.home.pathCompanyBody")}</p>
-              <Link href="/login?tipo=empresa" className={styles.homePathCta} prefetch={false}>
+            <article className={commercial.homePathCard}>
+              <h2 className={commercial.homePathTitle}>{text("surface.home.pathCompanyTitle")}</h2>
+              <p className={commercial.homePathBody}>{text("surface.home.pathCompanyBody")}</p>
+              <Link href="/login?tipo=empresa" className={commercial.homePathCta} prefetch={false}>
                 {text("surface.home.pathAccess")}
               </Link>
             </article>
           </section>
 
-          <section className={styles.homeDiffs} aria-label={text("surface.home.diffsLabel")}>
-            <ul className={styles.homeDiffList}>
+          <section className={commercial.homeDiffs} aria-label={text("surface.home.diffsLabel")}>
+            <ul className={commercial.homeDiffList}>
               <li>{text("surface.home.diffIndustrial")}</li>
               <li>{text("surface.home.diffProfiles")}</li>
               <li>{text("surface.home.diffConnect")}</li>
