@@ -1,16 +1,20 @@
 import { cookies, headers } from "next/headers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth.config";
-import { selectInterfaceLocale } from "@/lib/i18n/interface-locale";
+import {
+  selectInterfaceLocale,
+  visitorCountryFromHeaders,
+} from "@/lib/i18n/interface-locale";
 import type { SupportedLocale } from "@/lib/i18n/locales";
 import { LOCALE_COOKIE } from "@/lib/i18n/locale-cookie";
 
-/** Lê conta, cookie e Accept-Language neste pedido. Cada página servidor chama esta função. */
+/** Lê conta, cookie, geo e Accept-Language neste pedido. Cada página servidor chama esta função. */
 export async function resolveInterfaceLocale(): Promise<SupportedLocale> {
   const jar = await cookies();
   const hdrs = await headers();
   const cookieLocale = jar.get(LOCALE_COOKIE)?.value ?? null;
   const acceptLanguage = hdrs.get("accept-language");
+  const visitorCountry = visitorCountryFromHeaders((name) => hdrs.get(name));
 
   try {
     const session = await getServerSession(authOptions);
@@ -20,6 +24,7 @@ export async function resolveInterfaceLocale(): Promise<SupportedLocale> {
         accountLocale: session.user.locale,
         cookieLocale,
         acceptLanguage,
+        visitorCountry,
       });
     }
   } catch (error) {
@@ -29,11 +34,13 @@ export async function resolveInterfaceLocale(): Promise<SupportedLocale> {
       accountReadFailed: true,
       cookieLocale,
       acceptLanguage,
+      visitorCountry,
     });
   }
   return selectInterfaceLocale({
     authenticated: false,
     cookieLocale,
     acceptLanguage,
+    visitorCountry,
   });
 }
