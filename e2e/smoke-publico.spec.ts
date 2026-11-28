@@ -19,8 +19,8 @@ test.describe("smoke público", () => {
     await expect(page).toHaveURL(/\/login\?tipo=profissional/);
     await expect(page.locator("#login-email")).toBeVisible({ timeout: 15_000 });
     await expect(page.locator("#login-senha")).toBeVisible();
-    // Cadastro a partir do login
-    await page.getByRole("button", { name: /cadastrar|register|criar conta|sign up/i }).click();
+    // Cadastro a partir do login (texto real: "Fazer cadastro" / "Create account")
+    await page.getByRole("button", { name: /fazer cadastro|create account|cadastrar|register|sign up|registar/i }).click();
     await expect(page).toHaveURL(/\/professional\/cadastro/);
     await expect(page.getByText(/cadastro rápido|registo rápido|quick signup/i).first()).toBeVisible({
       timeout: 15_000,
@@ -36,7 +36,7 @@ test.describe("smoke público", () => {
     await page.locator('a[href="/login?tipo=empresa"]').click();
     await expect(page).toHaveURL(/\/login\?tipo=empresa/);
     await expect(page.locator("#login-email")).toBeVisible({ timeout: 15_000 });
-    await page.getByRole("button", { name: /cadastrar|register|criar conta|sign up/i }).click();
+    await page.getByRole("button", { name: /fazer cadastro|create account|cadastrar|register|sign up|registar/i }).click();
     await expect(page).toHaveURL(/\/company\/cadastro/);
     await expect(page.getByRole("heading", { name: /cadastro empresa|registo empresa|company/i })).toBeVisible({
       timeout: 20_000,
@@ -51,12 +51,12 @@ test.describe("smoke público", () => {
     await expect(page).toHaveURL(/\/login\?tipo=profissional/);
     await expect(page.locator("#login-email")).toBeVisible({ timeout: 15_000 });
     await expect(page.locator("#login-senha")).toBeVisible();
-    await expect(page.getByRole("button", { name: /cadastrar|register|sign up/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /fazer cadastro|create account|cadastrar|register|sign up|registar/i })).toBeVisible();
 
     await page.goto("/login?tipo=empresa", { waitUntil: "domcontentloaded" });
     await expect(page).toHaveURL(/\/login\?tipo=empresa/);
     await expect(page.locator("#login-email")).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByRole("button", { name: /cadastrar|register|sign up/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /fazer cadastro|create account|cadastrar|register|sign up|registar/i })).toBeVisible();
   });
 
   test("login sem tipo público permanece em /login; admin mantém /login", async ({ page }) => {
