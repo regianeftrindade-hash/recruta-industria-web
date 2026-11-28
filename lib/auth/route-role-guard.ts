@@ -8,9 +8,19 @@ export type ProtectedArea = "professional" | "company";
 
 export type AppAccountRole = "PROFESSIONAL" | "COMPANY" | "ADMIN";
 
+/**
+ * Área protegida a partir do pathname (sem query).
+ */
 export function protectedAreaForPath(pathname: string): ProtectedArea | null {
-  if (pathname.startsWith("/professional")) return "professional";
-  if (pathname.startsWith("/company")) return "company";
+  if (
+    pathname === "/professional" ||
+    pathname.startsWith("/professional/")
+  ) {
+    return "professional";
+  }
+  if (pathname === "/company" || pathname.startsWith("/company/")) {
+    return "company";
+  }
   return null;
 }
 
@@ -31,32 +41,35 @@ export function loginRedirectForArea(area: ProtectedArea): string {
  */
 export function canRoleAccessArea(
   area: ProtectedArea,
-  opts: { userType?: unknown; isAdmin?: unknown },
+  role: string | null | undefined,
+  isAdmin: boolean,
 ): boolean {
-  if (opts.isAdmin === true) return true;
-  const t = String(opts.userType || "").toUpperCase();
-  if (area === "professional") return t === "PROFESSIONAL" || t === "ADMIN";
-  if (area === "company") return t === "COMPANY" || t === "ADMIN";
+  if (isAdmin) return true;
+  if (!role) return false;
+  if (area === "professional") return role === "PROFESSIONAL";
+  if (area === "company") return role === "COMPANY";
   return false;
 }
 
-export type ProtectedRouteDecision =
+export type RouteAccessDecision =
   | { action: "allow" }
   | {
       action: "unauthenticated";
       redirectPath: string;
-      preserveRedirectQuery: boolean;
+      preserveRedirectQuery?: boolean;
     }
   | { action: "wrong_role"; redirectPath: string };
 
+/**
+ * Fonte única usada pelo proxy para decidir acesso a rotas de página.
+ */
 export function decideProtectedRouteAccess(input: {
   pathname: string;
   hasEmail: boolean;
-  userType?: unknown;
-  isAdmin?: unknown;
-  /** Path quando e-mail de notificação sem sessão (opcional). */
+  userType: unknown;
+  isAdmin: boolean;
   emailHomePath?: string | null;
-}): ProtectedRouteDecision {
+}): RouteAccessDecision {
   const area = protectedAreaForPath(input.pathname);
   if (!area) return { action: "allow" };
 
@@ -68,11 +81,21 @@ export function decideProtectedRouteAccess(input: {
     };
   }
 
-  if (!canRoleAccessArea(area, input)) {
-    const t = String(input.userType || "").toUpperCase();
-    const role: AppAccountRole =
-      t === "COMPANY" ? "COMPANY" : t === "ADMIN" ? "ADMIN" : "PROFESSIONAL";
-    return { action: "wrong_role", redirectPath: homePathForRole(role) };
+  const role =
+    typeof input.userType === "string" ? input.userType.toUpperCase() : null;
+
+  if (!canRoleAccessArea(area, role, input.isAdmin === true)) {
+    // Papel errado: manda para a home da conta, não para login.
+    if (role === "COMPANY") {
+      return { action: "wrong_role", redirectPath: homePathForRole("COMPANY") };
+    }
+    if (role === "ADMIN" || input.isAdmin) {
+      return { action: "wrong_role", redirectPath: homePathForRole("ADMIN") };
+    }
+    return {
+      action: "wrong_role",
+      redirectPath: homePathForRole("PROFESSIONAL"),
+    };
   }
 
   return { action: "allow" };
