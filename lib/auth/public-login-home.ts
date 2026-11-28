@@ -1,6 +1,6 @@
 /**
- * Login público acontece na home (`/`).
- * A página `/login` com vitrine lateral fica só para admin (`?redirect=/admin…`).
+ * Login público acontece em `/login` (vitrine + formulário).
+ * Admin permanece em `/login?redirect=/admin…`.
  */
 
 export function isAdminLoginRedirect(redirect: string | null | undefined): boolean {
@@ -24,6 +24,7 @@ export type PublicLoginHomeOpts = {
 /**
  * Href para “voltar ao login” / logout / guard sem sessão.
  * Admin permanece em `/login?redirect=/admin…`.
+ * Público: `/login` ou `/login?tipo=profissional|empresa` (+ redirect opcional).
  */
 export function publicLoginHomeHref(opts: PublicLoginHomeOpts = {}): string {
   const redirect = safePostLoginPath(opts.redirect);
@@ -32,15 +33,16 @@ export function publicLoginHomeHref(opts: PublicLoginHomeOpts = {}): string {
   }
 
   const params = new URLSearchParams();
-  if (redirect) params.set("redirect", redirect);
 
   const tipo = String(opts.tipo || "").toLowerCase();
   if (tipo === "empresa" || tipo === "company") {
-    params.set("acesso", "empresa");
+    params.set("tipo", "empresa");
   } else if (tipo === "profissional" || tipo === "professional") {
-    params.set("acesso", "profissional");
+    params.set("tipo", "profissional");
   }
 
+  if (redirect) params.set("redirect", redirect);
+
   const query = params.toString();
-  return query ? `/?${query}` : "/";
+  return query ? `/login?${query}` : "/login";
 }
