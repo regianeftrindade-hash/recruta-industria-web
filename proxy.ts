@@ -13,11 +13,6 @@ import {
   decideProtectedRouteAccess,
   protectedAreaForPath,
 } from '@/lib/auth/route-role-guard';
-import {
-  isAdminLoginRedirect,
-  publicLoginHomeHref,
-  safePostLoginPath,
-} from '@/lib/auth/public-login-home';
 import { applyRelativeRedirect } from '@/lib/auth/apply-relative-redirect';
 
 export async function proxy(request: NextRequest) {
@@ -29,17 +24,7 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Login público é na home; /login com vitrine só para admin.
-  if (pathname === '/login') {
-    const redirect = request.nextUrl.searchParams.get('redirect');
-    if (!isAdminLoginRedirect(redirect)) {
-      const homeHref = publicLoginHomeHref({
-        tipo: request.nextUrl.searchParams.get('tipo'),
-        redirect: safePostLoginPath(redirect),
-      });
-      return NextResponse.redirect(new URL(homeHref, request.url));
-    }
-  }
+  // Login público em /login (home comercial não tem formulários).
 
   const isNextAuthFlow =
     pathname === '/api/auth/session'
@@ -100,35 +85,10 @@ export async function proxy(request: NextRequest) {
         return NextResponse.redirect(url);
       }
     }
-
-    return response;
   }
 
-  // Página de 2FA admin (fora do layout /admin)
-  if (pathname.startsWith('/admin-verify-2fa')) {
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-    const email = typeof token?.email === 'string' ? token.email : null;
-    if (
-      !hasAdminAccess({
-        isAdmin: token?.isAdmin === true,
-        email,
-        role: typeof token?.userType === 'string' ? token.userType : null,
-      })
-    ) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/login';
-      url.searchParams.set('redirect', '/admin');
-      return NextResponse.redirect(url);
-    }
-    return response;
-  }
-
-  // URLs antigas /company/profissional/... → sempre /company/professional/[id]
-  // (antes do early-return de development e dos redirects HTTPS)
-  if (pathname.startsWith('/company/profissional/')) {
+  // Alias legada: /company/profissional/[id] e ?id=
+  if (pathname === '/company/profissional' || pathname.startsWith('/company/profissional/')) {
     const rest = pathname.slice('/company/profissional/'.length).split('/')[0] || '';
     const qid = request.nextUrl.searchParams.get('id') || '';
     const cuidRe = /^c[a-z0-9]{20,}$/i;
@@ -160,7 +120,7 @@ export async function proxy(request: NextRequest) {
     });
 
     if (decision.action === 'unauthenticated') {
-      // redirectPath pode ser "/?acesso=empresa" — não usar url.pathname=href
+      // redirectPath pode ser "/login?tipo=empresa" — não usar url.pathname=href
       // (isso virava "/%3Facesso=empresa" e quebrava o retorno do Stripe).
       return applyRelativeRedirect(request, decision.redirectPath, {
         preserveRedirectFrom: decision.preserveRedirectQuery ? pathname : null,
