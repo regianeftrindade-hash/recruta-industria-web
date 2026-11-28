@@ -12,19 +12,21 @@ describe("public-login-home", () => {
     expect(isAdminLoginRedirect("/professional/dashboard")).toBe(false);
   });
 
-  it("manda login público para a home", () => {
-    expect(publicLoginHomeHref()).toBe("/");
-    expect(publicLoginHomeHref({ tipo: "profissional" })).toBe("/?acesso=profissional");
-    expect(publicLoginHomeHref({ tipo: "empresa" })).toBe("/?acesso=empresa");
+  it("manda login público para /login com tipo", () => {
+    expect(publicLoginHomeHref()).toBe("/login");
+    expect(publicLoginHomeHref({ tipo: "profissional" })).toBe(
+      "/login?tipo=profissional",
+    );
+    expect(publicLoginHomeHref({ tipo: "empresa" })).toBe("/login?tipo=empresa");
     expect(
       publicLoginHomeHref({
         tipo: "profissional",
         redirect: "/professional/pagamento",
       }),
-    ).toBe("/?redirect=%2Fprofessional%2Fpagamento&acesso=profissional");
+    ).toBe("/login?tipo=profissional&redirect=%2Fprofessional%2Fpagamento");
   });
 
-  it("mantém /login só para admin", () => {
+  it("mantém /login com redirect só para admin", () => {
     expect(publicLoginHomeHref({ redirect: "/admin" })).toBe(
       "/login?redirect=%2Fadmin",
     );
