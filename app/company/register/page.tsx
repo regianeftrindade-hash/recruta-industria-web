@@ -3,7 +3,7 @@
 import React, { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { t } from "@/lib/i18n/translate"
+import { t } from "@/lib/i18n/translate";
 import { localizeServerText } from "@/lib/i18n/server-text";
 import RegistrationCountryField from "@/components/identity/RegistrationCountryField";
 import { AuthAtmosphere } from "@/components/shared/AuthAtmosphere";
@@ -97,7 +97,7 @@ function CadastroEmpresaForm({ incorporado = false }: { incorporado?: boolean })
       }
       setOk(t("registration.company.createdLoginHint"));
       if (!incorporado) {
-        setTimeout(() => router.push("/?acesso=empresa"), 1200);
+        setTimeout(() => router.push("/login?tipo=empresa"), 1200);
       }
     } catch {
       setError(t("registration.simple.networkError"));

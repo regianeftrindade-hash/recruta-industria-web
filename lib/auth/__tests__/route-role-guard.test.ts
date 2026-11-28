@@ -59,7 +59,7 @@ describe("route-role-guard", () => {
       }),
     ).toEqual({
       action: "unauthenticated",
-      redirectPath: "/?acesso=empresa",
+      redirectPath: "/login?tipo=empresa",
       preserveRedirectQuery: true,
     });
   });

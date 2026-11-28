@@ -13,11 +13,6 @@ import {
   decideProtectedRouteAccess,
   protectedAreaForPath,
 } from '@/lib/auth/route-role-guard';
-import {
-  isAdminLoginRedirect,
-  publicLoginHomeHref,
-  safePostLoginPath,
-} from '@/lib/auth/public-login-home';
 import { applyRelativeRedirect } from '@/lib/auth/apply-relative-redirect';
 
 export async function proxy(request: NextRequest) {
@@ -29,17 +24,7 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Login público é na home; /login com vitrine só para admin.
-  if (pathname === '/login') {
-    const redirect = request.nextUrl.searchParams.get('redirect');
-    if (!isAdminLoginRedirect(redirect)) {
-      const homeHref = publicLoginHomeHref({
-        tipo: request.nextUrl.searchParams.get('tipo'),
-        redirect: safePostLoginPath(redirect),
-      });
-      return NextResponse.redirect(new URL(homeHref, request.url));
-    }
-  }
+  // Login público em /login (home comercial não tem formulários).
 
   const isNextAuthFlow =
     pathname === '/api/auth/session'
@@ -160,7 +145,7 @@ export async function proxy(request: NextRequest) {
     });
 
     if (decision.action === 'unauthenticated') {
-      // redirectPath pode ser "/?acesso=empresa" — não usar url.pathname=href
+      // redirectPath pode ser "/login?tipo=empresa" — não usar url.pathname=href
       // (isso virava "/%3Facesso=empresa" e quebrava o retorno do Stripe).
       return applyRelativeRedirect(request, decision.redirectPath, {
         preserveRedirectFrom: decision.preserveRedirectQuery ? pathname : null,

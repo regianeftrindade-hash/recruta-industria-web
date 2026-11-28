@@ -1,0 +1,147 @@
+.homePitch {
+  max-width: 40rem;
+  margin: 0.35rem auto 1.1rem;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+.homePitchTitle {
+  margin: 0 0 0.55rem;
+  color: #414141;
+  font-size: clamp(1.45rem, 2.6vw, 1.95rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.homePitchSubtitle {
+  margin: 0;
+  color: #4a4a4a;
+  font-size: clamp(0.98rem, 1.35vw, 1.12rem);
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.homePaths {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  max-width: 44rem;
+  margin: 0 auto 1.25rem;
+  padding: 0 1rem;
+}
+
+.homePathCard {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.65rem;
+  padding: 1.15rem 1.2rem 1.25rem;
+  border-radius: 18px;
+  border: 1.5px solid #c9a227;
+  background: linear-gradient(165deg, #f7efd6 0%, #f0e4c0 55%, #e8d9a8 100%);
+  box-shadow: 0 8px 22px rgba(120, 90, 20, 0.12);
+}
+
+.homePathTitle {
+  margin: 0;
+  color: #3d3d3d;
+  font-size: clamp(1.12rem, 1.6vw, 1.28rem);
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.homePathBody {
+  margin: 0;
+  flex: 1;
+  color: #4a4a4a;
+  font-size: clamp(0.92rem, 1.2vw, 1.02rem);
+  line-height: 1.45;
+  text-align: center;
+}
+
+.homePathCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.25rem auto 0;
+  min-width: 9.5rem;
+  padding: 0.62rem 1.35rem;
+  border-radius: 999px;
+  border: 1px solid #a8841c;
+  background: linear-gradient(180deg, #e8c547 0%, #c89b3c 55%, #b8892e 100%);
+  color: #2f2a18 !important;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+  text-decoration: none !important;
+  box-shadow: 0 3px 0 #8a6a18, 0 6px 14px rgba(120, 90, 20, 0.18);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.homePathCta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 #8a6a18, 0 8px 16px rgba(120, 90, 20, 0.22);
+}
+
+.homePathCta:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #8a6a18;
+}
+
+.homePathCta:focus-visible {
+  outline: 2px solid #8a6a18;
+  outline-offset: 3px;
+}
+
+.homeDiffs {
+  max-width: 40rem;
+  margin: 0 auto 1.5rem;
+  padding: 0 1rem 0.5rem;
+}
+
+.homeDiffList {
+  list-style: none;
+  margin: 0;
+  padding: 0.85rem 1rem;
+  display: grid;
+  gap: 0.45rem;
+  border-radius: 14px;
+  border: 1px solid rgba(200, 155, 60, 0.35);
+  background: rgba(255, 252, 240, 0.55);
+}
+
+.homeDiffList li {
+  position: relative;
+  padding-left: 1.15rem;
+  color: #414141;
+  font-size: clamp(0.88rem, 1.15vw, 0.98rem);
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.homeDiffList li::before {
+  content: "★";
+  position: absolute;
+  left: 0;
+  top: 0.05em;
+  color: #c89b3c;
+  font-size: 0.75em;
+}
+
+@media (max-width: 720px) {
+  .homePaths {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .homePitch {
+    margin-bottom: 0.9rem;
+  }
+
+  .homePathCard {
+    padding: 1rem 1.05rem 1.1rem;
+  }
+}

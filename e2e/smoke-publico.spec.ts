@@ -7,9 +7,20 @@ test.describe("smoke público", () => {
     await expect(page.locator("body")).toBeVisible();
   });
 
-  test("home: Cadastre-se abre o cadastro rápido do profissional e o da empresa", async ({ page }) => {
+  test("home comercial: dois caminhos levam ao login (profissional e empresa)", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
-    await page.locator('a[href="/professional/cadastro"]').click();
+    // Home sem formulários de login/cadastro
+    await expect(page.locator("#acesso-profissional")).toHaveCount(0);
+    await expect(page.locator("#pro-home-email")).toHaveCount(0);
+    await expect(page.locator('a[href="/professional/cadastro"]')).toHaveCount(0);
+    await expect(page.locator('a[href="/company/cadastro"]')).toHaveCount(0);
+
+    await page.locator('a[href="/login?tipo=profissional"]').click();
+    await expect(page).toHaveURL(/\/login\?tipo=profissional/);
+    await expect(page.locator("#login-email")).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator("#login-senha")).toBeVisible();
+    // Cadastro a partir do login (texto real: "Fazer cadastro" / "Create account")
+    await page.getByRole("button", { name: /fazer cadastro|create account|cadastrar|register|sign up|registar/i }).click();
     await expect(page).toHaveURL(/\/professional\/cadastro/);
     await expect(page.getByText(/cadastro rápido|registo rápido|quick signup/i).first()).toBeVisible({
       timeout: 15_000,
@@ -19,10 +30,13 @@ test.describe("smoke público", () => {
     await expect(page.getByLabel(/e-mail|email/i)).toBeVisible();
     await expect(page.getByLabel(/telefone|phone/i)).toBeVisible();
     await expect(page.getByLabel(/^senha$|^password$|^palavra-passe$/i)).toBeVisible();
-    await expect(page.getByRole("button", { name: /criar conta|create account|criar conta/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /criar conta|create account/i })).toBeVisible();
 
     await page.goto("/", { waitUntil: "domcontentloaded" });
-    await page.locator('a[href="/company/cadastro"]').click();
+    await page.locator('a[href="/login?tipo=empresa"]').click();
+    await expect(page).toHaveURL(/\/login\?tipo=empresa/);
+    await expect(page.locator("#login-email")).toBeVisible({ timeout: 15_000 });
+    await page.getByRole("button", { name: /fazer cadastro|create account|cadastrar|register|sign up|registar/i }).click();
     await expect(page).toHaveURL(/\/company\/cadastro/);
     await expect(page.getByRole("heading", { name: /cadastro empresa|registo empresa|company/i })).toBeVisible({
       timeout: 20_000,
@@ -32,38 +46,38 @@ test.describe("smoke público", () => {
     await expect(page.getByRole("link", { name: /voltar.*página inicial|back to the home/i })).toBeVisible();
   });
 
-  test("login?tipo=profissional e empresa redirecionam para a home (login público)", async ({ page }) => {
+  test("login?tipo=profissional e empresa abrem a página de login (não a home)", async ({ page }) => {
     await page.goto("/login?tipo=profissional", { waitUntil: "domcontentloaded" });
-    await expect(page).toHaveURL(/\/(?:\?acesso=profissional)?$/);
-    await expect(page.locator("#acesso-profissional")).toBeVisible();
-    await expect(page.locator("#pro-home-email")).toBeVisible();
-    await expect(page.locator('a[href="/professional/cadastro"]')).toBeVisible();
+    await expect(page).toHaveURL(/\/login\?tipo=profissional/);
+    await expect(page.locator("#login-email")).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator("#login-senha")).toBeVisible();
+    await expect(page.getByRole("button", { name: /fazer cadastro|create account|cadastrar|register|sign up|registar/i })).toBeVisible();
 
     await page.goto("/login?tipo=empresa", { waitUntil: "domcontentloaded" });
-    await expect(page).toHaveURL(/\/\?acesso=empresa/);
-    await expect(page.locator("#acesso-empresa")).toBeVisible();
-    await expect(page.locator('a[href="/company/cadastro"]')).toBeVisible();
+    await expect(page).toHaveURL(/\/login\?tipo=empresa/);
+    await expect(page.locator("#login-email")).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("button", { name: /fazer cadastro|create account|cadastrar|register|sign up|registar/i })).toBeVisible();
   });
 
-  test("login sem tipo público também cai na home; admin mantém /login", async ({ page }) => {
+  test("login sem tipo público permanece em /login; admin mantém /login", async ({ page }) => {
     await page.goto("/login", { waitUntil: "domcontentloaded" });
-    await expect(page).toHaveURL(/\/$/);
-    await expect(page.locator("#acesso-profissional")).toBeVisible();
+    await expect(page).toHaveURL(/\/login\/?$/);
+    await expect(page.locator("#login-email")).toBeVisible({ timeout: 15_000 });
 
     await page.goto("/login?redirect=/admin", { waitUntil: "domcontentloaded" });
     await expect(page).toHaveURL(/\/login\?redirect=%2Fadmin|\/login\?redirect=\/admin/);
     await expect(page.locator("#login-email")).toBeVisible();
   });
 
-  test("esqueci senha: voltar ao login vai para a home", async ({ page }) => {
+  test("esqueci senha: voltar ao login vai para /login?tipo=profissional", async ({ page }) => {
     await page.goto("/esqueci-senha?tipo=profissional", { waitUntil: "domcontentloaded" });
     const cookieDialog = page.getByRole("dialog");
     if (await cookieDialog.isVisible().catch(() => false)) {
       await cookieDialog.getByRole("button").first().click();
     }
-    await page.locator('a[href="/?acesso=profissional"]').click();
-    await expect(page).toHaveURL(/\/\?acesso=profissional$/);
-    await expect(page.locator("#acesso-profissional")).toBeVisible();
+    await page.locator('a[href="/login?tipo=profissional"]').click();
+    await expect(page).toHaveURL(/\/login\?tipo=profissional/);
+    await expect(page.locator("#login-email")).toBeVisible({ timeout: 15_000 });
   });
 
   test("cadastro rápido do profissional pede nome, CPF, e-mail, telefone e senha", async ({ page }) => {

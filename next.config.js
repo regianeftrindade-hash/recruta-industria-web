@@ -81,12 +81,12 @@ const nextConfig = {
       },
       {
         source: "/login/empresa",
-        destination: "/?acesso=empresa",
+        destination: "/login?tipo=empresa",
         permanent: false,
       },
       {
         source: "/login/profissional",
-        destination: "/",
+        destination: "/login?tipo=profissional",
         permanent: false,
       },
       {
