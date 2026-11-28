@@ -112,3 +112,78 @@ test.describe("smoke público", () => {
   test("lista pública de vagas expõe filtros de país e moeda quando disponíveis", async ({ page }) => {
     await page.goto("/vagas", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: /vagas|jobs|vacantes|offres/i }).first()).toBeVisible({
+      timeout: 20_000,
+    });
+    const pais = page.locator('select[name="pais"]');
+    const moeda = page.locator('select[name="moeda"]');
+    if ((await pais.count()) === 0 || (await moeda.count()) === 0) {
+      test.info().annotations.push({
+        type: "note",
+        description: "Filtros país/moeda ainda ausentes no alvo (pré-deploy da Etapa B)",
+      });
+      return;
+    }
+    await expect(pais).toBeVisible();
+    await expect(moeda).toBeVisible();
+    await pais.selectOption("US");
+    await moeda.selectOption("USD");
+    await page.getByRole("button", { name: /buscar|search|rechercher|suchen/i }).click();
+    await expect(page).toHaveURL(/pais=US/);
+    await expect(page).toHaveURL(/moeda=USD/);
+  });
+
+  test("idioma: cookie ri-locale aplica lang/dir em home, login e cadastro (inclui RTL árabe)", async ({
+    page,
+    context,
+  }) => {
+    const api = context.request;
+
+    // Accept-Language sem cookie
+    await context.clearCookies();
+    await page.setExtraHTTPHeaders({ "Accept-Language": "en-US,en;q=0.9" });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+    await page.setExtraHTTPHeaders({});
+
+    const samples: Array<{ locale: string; dir: "ltr" | "rtl"; path: string }> = [
+      { locale: "en", dir: "ltr", path: "/" },
+      { locale: "es", dir: "ltr", path: "/" },
+      { locale: "ar", dir: "rtl", path: "/professional/cadastro" },
+      { locale: "zh-CN", dir: "ltr", path: "/company/register" },
+    ];
+
+    for (const sample of samples) {
+      const res = await api.post("/api/account/locale", {
+        data: { locale: sample.locale },
+      });
+      expect(res.ok(), `locale ${sample.locale}`).toBeTruthy();
+      const payload = await res.json();
+      expect(payload.locale).toBe(sample.locale);
+
+      await page.goto(sample.path, { waitUntil: "domcontentloaded" });
+      await expect(page.locator("html")).toHaveAttribute("lang", sample.locale);
+      await expect(page.locator("html")).toHaveAttribute("dir", sample.dir);
+    }
+
+    // Alias /api/locale (pode 404 em produção até o deploy desta etapa)
+    await context.clearCookies();
+    const alias = await api.post("/api/locale", { data: { locale: "ar" } });
+    const aliasPayload = alias.ok() ? await alias.json().catch(() => null) : null;
+    if (aliasPayload?.locale === "ar") {
+      await page.goto("/", { waitUntil: "domcontentloaded" });
+      await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    } else {
+      test.info().annotations.push({
+        type: "note",
+        description: "Alias /api/locale ainda ausente no alvo; validado via /api/account/locale",
+      });
+      const fallback = await api.post("/api/account/locale", { data: { locale: "ar" } });
+      expect(fallback.ok()).toBeTruthy();
+      await page.goto("/", { waitUntil: "domcontentloaded" });
+      await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    }
+  });
+});
